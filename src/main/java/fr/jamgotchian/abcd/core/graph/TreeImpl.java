@@ -121,14 +121,14 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
      
     public void addNode(N parent, N node, E edge) {
         if (nodes.containsKey(node)) {
-            throw new ABCDException("Node already present");
+            throw new ABCDException("Node " + node + " already present");
         }
         if (edges.containsKey(edge)) {
-            throw new ABCDException("Edge already present");
+            throw new ABCDException("Edge " + edge + " already present");
         }
         Neighbors<N,E> parentsNeighbors = nodes.get(parent);
         if (parentsNeighbors == null) {
-            throw new ABCDException("Parent node not found");
+            throw new ABCDException("Parent node " + parent + " not found");
         }
         parentsNeighbors.getChildren().put(node, edge);
         nodes.put(node, new Neighbors<N, E>(parent, edge));
@@ -142,7 +142,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     public N getParent(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
-            throw new ABCDException("Node not found");
+            throw new ABCDException("Node " + node + " not found");
         }
         return neighbors.getParentNode();
     }
@@ -150,7 +150,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     public E getIncomingEdge(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
-            throw new ABCDException("Node not found");
+            throw new ABCDException("Node " + node + " not found");
         }
         return neighbors.getIncomingEdge();
     }
@@ -161,11 +161,11 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         }
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
-            throw new ABCDException("Node not found");
+            throw new ABCDException("Node " + node + " not found");
         }
         Neighbors<N,E> newParentNeighbors = nodes.get(newParent);
         if (newParentNeighbors == null) {
-            throw new ABCDException("Parent node not found");
+            throw new ABCDException("New parent node " + newParent + " not found");
         }
         E edge = neighbors.getIncomingEdge();
         N oldParent = getParent(node);
@@ -179,7 +179,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     public Set<N> getChildren(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
-            throw new ABCDException("Node not found");
+            throw new ABCDException("Node " + node + " not found");
         }
         return neighbors.getChildren().keySet();
     }
@@ -190,7 +190,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         }
         Connection<N> connection = edges.get(edge);
         if (connection == null) {
-            throw new ABCDException("Edge not found");
+            throw new ABCDException("Edge " + edge + " not found");
         }
         return connection.getSource();
     }
@@ -201,7 +201,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         }
         Connection<N> connection = edges.get(edge);
         if (connection == null) {
-            throw new ABCDException("Edge not found");
+            throw new ABCDException("Edge " + edge + " not found");
         }
         return connection.getTarget();
     }
@@ -209,7 +209,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     public int getDepthFromRoot(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
-            throw new ABCDException("Node not found");
+            throw new ABCDException("Node " + node + " not found");
         }
         int depth = 0;
         for (N n = getParent(node); n != null; n = getParent(n)) {

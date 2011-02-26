@@ -89,7 +89,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
             throw new ABCDException("vertex == null");
         }
         if (vertices.containsKey(vertex)) {
-            throw new ABCDException("Vertex already in the graph");
+            throw new ABCDException("Vertex " + vertex + " already present");
         }
         vertices.put(vertex, new Neighbors<V, E>());
     }
@@ -105,13 +105,13 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
             throw new ABCDException("edge == null");
         }
         if (edges.containsKey(edge)) {
-            throw new ABCDException("Edge already present");
+            throw new ABCDException("Edge " + edge + " already present");
         }
         if (!vertices.containsKey(source)) {
-            throw new ABCDException("Source vertex not found");
+            throw new ABCDException("Source vertex " + source + " not found");
         }
         if (!vertices.containsKey(target)) {
-            throw new ABCDException("Target vertex not found");
+            throw new ABCDException("Target vertex " + target + " not found");
         }
         edges.put(edge, new Connection<V>(source, target));
         vertices.get(source).getSuccessors().put(target, edge);
@@ -156,7 +156,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
         Connection<V> connection = edges.get(edge);
         if (connection == null) {
-            throw new ABCDException("Edge not found");
+            throw new ABCDException("Edge " + edge + " not found");
         }
         return connection.getSource();
     }
@@ -167,7 +167,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
         Connection<V> connection = edges.get(edge);
         if (connection == null) {
-            throw new ABCDException("Edge not found");
+            throw new ABCDException("Edge " + edge + " not found");
         }
         return connection.getTarget();
     }
@@ -178,7 +178,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
         Neighbors<V, E> neighbors = vertices.get(vertex);
         if (neighbors == null) {
-            throw new ABCDException("Vertex not found");
+            throw new ABCDException("Vertex " + vertex + " not found");
         }
         return neighbors.getSuccessors().values();
     }
@@ -194,7 +194,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
         Neighbors<V, E> neighbors = vertices.get(vertex);
         if (neighbors == null) {
-            throw new ABCDException("Vertex not found");
+            throw new ABCDException("Vertex " + vertex + " not found");
         }
         return neighbors.getPredecessors().values();
     }
@@ -210,7 +210,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
         Neighbors<V, E> neighbors = vertices.get(vertex);
         if (neighbors == null) {
-            throw new ABCDException("Vertex not found");
+            throw new ABCDException("Vertex " + vertex + " not found");
         }
         return neighbors.getSuccessors().keySet();
     }
@@ -230,7 +230,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
         Neighbors<V, E> neighbors = vertices.get(vertex);
         if (neighbors == null) {
-            throw new ABCDException("Vertex not found");
+            throw new ABCDException("Vertex " + vertex + " not found");
         }
         return neighbors.getPredecessors().keySet();
     }
@@ -250,7 +250,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
         Connection<V> connection = edges.get(edge);
         if (connection == null) {
-            throw new ABCDException("Edge not found");
+            throw new ABCDException("Edge " + edge + " not found");
         }
         edges.remove(edge);
         V source = connection.getSource();
@@ -281,7 +281,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
 
         if (!vertices.containsKey(vertex)) {
-            throw new ABCDException("Vertex not found");
+            throw new ABCDException("Vertex " + vertex + " not found");
         }
 
         Set<E> edgesToRemove = new HashSet<E>();
@@ -311,11 +311,11 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
             throw new ABCDException("newVertex == null");
         }
         if (vertices.containsKey(newVertex)) {
-            throw new ABCDException("New vertex already present");
+            throw new ABCDException("New vertex " + newVertex + " already present");
         }
         Neighbors<V, E> neighbors = vertices.get(vertex);
         if (neighbors == null) {
-            throw new ABCDException("Vertex not found");
+            throw new ABCDException("Vertex " + vertex + " not found");
         }
         Neighbors<V, E> newNeighbors = new Neighbors<V, E>();
         for (Map.Entry<V, E> entry : neighbors.getSuccessors().entrySet()) {
