@@ -37,6 +37,19 @@ public abstract class AbstractRegion implements Region {
         return getType().toString();
     }
 
+    public BasicBlock getEntryBlock() {
+        return getEntryRegion().getEntryBlock();
+    }
+
+    public BasicBlock getExitBlockIfUnique() {
+        Region region = getExitRegionIfUnique();
+        if (region == null) {
+            return null;
+        } else {
+            return region.getExitBlockIfUnique();
+        }
+    }
+
     public Collection<BasicBlock> getInternalBlocks() {
         Set<BasicBlock> blocks = new HashSet<BasicBlock>();
         for (Region region : getInternalRegions()) {

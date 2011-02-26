@@ -35,10 +35,12 @@ public interface Region {
     String getTypeName();
     
     Region getEntryRegion();
+    
+    Region getExitRegionIfUnique();
 
     BasicBlock getEntryBlock();
     
-    BasicBlock getExitBlock();
+    BasicBlock getExitBlockIfUnique();
     
     Collection<Region> getInternalRegions();
 

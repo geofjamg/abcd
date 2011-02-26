@@ -19,7 +19,6 @@ package fr.jamgotchian.abcd.core.region;
 
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import java.util.Arrays;
 import java.util.Collection;
@@ -82,16 +81,12 @@ public class IfThenElseRegion extends AbstractRegion {
         return RegionType.IF_THEN_ELSE;
     }
 
-    public BasicBlock getEntryBlock() {
-        return ifRegion.getEntryBlock();
-    }
-
-    public BasicBlock getExitBlock() {
-        return null;
-    }
-
     public Region getEntryRegion() {
          return ifRegion;
+    }
+
+    public Region getExitRegionIfUnique() {
+        return null;
     }
 
     public Region getIfRegion() {

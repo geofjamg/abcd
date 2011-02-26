@@ -19,7 +19,6 @@ package fr.jamgotchian.abcd.core.region;
 
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.util.Collections3;
@@ -71,16 +70,12 @@ public class LogicalRegion extends AbstractRegion {
         return type;
     }
 
-    public BasicBlock getEntryBlock() {
-        return regionA.getEntryBlock();
-    }
-
-    public BasicBlock getExitBlock() {
-        return regionB.getExitBlock();
-    }
-
     public Region getEntryRegion() {
         return regionA;
+    }
+
+    public Region getExitRegionIfUnique() {
+        return regionB;
     }
 
     public Collection<Region> getInternalRegions() {

@@ -30,6 +30,7 @@ import fr.jamgotchian.abcd.core.graph.MutableTree;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,35 +49,24 @@ public class StructuralAnalysis {
 
     private static final Logger logger = Logger.getLogger(StructuralAnalysis.class.getName());
 
+    private static final List<RegionRecognizer> RECOGNIZERS;
+
     static {
         logger.setLevel(Level.FINEST);
+
+        RECOGNIZERS = Collections.unmodifiableList(Arrays.asList(/* first, acyclic regions */
+                                                                 new BlockRecognizer(),
+                                                                 new LogicalRecognizer(),
+                                                                 new IfThenElseRecognizer(),
+                                                                 /* then, cyclic regions */
+                                                                 new LoopRecognizer()));
     }
-    
-    public static class Result {
 
-        private final DirectedGraph<Region, Edge> regionGraph;
-
-        private final Tree<Region, Edge> controlTree;
-
-        public Result(DirectedGraph<Region, Edge> regionGraph, Tree<Region, Edge> controlTree) {
-            this.regionGraph = DirectedGraphs.unmodifiableDirectedGraph(regionGraph);
-            this.controlTree = Trees.unmodifiableTree(controlTree);
-        }
-
-        public DirectedGraph<Region, Edge> getRegionGraph() {
-            return regionGraph;
-        }
-
-        public Tree<Region, Edge> getControlTree() {
-            return controlTree;
-        }
-    }
 
     private final ControlFlowGraph graph;
 
     private MutableDirectedGraph<Region, Edge> regionGraph;
     private Region entryRegion;
-    private Region exitRegion;
 
     public StructuralAnalysis(ControlFlowGraph graph) {
         this.graph = graph;
@@ -200,7 +190,7 @@ public class StructuralAnalysis {
         }
     }
 
-    public Result analyse() {
+    public DirectedGraph<Region, Edge> analyse() {
         // build initial region graph
         Map<BasicBlock, Region> regions = new HashMap<BasicBlock, Region>();
         regionGraph = graph.createUnexceptionalCFG(new ControlFlowGraph.RegionFactory<Region>() {
@@ -213,15 +203,6 @@ public class StructuralAnalysis {
             parents.put(region, null);
         }
         entryRegion = regions.get(graph.getEntryBlock());
-        exitRegion = regions.get(graph.getExitBlock());
-
-        List<RegionRecognizer> recognizers = new ArrayList<RegionRecognizer>(3);
-        // first, acyclic regions
-        recognizers.add(new BlockRecognizer());
-        recognizers.add(new LogicalRecognizer());
-        recognizers.add(new IfThenElseRecognizer());
-        // then, cyclic regions
-        recognizers.add(new LoopRecognizer());
 
         // reduce the region graph
         boolean failed = false;
@@ -231,7 +212,7 @@ public class StructuralAnalysis {
             List<Region> reverseNodes = new ArrayList<Region>(dfst.getNodes());
             Collections.reverse(reverseNodes);
             Region structuredRegion = null;
-            for (RegionRecognizer recognizer : recognizers) {
+            for (RegionRecognizer recognizer : RECOGNIZERS) {
                 for (Region region : reverseNodes) {
                     structuredRegion = recognizer.recognize(regionGraph, region);
                     if (structuredRegion != null) {
@@ -245,18 +226,18 @@ public class StructuralAnalysis {
                 }
             }
 
-            logger.log(Level.FINEST, "Control tree :\n{0}",
-                    Trees.toString(regionGraph.getReversePostOrderDFST(entryRegion, false)));
-
 //            logger.log(Level.FINEST, "Region graph :\n{0}",
 //                    DirectedGraphs.toString(regionGraph, entryRegion));
         }
 
         // build control tree
-        Region rootRegion = regionGraph.getVertices().iterator().next();
-        MutableTree<Region, Edge> controlTree = Trees.newTree(rootRegion);
-        buildControlTree(rootRegion, controlTree);
-
-        return new Result(regionGraph, controlTree);
+        if (regionGraph.getVertices().size() == 1) {
+            Region rootRegion = regionGraph.getVertices().iterator().next();
+            MutableTree<Region, Edge> controlTree = Trees.newTree(rootRegion);
+            buildControlTree(rootRegion, controlTree);
+            logger.log(Level.FINEST, "Control tree :\n{0}", Trees.toString(controlTree));
+        }
+        
+        return DirectedGraphs.unmodifiableDirectedGraph(regionGraph);
     }
 }

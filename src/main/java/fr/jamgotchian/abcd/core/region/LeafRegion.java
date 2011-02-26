@@ -55,11 +55,15 @@ public class LeafRegion implements Region {
         return null;
     }
 
+    public Region getExitRegionIfUnique() {
+        return null;
+    }
+
     public BasicBlock getEntryBlock() {
         return block;
     }
 
-    public BasicBlock getExitBlock() {
+    public BasicBlock getExitBlockIfUnique() {
         return block;
     }
 

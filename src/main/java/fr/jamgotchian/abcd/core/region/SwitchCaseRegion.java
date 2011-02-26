@@ -18,7 +18,6 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,17 +59,13 @@ public class SwitchCaseRegion extends AbstractRegion {
     public RegionType getType() {
         return RegionType.SWITCH_CASE;
     }
-
-    public BasicBlock getEntryBlock() {
-        return switchRegion.getEntryBlock();
-    }
-
-    public BasicBlock getExitBlock() {
-        return null;
-    }
    
     public Region getEntryRegion() {
          return switchRegion;
+    }
+
+    public Region getExitRegionIfUnique() {
+        return null;
     }
 
     public Region getSwitchRegion() {

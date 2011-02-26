@@ -18,7 +18,6 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,20 +68,16 @@ public class LoopRegion extends AbstractRegion {
         return loopType;
     }
 
-    public BasicBlock getEntryBlock() {
-        return getEntryRegion().getEntryBlock();
-    }
-
-    public BasicBlock getExitBlock() {
-        return null;
-    }
-    
     public Region getEntryRegion() {
         if (subRegions.isEmpty()) {
             return loopTailRegion;
         } else {
             return subRegions.get(0).getLoopRegion();
         }
+    }
+
+    public Region getExitRegionIfUnique() {
+        return loopTailRegion;
     }
 
     public Region getLoopTailRegion() {

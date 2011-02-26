@@ -30,7 +30,6 @@ import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statements;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
-import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.region.BlockRegion;
 import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
 import fr.jamgotchian.abcd.core.region.IfThenRegion;
@@ -39,7 +38,6 @@ import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.LoopRegion;
 import fr.jamgotchian.abcd.core.region.LoopSubRegion;
 import fr.jamgotchian.abcd.core.region.LoopType;
-import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.region.LogicalRegion;
 import fr.jamgotchian.abcd.core.region.LogicalType;
 import java.util.ArrayList;
@@ -57,8 +55,8 @@ public class AbstractSyntaxTreeBuilder {
     public AbstractSyntaxTreeBuilder() {
     }
 
-    public void build(Tree<Region, Edge> controlTree, BlockStatement methodBody) {
-        buildAST(controlTree.getRoot(), controlTree, methodBody);
+    public void build(Region rootRegion, BlockStatement methodBody) {
+        buildAST(rootRegion, methodBody);
     }
 
     private boolean isStmtBlockEmpty(BlockStatement blockStmt) {
@@ -71,7 +69,7 @@ public class AbstractSyntaxTreeBuilder {
         return true;
     }
 
-    private void buildAST(Region region, Tree<Region, Edge> controlTree, BlockStatement blockStmt) {
+    private void buildAST(Region region, BlockStatement blockStmt) {
         switch (region.getType()) {
             case LEAF: {
                 LeafRegion leaf = (LeafRegion) region;
@@ -83,7 +81,7 @@ public class AbstractSyntaxTreeBuilder {
 
             case BLOCK: {
                 for (Region child : ((BlockRegion) region).getRegions()) {
-                    buildAST(child, controlTree, blockStmt);
+                    buildAST(child, blockStmt);
                 }
                 break;
             }
@@ -91,11 +89,11 @@ public class AbstractSyntaxTreeBuilder {
             case LOGICAL: {
                 LogicalRegion logical = (LogicalRegion) region;
                 
-                buildAST(logical.getRegionA(), controlTree, blockStmt);
+                buildAST(logical.getRegionA(), blockStmt);
                 JumpIfStatement jumpIfStmtA = (JumpIfStatement) blockStmt.getLast();
                 
                 BlockStatement tmpBlockStmt = new BlockStatement();
-                buildAST(logical.getRegionB(), controlTree, tmpBlockStmt);
+                buildAST(logical.getRegionB(), tmpBlockStmt);
                 JumpIfStatement jumpIfStmtB = (JumpIfStatement) tmpBlockStmt.getLast();
                 
                 BinaryOperator operator = null;
@@ -127,13 +125,13 @@ public class AbstractSyntaxTreeBuilder {
 
             case IF_THEN_ELSE: {
                 IfThenElseRegion ifThenElse = (IfThenElseRegion) region;
-                buildAST(ifThenElse.getIfRegion(), controlTree, blockStmt);
+                buildAST(ifThenElse.getIfRegion(), blockStmt);
                 JumpIfStatement jumpIfStmt = (JumpIfStatement) blockStmt.getLast();
                 jumpIfStmt.remove();
                 BlockStatement thenBlockStmt = new BlockStatement();
                 BlockStatement elseBlockStmt = new BlockStatement();
-                buildAST(ifThenElse.getThenRegion(), controlTree, thenBlockStmt);
-                buildAST(ifThenElse.getElseRegion(), controlTree, elseBlockStmt);
+                buildAST(ifThenElse.getThenRegion(), thenBlockStmt);
+                buildAST(ifThenElse.getElseRegion(), elseBlockStmt);
                 // don't build if statement if then and else blocks are empty
                 if (!isStmtBlockEmpty(thenBlockStmt) || !isStmtBlockEmpty(elseBlockStmt)) {
                     IfStatement ifStmt = new IfStatement(jumpIfStmt.getCondition(), 
@@ -146,11 +144,11 @@ public class AbstractSyntaxTreeBuilder {
 
             case IF_THEN: {
                 IfThenRegion ifThen = (IfThenRegion) region;
-                buildAST(ifThen.getIfRegion(), controlTree, blockStmt);
+                buildAST(ifThen.getIfRegion(), blockStmt);
                 JumpIfStatement jumpIfStmt = (JumpIfStatement) blockStmt.getLast();
                 jumpIfStmt.remove();
                 BlockStatement thenBlockStmt = new BlockStatement();
-                buildAST(ifThen.getThenRegion(), controlTree, thenBlockStmt);
+                buildAST(ifThen.getThenRegion(), thenBlockStmt);
                 // don't build if statement if then block is empty
                 if (!isStmtBlockEmpty(thenBlockStmt)) {
                     Expression condition = ifThen.isInvertCondition() 
@@ -172,7 +170,7 @@ public class AbstractSyntaxTreeBuilder {
 
                 if (loopRegion.getLoopType() == LoopType.WHILE) {
                     if (subRegions.size() > 0) {
-                        buildAST(subRegions.get(0).getLoopRegion(), controlTree, bodyBlockStmt);
+                        buildAST(subRegions.get(0).getLoopRegion(), bodyBlockStmt);
                         subRegions.remove(0);
                         JumpIfStatement jumpIfStmt = (JumpIfStatement) bodyBlockStmt.getLast();
                         jumpIfStmt.remove();
@@ -183,13 +181,13 @@ public class AbstractSyntaxTreeBuilder {
                 }
 
                 for (LoopSubRegion subRegion : subRegions) {
-                    buildAST(subRegion.getLoopRegion(), controlTree, bodyBlockStmt);
+                    buildAST(subRegion.getLoopRegion(), bodyBlockStmt);
                     JumpIfStatement jumpIfStmt = (JumpIfStatement) bodyBlockStmt.getLast();
                     jumpIfStmt.remove();
                     bodyBlockStmt.add(Statements.createIfThenBreakStmt(ExpressionInverter.invert(jumpIfStmt.getCondition())));
                 }
 
-                buildAST(loopRegion.getLoopTailRegion(), controlTree, bodyBlockStmt);
+                buildAST(loopRegion.getLoopTailRegion(), bodyBlockStmt);
 
                 switch (loopRegion.getLoopType()) {
                     case WHILE:

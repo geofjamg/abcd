@@ -39,7 +39,6 @@ import fr.jamgotchian.abcd.core.analysis.ForLoopRefactoring;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.SimplestFormatter;
 import java.io.BufferedOutputStream;
@@ -97,8 +96,6 @@ public class Decompiler {
 
         private DirectedGraph<Region, Edge> regionGraph;
 
-        private Tree<Region, Edge> controlTree;
-
         public MethodInfo(String methodName) {
             this.methodSignature =  methodName;
         }
@@ -113,14 +110,6 @@ public class Decompiler {
 
         public void setControlFlowGraph(ControlFlowGraph controlFlowGraph) {
             this.controlFlowGraph = controlFlowGraph;
-        }
-
-        public Tree<Region, Edge> getControlTree() {
-            return controlTree;
-        }
-
-        public void setControlTree(Tree<Region, Edge> controlTree) {
-            this.controlTree = controlTree;
         }
 
         public DirectedGraph<Region, Edge> getRegionGraph() {
@@ -183,9 +172,8 @@ public class Decompiler {
             new ControlFlowGraphStmtAnalysis().analyse(graph);
 
             logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
-            StructuralAnalysis.Result result = new StructuralAnalysis(graph).analyse();
-            methodInfo.setRegionGraph(result.getRegionGraph());
-            methodInfo.setControlTree(result.getControlTree());
+            DirectedGraph<Region, Edge> regionGraph = new StructuralAnalysis(graph).analyse();
+            methodInfo.setRegionGraph(regionGraph);
         }
         return methodInfo;
     }
@@ -269,8 +257,8 @@ public class Decompiler {
 
                 logger.log(Level.FINE, "////////// Build AST of {0} //////////", methodSignature);
 
-                new AbstractSyntaxTreeBuilder().build(methodInfo.getControlTree(),
-                                                      method.getBody());
+                Region rootRegion = methodInfo.getRegionGraph().getVertices().iterator().next();
+                new AbstractSyntaxTreeBuilder().build(rootRegion, method.getBody());
 
                 method.getBody().accept(new ForLoopRefactoring(), null);
                 method.getBody().accept(new ConditionalExpressionRefactoring(), null);

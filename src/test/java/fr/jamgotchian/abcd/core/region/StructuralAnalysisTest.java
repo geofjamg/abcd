@@ -17,6 +17,8 @@
 
 package fr.jamgotchian.abcd.core.region;
 
+import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.Decompiler;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockTestImpl;
@@ -268,8 +270,8 @@ public class StructuralAnalysisTest {
         graph.addEdge(b4, graph.getExitBlock());
         graph.analyse();
 
-        StructuralAnalysis.Result result = new StructuralAnalysis(graph).analyse();
+        DirectedGraph<Region, Edge> regionGraph = new StructuralAnalysis(graph).analyse();
                 
-        assertTrue(result.getRegionGraph().getVertexCount() == 1);
+        assertTrue(regionGraph.getVertexCount() == 1);
     }
 }

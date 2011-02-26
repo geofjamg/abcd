@@ -42,7 +42,7 @@ public class LogicalRecognizer implements RegionRecognizer {
         if (regionB.equals(regionA)) {
             return null;
         }
-        BasicBlock exitBlockB = regionB.getExitBlock();
+        BasicBlock exitBlockB = regionB.getExitBlockIfUnique();
         if (exitBlockB == null) {
             return null;
         }
@@ -94,7 +94,7 @@ public class LogicalRecognizer implements RegionRecognizer {
         if (regionB.equals(regionA)) {
             return null;
         }
-        BasicBlock exitBlockB = regionB.getExitBlock();
+        BasicBlock exitBlockB = regionB.getExitBlockIfUnique();
         if (exitBlockB == null) {
             return null;
         }
