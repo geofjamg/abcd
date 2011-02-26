@@ -42,7 +42,10 @@ import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.SimplestFormatter;
 import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -96,8 +99,8 @@ public class Decompiler {
 
         private DirectedGraph<Region, Edge> regionGraph;
 
-        public MethodInfo(String methodName) {
-            this.methodSignature =  methodName;
+        public MethodInfo(String methodSignature) {
+            this.methodSignature =  methodSignature;
         }
 
         public String getMethodSignature() {
@@ -283,15 +286,52 @@ public class Decompiler {
         }
     }
 
-    public static void main(String[] args) {
-        try {
-            InputStream is = Decompiler.class.getResourceAsStream("/fr/jamgotchian/abcd/core/Test.class");
-            OutputStream os = new FileOutputStream("/tmp/Test.java");
+    private static void printUsage() {
+        System.out.println("Usage:");
+        System.out.println("    -decompile <class file> <output java file>");
+        System.out.println("    -analyse <class file> <output directory>");
+        System.exit(1);
+    }
 
-            Decompiler decompiler = new Decompiler(is);
-            decompiler.decompile(os);
-        } catch (IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+    public static void main(String[] args) {
+        if (args.length != 3) {
+            printUsage();
+        }
+        String cmd = args[0];
+        String classFileName = args[1];
+        if ("-decompile".equals(cmd)) {
+            String javaFileName = args[2];
+            try {
+                InputStream is = new FileInputStream(classFileName);
+                OutputStream os = new FileOutputStream(javaFileName);
+
+                Decompiler decompiler = new Decompiler(is);
+                decompiler.decompile(os);
+            } catch (IOException exc) {
+                logger.log(Level.SEVERE, exc.toString(), exc);
+            }            
+        } else if ("-analyse".equals(cmd)) {
+            String directoryName = args[2];
+            File dir = new File(directoryName);
+            if (!dir.exists())
+                throw new ABCDException(directoryName + " does not exist");
+            if (!dir.isDirectory())
+                throw new ABCDException(directoryName + " is not a directory");
+            try {
+                InputStream is = new FileInputStream(classFileName);
+                Decompiler decompiler = new Decompiler(is);
+                for (String methodSignature : decompiler.getMethodSignatures()) {
+                    MethodInfo info = decompiler.getMethodInfo(methodSignature);
+                    ControlFlowGraph cfg = info.getControlFlowGraph();
+                    Writer writer = new FileWriter(dir.getPath() + "/" + methodSignature + "_CFG.dot");
+                    cfg.writeDOT(writer);
+                    writer.close();
+                }
+            } catch (IOException exc) {
+                logger.log(Level.SEVERE, exc.toString(), exc);
+            } 
+        } else {
+            printUsage();
         }
     }
 }

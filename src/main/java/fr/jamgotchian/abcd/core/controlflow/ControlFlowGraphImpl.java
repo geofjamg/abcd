@@ -30,6 +30,8 @@ import fr.jamgotchian.abcd.core.graph.Trees;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
 import fr.jamgotchian.abcd.core.util.RangeMap;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -50,11 +52,11 @@ import org.objectweb.asm.tree.InsnList;
 public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private static final Logger logger = Logger.getLogger(ControlFlowGraphImpl.class.getName());
-    
+
     static {
         logger.setLevel(Level.FINE);
     }
-    
+
     private final String name;
 
     private InsnList instructions;
@@ -76,11 +78,11 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     private DominatorInfo dominatorInfo;
 
     private final Multimap<BasicBlock, ForkJoinInfo> joinBlocks;
-    
+
     private final Map<BasicBlock, ForkJoinInfo> forkBlocks;
 
     private final List<ExceptionHandler> exceptionHandlers;
-    
+
     public ControlFlowGraphImpl(String name, InsnList instructions) {
         this(name, new BasicBlockImpl(Integer.MIN_VALUE, -1, BasicBlockType.ENTRY));
         if (instructions == null) {
@@ -409,13 +411,13 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             logger.log(Level.FINER, "Remove unnecessary block {0}", block);
         }
     }
-    
+
     private void analyseForkJoin() {
         // update fork / join infos
         joinBlocks.clear();
         forkBlocks.clear();
         for (BasicBlock forkBlock : dfst.getNodes()) {
-            if (graph.getSuccessorsOf(forkBlock).size() > 1) {            
+            if (graph.getSuccessorsOf(forkBlock).size() > 1) {
                 BasicBlock joinBlock = dominatorInfo.getPostDominatorsTree().getParent(forkBlock);
                 Set<ForkJoinInfo.Branch> branches = new HashSet<ForkJoinInfo.Branch>();
                 for (Edge forkEdge : graph.getOutgoingEdgesOf(forkBlock)) {
@@ -556,12 +558,12 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
         for (BasicBlock handlerEntry : handlerEntries) {
             Set<BasicBlock> handledBlocks = new HashSet<BasicBlock>(graph.getPredecessorsOf(handlerEntry));
-            exceptionHandlers.add(new ExceptionHandler(handlerEntry, handledBlocks));            
-            logger.log(Level.FINEST, "Exception handler : entryBlock={0}, handledBlocks={1}", 
+            exceptionHandlers.add(new ExceptionHandler(handlerEntry, handledBlocks));
+            logger.log(Level.FINEST, "Exception handler : entryBlock={0}, handledBlocks={1}",
                     new Object[] {handlerEntry, handledBlocks});
         }
     }
-   
+
     public <R> MutableDirectedGraph<R, Edge> createUnexceptionalCFG(RegionFactory<R> factory,
                                                                     Map<BasicBlock, R> regions) {
         Set<BasicBlock> visited = new HashSet<BasicBlock>();
@@ -585,7 +587,59 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
         return ucfg;
     }
-    
+
+    public void writeDOT(Writer writer) throws IOException {
+        writer.append("digraph CFG {\n");
+        for (Edge e : graph.getEdges()) {
+            BasicBlock source = graph.getEdgeSource(e);
+            BasicBlock target = graph.getEdgeTarget(e);
+            writer.append("  \"").append(source.toString()).append("\" -> \"")
+                    .append(target.toString()).append("\" [");
+            if (e.getCategory() == EdgeCategory.BACK) {
+                writer.append("color=red");
+            } else if (e.isLoopExit()) {
+                writer.append("color=green");
+            } else {
+                writer.append("color=black");
+            }
+            if (e.isExceptional()) {
+                writer.append(", style=dotted");
+            }
+            writer.append("];\n");
+        }
+        for (BasicBlock block : graph.getVertices()) {
+            writer.append("\"").append(block.toString()).append("\" [");
+            if (block.getType() != null) {
+                switch (block.getType()) {
+                    case ENTRY:
+                    case EXIT:
+                        writer.append("shape=ellipse, style=filled, color=lightgrey");
+                        break;
+
+                    case JUMP_IF:
+                        writer.append("shape=diamond, style=filled, color=cornflowerblue");
+                        break;
+
+                    case SWITCH:
+                        writer.append("shape=hexagon, style=filled, color=chocolate");
+                        break;
+
+                    case RETURN:
+                        writer.append("shape=invhouse, style=filled, color=orange");
+                        break;
+
+                    default:
+                        writer.append("shape=box, color=black");
+                        break;
+                }
+            } else {
+                writer.append("shape=box, color=black");
+            }
+            writer.append("];\n");
+        }
+        writer.append("}");
+    }
+
     public String toString(Collection<Edge> edges) {
         return graph.toString(edges);
     }

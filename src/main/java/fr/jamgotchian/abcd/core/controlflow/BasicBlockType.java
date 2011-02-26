@@ -27,6 +27,5 @@ public enum BasicBlockType {
     JUMP_IF,
     SWITCH,
     GOTO,
-    RETURN,
-    JOIN
+    RETURN
 }
