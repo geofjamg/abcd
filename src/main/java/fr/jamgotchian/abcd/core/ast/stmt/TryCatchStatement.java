@@ -17,6 +17,9 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -25,21 +28,39 @@ public class TryCatchStatement extends AbstractStatement {
 
     private final BlockStatement _try;
 
-    private final BlockStatement _catch;
+    public static class CatchStatement {
+        
+        private final BlockStatement blockStmt;
+    
+        private final LocalVariableDeclaration exceptionVarDecl;
 
-    private final LocalVariableDeclaration exceptionVarDecl;
+        public CatchStatement(BlockStatement blockStmt, LocalVariableDeclaration exceptionVarDecl) {
+            this.blockStmt = blockStmt;
+            this.exceptionVarDecl = exceptionVarDecl;
+        }
 
-    public TryCatchStatement(BlockStatement _try, BlockStatement _catch, 
-                               LocalVariableDeclaration exceptionVarDecl) {
+        public BlockStatement getBlockStmt() {
+            return blockStmt;
+        }
+
+        public LocalVariableDeclaration getExceptionVarDecl() {
+            return exceptionVarDecl;
+        }
+    }
+    
+    private final Collection<CatchStatement> catchs;
+
+    public TryCatchStatement(BlockStatement _try, Collection<CatchStatement> catchs) {
         this._try = _try;
-        this._catch = _catch;
-        this.exceptionVarDecl = exceptionVarDecl;
+        this.catchs = catchs;
     }
 
     @Override
     public void setBlock(BlockStatement block) {
         _try.setBlock(block);
-        _catch.setBlock(block);
+        for (CatchStatement _catch : catchs) {
+            _catch.getBlockStmt().setBlock(block);
+        }
         super.setBlock(block);
     }
     
@@ -47,12 +68,8 @@ public class TryCatchStatement extends AbstractStatement {
         return _try;
     }
 
-    public BlockStatement getCatch() {
-        return _catch;
-    }
-
-    public LocalVariableDeclaration getExceptionVarDecl() {
-        return exceptionVarDecl;
+    public Collection<CatchStatement> getCatchs() {
+        return Collections.unmodifiableCollection(catchs);
     }
 
     public <R, A> R accept(StatementVisitor<R, A> visitor, A arg) {

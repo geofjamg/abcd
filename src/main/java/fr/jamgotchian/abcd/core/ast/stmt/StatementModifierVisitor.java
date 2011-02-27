@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchStatement.CatchStatement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -73,7 +74,9 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
 
     public Collection<Statement> visit(TryCatchStatement stmt, Void arg) {
         stmt.getTry().accept(this, arg);
-        stmt.getCatch().accept(this, arg);
+        for (CatchStatement _catch : stmt.getCatchs()) {
+            _catch.getBlockStmt().accept(this, arg);
+        }
         return null;
     }
 

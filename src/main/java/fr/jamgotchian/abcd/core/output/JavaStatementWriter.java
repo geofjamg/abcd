@@ -33,6 +33,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchStatement.CatchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import java.util.Iterator;
 
@@ -124,15 +125,17 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
     public Void visit(TryCatchStatement stmt, Void arg) {
         writer.writeKeyword("try").writeSpace();
         stmt.getTry().accept(this, null);
-        if (stmt.getExceptionVarDecl() != null) {
-            writer.writeSpace().writeKeyword("catch").writeSpace().write("(")
-                  .write(stmt.getExceptionVarDecl().getTypeName())
-                  .writeSpace().write(stmt.getBlock().getVariable(stmt.getExceptionVarDecl().getIndex()))
-                  .write(")").writeSpace();
-        } else {
-            writer.writeSpace().writeKeyword("finally").writeSpace();
+        for (CatchStatement _catch : stmt.getCatchs()) {
+            if (_catch.getExceptionVarDecl() != null) {
+                writer.writeSpace().writeKeyword("catch").writeSpace().write("(")
+                      .write(_catch.getExceptionVarDecl().getTypeName())
+                      .writeSpace().write(stmt.getBlock().getVariable(_catch.getExceptionVarDecl().getIndex()))
+                      .write(")").writeSpace();
+            } else {
+                writer.writeSpace().writeKeyword("finally").writeSpace();
+            }
+            _catch.getBlockStmt().accept(this, null);            
         }
-        stmt.getCatch().accept(this, null);
         return null;
     }
 

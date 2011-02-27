@@ -39,6 +39,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchStatement.CatchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
@@ -174,7 +175,9 @@ public class ConditionalExpressionRefactoring implements StatementVisitor<Object
 
     public Object visit(TryCatchStatement stmt, Object arg) {
         stmt.getTry().accept(this, arg);
-        stmt.getCatch().accept(this, arg);
+        for (CatchStatement _catch : stmt.getCatchs()) {
+            _catch.getBlockStmt().accept(this, arg);
+        }
         return null;
     }
 
