@@ -24,7 +24,6 @@ import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Set;
 
 /**
  *
@@ -82,7 +81,7 @@ public class LogicalRegion extends AbstractRegion {
         return Arrays.asList(regionA, regionB);
     }
 
-    public Set<Edge> getInternalEdges() {
+    public Collection<Edge> getInternalEdges() {
         return Sets.newHashSet(trueEdgeA, falseEdgeA, trueEdgeB, falseEdgeB);
     }
 

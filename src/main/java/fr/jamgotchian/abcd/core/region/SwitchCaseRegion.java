@@ -19,9 +19,9 @@ package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -31,17 +31,11 @@ import java.util.Set;
  */
 public class SwitchCaseRegion extends AbstractRegion {
 
-    private final Set<Edge> internalEdges;
-
     private final Region switchRegion;
     
-    private final List<Region> caseRegions;
+    private final List<CaseRegion> caseRegions;
 
-    SwitchCaseRegion(Set<Edge> internalEdges,
-                     Region switchRegion, List<Region> caseRegions) {
-        if (internalEdges == null) {
-            throw new ABCDException("internalEdges == null");
-        }                                
+    SwitchCaseRegion(Region switchRegion, List<CaseRegion> caseRegions) {
         if (switchRegion == null) {
             throw new ABCDException("switchRegion == null");
         }
@@ -51,9 +45,8 @@ public class SwitchCaseRegion extends AbstractRegion {
         if (caseRegions.isEmpty()) {
             throw new ABCDException("caseRegions.isEmpty()");
         }
-        this.internalEdges = Collections.unmodifiableSet(internalEdges);
         this.switchRegion = switchRegion;
-        this.caseRegions = Collections.unmodifiableList(caseRegions);
+        this.caseRegions = caseRegions;
     }
     
     public RegionType getType() {
@@ -72,18 +65,25 @@ public class SwitchCaseRegion extends AbstractRegion {
         return switchRegion;
     }
 
-    public List<Region> getCaseRegions() {
-        return caseRegions;
+    public List<CaseRegion> getCaseRegions() {
+        return Collections.unmodifiableList(caseRegions);
     }
     
     public Collection<Region> getInternalRegions() {
-        List<Region> subRegions = new ArrayList<Region>(caseRegions.size() + 1);
-        subRegions.add(switchRegion);
-        subRegions.addAll(caseRegions);
-        return subRegions;
+        Set<Region> internalRegions = new HashSet<Region>();
+        internalRegions.add(switchRegion);
+        for (CaseRegion _case : caseRegions) {
+            internalRegions.add(_case.getRegion());            
+        }
+        return internalRegions;
     }
 
-    public Set<Edge> getInternalEdges() {
+    public Collection<Edge> getInternalEdges() {
+        Set<Edge> internalEdges = new HashSet<Edge>();
+        for (CaseRegion _case : caseRegions) {
+            internalEdges.add(_case.getIncomingEdge());
+            internalEdges.add(_case.getOutgoingEdge());
+        }
         return internalEdges;
     }
 }

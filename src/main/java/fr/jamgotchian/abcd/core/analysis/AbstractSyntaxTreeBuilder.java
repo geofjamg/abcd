@@ -26,11 +26,15 @@ import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.JumpIfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statements;
+import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
 import fr.jamgotchian.abcd.core.region.BlockRegion;
+import fr.jamgotchian.abcd.core.region.CaseRegion;
 import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
 import fr.jamgotchian.abcd.core.region.IfThenRegion;
 import fr.jamgotchian.abcd.core.region.LeafRegion;
@@ -40,6 +44,7 @@ import fr.jamgotchian.abcd.core.region.LoopSubRegion;
 import fr.jamgotchian.abcd.core.region.LoopType;
 import fr.jamgotchian.abcd.core.region.LogicalRegion;
 import fr.jamgotchian.abcd.core.region.LogicalType;
+import fr.jamgotchian.abcd.core.region.SwitchCaseRegion;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -206,6 +211,25 @@ public class AbstractSyntaxTreeBuilder {
                         throw new AssertionError();
                 }
 
+                break;
+            }
+                
+            case SWITCH_CASE: {
+                SwitchCaseRegion switchCase = (SwitchCaseRegion) region;
+
+                buildAST(switchCase.getSwitchRegion(), blockStmt);
+                LookupOrTableSwitchStatement lookupOrTableSwitchStmt
+                        = (LookupOrTableSwitchStatement) blockStmt.getLast();
+                lookupOrTableSwitchStmt.remove();
+                
+                List<CaseStatement> cases = new ArrayList<CaseStatement>();
+                for (CaseRegion caseRegion : switchCase.getCaseRegions()) {
+                    BlockStatement caseBlockStmt = new BlockStatement();
+                    buildAST(caseRegion.getRegion(), caseBlockStmt);
+                    cases.add(new CaseStatement(caseRegion.getValue(), caseBlockStmt));
+                }
+                blockStmt.add(new SwitchCaseStatement(lookupOrTableSwitchStmt.getCondition(), cases));
+                
                 break;
             }
         }

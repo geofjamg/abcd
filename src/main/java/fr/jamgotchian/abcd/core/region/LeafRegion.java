@@ -22,7 +22,6 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
 
 /**
  *
@@ -75,7 +74,7 @@ public class LeafRegion implements Region {
         return Collections.singleton(block);
     }
 
-    public Set<Edge> getInternalEdges() {
+    public Collection<Edge> getInternalEdges() {
         return Collections.emptySet();
     }
 

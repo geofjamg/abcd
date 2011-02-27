@@ -115,4 +115,11 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
         return null;
     }
 
+    public Collection<Statement> visit(LookupOrTableSwitchStatement stmt, Void arg) {
+        return null;
+    }
+
+    public Collection<Statement> visit(SwitchCaseStatement stmt, Void arg) {
+        return null;
+    }
 }

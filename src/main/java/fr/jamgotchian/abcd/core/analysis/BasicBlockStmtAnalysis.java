@@ -48,6 +48,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.JumpIfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
@@ -583,7 +584,12 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     }
 
     public void visitLookupSwitchInsn(BasicBlock block, int index, LookupSwitchInsnNode node) {
-        throw new ABCDException("TODO");
+        List<Label> labels = new ArrayList<Label>();
+        for (LabelNode labelNode : (List<LabelNode>) node.labels) {
+            labels.add(block.getGraph().getLabelManager().getLabel(labelNode));
+        }
+        labels.add(block.getGraph().getLabelManager().getLabel(node.dflt));
+        addStmt(block, new LookupOrTableSwitchStatement(stack.pop(), labels));
     }
 
     public void visitMethodInsn(BasicBlock block, int index, MethodInsnNode node) {
@@ -632,7 +638,12 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     }
 
     public void visitTableSwitchInsn(BasicBlock block, int index, TableSwitchInsnNode node) {
-        throw new ABCDException("TODO");
+        List<Label> labels = new ArrayList<Label>();
+        for (LabelNode labelNode : (List<LabelNode>) node.labels) {
+            labels.add(block.getGraph().getLabelManager().getLabel(labelNode));
+        }
+        labels.add(block.getGraph().getLabelManager().getLabel(node.dflt));
+        addStmt(block, new LookupOrTableSwitchStatement(stack.pop(), labels));
     }
 
     public void visitTypeInsnInsn(BasicBlock block, int index, TypeInsnNode node) {

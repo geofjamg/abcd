@@ -34,9 +34,11 @@ import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.JumpIfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
+import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchStatement.CatchStatement;
@@ -228,4 +230,11 @@ public class ConditionalExpressionRefactoring implements StatementVisitor<Object
         return null;
     }
 
+    public Object visit(LookupOrTableSwitchStatement stmt, Object arg) {
+        return null;
+    }
+
+    public Object visit(SwitchCaseStatement stmt, Object arg) {
+        return null;
+    }
 }

@@ -28,13 +28,17 @@ import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.JumpIfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
+import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchStatement.CatchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
+import fr.jamgotchian.abcd.core.common.Label;
 import java.util.Iterator;
 
 public class JavaStatementWriter implements StatementVisitor<Void, Void> {
@@ -201,4 +205,39 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
         return null;
     }
 
+    public Void visit(LookupOrTableSwitchStatement stmt, Void arg) {
+        writer.writeKeyword("lookupOrTableSwitch").writeSpace();
+        stmt.getCondition().accept(exprVisitor, stmt.getBlock());
+        writer.writeSpace();
+        for (Iterator<Label> it = stmt.getLabels().iterator(); it.hasNext();) {
+            Label label = it.next();
+            writer.writeLabel(label);
+            if (it.hasNext()) {
+                writer.writeSpace();
+            }
+        }
+        writer.write(";");
+        return null;
+    }
+
+    public Void visit(SwitchCaseStatement stmt, Void arg) {
+        writer.writeKeyword("switch").writeSpace().write("(");
+        stmt.getCondition().accept(exprVisitor, stmt.getBlock());
+        writer.write(")").writeSpace().write("{").newLine();
+        writer.incrIndent();
+        for (CaseStatement _case : stmt.getCases()) {
+            Object value = _case.getValue();
+            if ("default".equals(value)) {
+                writer.writeKeyword("default");
+            } else {
+                writer.writeKeyword("case").writeSpace().write(_case.getValue());
+            }
+            writer.write(":").writeSpace();
+            _case.getBlockStmt().accept(this, arg);
+            writer.newLine();
+        }
+        writer.decrIndent();
+        writer.write("}");
+        return null;
+    }
 }

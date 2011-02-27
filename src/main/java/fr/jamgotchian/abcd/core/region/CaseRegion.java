@@ -17,36 +17,42 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import java.util.Collection;
-import java.util.Set;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Region {
+public class CaseRegion {
 
-    RegionName getName();
+    private final Region region;
     
-    RegionType getType();
+    private final Edge incomingEdge;
+    
+    private final Edge outgoingEdge;
+    
+    private final Object value;
 
-    String getTypeName();
-    
-    Region getEntryRegion();
-    
-    Region getExitRegionIfUnique();
+    CaseRegion(Region region, Edge incomingEdge, Edge outgoingEdge, Object value) {
+        this.region = region;
+        this.incomingEdge = incomingEdge;
+        this.outgoingEdge = outgoingEdge;
+        this.value = value;
+    }
 
-    BasicBlock getEntryBlock();
-    
-    BasicBlock getExitBlockIfUnique();
-    
-    Collection<Region> getInternalRegions();
+    public Region getRegion() {
+        return region;
+    }
 
-    Collection<BasicBlock> getInternalBlocks();
-    
-    Collection<Edge> getInternalEdges();
+    public Edge getIncomingEdge() {
+        return incomingEdge;
+    }
 
-    Edge createSyntheticEdge(Collection<Edge> edges);
+    public Edge getOutgoingEdge() {
+        return outgoingEdge;
+    }
+
+    public Object getValue() {
+        return value;
+    }
 }

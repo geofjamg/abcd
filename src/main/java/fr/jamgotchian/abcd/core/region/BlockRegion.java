@@ -44,8 +44,8 @@ public class BlockRegion extends AbstractRegion {
         if (regions.size() < 2) {
             throw new ABCDException("regions < 2");
         }
-        this.internalEdges = Collections.unmodifiableSet(internalEdges);
-        this.regions = Collections.unmodifiableList(regions);
+        this.internalEdges = internalEdges;
+        this.regions = regions;
     }
     
     public RegionType getType() {
@@ -61,14 +61,14 @@ public class BlockRegion extends AbstractRegion {
     }
 
     public List<Region> getRegions() {
-        return regions;
+        return Collections.unmodifiableList(regions);
     }
 
     public Collection<Region> getInternalRegions() {
-        return regions;
+        return Collections.unmodifiableList(regions);
     }
 
-    public Set<Edge> getInternalEdges() {
-        return internalEdges;
+    public Collection<Edge> getInternalEdges() {
+        return Collections.unmodifiableSet(internalEdges);
     }
 }

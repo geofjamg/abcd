@@ -59,9 +59,4 @@ public class ArrayCreationExpression extends AbstractExpression {
     public <R, A> R accept(ExpressionVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
-    
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "(" + typeName + ")";
-    }
 }

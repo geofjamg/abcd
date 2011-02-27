@@ -22,7 +22,6 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Set;
 
 /**
  *
@@ -105,7 +104,7 @@ public class IfThenElseRegion extends AbstractRegion {
         return Arrays.asList(ifRegion, thenRegion, elseRegion);
     }
 
-    public Set<Edge> getInternalEdges() {
+    public Collection<Edge> getInternalEdges() {
         return Sets.newHashSet(beforeThenEdge, afterThenEdge, beforeElseEdge, 
                                afterElseEdge);
     }

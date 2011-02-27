@@ -58,6 +58,7 @@ public class StructuralAnalysis {
                                                                  new BlockRecognizer(),
                                                                  new LogicalRecognizer(),
                                                                  new IfThenElseRecognizer(),
+                                                                 new SwitchCaseRecognizer(),
                                                                  /* then, cyclic regions */
                                                                  new LoopRecognizer()));
     }
@@ -72,29 +73,12 @@ public class StructuralAnalysis {
         this.graph = graph;
     }
 
-    private void removeRegion(Region region) {
-        assert regionGraph.getPredecessorCountOf(region) == 1;
-
-        logger.log(Level.FINER, "Remove region {0}", region);
-
-        Edge incomingEdge = regionGraph.getFirstIncomingEdgesOf(region);
-        Region pred = regionGraph.getEdgeSource(incomingEdge);
-        regionGraph.removeEdge(incomingEdge);
-        Collection<Edge> outgoingEdges = regionGraph.getOutgoingEdgesOf(region);
-        for (Edge e : new HashSet<Edge>(outgoingEdges)) {
-            Region succ = regionGraph.getEdgeTarget(e);
-            regionGraph.removeEdge(e);
-            regionGraph.addEdge(pred, succ, e);
-        }
-        regionGraph.removeVertex(region);
-    }
-
     private void collapseRegion(Region structuredRegion) {
         logger.log(Level.FINER, "---------- New region {0} ----------", structuredRegion);
         logger.log(Level.FINER, "Type : {0}", structuredRegion.getTypeName());
 
         Collection<Region> internalRegions = structuredRegion.getInternalRegions();
-        Set<Edge> internalEdges = structuredRegion.getInternalEdges();
+        Collection<Edge> internalEdges = structuredRegion.getInternalEdges();
 
         logger.log(Level.FINER, "Internal regions : {0}", internalRegions.toString());
         logger.log(Level.FINER, "Internal edges : {0}", regionGraph.toString(internalEdges));

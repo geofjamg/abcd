@@ -57,7 +57,7 @@ public class LoopRegion extends AbstractRegion {
         this.loopType = loopType;
         this.backEdge = backEdge;
         this.loopTailRegion = loopTailRegion;
-        this.subRegions = Collections.unmodifiableList(subRegions);
+        this.subRegions = subRegions;
     }
 
     public RegionType getType() {
@@ -101,7 +101,7 @@ public class LoopRegion extends AbstractRegion {
         return regions;
     }
 
-    public Set<Edge> getInternalEdges() {
+    public Collection<Edge> getInternalEdges() {
         Set<Edge> edges = new HashSet<Edge>();
         edges.add(backEdge);
         for (LoopSubRegion b : subRegions) {

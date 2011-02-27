@@ -605,6 +605,9 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             if (e.isExceptional()) {
                 writer.append(", style=dotted");
             }
+            if (e.getValue() != null) {
+                writer.append(", label=").append(e.getValue().toString());                
+            }
             writer.append("];\n");
         }
         for (BasicBlock block : graph.getVertices()) {

@@ -498,32 +498,32 @@ public class Test {
         c();
     }
 
-//    public void testSwitch(int a) {
-//        switch (a) {
-//            case 0:
-//                a();
-//                break;
-//            case 1:
-//                b();
-//                break;
-//            default:
-//                c();
-//                break;
-//        }
-//    }
-//
-//    public void testSwitchReturn(int a) {
-//        switch (a) {
-//            case 0:
-//                a();
-//                return;
-//            case 1:
-//                b();
-//                return;
-//            default:
-//                c();
-//        }
-//    }
+    public void testSwitch(int a) {
+        switch (a) {
+            case 0:
+                a();
+                break;
+            case 1:
+                b();
+                break;
+            default:
+                c();
+                break;
+        }
+    }
+
+    public void testSwitchReturn(int a) {
+        switch (a) {
+            case 0:
+                a();
+                return;
+            case 1:
+                b();
+                return;
+            default:
+                c();
+        }
+    }
 
     public void testIntArrayAlloc() {
         int[] a = new int[3];

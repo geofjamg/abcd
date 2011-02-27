@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -51,6 +52,15 @@ public class TryCatchStatement extends AbstractStatement {
     private final Collection<CatchStatement> catchs;
 
     public TryCatchStatement(BlockStatement _try, Collection<CatchStatement> catchs) {
+        if (_try == null) {
+            throw new ABCDException("_try == null");
+        }
+        if (catchs == null) {
+            throw new ABCDException("catchs == null");
+        }
+        if (catchs.isEmpty()) {
+            throw new ABCDException("catchs.isEmpty()");
+        }
         this._try = _try;
         this.catchs = catchs;
     }
