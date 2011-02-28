@@ -70,7 +70,7 @@ import org.objectweb.asm.tree.MethodNode;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Decompiler {
+public class ABCDContext {
 
     public static final boolean DEBUG = false;
 
@@ -78,7 +78,7 @@ public class Decompiler {
 
     static {
         // root logger configuration
-        Logger rootLogger = Logger.getLogger(Decompiler.class.getPackage().getName());
+        Logger rootLogger = Logger.getLogger(ABCDContext.class.getPackage().getName());
         ConsoleHandler handler = new ConsoleHandler();
         handler.setFormatter(new SimplestFormatter());
         handler.setLevel(Level.FINEST);
@@ -86,15 +86,23 @@ public class Decompiler {
         rootLogger.addHandler(handler);
         rootLogger.setUseParentHandlers(false);
 
-        logger = Logger.getLogger(Decompiler.class.getName());
+        logger = Logger.getLogger(ABCDContext.class.getName());
         logger.setLevel(Level.FINER);
     }
-
+    
+    public static void decompile(InputStream is, OutputStream os) throws IOException {
+        new ABCDContext(is).decompile(os);
+    }
+    
+    public static void analyse(InputStream is, File outputDir) throws IOException {
+        new ABCDContext(is).analyse(outputDir);
+    }
+    
     private final ClassNode cn;
 
     private final Map<String, MethodNode> methodNodes;
 
-    public Decompiler(InputStream is) throws IOException {
+    public ABCDContext(InputStream is) throws IOException {
         cn = new ClassNode();
         ClassReader cr = new ClassReader(is);
         cr.accept(cn, 0);
@@ -225,7 +233,13 @@ public class Decompiler {
         }
     }
 
-    public void analyse(File dir) throws IOException {
+    public void analyse(File outputDir) throws IOException {
+        if (!outputDir.exists())
+            throw new ABCDException(outputDir + " does not exist");
+
+        if (!outputDir.isDirectory())
+            throw new ABCDException(outputDir + " is not a directory");
+
         for (Map.Entry<String, MethodNode> entry : methodNodes.entrySet()) {
             String methodSignature = entry.getKey();
             MethodNode mn = entry.getValue();
@@ -237,15 +251,15 @@ public class Decompiler {
                 logger.log(Level.FINE, "////////// Analyse Control flow of {0} //////////", methodSignature);
                 graph.analyse();
 
-                Writer writer = new FileWriter(dir.getPath() + "/" + methodSignature + "_CFG.dot");
+                Writer writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_CFG.dot");
                 graph.writeDOT(writer);
                 writer.close();
                 
-                writer = new FileWriter(dir.getPath() + "/" + methodSignature + "_DT.dot");
+                writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_DT.dot");
                 graph.getDominatorInfo().getDominatorsTree().writeDOT("DT", writer);
                 writer.close();
             
-                writer = new FileWriter(dir.getPath() + "/" + methodSignature + "_PDT.dot");
+                writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_PDT.dot");
                 graph.getDominatorInfo().getPostDominatorsTree().writeDOT("PDT", writer);
                 writer.close();
             } catch (ABCDException exc) {
@@ -273,22 +287,15 @@ public class Decompiler {
                 InputStream is = new FileInputStream(classFileName);
                 OutputStream os = new FileOutputStream(javaFileName);
 
-                Decompiler decompiler = new Decompiler(is);
-                decompiler.decompile(os);
+                ABCDContext.decompile(is, os);
             } catch (IOException exc) {
                 logger.log(Level.SEVERE, exc.toString(), exc);
             }            
         } else if ("-analyse".equals(cmd)) {
-            String directoryName = args[2];
-            File dir = new File(directoryName);
-            if (!dir.exists())
-                throw new ABCDException(directoryName + " does not exist");
-            if (!dir.isDirectory())
-                throw new ABCDException(directoryName + " is not a directory");
+            File outputDir = new File(args[2]);
             try {
                 InputStream is = new FileInputStream(classFileName);
-                Decompiler decompiler = new Decompiler(is);
-                decompiler.analyse(dir);
+                ABCDContext.analyse(is, outputDir);
             } catch (IOException exc) {
                 logger.log(Level.SEVERE, exc.toString(), exc);
             } 

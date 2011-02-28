@@ -19,7 +19,7 @@ package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-import fr.jamgotchian.abcd.core.Decompiler;
+import fr.jamgotchian.abcd.core.ABCDContext;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockTestImpl;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
@@ -45,7 +45,7 @@ public class StructuralAnalysisTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         // root logger configuration
-        Logger rootLogger = Logger.getLogger(Decompiler.class.getPackage().getName());
+        Logger rootLogger = Logger.getLogger(ABCDContext.class.getPackage().getName());
         ConsoleHandler handler = new ConsoleHandler();
         handler.setFormatter(new SimplestFormatter());
         handler.setLevel(Level.FINER);
