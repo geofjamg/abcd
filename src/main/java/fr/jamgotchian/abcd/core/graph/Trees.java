@@ -17,6 +17,8 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -91,6 +93,10 @@ public class Trees {
 
         public Iterator<N> iterator() {
             return delegate.iterator();
+        }
+
+        public void writeDOT(String name, Writer writer) throws IOException {
+            delegate.writeDOT(name, writer);
         }
     }
 

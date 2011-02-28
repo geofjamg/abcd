@@ -524,7 +524,32 @@ public class Test {
                 c();
         }
     }
+   
+    public void testFallthroughSwitch(int a) {
+        switch (a) {
+            case 0:
+            case 1:
+                b();
+                break;
+            default:
+                c();
+                break;
+        }
+    }
 
+    public void testFallthroughSwitch2(int a) {
+        switch (a + 3) {
+            case 0:
+                a();
+            case 1:
+                b();
+                break;
+            default:
+                c();
+                break;
+        }
+    }
+   
     public void testIntArrayAlloc() {
         int[] a = new int[3];
     }

@@ -17,6 +17,8 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -51,4 +53,6 @@ public interface Tree<N, E> extends Iterable<N> {
     Tree<N, E> getSubTree(N node);
 
     Iterator<N> iterator(N node);
+
+    void writeDOT(String name, Writer writer) throws IOException;
 }

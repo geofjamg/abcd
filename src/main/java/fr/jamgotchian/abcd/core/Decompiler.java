@@ -52,7 +52,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,49 +90,9 @@ public class Decompiler {
         logger.setLevel(Level.FINER);
     }
 
-    public static class MethodInfo {
-
-        private final String methodSignature;
-
-        private ControlFlowGraph controlFlowGraph;
-
-        private DirectedGraph<Region, Edge> regionGraph;
-
-        public MethodInfo(String methodSignature) {
-            this.methodSignature =  methodSignature;
-        }
-
-        public String getMethodSignature() {
-            return methodSignature;
-        }
-
-        public ControlFlowGraph getControlFlowGraph() {
-            return controlFlowGraph;
-        }
-
-        public void setControlFlowGraph(ControlFlowGraph controlFlowGraph) {
-            this.controlFlowGraph = controlFlowGraph;
-        }
-
-        public DirectedGraph<Region, Edge> getRegionGraph() {
-            return regionGraph;
-        }
-
-        public void setRegionGraph(DirectedGraph<Region, Edge> regionGraph) {
-            this.regionGraph = regionGraph;
-        }
-
-        @Override
-        public String toString() {
-            return methodSignature;
-        }
-    }
-
     private final ClassNode cn;
 
     private final Map<String, MethodNode> methodNodes;
-
-    private final Map<String, MethodInfo> methodInfos;
 
     public Decompiler(InputStream is) throws IOException {
         cn = new ClassNode();
@@ -145,42 +104,12 @@ public class Decompiler {
             String methodSignature = ASMUtil.getMethodSignature(cn, mn);
             methodNodes.put(methodSignature, mn);
         }
-
-        methodInfos = new IdentityHashMap<String, MethodInfo>();
     }
 
     public Set<String> getMethodSignatures() {
         return methodNodes.keySet();
     }
-
-    public MethodInfo getMethodInfo(String methodSignature) throws ABCDException {
-        MethodNode mn = methodNodes.get(methodSignature);
-        if (mn == null) {
-            throw new ABCDException("Method " + methodSignature + " not found");
-        }
-
-        MethodInfo methodInfo = methodInfos.get(methodSignature);
-        if (methodInfo == null) {
-            methodInfo = new MethodInfo(methodSignature);
-            methodInfos.put(methodSignature, methodInfo);
-
-            logger.log(Level.FINE, "////////// Build Control flow graph of {0} //////////", methodSignature);
-            ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
-            methodInfo.setControlFlowGraph(graph);
-
-            logger.log(Level.FINE, "////////// Analyse Control flow of {0} //////////", methodSignature);
-            graph.analyse();
-
-            logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
-            new ControlFlowGraphStmtAnalysis().analyse(graph);
-
-            logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
-            DirectedGraph<Region, Edge> regionGraph = new StructuralAnalysis(graph).analyse();
-            methodInfo.setRegionGraph(regionGraph);
-        }
-        return methodInfo;
-    }
-
+    
     public void decompile(OutputStream os) throws IOException {
         String name = cn.name.replace('/', '.');
 
@@ -253,14 +182,24 @@ public class Decompiler {
             _class.addMethod(method);
 
             try {
-                MethodInfo methodInfo = getMethodInfo(methodSignature);
-                if (methodInfo.getRegionGraph().getVertexCount() != 1) {
+                logger.log(Level.FINE, "////////// Build Control flow graph of {0} //////////", methodSignature);
+                ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
+
+                logger.log(Level.FINE, "////////// Analyse Control flow of {0} //////////", methodSignature);
+                graph.analyse();
+
+                logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
+                new ControlFlowGraphStmtAnalysis().analyse(graph);
+
+                logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
+                DirectedGraph<Region, Edge> regionGraph = new StructuralAnalysis(graph).analyse();
+                if (regionGraph.getVertexCount() != 1) {
                     throw new ABCDException("Fail to recognize structure");
                 }
 
                 logger.log(Level.FINE, "////////// Build AST of {0} //////////", methodSignature);
 
-                Region rootRegion = methodInfo.getRegionGraph().getVertices().iterator().next();
+                Region rootRegion = regionGraph.getVertices().iterator().next();
                 new AbstractSyntaxTreeBuilder().build(rootRegion, method.getBody());
 
                 method.getBody().accept(new ForLoopRefactoring(), null);
@@ -286,6 +225,35 @@ public class Decompiler {
         }
     }
 
+    public void analyse(File dir) throws IOException {
+        for (Map.Entry<String, MethodNode> entry : methodNodes.entrySet()) {
+            String methodSignature = entry.getKey();
+            MethodNode mn = entry.getValue();
+
+            try {
+                logger.log(Level.FINE, "////////// Build Control flow graph of {0} //////////", methodSignature);
+                ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
+
+                logger.log(Level.FINE, "////////// Analyse Control flow of {0} //////////", methodSignature);
+                graph.analyse();
+
+                Writer writer = new FileWriter(dir.getPath() + "/" + methodSignature + "_CFG.dot");
+                graph.writeDOT(writer);
+                writer.close();
+                
+                writer = new FileWriter(dir.getPath() + "/" + methodSignature + "_DT.dot");
+                graph.getDominatorInfo().getDominatorsTree().writeDOT("DT", writer);
+                writer.close();
+            
+                writer = new FileWriter(dir.getPath() + "/" + methodSignature + "_PDT.dot");
+                graph.getDominatorInfo().getPostDominatorsTree().writeDOT("PDT", writer);
+                writer.close();
+            } catch (ABCDException exc) {
+                logger.log(Level.SEVERE, exc.toString(), exc);
+            }
+        }
+    }
+    
     private static void printUsage() {
         System.out.println("Usage:");
         System.out.println("    -decompile <class file> <output java file>");
@@ -320,13 +288,7 @@ public class Decompiler {
             try {
                 InputStream is = new FileInputStream(classFileName);
                 Decompiler decompiler = new Decompiler(is);
-                for (String methodSignature : decompiler.getMethodSignatures()) {
-                    MethodInfo info = decompiler.getMethodInfo(methodSignature);
-                    ControlFlowGraph cfg = info.getControlFlowGraph();
-                    Writer writer = new FileWriter(dir.getPath() + "/" + methodSignature + "_CFG.dot");
-                    cfg.writeDOT(writer);
-                    writer.close();
-                }
+                decompiler.analyse(dir);
             } catch (IOException exc) {
                 logger.log(Level.SEVERE, exc.toString(), exc);
             } 

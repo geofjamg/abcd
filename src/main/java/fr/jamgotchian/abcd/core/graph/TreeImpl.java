@@ -18,6 +18,8 @@
 package fr.jamgotchian.abcd.core.graph;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -240,4 +242,16 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     public Iterator<N> iterator() {
         return iterator(root);
     }
+    
+    public void writeDOT(String name, Writer writer) throws IOException {
+        writer.append("digraph ").append(name).append(" {\n");
+        for (E edge : getEdges()) {
+            N source = getEdgeSource(edge);
+            N target = getEdgeTarget(edge);
+            writer.append("  \"").append(source.toString()).append("\" -> \"")
+                    .append(target.toString()).append("\"\n");
+        }
+        writer.append("}");
+    }
+
 }
