@@ -52,7 +52,7 @@ public class StructuralAnalysis {
     private static final List<RegionRecognizer> RECOGNIZERS;
 
     static {
-        logger.setLevel(Level.FINEST);
+        logger.setLevel(Level.FINER);
 
         RECOGNIZERS = Collections.unmodifiableList(Arrays.asList(/* first, acyclic regions */
                                                                  new BlockRecognizer(),
@@ -74,14 +74,15 @@ public class StructuralAnalysis {
     }
 
     private void collapseRegion(Region structuredRegion) {
-        logger.log(Level.FINER, "---------- New region {0} ----------", structuredRegion);
-        logger.log(Level.FINER, "Type : {0}", structuredRegion.getTypeName());
-
         Collection<Region> internalRegions = structuredRegion.getInternalRegions();
+
+        logger.log(Level.FINER, "Find {0} region : {1} => {2}", 
+                new Object[] {structuredRegion.getTypeName(), 
+                    internalRegions.toString(), structuredRegion});
+
         Collection<Edge> internalEdges = structuredRegion.getInternalEdges();
 
-        logger.log(Level.FINER, "Internal regions : {0}", internalRegions.toString());
-        logger.log(Level.FINER, "Internal edges : {0}", regionGraph.toString(internalEdges));
+        logger.log(Level.FINEST, "  Internal edges : {0}", regionGraph.toString(internalEdges));
 
         Set<Region> externalPredecessors = new HashSet<Region>();
         Multimap<Region, Edge> externalSuccessors = HashMultimap.create();
@@ -123,10 +124,10 @@ public class StructuralAnalysis {
             }
         }
 
-        logger.log(Level.FINEST, "External incoming edges : {0}", regionGraph.toString(externalIncomingEdges));
-        logger.log(Level.FINEST, "External outgoing edges : {0}", regionGraph.toString(externalOutgoingEdges));
-        logger.log(Level.FINEST, "External predecessors : {0}", externalPredecessors);
-        logger.log(Level.FINEST, "External successors : {0}", externalSuccessors.keySet());
+        logger.log(Level.FINEST, "  External incoming edges : {0}", regionGraph.toString(externalIncomingEdges));
+        logger.log(Level.FINEST, "  External outgoing edges : {0}", regionGraph.toString(externalOutgoingEdges));
+        logger.log(Level.FINEST, "  External predecessors : {0}", externalPredecessors);
+        logger.log(Level.FINEST, "  External successors : {0}", externalSuccessors.keySet());
 
         regionGraph.addVertex(structuredRegion);
 
@@ -162,7 +163,7 @@ public class StructuralAnalysis {
         }
 
         if (structuredRegion.getEntryRegion().equals(entryRegion)) {
-            logger.log(Level.FINER, "New entry region : {0}", structuredRegion);
+            logger.log(Level.FINEST, "  New entry region : {0}", structuredRegion);
             entryRegion = structuredRegion;
         }
     }
