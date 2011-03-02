@@ -32,14 +32,14 @@ class LoopRecognizer implements RegionRecognizer {
 
     public Region recognize(DirectedGraph<Region, Edge> graph, Region loopHeadRegion) {
         Region structuredRegion = null;
-        if (graph.getPredecessorCountOf(loopHeadRegion) == 2
-                && (graph.getSuccessorCountOf(loopHeadRegion) == 1
-                || graph.getSuccessorCountOf(loopHeadRegion) == 2)) {
+        if (Regions.getPredecessorCountOf(graph, loopHeadRegion, false) == 2
+                && (Regions.getSuccessorCountOf(graph, loopHeadRegion, false) == 1
+                || Regions.getSuccessorCountOf(graph, loopHeadRegion, false) == 2)) {
 
-            Iterator<Edge> it = graph.getIncomingEdgesOf(loopHeadRegion).iterator();
+            Iterator<Edge> it = Regions.getIncomingEdgesOf(graph, loopHeadRegion, false).iterator();
             Edge incomingEdge1 = it.next();
             Edge incomingEdge2 = it.next();
-            it = graph.getOutgoingEdgesOf(loopHeadRegion).iterator();
+            it = Regions.getOutgoingEdgesOf(graph, loopHeadRegion, false).iterator();
             Edge outgoingEdge1 = it.next();
             Edge outgoingEdge2 = null;
             if (it.hasNext()) {
@@ -77,18 +77,18 @@ class LoopRecognizer implements RegionRecognizer {
             if (loopBackEdge != null) {
                 Region loopTailRegion = graph.getEdgeSource(loopBackEdge);
 
-                if (graph.getPredecessorCountOf(loopTailRegion) == 1) {
+                if (Regions.getPredecessorCountOf(graph, loopTailRegion, false) == 1) {
 
                     subRegions = new ArrayList<LoopSubRegion>();
 
                     Region loopRegion = null;
-                    for (loopRegion = graph.getFirstPredecessorsOf(loopTailRegion);
+                    for (loopRegion = Regions.getFirstPredecessorOf(graph, loopTailRegion, false);
                             !loopRegion.equals(loopHeadRegion);
-                            loopRegion = graph.getFirstPredecessorsOf(loopRegion)) {
+                            loopRegion = Regions.getFirstPredecessorOf(graph, loopRegion, false)) {
 
-                        if (graph.getPredecessorCountOf(loopRegion) == 1
-                                && graph.getSuccessorCountOf(loopRegion) == 2) {
-                            Iterator<Edge> itE = graph.getOutgoingEdgesOf(loopRegion).iterator();
+                        if (Regions.getPredecessorCountOf(graph, loopRegion, false) == 1
+                                && Regions.getSuccessorCountOf(graph, loopRegion, false) == 2) {
+                            Iterator<Edge> itE = Regions.getOutgoingEdgesOf(graph, loopRegion, false).iterator();
                             Edge maybeExitEdge1 = itE.next();
                             Edge maybeExitEdge2 = itE.next();
 
@@ -112,7 +112,7 @@ class LoopRecognizer implements RegionRecognizer {
                     }
 
                     if (loopRegion.equals(loopHeadRegion)) {
-                        Iterator<Edge> itE = graph.getOutgoingEdgesOf(loopRegion).iterator();
+                        Iterator<Edge> itE = Regions.getOutgoingEdgesOf(graph, loopRegion, false).iterator();
                         Edge maybeExitEdge1 = itE.next();
                         Edge maybeExitEdge2 = itE.next();
 
@@ -133,7 +133,7 @@ class LoopRecognizer implements RegionRecognizer {
                 }
 
                 if (subRegions != null) {
-                    LoopType loopType = graph.getSuccessorCountOf(loopTailRegion) == 1
+                    LoopType loopType = Regions.getSuccessorCountOf(graph, loopTailRegion, false) == 1
                             ? LoopType.WHILE : LoopType.DO_WHILE;
                     structuredRegion = new LoopRegion(loopType, loopBackEdge, loopTailRegion, subRegions);
                 }

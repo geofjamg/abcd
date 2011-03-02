@@ -18,7 +18,6 @@
 package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ast.Class;
@@ -38,7 +37,6 @@ import fr.jamgotchian.abcd.core.analysis.ConditionalExpressionRefactoring;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactoring;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.SimplestFormatter;
 import java.io.BufferedOutputStream;
@@ -200,14 +198,12 @@ public class ABCDContext {
                 new ControlFlowGraphStmtAnalysis().analyse(graph);
 
                 logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
-                DirectedGraph<Region, Edge> regionGraph = new StructuralAnalysis(graph).analyse();
-                if (regionGraph.getVertexCount() != 1) {
+                Region rootRegion = new StructuralAnalysis(graph).analyse();
+                if (rootRegion == null) {
                     throw new ABCDException("Fail to recognize structure");
                 }
 
                 logger.log(Level.FINE, "////////// Build AST of {0} //////////", methodSignature);
-
-                Region rootRegion = regionGraph.getVertices().iterator().next();
                 new AbstractSyntaxTreeBuilder().build(rootRegion, method.getBody());
 
                 method.getBody().accept(new ForLoopRefactoring(), null);

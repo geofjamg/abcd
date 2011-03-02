@@ -88,20 +88,20 @@ public class DirectedGraphs {
             return delegate.getOutgoingEdgesOf(vertex);
         }
 
-        public V getFirstSuccessorsOf(V vertex) {
-            return delegate.getFirstSuccessorsOf(vertex);
+        public V getFirstSuccessorOf(V vertex) {
+            return delegate.getFirstSuccessorOf(vertex);
         }
 
-        public V getFirstPredecessorsOf(V vertex) {
-            return delegate.getFirstPredecessorsOf(vertex);
+        public V getFirstPredecessorOf(V vertex) {
+            return delegate.getFirstPredecessorOf(vertex);
         }
 
-        public E getFirstOutgoingEdgesOf(V vertex) {
-            return delegate.getFirstOutgoingEdgesOf(vertex);
+        public E getFirstOutgoingEdgeOf(V vertex) {
+            return delegate.getFirstOutgoingEdgeOf(vertex);
         }
 
-        public E getFirstIncomingEdgesOf(V vertex) {
-            return delegate.getFirstIncomingEdgesOf(vertex);
+        public E getFirstIncomingEdgeOf(V vertex) {
+            return delegate.getFirstIncomingEdgeOf(vertex);
         }
 
         public Collection<E> getIncomingEdgesOf(V vertex) {

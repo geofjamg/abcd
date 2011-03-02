@@ -183,7 +183,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return neighbors.getSuccessors().values();
     }
 
-    public E getFirstOutgoingEdgesOf(V vertex) {
+    public E getFirstOutgoingEdgeOf(V vertex) {
         Iterator<E> it = getOutgoingEdgesOf(vertex).iterator();
         return it.hasNext() ? it.next() : null;
     }
@@ -199,7 +199,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return neighbors.getPredecessors().values();
     }
 
-    public E getFirstIncomingEdgesOf(V vertex) {
+    public E getFirstIncomingEdgeOf(V vertex) {
         Iterator<E> it = getIncomingEdgesOf(vertex).iterator();
         return it.hasNext() ? it.next() : null;
     }
@@ -215,7 +215,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return neighbors.getSuccessors().keySet();
     }
 
-    public V getFirstSuccessorsOf(V vertex) {
+    public V getFirstSuccessorOf(V vertex) {
         Iterator<V> it = getSuccessorsOf(vertex).iterator();
         return it.hasNext() ? it.next() : null;
     }
@@ -235,7 +235,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return neighbors.getPredecessors().keySet();
     }
 
-    public V getFirstPredecessorsOf(V vertex) {
+    public V getFirstPredecessorOf(V vertex) {
         Iterator<V> it = getPredecessorsOf(vertex).iterator();
         return it.hasNext() ? it.next() : null;
     }

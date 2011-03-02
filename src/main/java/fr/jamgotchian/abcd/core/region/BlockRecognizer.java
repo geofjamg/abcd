@@ -42,13 +42,10 @@ class BlockRecognizer implements RegionRecognizer {
         //   Z    region Z
         //  ...    outgoingExternalEdges
         //
-        if (graph.getSuccessorCountOf(regionA) == 1) {
+        if (Regions.getSuccessorCountOf(graph, regionA, false) == 1) {
             List<Region> internalRegions = new ArrayList<Region>();
             Region r = null;
-            for (r = regionA;
-                    graph.getSuccessorCountOf(r) == 1
-                    && graph.getPredecessorCountOf(graph.getFirstSuccessorsOf(r)) == 1;
-                    r = graph.getFirstSuccessorsOf(r)) {
+            for (r = regionA; isBlock(graph, r); r = Regions.getFirstSuccessorOf(graph, r, false)) {
                 internalRegions.add(r);
             }
             internalRegions.add(r);
@@ -61,5 +58,16 @@ class BlockRecognizer implements RegionRecognizer {
             }
         }
         return structuredRegion;
+    }
+    
+    private boolean isBlock(DirectedGraph<Region, Edge> graph, Region regionA) {
+        if (Regions.getSuccessorCountOf(graph, regionA, false) != 1) {
+            return false;
+        }
+        Region regionB = Regions.getFirstSuccessorOf(graph, regionA, false);
+        if (Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
+            return false;
+        }
+        return true;
     }
 }

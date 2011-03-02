@@ -50,25 +50,25 @@ public class SwitchCaseRecognizer implements RegionRecognizer {
         if (blockA.getType() == null || blockA.getType() != BasicBlockType.SWITCH) {
             return null;
         }
-        Collection<Region> regionBi = graph.getSuccessorsOf(regionA);
+        Collection<Region> regionBi = Regions.getSuccessorsOf(graph, regionA, false);
         if (regionBi.isEmpty()) {
             return null;
         }
         Set<Region> regionCi = new HashSet<Region>();
         for (Region regionB : regionBi) {
-            if (graph.getSuccessorCountOf(regionB) != 1 
-                    || graph.getPredecessorCountOf(regionB) != 1) {
+            if (Regions.getSuccessorCountOf(graph, regionB, false) != 1 
+                    || Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
                 return null;
             }
-            regionCi.add(graph.getFirstSuccessorsOf(regionB));
+            regionCi.add(Regions.getFirstSuccessorOf(graph, regionB, false));
         }
         if (regionCi.size() != 1) {
             return null;
         } 
         Map<Object, CaseRegion> caseRegions = new HashMap<Object, CaseRegion>();
         for (Region regionB : regionBi) {
-            Edge incomingEdge = graph.getFirstIncomingEdgesOf(regionB);
-            Edge outgoingEdge = graph.getFirstOutgoingEdgesOf(regionB);
+            Edge incomingEdge = Regions.getFirstIncomingEdgeOf(graph, regionB, false);
+            Edge outgoingEdge = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
             Object value = incomingEdge.getValue();
             caseRegions.put(value, new CaseRegion(regionB, incomingEdge, outgoingEdge, value));
         }

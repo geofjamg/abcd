@@ -180,16 +180,16 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return graph.getOutgoingEdgesOf(block);
     }
 
-    public Edge getFirstOutgoingEdgesOf(BasicBlock block) {
-        return graph.getFirstOutgoingEdgesOf(block);
+    public Edge getFirstOutgoingEdgeOf(BasicBlock block) {
+        return graph.getFirstOutgoingEdgeOf(block);
     }
 
     public Collection<Edge> getIncomingEdgesOf(BasicBlock block) {
         return graph.getIncomingEdgesOf(block);
     }
 
-    public Edge getFirstIncomingEdgesOf(BasicBlock block) {
-        return graph.getFirstIncomingEdgesOf(block);
+    public Edge getFirstIncomingEdgeOf(BasicBlock block) {
+        return graph.getFirstIncomingEdgeOf(block);
     }
 
     public Collection<BasicBlock> getPredecessorsOf(BasicBlock block) {
@@ -200,16 +200,16 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return graph.getPredecessorCountOf(block);
     }
 
-    public BasicBlock getFirstPredecessorsOf(BasicBlock block) {
-        return graph.getFirstPredecessorsOf(block);
+    public BasicBlock getFirstPredecessorOf(BasicBlock block) {
+        return graph.getFirstPredecessorOf(block);
     }
 
     public Collection<BasicBlock> getSuccessorsOf(BasicBlock block) {
         return graph.getSuccessorsOf(block);
     }
 
-    public BasicBlock getFirstSuccessorsOf(BasicBlock block) {
-        return graph.getFirstSuccessorsOf(block);
+    public BasicBlock getFirstSuccessorOf(BasicBlock block) {
+        return graph.getFirstSuccessorOf(block);
     }
 
     public int getSuccessorCountOf(BasicBlock block) {
@@ -562,30 +562,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             logger.log(Level.FINEST, "Exception handler : entryBlock={0}, handledBlocks={1}",
                     new Object[] {handlerEntry, handledBlocks});
         }
-    }
-
-    public <R> MutableDirectedGraph<R, Edge> createUnexceptionalCFG(RegionFactory<R> factory,
-                                                                    Map<BasicBlock, R> regions) {
-        Set<BasicBlock> visited = new HashSet<BasicBlock>();
-        for (ExceptionHandler handler : exceptionHandlers) {
-            visited.add(handler.getEntry());
-        }
-        List<BasicBlock> ucfgBlocks = new ArrayList<BasicBlock>();
-        graph.reversePostOrderDFS(entryBlock, visited, ucfgBlocks, null, false);
-        MutableDirectedGraph<R, Edge> ucfg = DirectedGraphs.newDirectedGraph();
-        for (BasicBlock block : ucfgBlocks) {
-            R r = factory.create(block);
-            ucfg.addVertex(r);
-            regions.put(block, r);
-        }
-        for (Edge edge : graph.getEdges()) {
-            BasicBlock source = graph.getEdgeSource(edge);
-            BasicBlock target = graph.getEdgeTarget(edge);
-            if (ucfgBlocks.contains(source) && ucfgBlocks.contains(target)) {
-                ucfg.addEdge(regions.get(source), regions.get(target), edge);
-            }
-        }
-        return ucfg;
     }
 
     public void writeDOT(Writer writer) throws IOException {

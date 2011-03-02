@@ -19,7 +19,6 @@ package fr.jamgotchian.abcd.core.controlflow;
 
 import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.common.LabelManager;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.util.Range;
 import java.io.IOException;
@@ -35,13 +34,6 @@ import org.objectweb.asm.tree.InsnList;
  */
 public interface ControlFlowGraph {
 
-    <R> MutableDirectedGraph<R, Edge> createUnexceptionalCFG(RegionFactory<R> factory,
-                                                             Map<BasicBlock, R> regions);
-
-    public static interface RegionFactory<R> {
-        R create(BasicBlock block);
-    }
-    
     void addBasicBlock(BasicBlock block);
 
     Edge addEdge(BasicBlock source, BasicBlock target);
@@ -80,13 +72,13 @@ public interface ControlFlowGraph {
 
     BasicBlock getExitBlock();
 
-    Edge getFirstIncomingEdgesOf(BasicBlock block);
+    Edge getFirstIncomingEdgeOf(BasicBlock block);
 
-    Edge getFirstOutgoingEdgesOf(BasicBlock block);
+    Edge getFirstOutgoingEdgeOf(BasicBlock block);
 
-    BasicBlock getFirstPredecessorsOf(BasicBlock block);
+    BasicBlock getFirstPredecessorOf(BasicBlock block);
 
-    BasicBlock getFirstSuccessorsOf(BasicBlock block);
+    BasicBlock getFirstSuccessorOf(BasicBlock block);
 
     Collection<Edge> getIncomingEdgesOf(BasicBlock block);
 

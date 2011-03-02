@@ -41,19 +41,19 @@ public interface DirectedGraph<V, E> {
     
     Collection<E> getIncomingEdgesOf(V vertex);
     
-    E getFirstIncomingEdgesOf(V vertex);
+    E getFirstIncomingEdgeOf(V vertex);
 
     Collection<E> getOutgoingEdgesOf(V vertex);
     
-    E getFirstOutgoingEdgesOf(V vertex);
+    E getFirstOutgoingEdgeOf(V vertex);
 
     Set<V> getPredecessorsOf(V vertex);
     
-    V getFirstPredecessorsOf(V vertex);
+    V getFirstPredecessorOf(V vertex);
 
     Set<V> getSuccessorsOf(V vertex);
     
-    V getFirstSuccessorsOf(V vertex);
+    V getFirstSuccessorOf(V vertex);
 
     Set<V> getVertices();
 

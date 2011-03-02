@@ -40,24 +40,24 @@ class IfThenElseRecognizer implements RegionRecognizer {
         // D_B    D_C  region D_B and D_C
         //    ...      outgoingExternalEdges
         //
-        if (graph.getSuccessorCountOf(regionA) == 2) {
-            Collection<Edge> outgoingEdges = graph.getOutgoingEdgesOf(regionA);
-            Collection<Region> successors = graph.getSuccessorsOf(regionA);
+        if (Regions.getSuccessorCountOf(graph, regionA, false) == 2) {
+            Collection<Edge> outgoingEdges = Regions.getOutgoingEdgesOf(graph, regionA, false);
             Iterator<Edge> itE = outgoingEdges.iterator();
             Edge edgeAB = itE.next();
             Edge edgeAC = itE.next();
             if (!edgeAB.isLoopExit() && !edgeAC.isLoopExit()) {
+                Collection<Region> successors = Regions.getSuccessorsOf(graph, regionA, false);
                 Iterator<Region> itR = successors.iterator();
                 Region regionB = itR.next();
                 Region regionC = itR.next();
 
                 Region regionD_B = null;
                 Region regionD_C = null;
-                itR = graph.getSuccessorsOf(regionB).iterator();
+                itR = Regions.getSuccessorsOf(graph, regionB, false).iterator();
                 if (itR.hasNext()) {
                     regionD_B = itR.next();
                 }
-                itR = graph.getSuccessorsOf(regionC).iterator();
+                itR = Regions.getSuccessorsOf(graph, regionC, false).iterator();
                 if (itR.hasNext()) {
                     regionD_C = itR.next();
                 }
@@ -72,19 +72,21 @@ class IfThenElseRecognizer implements RegionRecognizer {
                 //     D     region D
                 //    ...    outgoingExternalEdges
                 //
-                Edge edgeBD = graph.getFirstOutgoingEdgesOf(regionB);
-                Edge edgeCD = graph.getFirstOutgoingEdgesOf(regionC);
+                Edge edgeBD = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
+                Edge edgeCD = Regions.getFirstOutgoingEdgeOf(graph, regionC, false);
                 if (regionD_B != null && regionD_C != null && regionD_B.equals(regionD_C)) {
                     // if-then-else region
-                    if (graph.getPredecessorCountOf(regionB) == 1
-                            && graph.getPredecessorCountOf(regionC) == 1
-                            && graph.getSuccessorCountOf(regionB) == 1
-                            && graph.getSuccessorCountOf(regionC) == 1) {
+                    if (Regions.getPredecessorCountOf(graph, regionB, false) == 1
+                            && Regions.getPredecessorCountOf(graph, regionC, false) == 1
+                            && Regions.getSuccessorCountOf(graph, regionB, false) == 1
+                            && Regions.getSuccessorCountOf(graph, regionC, false) == 1) {
 
-                        if (Boolean.TRUE.equals(edgeAB.getValue()) && Boolean.FALSE.equals(edgeAC.getValue())) {
+                        if (Boolean.TRUE.equals(edgeAB.getValue()) 
+                                && Boolean.FALSE.equals(edgeAC.getValue())) {
                             structuredRegion = new IfThenElseRegion(edgeAB, edgeAC, edgeBD, edgeCD,
                                     regionA, regionB, regionC);
-                        } else if (Boolean.FALSE.equals(edgeAB.getValue()) && Boolean.TRUE.equals(edgeAC.getValue())) {
+                        } else if (Boolean.FALSE.equals(edgeAB.getValue()) 
+                                && Boolean.TRUE.equals(edgeAC.getValue())) {
                             structuredRegion = new IfThenElseRegion(edgeAC, edgeAB, edgeCD, edgeBD,
                                     regionA, regionC, regionB);
                         }
@@ -101,8 +103,8 @@ class IfThenElseRecognizer implements RegionRecognizer {
                     //     D     region D
                     //    ...    outgoingExternalEdges
                     //
-                    if (graph.getPredecessorCountOf(regionC) == 1
-                            && graph.getSuccessorCountOf(regionC) == 1) {
+                    if (Regions.getPredecessorCountOf(graph, regionC, false) == 1
+                            && Regions.getSuccessorCountOf(graph, regionC, false) == 1) {
                         if ((Boolean.TRUE.equals(edgeAB.getValue()) && Boolean.FALSE.equals(edgeAC.getValue()))
                                 || (Boolean.FALSE.equals(edgeAB.getValue()) && Boolean.TRUE.equals(edgeAC.getValue()))) {
                             boolean invertCondition = Boolean.TRUE.equals(edgeAB.getValue())
@@ -123,8 +125,8 @@ class IfThenElseRecognizer implements RegionRecognizer {
                     //    D_B    region D
                     //    ...    outgoingExternalEdges
                     //
-                    if (graph.getPredecessorCountOf(regionB) == 1
-                            && graph.getSuccessorCountOf(regionB) == 1) {
+                    if (Regions.getPredecessorCountOf(graph, regionB, false) == 1
+                            && Regions.getSuccessorCountOf(graph, regionB, false) == 1) {
                         if ((Boolean.TRUE.equals(edgeAB.getValue()) && Boolean.FALSE.equals(edgeAC.getValue()))
                                 || (Boolean.FALSE.equals(edgeAB.getValue()) && Boolean.TRUE.equals(edgeAC.getValue()))) {
                             boolean invertCondition = Boolean.TRUE.equals(edgeAC.getValue())

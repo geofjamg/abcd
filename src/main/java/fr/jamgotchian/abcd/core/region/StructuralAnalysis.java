@@ -23,7 +23,6 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import fr.jamgotchian.abcd.core.graph.MutableTree;
@@ -175,19 +174,21 @@ public class StructuralAnalysis {
         }
     }
 
-    public DirectedGraph<Region, Edge> analyse() {
+    public Region analyse() {
         // build initial region graph
-        Map<BasicBlock, Region> regions = new HashMap<BasicBlock, Region>();
-        regionGraph = graph.createUnexceptionalCFG(new ControlFlowGraph.RegionFactory<Region>() {
-            public Region create(BasicBlock block) {
-                return new LeafRegion(block);
-            }
-        }, regions);
-        Map<Region, Region> parents = new HashMap<Region, Region>();
-        for (Region region : regionGraph.getVertices()) {
-            parents.put(region, null);
+        Map<BasicBlock, Region> block2region = new HashMap<BasicBlock, Region>();
+        regionGraph = DirectedGraphs.newDirectedGraph();
+        for (BasicBlock block : graph.getBasicBlocks()) {
+            Region region = new LeafRegion(block);
+            block2region.put(block, region);
+            regionGraph.addVertex(region);
         }
-        entryRegion = regions.get(graph.getEntryBlock());
+        for (Edge edge : graph.getEdges()) {
+            BasicBlock source = graph.getEdgeSource(edge);
+            BasicBlock target = graph.getEdgeTarget(edge);
+            regionGraph.addEdge(block2region.get(source), block2region.get(target), edge);
+        }
+        entryRegion = block2region.get(graph.getEntryBlock());
 
         // reduce the region graph
         boolean failed = false;
@@ -215,14 +216,14 @@ public class StructuralAnalysis {
 //                    DirectedGraphs.toString(regionGraph, entryRegion));
         }
 
-        // build control tree
+        Region rootRegion = null;
         if (regionGraph.getVertices().size() == 1) {
-            Region rootRegion = regionGraph.getVertices().iterator().next();
+            rootRegion = regionGraph.getVertices().iterator().next();
+         
             MutableTree<Region, Edge> controlTree = Trees.newTree(rootRegion);
             buildControlTree(rootRegion, controlTree);
             logger.log(Level.FINEST, "Control tree :\n{0}", Trees.toString(controlTree));
         }
-        
-        return DirectedGraphs.unmodifiableDirectedGraph(regionGraph);
+        return rootRegion;
     }
 }

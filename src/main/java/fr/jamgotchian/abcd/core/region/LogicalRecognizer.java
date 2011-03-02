@@ -50,10 +50,10 @@ public class LogicalRecognizer implements RegionRecognizer {
         if (dataB.getStatementCount() != 1) {
             return null;
         }
-        if (graph.getSuccessorCountOf(regionB) != 2) {
+        if (Regions.getSuccessorCountOf(graph, regionB, false) != 2) {
             return null;
         }
-        Iterator<Edge> itE = graph.getOutgoingEdgesOf(regionB).iterator();
+        Iterator<Edge> itE = Regions.getOutgoingEdgesOf(graph, regionB, false).iterator();
         Edge e1 = itE.next();
         Edge e2 = itE.next();
         Edge trueEdgeB = null;
@@ -102,10 +102,10 @@ public class LogicalRecognizer implements RegionRecognizer {
         if (dataB.getStatementCount() != 1) {
             return null;
         }
-        if (graph.getSuccessorCountOf(regionB) != 2) {
+        if (Regions.getSuccessorCountOf(graph, regionB, false) != 2) {
             return null;
         }
-        Iterator<Edge> itE = graph.getOutgoingEdgesOf(regionB).iterator();
+        Iterator<Edge> itE = Regions.getOutgoingEdgesOf(graph, regionB, false).iterator();
         Edge e1 = itE.next();
         Edge e2 = itE.next();
         Edge trueEdgeB = null;
@@ -134,10 +134,10 @@ public class LogicalRecognizer implements RegionRecognizer {
     }
     
     public Region recognize(DirectedGraph<Region, Edge> graph, Region regionA) {
-        if (graph.getSuccessorCountOf(regionA) != 2) {
+        if (Regions.getSuccessorCountOf(graph, regionA, false) != 2) {
             return null;
         }
-        Iterator<Edge> itE = graph.getOutgoingEdgesOf(regionA).iterator();
+        Iterator<Edge> itE = Regions.getOutgoingEdgesOf(graph, regionA, false).iterator();
         Edge e1 = itE.next();
         Edge e2 = itE.next();
         Edge trueEdgeA = null;
