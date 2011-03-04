@@ -25,7 +25,7 @@ import java.util.Collections;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TryCatchStatement extends AbstractStatement {
+public class TryCatchFinallyStatement extends AbstractStatement {
 
     private final BlockStatement _try;
 
@@ -36,6 +36,12 @@ public class TryCatchStatement extends AbstractStatement {
         private final LocalVariableDeclaration exceptionVarDecl;
 
         public CatchStatement(BlockStatement blockStmt, LocalVariableDeclaration exceptionVarDecl) {
+            if (blockStmt == null) {
+                throw new ABCDException("blockStmt == null");
+            }
+            if (exceptionVarDecl == null) {
+                throw new ABCDException("exceptionVarDecl == null");
+            }
             this.blockStmt = blockStmt;
             this.exceptionVarDecl = exceptionVarDecl;
         }
@@ -51,7 +57,9 @@ public class TryCatchStatement extends AbstractStatement {
     
     private final Collection<CatchStatement> catchs;
 
-    public TryCatchStatement(BlockStatement _try, Collection<CatchStatement> catchs) {
+    private BlockStatement _finally;
+    
+    public TryCatchFinallyStatement(BlockStatement _try, Collection<CatchStatement> catchs) {
         if (_try == null) {
             throw new ABCDException("_try == null");
         }
@@ -71,6 +79,9 @@ public class TryCatchStatement extends AbstractStatement {
         for (CatchStatement _catch : catchs) {
             _catch.getBlockStmt().setBlock(block);
         }
+        if (_finally != null) {
+            _finally.setBlock(block);
+        }
         super.setBlock(block);
     }
     
@@ -80,6 +91,15 @@ public class TryCatchStatement extends AbstractStatement {
 
     public Collection<CatchStatement> getCatchs() {
         return Collections.unmodifiableCollection(catchs);
+    }
+
+    public BlockStatement getFinally() {
+        return _finally;
+    }
+
+    public void setFinally(BlockStatement _finally) {
+        this._finally = _finally;
+        _finally.setBlock(getBlock());
     }
 
     public <R, A> R accept(StatementVisitor<R, A> visitor, A arg) {

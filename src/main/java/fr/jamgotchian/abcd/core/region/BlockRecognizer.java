@@ -29,10 +29,71 @@ import java.util.Set;
  */
 class BlockRecognizer implements RegionRecognizer {
 
+    private BlockRegion checkForward(DirectedGraph<Region, Edge> graph, Region regionA) {
+        if (Regions.getSuccessorCountOf(graph, regionA, false) != 1) {
+            return null;
+        }
+        List<Region> internalRegions = new ArrayList<Region>();
+        Region r = null;
+        for (r = regionA; isBlockForward(graph, r); r = Regions.getFirstSuccessorOf(graph, r, false)) {
+            internalRegions.add(r);
+        }
+        internalRegions.add(r);
+        if (internalRegions.size() > 1) {
+            Set<Edge> internalEdges = new HashSet<Edge>();
+            for (int i = 0; i < internalRegions.size() - 1; i++) {
+                internalEdges.add(graph.getEdge(internalRegions.get(i), internalRegions.get(i + 1)));
+            }
+            return new BlockRegion(internalEdges, internalRegions);
+        }
+        return null;
+    }
+
+    private BlockRegion checkBackward(DirectedGraph<Region, Edge> graph, Region regionA) {
+        if (Regions.getPredecessorCountOf(graph, regionA, false) != 1) {
+            return null;
+        }
+        List<Region> internalRegions = new ArrayList<Region>();
+        Region r = null;
+        for (r = regionA; isBlockBackward(graph, r); r = Regions.getFirstPredecessorOf(graph, r, false)) {
+            internalRegions.add(0, r);
+        }
+        internalRegions.add(0, r);
+        if (internalRegions.size() > 1) {
+            Set<Edge> internalEdges = new HashSet<Edge>();
+            for (int i = 0; i < internalRegions.size() - 1; i++) {
+                internalEdges.add(graph.getEdge(internalRegions.get(i), internalRegions.get(i + 1)));
+            }
+            return new BlockRegion(internalEdges, internalRegions);
+        }
+        return null;
+    }
+    
+    private boolean isBlockForward(DirectedGraph<Region, Edge> graph, Region regionA) {
+        if (Regions.getSuccessorCountOf(graph, regionA, false) != 1) {
+            return false;
+        }
+        Region regionB = Regions.getFirstSuccessorOf(graph, regionA, false);
+        if (Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
+            return false;
+        }
+        return Regions.sameHandlers(graph, regionA, regionB);
+    }
+
+    private boolean isBlockBackward(DirectedGraph<Region, Edge> graph, Region regionA) {
+        if (Regions.getPredecessorCountOf(graph, regionA, false) != 1) {
+            return false;
+        }
+        Region regionB = Regions.getFirstPredecessorOf(graph, regionA, false);
+        if (Regions.getSuccessorCountOf(graph, regionB, false) != 1) {
+            return false;
+        }
+        return Regions.sameHandlers(graph, regionA, regionB);
+    }
+
     public Region recognize(DirectedGraph<Region, Edge> graph, Region regionA) {
-        Region structuredRegion = null;
         //
-        // check for block region
+        // check for block region forward
         //
         //  ...    incomingExternalEdge
         //   A    regionA
@@ -42,32 +103,23 @@ class BlockRecognizer implements RegionRecognizer {
         //   Z    region Z
         //  ...    outgoingExternalEdges
         //
-        if (Regions.getSuccessorCountOf(graph, regionA, false) == 1) {
-            List<Region> internalRegions = new ArrayList<Region>();
-            Region r = null;
-            for (r = regionA; isBlock(graph, r); r = Regions.getFirstSuccessorOf(graph, r, false)) {
-                internalRegions.add(r);
-            }
-            internalRegions.add(r);
-            if (internalRegions.size() > 1) {
-                Set<Edge> internalEdges = new HashSet<Edge>();
-                for (int i = 0; i < internalRegions.size() - 1; i++) {
-                    internalEdges.add(graph.getEdge(internalRegions.get(i), internalRegions.get(i + 1)));
-                }
-                structuredRegion = new BlockRegion(internalEdges, internalRegions);
-            }
+        Region structuredRegion = checkForward(graph, regionA);
+
+        //
+        // check for block region backward
+        //
+        //  ...    incomingExternalEdge
+        //   Z    regionZ
+        //   |
+        //  ...             internalRegions = regionZ ... regionA
+        //   |
+        //   A    region A
+        //  ...    outgoingExternalEdges
+        //
+        if (structuredRegion == null) {
+            structuredRegion = checkBackward(graph, regionA);
         }
+
         return structuredRegion;
-    }
-    
-    private boolean isBlock(DirectedGraph<Region, Edge> graph, Region regionA) {
-        if (Regions.getSuccessorCountOf(graph, regionA, false) != 1) {
-            return false;
-        }
-        Region regionB = Regions.getFirstSuccessorOf(graph, regionA, false);
-        if (Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
-            return false;
-        }
-        return true;
     }
 }

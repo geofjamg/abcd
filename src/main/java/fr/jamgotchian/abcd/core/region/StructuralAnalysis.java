@@ -59,9 +59,10 @@ public class StructuralAnalysis {
                                                                  new IfThenElseRecognizer(),
                                                                  new SwitchCaseRecognizer(),
                                                                  /* then, cyclic regions */
-                                                                 new LoopRecognizer()));
+                                                                 new LoopRecognizer(),
+                                                                 /* try catch regions */
+                                                                 new TryCatchRecognizer()));
     }
-
 
     private final ControlFlowGraph graph;
 
@@ -75,8 +76,8 @@ public class StructuralAnalysis {
     private void collapseRegion(Region structuredRegion) {
         Collection<Region> internalRegions = structuredRegion.getInternalRegions();
 
-        logger.log(Level.FINER, "Find {0} region : {1} => {2}", 
-                new Object[] {structuredRegion.getTypeName(), 
+        logger.log(Level.FINER, "Find {0} region : {1} => {2}",
+                new Object[] {structuredRegion.getTypeName(),
                     internalRegions.toString(), structuredRegion});
 
         Collection<Edge> internalEdges = structuredRegion.getInternalEdges();
@@ -137,12 +138,16 @@ public class StructuralAnalysis {
         for (Edge edge : externalIncomingEdges) {
             Region source = regionGraph.getEdgeSource(edge);
             regionGraph.removeEdge(edge);
-            regionGraph.addEdge(source, structuredRegion, edge);
+            if (!regionGraph.containsEdge(source, structuredRegion)) {
+                regionGraph.addEdge(source, structuredRegion, edge);
+            }
         }
         for (Edge edge : externalOutgoingEdges) {
             Region target = regionGraph.getEdgeTarget(edge);
             regionGraph.removeEdge(edge);
-            regionGraph.addEdge(structuredRegion, target, edge);
+            if (!regionGraph.containsEdge(structuredRegion, target)) {
+                regionGraph.addEdge(structuredRegion, target, edge);
+            }
         }
         for (Region region : externalPredecessors) {
             regionGraph.addEdge(region, structuredRegion, new EdgeImpl());
@@ -198,8 +203,10 @@ public class StructuralAnalysis {
             List<Region> reverseNodes = new ArrayList<Region>(dfst.getNodes());
             Collections.reverse(reverseNodes);
             Region structuredRegion = null;
-            for (RegionRecognizer recognizer : RECOGNIZERS) {
-                for (Region region : reverseNodes) {
+            for (Region region : reverseNodes) {
+                for (RegionRecognizer recognizer : RECOGNIZERS) {
+//                    logger.log(Level.FINEST, "Check for region with {0} at {1}",
+//                            new Object[] {recognizer.getClass().getSimpleName(), region});
                     structuredRegion = recognizer.recognize(regionGraph, region);
                     if (structuredRegion != null) {
                         break;
@@ -219,7 +226,7 @@ public class StructuralAnalysis {
         Region rootRegion = null;
         if (regionGraph.getVertices().size() == 1) {
             rootRegion = regionGraph.getVertices().iterator().next();
-         
+
             MutableTree<Region, Edge> controlTree = Trees.newTree(rootRegion);
             buildControlTree(rootRegion, controlTree);
             logger.log(Level.FINEST, "Control tree :\n{0}", Trees.toString(controlTree));

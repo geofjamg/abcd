@@ -17,6 +17,8 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
+import fr.jamgotchian.abcd.core.common.ABCDException;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -28,6 +30,9 @@ public class LocalVariableDeclaration {
     private final String typeName;
 
     public LocalVariableDeclaration(int index, String typeName) {
+        if (typeName == null) {
+            throw new ABCDException("typeName == null");
+        }
         this.index = index;
         this.typeName = typeName;
     }

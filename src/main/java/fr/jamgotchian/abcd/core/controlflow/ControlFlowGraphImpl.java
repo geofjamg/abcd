@@ -582,7 +582,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 writer.append(", style=dotted");
             }
             if (e.getValue() != null) {
-                writer.append(", label=").append(e.getValue().toString());                
+                writer.append(", label=\"").append(e.getValue().toString()).append("\"");                
             }
             writer.append("];\n");
         }

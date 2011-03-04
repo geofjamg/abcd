@@ -17,17 +17,43 @@
 
 package fr.jamgotchian.abcd.core.region;
 
+import fr.jamgotchian.abcd.core.controlflow.Edge;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public enum RegionType {
-    LEAF,
-    BLOCK,
-    IF_THEN,
-    IF_THEN_ELSE,
-    SWITCH_CASE,
-    LOOP,
-    LOGICAL,
-    TRY_CATCH
+public class CatchRegion {
+
+    private final Region region;
+
+    private final Edge incomingEdge;
+
+    private final Edge outgoingEdge;
+
+    private final String exceptionClassName;
+
+    public CatchRegion(Region region, Edge incomingEdge, Edge outgoingEdge,
+                       String exceptionClassName) {
+        this.region = region;
+        this.incomingEdge = incomingEdge;
+        this.outgoingEdge = outgoingEdge;
+        this.exceptionClassName = exceptionClassName;
+    }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public Edge getIncomingEdge() {
+        return incomingEdge;
+    }
+
+    public Edge getOutgoingEdge() {
+        return outgoingEdge;
+    }
+
+    public String getExceptionClassName() {
+        return exceptionClassName;
+    }
 }

@@ -17,7 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
-import fr.jamgotchian.abcd.core.ast.stmt.TryCatchStatement.CatchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -72,10 +72,13 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
         return null;
     }
 
-    public Collection<Statement> visit(TryCatchStatement stmt, Void arg) {
+    public Collection<Statement> visit(TryCatchFinallyStatement stmt, Void arg) {
         stmt.getTry().accept(this, arg);
         for (CatchStatement _catch : stmt.getCatchs()) {
             _catch.getBlockStmt().accept(this, arg);
+        }
+        if (stmt.getFinally() != null) {
+            stmt.getFinally().accept(this, arg);
         }
         return null;
     }

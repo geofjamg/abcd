@@ -35,7 +35,7 @@ public interface StatementVisitor<R, A> {
 
     R visit(IfStatement stmt, A arg);
 
-    R visit(TryCatchStatement stmt, A arg);
+    R visit(TryCatchFinallyStatement stmt, A arg);
 
     R visit(BreakStatement stmt, A arg);
 

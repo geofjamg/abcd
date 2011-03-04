@@ -35,8 +35,8 @@ import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.TryCatchStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.TryCatchStatement.CatchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.common.Label;
 import java.util.Iterator;
@@ -126,19 +126,19 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
         return null;
     }
 
-    public Void visit(TryCatchStatement stmt, Void arg) {
+    public Void visit(TryCatchFinallyStatement stmt, Void arg) {
         writer.writeKeyword("try").writeSpace();
         stmt.getTry().accept(this, null);
         for (CatchStatement _catch : stmt.getCatchs()) {
-            if (_catch.getExceptionVarDecl() != null) {
-                writer.writeSpace().writeKeyword("catch").writeSpace().write("(")
-                      .write(_catch.getExceptionVarDecl().getTypeName())
-                      .writeSpace().write(stmt.getBlock().getVariable(_catch.getExceptionVarDecl().getIndex()))
-                      .write(")").writeSpace();
-            } else {
-                writer.writeSpace().writeKeyword("finally").writeSpace();
-            }
+            writer.writeSpace().writeKeyword("catch").writeSpace().write("(")
+                  .write(_catch.getExceptionVarDecl().getTypeName())
+                  .writeSpace().write(stmt.getBlock().getVariable(_catch.getExceptionVarDecl().getIndex()))
+                  .write(")").writeSpace();
             _catch.getBlockStmt().accept(this, null);            
+        }
+        if (stmt.getFinally() != null) {
+            writer.writeSpace().writeKeyword("finally").writeSpace();
+            stmt.getFinally().accept(this, arg);
         }
         return null;
     }

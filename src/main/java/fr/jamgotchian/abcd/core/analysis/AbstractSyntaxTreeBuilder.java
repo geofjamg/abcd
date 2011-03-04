@@ -16,25 +16,32 @@
  */
 package fr.jamgotchian.abcd.core.analysis;
 
+import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryOperator;
 import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
+import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.DoWhileStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.JumpIfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statements;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
 import fr.jamgotchian.abcd.core.region.BlockRegion;
 import fr.jamgotchian.abcd.core.region.CaseRegion;
+import fr.jamgotchian.abcd.core.region.CatchRegion;
 import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
 import fr.jamgotchian.abcd.core.region.IfThenRegion;
 import fr.jamgotchian.abcd.core.region.LeafRegion;
@@ -45,6 +52,7 @@ import fr.jamgotchian.abcd.core.region.LoopType;
 import fr.jamgotchian.abcd.core.region.LogicalRegion;
 import fr.jamgotchian.abcd.core.region.LogicalType;
 import fr.jamgotchian.abcd.core.region.SwitchCaseRegion;
+import fr.jamgotchian.abcd.core.region.TryCatchRegion;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -93,21 +101,21 @@ public class AbstractSyntaxTreeBuilder {
 
             case LOGICAL: {
                 LogicalRegion logical = (LogicalRegion) region;
-                
+
                 buildAST(logical.getRegionA(), blockStmt);
                 JumpIfStatement jumpIfStmtA = (JumpIfStatement) blockStmt.getLast();
-                
+
                 BlockStatement tmpBlockStmt = new BlockStatement();
                 buildAST(logical.getRegionB(), tmpBlockStmt);
                 JumpIfStatement jumpIfStmtB = (JumpIfStatement) tmpBlockStmt.getLast();
-                
+
                 BinaryOperator operator = null;
                 switch (logical.getLogicalType()) {
                     case AND:
                     case AND_INVERT_B:
                         operator = BinaryOperator.AND;
                         break;
-                
+
                     case OR:
                     case OR_INVERT_B:
                         operator = BinaryOperator.OR;
@@ -116,14 +124,14 @@ public class AbstractSyntaxTreeBuilder {
                     default:
                         throw new AssertionError();
                 }
-                
+
                 Expression conditionA = jumpIfStmtA.getCondition();
                 Expression conditionB = jumpIfStmtB.getCondition();
-                if (logical.getLogicalType() == LogicalType.AND_INVERT_B 
+                if (logical.getLogicalType() == LogicalType.AND_INVERT_B
                         || logical.getLogicalType() == LogicalType.OR_INVERT_B) {
                     conditionB = ExpressionInverter.invert(conditionB);
                 }
-                jumpIfStmtA.setCondition(new BinaryExpression(conditionA, conditionB, 
+                jumpIfStmtA.setCondition(new BinaryExpression(conditionA, conditionB,
                                                               operator));
                 break;
             }
@@ -139,7 +147,7 @@ public class AbstractSyntaxTreeBuilder {
                 buildAST(ifThenElse.getElseRegion(), elseBlockStmt);
                 // don't build if statement if then and else blocks are empty
                 if (!isStmtBlockEmpty(thenBlockStmt) || !isStmtBlockEmpty(elseBlockStmt)) {
-                    IfStatement ifStmt = new IfStatement(jumpIfStmt.getCondition(), 
+                    IfStatement ifStmt = new IfStatement(jumpIfStmt.getCondition(),
                                                          thenBlockStmt, elseBlockStmt);
                     ifStmt.invert();
                     blockStmt.add(ifStmt);
@@ -156,7 +164,7 @@ public class AbstractSyntaxTreeBuilder {
                 buildAST(ifThen.getThenRegion(), thenBlockStmt);
                 // don't build if statement if then block is empty
                 if (!isStmtBlockEmpty(thenBlockStmt)) {
-                    Expression condition = ifThen.isInvertCondition() 
+                    Expression condition = ifThen.isInvertCondition()
                             ? ExpressionInverter.invert(jumpIfStmt.getCondition())
                             : jumpIfStmt.getCondition();
                     IfStatement ifStmt = new IfStatement(condition, thenBlockStmt);
@@ -213,7 +221,7 @@ public class AbstractSyntaxTreeBuilder {
 
                 break;
             }
-                
+
             case SWITCH_CASE: {
                 SwitchCaseRegion switchCase = (SwitchCaseRegion) region;
 
@@ -221,7 +229,7 @@ public class AbstractSyntaxTreeBuilder {
                 LookupOrTableSwitchStatement lookupOrTableSwitchStmt
                         = (LookupOrTableSwitchStatement) blockStmt.getLast();
                 lookupOrTableSwitchStmt.remove();
-                
+
                 List<CaseStatement> cases = new ArrayList<CaseStatement>();
                 for (CaseRegion caseRegion : switchCase.getCaseRegions()) {
                     BlockStatement caseBlockStmt = new BlockStatement();
@@ -229,7 +237,39 @@ public class AbstractSyntaxTreeBuilder {
                     cases.add(new CaseStatement(caseRegion.getValue(), caseBlockStmt));
                 }
                 blockStmt.add(new SwitchCaseStatement(lookupOrTableSwitchStmt.getCondition(), cases));
+
+                break;
+            }
+
+            case TRY_CATCH: {
+                TryCatchRegion tryCatchRegion = (TryCatchRegion) region;
+
+                BlockStatement tryBlockStmt = new BlockStatement();
+                buildAST(tryCatchRegion.getTryRegion1(), tryBlockStmt);
                 
+                if (tryCatchRegion.getTryRegion2() != null) {
+                    buildAST(tryCatchRegion.getTryRegion2(), tryBlockStmt);                    
+                }
+
+                List<CatchStatement> catchStmts = new ArrayList<CatchStatement>();
+                for (CatchRegion catchRegion : tryCatchRegion.getCatchRegions()) {
+                    
+                    BlockStatement catchBlockStmt = new BlockStatement();
+                    buildAST(catchRegion.getRegion(), catchBlockStmt);
+
+                    ExpressionStatement exprStmt = (ExpressionStatement) catchBlockStmt.getFirst();
+                    exprStmt.remove();
+                    LocalVariable excVar = (LocalVariable) ((AssignExpression) exprStmt.getExpression()).getTarget();
+
+                    LocalVariableDeclaration varDecl
+                            = new LocalVariableDeclaration(excVar.getIndex(),
+                                                           catchRegion.getExceptionClassName());
+                    catchStmts.add(new CatchStatement(catchBlockStmt, varDecl));
+                }
+                TryCatchFinallyStatement tryCatchStmt
+                        = new TryCatchFinallyStatement(tryBlockStmt, catchStmts);
+                blockStmt.add(tryCatchStmt);
+
                 break;
             }
         }

@@ -18,6 +18,7 @@ package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -83,12 +84,16 @@ class IfThenElseRecognizer implements RegionRecognizer {
 
                         if (Boolean.TRUE.equals(edgeAB.getValue()) 
                                 && Boolean.FALSE.equals(edgeAC.getValue())) {
-                            structuredRegion = new IfThenElseRegion(edgeAB, edgeAC, edgeBD, edgeCD,
-                                    regionA, regionB, regionC);
+                            if (Regions.sameHandlers(graph, regionA, regionB, regionC)) {
+                                structuredRegion = new IfThenElseRegion(edgeAB, edgeAC, edgeBD, edgeCD,
+                                        regionA, regionB, regionC);
+                            }
                         } else if (Boolean.FALSE.equals(edgeAB.getValue()) 
                                 && Boolean.TRUE.equals(edgeAC.getValue())) {
-                            structuredRegion = new IfThenElseRegion(edgeAC, edgeAB, edgeCD, edgeBD,
-                                    regionA, regionC, regionB);
+                            if (Regions.sameHandlers(graph, regionA, regionC, regionB)) {
+                                structuredRegion = new IfThenElseRegion(edgeAC, edgeAB, edgeCD, edgeBD,
+                                        regionA, regionC, regionB);
+                            }
                         }
                     }
                 } else if (regionD_C != null && regionB.equals(regionD_C)) {
@@ -107,10 +112,12 @@ class IfThenElseRecognizer implements RegionRecognizer {
                             && Regions.getSuccessorCountOf(graph, regionC, false) == 1) {
                         if ((Boolean.TRUE.equals(edgeAB.getValue()) && Boolean.FALSE.equals(edgeAC.getValue()))
                                 || (Boolean.FALSE.equals(edgeAB.getValue()) && Boolean.TRUE.equals(edgeAC.getValue()))) {
-                            boolean invertCondition = Boolean.TRUE.equals(edgeAB.getValue())
-                                    && Boolean.FALSE.equals(edgeAC.getValue());
-                            structuredRegion = new IfThenRegion(edgeAB, edgeAC, edgeCD,
-                                    regionA, regionC, invertCondition);
+                            if (Regions.sameHandlers(graph, regionA, regionC)) {
+                                boolean invertCondition = Boolean.TRUE.equals(edgeAB.getValue())
+                                        && Boolean.FALSE.equals(edgeAC.getValue());
+                                structuredRegion = new IfThenRegion(edgeAB, edgeAC, edgeCD,
+                                        regionA, regionC, invertCondition);
+                            }
                         }
                     }
                 } else if (regionD_B != null && regionC.equals(regionD_B)) {
@@ -129,26 +136,18 @@ class IfThenElseRecognizer implements RegionRecognizer {
                             && Regions.getSuccessorCountOf(graph, regionB, false) == 1) {
                         if ((Boolean.TRUE.equals(edgeAB.getValue()) && Boolean.FALSE.equals(edgeAC.getValue()))
                                 || (Boolean.FALSE.equals(edgeAB.getValue()) && Boolean.TRUE.equals(edgeAC.getValue()))) {
-                            boolean invertCondition = Boolean.TRUE.equals(edgeAC.getValue())
-                                    && Boolean.FALSE.equals(edgeAB.getValue());
-                            structuredRegion = new IfThenRegion(edgeAB, edgeAC, edgeBD,
-                                    regionA, regionB, invertCondition);
+                            if (Regions.sameHandlers(graph, regionA, regionB)) {                            
+                                boolean invertCondition = Boolean.TRUE.equals(edgeAC.getValue())
+                                        && Boolean.FALSE.equals(edgeAB.getValue());
+                                structuredRegion = new IfThenRegion(edgeAB, edgeAC, edgeBD,
+                                        regionA, regionB, invertCondition);
+                            }
                         }
                     }
-                    //
-                    // AND / OR region
-                    //
-                    //    ...     incomingExternalEdge
-                    //     A     region A
-                    //    / \
-                    //   B   |   region B
-                    //  / \ /
-                    //   ...
-
                 }
             }
         }
-
+        
         return structuredRegion;
     }
 }

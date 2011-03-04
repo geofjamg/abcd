@@ -201,9 +201,9 @@ public class Test {
 
     public void testFinally() {
         try {
-            a();
+            System.out.println("a");
         } finally {
-            b();
+            System.out.println("b");
         }
     }
     
@@ -276,6 +276,7 @@ public class Test {
         try {
             a();
         } catch(Exception exc) {
+            System.out.println(exc);
             b();
         }
     }
@@ -292,14 +293,14 @@ public class Test {
     
     public void testNestedCatch() {
         try {
-            a();
+            System.out.println("a");
             try {
-                b();
+                System.out.println("b");
             } catch(Exception exc) {
-                c();
+                System.out.println("c");
             }
         } catch(Exception exc) {
-            d();
+            System.out.println("d");
         }
     }
 
