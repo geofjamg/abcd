@@ -21,8 +21,6 @@ import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.util.Range;
-import java.io.IOException;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -115,6 +113,4 @@ public interface ControlFlowGraph {
     String toString(Edge edge);
 
     void visit(ControlFlowGraphVisitor visitor);
-
-    void writeDOT(Writer writer) throws IOException;
 }

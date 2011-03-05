@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.region;
 
+import java.util.Set;
 import fr.jamgotchian.abcd.core.ABCDContext;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockTestImpl;
@@ -268,8 +269,8 @@ public class StructuralAnalysisTest {
         graph.addEdge(b4, graph.getExitBlock());
         graph.analyse();
 
-        Region rootRegion = new StructuralAnalysis(graph).analyse();
+        Set<Region> rootRegions = new StructuralAnalysis(graph).analyse();
                 
-        assertTrue(rootRegion != null);
+        assertTrue(rootRegions.size() == 1);
     }
 }

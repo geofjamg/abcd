@@ -18,10 +18,7 @@
 package fr.jamgotchian.abcd.core.analysis;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
-import fr.jamgotchian.abcd.core.output.JavaExpressionWriter;
-import fr.jamgotchian.abcd.core.output.TextCodeWriter;
-import java.io.IOException;
-import java.io.StringWriter;
+import fr.jamgotchian.abcd.core.output.OutputUtil;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -102,19 +99,7 @@ class ExpressionStackImpl implements ExpressionStack {
         Iterator<Expression> it = exprs.iterator();
         while (it.hasNext()) {
             Expression expr = it.next();
-
-            StringWriter writer = new StringWriter();
-            try {
-                JavaExpressionWriter exprWriter = new JavaExpressionWriter(new TextCodeWriter(writer));
-                expr.accept(exprWriter, null);
-            } finally {
-                try {
-                    writer.close();
-                } catch (IOException exc) {
-                    logger.log(Level.SEVERE, exc.toString(), exc);
-                }
-            }
-            builder.append(writer);
+            builder.append(OutputUtil.toText(expr));
             if (it.hasNext()) {
                 builder.append(", ");
             }

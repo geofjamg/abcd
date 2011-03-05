@@ -20,15 +20,11 @@ package fr.jamgotchian.abcd.core.output;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockVisitor;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphImpl;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.IincInsnNode;
-import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
@@ -46,50 +42,6 @@ import org.objectweb.asm.tree.VarInsnNode;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class BytecodeWriter implements BasicBlockVisitor {
-
-    private static class InstnPrintVisitor extends BytecodeWriter {
-        
-        private InstnPrintVisitor(InstnWriter writer) {
-            super(writer);
-        }
-
-        @Override
-        public void before(BasicBlock block) {
-            try {
-                writer.begin();
-            } catch(IOException exc) {
-                throw new ABCDException(exc);
-            }
-        }
-    }
-    
-    public static String toString(BasicBlock block) {
-        StringWriter writer = new StringWriter();
-        block.visit(new BytecodeWriter(new TextInstnWriter(writer)));
-        return writer.toString();
-    }
-
-    public static String toString(InsnList instructions) {
-        StringWriter writer = new StringWriter();
-        ControlFlowGraph graph = new ControlFlowGraphImpl("", instructions);
-        BasicBlock block = graph.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next(); 
-        block.visit(new InstnPrintVisitor(new TextInstnWriter(writer)));
-        return writer.toString();
-    }
-
-    public static String toHTML(BasicBlock block) {
-        StringWriter writer = new StringWriter();
-        block.visit(new BytecodeWriter(new HTMLInstnWriter(writer)));
-        return writer.toString();
-    }
-
-    public static String toHTML(InsnList instructions) {
-        StringWriter writer = new StringWriter();
-        ControlFlowGraph graph = new ControlFlowGraphImpl("", instructions);
-        BasicBlock block = graph.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next(); 
-        block.visit(new InstnPrintVisitor(new HTMLInstnWriter(writer)));
-        return writer.toString();
-    }
 
     protected final InstnWriter writer;
 

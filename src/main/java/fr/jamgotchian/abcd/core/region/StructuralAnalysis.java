@@ -179,7 +179,7 @@ public class StructuralAnalysis {
         }
     }
 
-    public Region analyse() {
+    public Set<Region> analyse() {
         // build initial region graph
         Map<BasicBlock, Region> block2region = new HashMap<BasicBlock, Region>();
         regionGraph = DirectedGraphs.newDirectedGraph();
@@ -223,14 +223,13 @@ public class StructuralAnalysis {
 //                    DirectedGraphs.toString(regionGraph, entryRegion));
         }
 
-        Region rootRegion = null;
-        if (regionGraph.getVertices().size() == 1) {
-            rootRegion = regionGraph.getVertices().iterator().next();
-
+        Set<Region> rootRegions = regionGraph.getVertices();
+        if (rootRegions.size() == 1) {
+            Region rootRegion = rootRegions.iterator().next();
             MutableTree<Region, Edge> controlTree = Trees.newTree(rootRegion);
             buildControlTree(rootRegion, controlTree);
             logger.log(Level.FINEST, "Control tree :\n{0}", Trees.toString(controlTree));
         }
-        return rootRegion;
+        return rootRegions;
     }
 }

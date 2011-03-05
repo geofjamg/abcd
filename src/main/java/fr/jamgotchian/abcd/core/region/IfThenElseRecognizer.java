@@ -18,7 +18,6 @@ package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 

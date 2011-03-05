@@ -17,8 +17,6 @@
 
 package fr.jamgotchian.abcd.core.analysis;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -52,8 +50,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
-import fr.jamgotchian.abcd.core.output.JavaStatementWriter;
-import fr.jamgotchian.abcd.core.output.TextCodeWriter;
+import fr.jamgotchian.abcd.core.output.OutputUtil;
 import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.*;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -101,20 +98,8 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     }
     
     protected void addStmt(BasicBlock block, Statement stmt) {
-        StringWriter writer = new StringWriter();
-        try {
-            JavaStatementWriter stmtWriter = new JavaStatementWriter(new TextCodeWriter(writer));
-            stmt.accept(stmtWriter, null);
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
-            }
-        }
+        logger.log(Level.FINER, "Add stmt : {0}", OutputUtil.toText(stmt));
 
-        logger.log(Level.FINER, "Add stmt : {0}", writer.toString());
-        
         ((BasicBlockAnalysisDataImpl) block.getData()).addStatement(stmt);
     }
 

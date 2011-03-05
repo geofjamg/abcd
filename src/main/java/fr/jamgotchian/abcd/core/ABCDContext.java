@@ -30,11 +30,12 @@ import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.Statements;
 import fr.jamgotchian.abcd.core.output.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.output.TextCodeWriter;
-import fr.jamgotchian.abcd.core.output.BytecodeWriter;
 import fr.jamgotchian.abcd.core.analysis.ControlFlowGraphStmtAnalysis;
 import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
 import fr.jamgotchian.abcd.core.analysis.ConditionalExpressionRefactoring;
+import fr.jamgotchian.abcd.core.analysis.DOTUtil;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactoring;
+import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
@@ -87,15 +88,15 @@ public class ABCDContext {
         logger = Logger.getLogger(ABCDContext.class.getName());
         logger.setLevel(Level.FINER);
     }
-    
+
     public static void decompile(InputStream is, OutputStream os) throws IOException {
         new ABCDContext(is).decompile(os);
     }
-    
-    public static void analyse(InputStream is, File outputDir) throws IOException {
-        new ABCDContext(is).analyse(outputDir);
+
+    public static void analyse(InputStream is, File outputDir, boolean drawRegions) throws IOException {
+        new ABCDContext(is).analyse(outputDir, drawRegions);
     }
-    
+
     private final ClassNode cn;
 
     private final Map<String, MethodNode> methodNodes;
@@ -115,7 +116,7 @@ public class ABCDContext {
     public Set<String> getMethodSignatures() {
         return methodNodes.keySet();
     }
-    
+
     public void decompile(OutputStream os) throws IOException {
         String name = cn.name.replace('/', '.');
 
@@ -198,10 +199,11 @@ public class ABCDContext {
                 new ControlFlowGraphStmtAnalysis().analyse(graph);
 
                 logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
-                Region rootRegion = new StructuralAnalysis(graph).analyse();
-                if (rootRegion == null) {
+                Set<Region> rootRegions = new StructuralAnalysis(graph).analyse();
+                if (rootRegions.size() > 1) {
                     throw new ABCDException("Fail to recognize structure");
                 }
+                Region rootRegion = rootRegions.iterator().next();
 
                 logger.log(Level.FINE, "////////// Build AST of {0} //////////", methodSignature);
                 new AbstractSyntaxTreeBuilder().build(rootRegion, method.getBody());
@@ -213,7 +215,7 @@ public class ABCDContext {
                 logger.log(Level.SEVERE, exc.toString(), exc);
 
                 method.getBody().clear();
-                String bc = BytecodeWriter.toString(mn.instructions);
+                String bc = OutputUtil.toText(mn.instructions);
                 method.getBody().add(new CommentStatement("\n" + bc));
                 method.getBody().add(Statements.createThrowStmt(InternalError.class, "Decompilation failed"));
             }
@@ -229,7 +231,7 @@ public class ABCDContext {
         }
     }
 
-    public void analyse(File outputDir) throws IOException {
+    public void analyse(File outputDir, boolean drawRegions) throws IOException {
         if (!outputDir.exists())
             throw new ABCDException(outputDir + " does not exist");
 
@@ -247,14 +249,23 @@ public class ABCDContext {
                 logger.log(Level.FINE, "////////// Analyse Control flow of {0} //////////", methodSignature);
                 graph.analyse();
 
-                Writer writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_CFG.dot");
-                graph.writeDOT(writer);
-                writer.close();
+                Set<Region> rootRegions = null;
+                if (drawRegions) {
+                    logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
+                    new ControlFlowGraphStmtAnalysis().analyse(graph);
+
+                    logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
+                    rootRegions = new StructuralAnalysis(graph).analyse();
+                }
                 
+                Writer writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_CFG.dot");
+                DOTUtil.writeCFG(graph, rootRegions, writer);
+                writer.close();
+
                 writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_DT.dot");
                 graph.getDominatorInfo().getDominatorsTree().writeDOT("DT", writer);
                 writer.close();
-            
+
                 writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_PDT.dot");
                 graph.getDominatorInfo().getPostDominatorsTree().writeDOT("PDT", writer);
                 writer.close();
@@ -263,21 +274,24 @@ public class ABCDContext {
             }
         }
     }
-    
+
     private static void printUsage() {
         System.out.println("Usage:");
         System.out.println("    -decompile <class file> <output java file>");
-        System.out.println("    -analyse <class file> <output directory>");
+        System.out.println("    -analyse <class file> <output directory> [<-regions>]");
         System.exit(1);
     }
 
     public static void main(String[] args) {
-        if (args.length != 3) {
+        if (args.length != 3 && args.length != 4) {
             printUsage();
         }
         String cmd = args[0];
         String classFileName = args[1];
         if ("-decompile".equals(cmd)) {
+            if (args.length != 3) {
+                printUsage();
+            }
             String javaFileName = args[2];
             try {
                 InputStream is = new FileInputStream(classFileName);
@@ -286,15 +300,23 @@ public class ABCDContext {
                 ABCDContext.decompile(is, os);
             } catch (IOException exc) {
                 logger.log(Level.SEVERE, exc.toString(), exc);
-            }            
+            }
         } else if ("-analyse".equals(cmd)) {
             File outputDir = new File(args[2]);
+            boolean drawRegions = false;
+            if (args.length == 4) {
+                if("-regions".equals(args[3])) {
+                    drawRegions = true;
+                } else {
+                    printUsage();
+                }
+            }
             try {
                 InputStream is = new FileInputStream(classFileName);
-                ABCDContext.analyse(is, outputDir);
+                ABCDContext.analyse(is, outputDir, drawRegions);
             } catch (IOException exc) {
                 logger.log(Level.SEVERE, exc.toString(), exc);
-            } 
+            }
         } else {
             printUsage();
         }

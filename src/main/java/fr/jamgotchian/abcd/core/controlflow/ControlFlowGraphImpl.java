@@ -30,8 +30,6 @@ import fr.jamgotchian.abcd.core.graph.Trees;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
 import fr.jamgotchian.abcd.core.util.RangeMap;
-import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -562,61 +560,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             logger.log(Level.FINEST, "Exception handler : entryBlock={0}, handledBlocks={1}",
                     new Object[] {handlerEntry, handledBlocks});
         }
-    }
-
-    public void writeDOT(Writer writer) throws IOException {
-        writer.append("digraph CFG {\n");
-        for (Edge e : graph.getEdges()) {
-            BasicBlock source = graph.getEdgeSource(e);
-            BasicBlock target = graph.getEdgeTarget(e);
-            writer.append("  \"").append(source.toString()).append("\" -> \"")
-                    .append(target.toString()).append("\" [");
-            if (e.getCategory() == EdgeCategory.BACK) {
-                writer.append("color=red");
-            } else if (e.isLoopExit()) {
-                writer.append("color=green");
-            } else {
-                writer.append("color=black");
-            }
-            if (e.isExceptional()) {
-                writer.append(", style=dotted");
-            }
-            if (e.getValue() != null) {
-                writer.append(", label=\"").append(e.getValue().toString()).append("\"");                
-            }
-            writer.append("];\n");
-        }
-        for (BasicBlock block : graph.getVertices()) {
-            writer.append("\"").append(block.toString()).append("\" [");
-            if (block.getType() != null) {
-                switch (block.getType()) {
-                    case ENTRY:
-                    case EXIT:
-                        writer.append("shape=ellipse, style=filled, color=lightgrey");
-                        break;
-
-                    case JUMP_IF:
-                        writer.append("shape=diamond, style=filled, color=cornflowerblue");
-                        break;
-
-                    case SWITCH:
-                        writer.append("shape=hexagon, style=filled, color=chocolate");
-                        break;
-
-                    case RETURN:
-                        writer.append("shape=invhouse, style=filled, color=orange");
-                        break;
-
-                    default:
-                        writer.append("shape=box, color=black");
-                        break;
-                }
-            } else {
-                writer.append("shape=box, color=black");
-            }
-            writer.append("];\n");
-        }
-        writer.append("}");
     }
 
     public String toString(Collection<Edge> edges) {
