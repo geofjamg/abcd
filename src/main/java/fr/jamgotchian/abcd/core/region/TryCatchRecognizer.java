@@ -39,7 +39,9 @@ public class TryCatchRecognizer implements RegionRecognizer {
                     || !successorsOfC.iterator().next().equals(regionB)) {
                 continue;
             }
-            
+            if (Regions.getPredecessorCountOf(graph, regionC, true) != 1) {
+                continue;
+            }            
             Edge edgeAC = graph.getEdge(regionA, regionC);
             Edge edgeCB = graph.getEdge(regionC, regionB);
             String exceptionClassName = (String) edgeAC.getValue();
@@ -68,7 +70,9 @@ public class TryCatchRecognizer implements RegionRecognizer {
                     || !successorsOfC.iterator().next().equals(regionD)) {
                 continue;
             }
-            
+            if (Regions.getPredecessorCountOf(graph, regionC, true) != 1) {
+                continue;
+            }
             Edge edgeAC = graph.getEdge(regionA, regionC);
             Edge edgeCD = graph.getEdge(regionC, regionD);
             String exceptionClassName = (String) edgeAC.getValue();
