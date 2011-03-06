@@ -28,7 +28,6 @@ import java.util.Iterator;
 class IfThenElseRecognizer implements RegionRecognizer {
 
     public Region recognize(DirectedGraph<Region, Edge> graph, Region regionA) {
-        Region structuredRegion = null;
         //
         // check for if-then or if-then-else region
         //
@@ -40,108 +39,110 @@ class IfThenElseRecognizer implements RegionRecognizer {
         // D_B    D_C  region D_B and D_C
         //    ...      outgoingExternalEdges
         //
-        if (Regions.getSuccessorCountOf(graph, regionA, false) == 2) {
-            Collection<Edge> outgoingEdges = Regions.getOutgoingEdgesOf(graph, regionA, false);
-            Iterator<Edge> itE = outgoingEdges.iterator();
-            Edge edgeAB = itE.next();
-            Edge edgeAC = itE.next();
-            if (!edgeAB.isLoopExit() && !edgeAC.isLoopExit()) {
-                Collection<Region> successors = Regions.getSuccessorsOf(graph, regionA, false);
-                Iterator<Region> itR = successors.iterator();
-                Region regionB = itR.next();
-                Region regionC = itR.next();
+        if (Regions.getSuccessorCountOf(graph, regionA, false) != 2) {
+            return null;
+        }
 
-                Region regionD_B = null;
-                Region regionD_C = null;
-                itR = Regions.getSuccessorsOf(graph, regionB, false).iterator();
-                if (itR.hasNext()) {
-                    regionD_B = itR.next();
-                }
-                itR = Regions.getSuccessorsOf(graph, regionC, false).iterator();
-                if (itR.hasNext()) {
-                    regionD_C = itR.next();
-                }
-                //
-                // check if-then-else region
-                //
-                //    ...    incomingExternalEdge
-                //     A     region A
-                //    / \
-                //   B   C   region B and C
-                //    \ /
-                //     D     region D
-                //    ...    outgoingExternalEdges
-                //
-                Edge edgeBD = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
-                Edge edgeCD = Regions.getFirstOutgoingEdgeOf(graph, regionC, false);
-                if (regionD_B != null && regionD_C != null && regionD_B.equals(regionD_C)) {
-                    // if-then-else region
-                    if (Regions.getPredecessorCountOf(graph, regionB, false) == 1
-                            && Regions.getPredecessorCountOf(graph, regionC, false) == 1
-                            && Regions.getSuccessorCountOf(graph, regionB, false) == 1
-                            && Regions.getSuccessorCountOf(graph, regionC, false) == 1) {
+        Collection<Edge> outgoingEdges = Regions.getOutgoingEdgesOf(graph, regionA, false);
+        Iterator<Edge> itE = outgoingEdges.iterator();
+        Edge edgeAB = itE.next();
+        Edge edgeAC = itE.next();
+        if (edgeAB.isLoopExit()  || edgeAC.isLoopExit()) {
+            return null;
+        }
+        
+        Region structuredRegion = null;
 
-                        if (Boolean.TRUE.equals(edgeAB.getValue()) 
-                                && Boolean.FALSE.equals(edgeAC.getValue())) {
-                            if (Regions.sameHandlers(graph, regionA, regionB, regionC)) {
-                                structuredRegion = new IfThenElseRegion(edgeAB, edgeAC, edgeBD, edgeCD,
-                                        regionA, regionB, regionC);
-                            }
-                        } else if (Boolean.FALSE.equals(edgeAB.getValue()) 
-                                && Boolean.TRUE.equals(edgeAC.getValue())) {
-                            if (Regions.sameHandlers(graph, regionA, regionC, regionB)) {
-                                structuredRegion = new IfThenElseRegion(edgeAC, edgeAB, edgeCD, edgeBD,
-                                        regionA, regionC, regionB);
-                            }
-                        }
+        Region regionB = graph.getEdgeTarget(edgeAB);
+        Region regionC = graph.getEdgeTarget(edgeAC);
+
+        Edge edgeBD = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
+        Edge edgeCD = Regions.getFirstOutgoingEdgeOf(graph, regionC, false);
+        Region regionD_B = null;
+        Region regionD_C = null;
+        if (edgeBD != null) {
+            regionD_B = graph.getEdgeTarget(edgeBD);
+        }
+        if (edgeCD != null) {
+            regionD_C = graph.getEdgeTarget(edgeCD);
+        }
+        //
+        // check if-then-else region
+        //
+        //    ...    incomingExternalEdge
+        //     A     region A
+        //    / \
+        //   B   C   region B and C
+        //    \ /
+        //     D     region D
+        //    ...    outgoingExternalEdges
+        //
+        if (regionD_B != null && regionD_C != null && regionD_B.equals(regionD_C)) {
+            // if-then-else region
+            if (Regions.getPredecessorCountOf(graph, regionB, false) == 1
+                    && Regions.getPredecessorCountOf(graph, regionC, false) == 1
+                    && Regions.getSuccessorCountOf(graph, regionB, false) == 1
+                    && Regions.getSuccessorCountOf(graph, regionC, false) == 1) {
+
+                if (Boolean.TRUE.equals(edgeAB.getValue()) 
+                        && Boolean.FALSE.equals(edgeAC.getValue())) {
+                    if (Regions.sameHandlers(graph, regionA, regionB, regionC)) {
+                        structuredRegion = new IfThenElseRegion(edgeAB, edgeAC, edgeBD, edgeCD,
+                                regionA, regionB, regionC);
                     }
-                } else if (regionD_C != null && regionB.equals(regionD_C)) {
-                    //
-                    // check if-then region
-                    //
-                    //    ...    incomingExternalEdge
-                    //     A     region A
-                    //    / \
-                    //   |   C   region C
-                    //    \ /
-                    //     D     region D
-                    //    ...    outgoingExternalEdges
-                    //
-                    if (Regions.getPredecessorCountOf(graph, regionC, false) == 1
-                            && Regions.getSuccessorCountOf(graph, regionC, false) == 1) {
-                        if ((Boolean.TRUE.equals(edgeAB.getValue()) && Boolean.FALSE.equals(edgeAC.getValue()))
-                                || (Boolean.FALSE.equals(edgeAB.getValue()) && Boolean.TRUE.equals(edgeAC.getValue()))) {
-                            if (Regions.sameHandlers(graph, regionA, regionC)) {
-                                boolean invertCondition = Boolean.TRUE.equals(edgeAB.getValue())
-                                        && Boolean.FALSE.equals(edgeAC.getValue());
-                                structuredRegion = new IfThenRegion(edgeAB, edgeAC, edgeCD,
-                                        regionA, regionC, invertCondition);
-                            }
-                        }
+                } else if (Boolean.FALSE.equals(edgeAB.getValue()) 
+                        && Boolean.TRUE.equals(edgeAC.getValue())) {
+                    if (Regions.sameHandlers(graph, regionA, regionC, regionB)) {
+                        structuredRegion = new IfThenElseRegion(edgeAC, edgeAB, edgeCD, edgeBD,
+                                regionA, regionC, regionB);
                     }
-                } else if (regionD_B != null && regionC.equals(regionD_B)) {
-                    //
-                    // check if-then region
-                    //
-                    //    ...    incomingExternalEdge
-                    //     A     region A
-                    //    / \
-                    //   B   |   region B
-                    //    \ /
-                    //    D_B    region D
-                    //    ...    outgoingExternalEdges
-                    //
-                    if (Regions.getPredecessorCountOf(graph, regionB, false) == 1
-                            && Regions.getSuccessorCountOf(graph, regionB, false) == 1) {
-                        if ((Boolean.TRUE.equals(edgeAB.getValue()) && Boolean.FALSE.equals(edgeAC.getValue()))
-                                || (Boolean.FALSE.equals(edgeAB.getValue()) && Boolean.TRUE.equals(edgeAC.getValue()))) {
-                            if (Regions.sameHandlers(graph, regionA, regionB)) {                            
-                                boolean invertCondition = Boolean.TRUE.equals(edgeAC.getValue())
-                                        && Boolean.FALSE.equals(edgeAB.getValue());
-                                structuredRegion = new IfThenRegion(edgeAB, edgeAC, edgeBD,
-                                        regionA, regionB, invertCondition);
-                            }
-                        }
+                }
+            }
+        } else if (regionD_C != null && regionB.equals(regionD_C)) {
+            //
+            // check if-then region
+            //
+            //    ...    incomingExternalEdge
+            //     A     region A
+            //    / \
+            //   |   C   region C
+            //    \ /
+            //     D     region D
+            //    ...    outgoingExternalEdges
+            //
+            if (Regions.getPredecessorCountOf(graph, regionC, false) == 1
+                    && Regions.getSuccessorCountOf(graph, regionC, false) == 1) {
+                if ((Boolean.TRUE.equals(edgeAB.getValue()) && Boolean.FALSE.equals(edgeAC.getValue()))
+                        || (Boolean.FALSE.equals(edgeAB.getValue()) && Boolean.TRUE.equals(edgeAC.getValue()))) {
+                    if (Regions.sameHandlers(graph, regionA, regionC)) {
+                        boolean invertCondition = Boolean.TRUE.equals(edgeAB.getValue())
+                                && Boolean.FALSE.equals(edgeAC.getValue());
+                        structuredRegion = new IfThenRegion(edgeAB, edgeAC, edgeCD,
+                                regionA, regionC, invertCondition);
+                    }
+                }
+            }
+        } else if (regionD_B != null && regionC.equals(regionD_B)) {
+            //
+            // check if-then region
+            //
+            //    ...    incomingExternalEdge
+            //     A     region A
+            //    / \
+            //   B   |   region B
+            //    \ /
+            //    D_B    region D
+            //    ...    outgoingExternalEdges
+            //
+            if (Regions.getPredecessorCountOf(graph, regionB, false) == 1
+                    && Regions.getSuccessorCountOf(graph, regionB, false) == 1) {
+                if ((Boolean.TRUE.equals(edgeAB.getValue()) && Boolean.FALSE.equals(edgeAC.getValue()))
+                        || (Boolean.FALSE.equals(edgeAB.getValue()) && Boolean.TRUE.equals(edgeAC.getValue()))) {
+                    if (Regions.sameHandlers(graph, regionA, regionB)) {                            
+                        boolean invertCondition = Boolean.TRUE.equals(edgeAC.getValue())
+                                && Boolean.FALSE.equals(edgeAB.getValue());
+                        structuredRegion = new IfThenRegion(edgeAB, edgeAC, edgeBD,
+                                regionA, regionB, invertCondition);
                     }
                 }
             }
