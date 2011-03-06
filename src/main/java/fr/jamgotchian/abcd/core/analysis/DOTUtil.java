@@ -95,29 +95,27 @@ public class DOTUtil {
     }
 
     private static void writeRegion(Region region, Writer writer, int indent) throws IOException {
-        writer.append("\n");
-        writeIndent(writer, indent);
-        writer.append("subgraph \"cluster_").append(region.getName().toString()).append("\" {\n");
-        writeIndent(writer, indent+1);
-        writer.append("label=\"").append(region.getName().toString()).append(" (")
-                .append(region.getTypeName()).append(")\";\n");
-        writeIndent(writer, indent+1);
-        writer.append("fontcolor=blue;\n");
-        writeIndent(writer, indent+1);
-        writer.append("labeljust=l;\n");
-        writeIndent(writer, indent+1);
-        writer.append("color=blue\n");
-        for (Region childRegion : region.getInternalRegions()) {
-            if (childRegion.getType() == RegionType.LEAF) {
-                writeIndent(writer, indent+1);
-                writeBlock(childRegion.getEntryBlock(), writer);
+        if (region.getType() == RegionType.LEAF) {
+            writeIndent(writer, indent);
+            writeBlock(region.getEntryBlock(), writer);
+        } else {
+            writeIndent(writer, indent);
+            writer.append("subgraph \"cluster_").append(region.getName().toString()).append("\" {\n");
+            writeIndent(writer, indent+1);
+            writer.append("label=\"").append(region.getName().toString()).append(" (")
+                    .append(region.getTypeName()).append(")\";\n");
+            writeIndent(writer, indent+1);
+            writer.append("fontcolor=blue;\n");
+            writeIndent(writer, indent+1);
+            writer.append("labeljust=l;\n");
+            writeIndent(writer, indent+1);
+            writer.append("color=blue\n");
+            for (Region childRegion : region.getInternalRegions()) {
+                writeRegion(childRegion, writer, indent+1);
             }
+            writeIndent(writer, indent);
+            writer.append("}\n");
         }
-        for (Region childRegion : region.getInternalRegions()) {
-            writeRegion(childRegion, writer, indent+1);
-        }
-        writeIndent(writer, indent);
-        writer.append("}\n");
     }
 
     public static void writeCFG(ControlFlowGraph graph, Set<Region> rootRegions, Writer writer) throws IOException {
