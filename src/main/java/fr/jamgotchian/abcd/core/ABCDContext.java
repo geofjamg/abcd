@@ -189,6 +189,8 @@ public class ABCDContext {
             _class.addMethod(method);
 
             try {
+                logger.log(Level.FINE, "********** Decompile method {0} **********", methodSignature);
+
                 logger.log(Level.FINE, "////////// Build Control flow graph of {0} //////////", methodSignature);
                 ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
 
@@ -243,6 +245,18 @@ public class ABCDContext {
             MethodNode mn = entry.getValue();
 
             try {
+                logger.log(Level.FINE, "********** Analyse method {0} **********", methodSignature);
+
+                logger.log(Level.FINER, "Bytecode :\n{0}", OutputUtil.toText(mn.instructions));
+
+                StringBuilder builder = new StringBuilder();
+                ASMUtil.printTryCatchBlocks(mn, builder);
+                logger.log(Level.FINER, "Try catch blocks :\n{0}", builder.toString());
+
+                builder = new StringBuilder();
+                ASMUtil.printLocalVariableTable(mn, builder);
+                logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
+
                 logger.log(Level.FINE, "////////// Build Control flow graph of {0} //////////", methodSignature);
                 ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
 
@@ -257,7 +271,7 @@ public class ABCDContext {
                     logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
                     rootRegions = new StructuralAnalysis(graph).analyse();
                 }
-                
+
                 Writer writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_CFG.dot");
                 DOTUtil.writeCFG(graph, rootRegions, writer);
                 writer.close();

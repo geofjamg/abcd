@@ -27,6 +27,7 @@ import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import fr.jamgotchian.abcd.core.graph.Matrix;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
+import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
 import fr.jamgotchian.abcd.core.util.RangeMap;
@@ -52,7 +53,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     private static final Logger logger = Logger.getLogger(ControlFlowGraphImpl.class.getName());
 
     static {
-        logger.setLevel(Level.FINE);
+        logger.setLevel(Level.FINER);
     }
 
     private final String name;
@@ -358,9 +359,9 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private void removeUnreachableBlock() {
         for (BasicBlock block : new HashSet<BasicBlock>(graph.getVertices())) {
-            if (!block.equals(entryBlock) &&
-                graph.getIncomingEdgesOf(block).isEmpty() &&
-                graph.getOutgoingEdgesOf(block).isEmpty()) {
+            if (!block.equals(entryBlock) && !block.equals(exitBlock) 
+                    && graph.getIncomingEdgesOf(block).isEmpty() 
+                    && graph.getOutgoingEdgesOf(block).isEmpty()) {
                 graph.removeVertex(block);
 
                 logger.log(Level.FINER, "Remove unreachable block {0}", block);
@@ -430,7 +431,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 ForkJoinInfo info = new ForkJoinInfo(forkBlock, joinBlock, branches);
                 joinBlocks.put(joinBlock, info);
                 forkBlocks.put(forkBlock, info);
-                logger.log(Level.FINER, "Fork at {0}, join at {1}",
+                logger.log(Level.FINEST, "Fork at {0}, join at {1}",
                             new Object[]{forkBlock, joinBlock});
                 for (ForkJoinInfo.Branch branch : branches) {
                     logger.log(Level.FINEST, "  Branch start at {0}, end at {1}",

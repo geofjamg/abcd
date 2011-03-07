@@ -64,6 +64,10 @@ public class EdgeImpl implements Edge {
         return category;
     }
 
+    public boolean isLoopBack() {
+        return category != null && category == EdgeCategory.BACK;
+    }
+    
     public void setCategory(EdgeCategory category) {
         this.category = category;
     }

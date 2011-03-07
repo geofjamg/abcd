@@ -68,9 +68,9 @@ class LoopRecognizer implements RegionRecognizer {
             } else if (incomingEdge2.equals(outgoingEdge1) || incomingEdge2.equals(outgoingEdge2)) {
                 loopBackEdge = incomingEdge2;
                 subRegions = Collections.emptyList();
-            } else if (incomingEdge1.getCategory() == EdgeCategory.BACK) {
+            } else if (incomingEdge1.isLoopBack()) {
                 loopBackEdge = incomingEdge1;
-            } else if (incomingEdge2.getCategory() == EdgeCategory.BACK) {
+            } else if (incomingEdge2.isLoopBack()) {
                 loopBackEdge = incomingEdge2;
             }
 

@@ -17,13 +17,22 @@
 
 package fr.jamgotchian.abcd.core.util;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.LabelNode;
+import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TryCatchBlockNode;
 
 
 /**
@@ -109,6 +118,115 @@ public class ASMUtil implements Opcodes {
         } else {
             Type returnType = Type.getReturnType(mn.desc);
             return returnType.getClassName();
+        }
+    }
+
+    public static Map<LabelNode, Integer> getLabelNodeIndexMap(InsnList instructions) {
+        Map<LabelNode, Integer> labelNodeIndex = new HashMap<LabelNode, Integer>();
+        for (int i = 0; i < instructions.size(); i++) {
+            AbstractInsnNode node = instructions.get(i);
+            if (node.getType() == AbstractInsnNode.LABEL) {
+                labelNodeIndex.put((LabelNode) node, i);
+            }
+        }
+        return labelNodeIndex;
+    }
+    
+    public static void printLocalVariableTable(MethodNode mn, StringBuilder builder) {
+        Map<LabelNode, Integer> labelNodeIndex = getLabelNodeIndexMap(mn.instructions);
+        List<String> indexColumn = new ArrayList<String>();
+        List<String> startColumn = new ArrayList<String>();
+        List<String> endColumn = new ArrayList<String>();
+        List<String> nameColumn = new ArrayList<String>();
+        List<String> typeColumn = new ArrayList<String>();
+        indexColumn.add("index");
+        startColumn.add("start");
+        endColumn.add("end");
+        nameColumn.add("name");
+        typeColumn.add("type");
+        for (int i = 0; i < mn.localVariables.size(); i++) {
+            LocalVariableNode node = (LocalVariableNode) mn.localVariables.get(i);
+            indexColumn.add(Integer.toString(node.index));
+            startColumn.add(Integer.toString(labelNodeIndex.get(node.start)));
+            endColumn.add(Integer.toString(labelNodeIndex.get(node.end)));
+            nameColumn.add(node.name);
+            typeColumn.add(node.desc);
+        }
+        printTable(builder, indexColumn, startColumn, endColumn, nameColumn, typeColumn);
+    }
+    
+    public static void printTryCatchBlocks(MethodNode mn, StringBuilder builder) {
+        Map<LabelNode, Integer> labelNodeIndex = getLabelNodeIndexMap(mn.instructions);
+        int rowCount = mn.tryCatchBlocks.size() + 1;
+        List<String> tryStartColumn = new ArrayList<String>(rowCount);
+        List<String> tryEndColumn = new ArrayList<String>(rowCount);
+        List<String> catchStartColumn = new ArrayList<String>(rowCount);
+        List<String> typeColumn = new ArrayList<String>(rowCount);
+        tryStartColumn.add("tryStart");
+        tryEndColumn.add("endStart");
+        catchStartColumn.add("catchStart");
+        typeColumn.add("type");
+
+        for (int i = 0; i < mn.tryCatchBlocks.size(); i++) {
+            TryCatchBlockNode node = (TryCatchBlockNode) mn.tryCatchBlocks.get(i);
+            int tryStart = labelNodeIndex.get(node.start);
+            int tryEnd = labelNodeIndex.get(node.end);
+            int catchStart = labelNodeIndex.get(node.handler);
+            String exceptionClassName = node.type;
+            if (exceptionClassName != null) {
+                exceptionClassName = exceptionClassName.replace('/', '.');
+            }
+            tryStartColumn.add(Integer.toString(tryStart));
+            tryEndColumn.add(Integer.toString(tryEnd));
+            catchStartColumn.add(Integer.toString(catchStart));
+            typeColumn.add(exceptionClassName);
+        }
+        printTable(builder, tryStartColumn, tryEndColumn, catchStartColumn, typeColumn);
+    }
+
+    private static void printTable(StringBuilder out, List<String>... columns) {
+        List<Integer> widths = new ArrayList<Integer>(columns.length);
+        for (List<String> column : columns) {
+            widths.add(getColumnWidth(column));
+        }
+        int rowWidth = 1;
+        for (int width : widths) {
+            rowWidth += 3;
+            rowWidth += width;
+        }
+
+        printSeparator(out, rowWidth);
+        out.append("\n");
+        int rowCount = columns[0].size();
+        for (int r = 0; r < rowCount; r++) {
+            out.append("|");
+            for (int c = 0; c < columns.length; c++) {
+                String format = " %1$-" + widths.get(c) + "s |";
+                out.append(String.format(format, columns[c].get(r)));
+            }
+            out.append("\n");
+            if (r == 0) {
+                printSeparator(out, rowWidth);
+                out.append("\n");
+            }
+        }
+        printSeparator(out, rowWidth);
+    }
+
+    private static int getColumnWidth(List<String> column) {
+        int max = Integer.MIN_VALUE;
+        for (String s : column) {
+            int length = (s != null ? s.length() : 0);
+            if (length > max) {
+                max = s.length();
+            }
+        }
+        return max;
+    }
+
+    private static void printSeparator(StringBuilder builder, int width) {
+        for (int i = 0; i < width; i++) {
+            builder.append("-");
         }
     }
 }

@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.util.ASMUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,21 +50,15 @@ public class ControlFlowGraphBuilder {
     
     private static final String DEFAULT = "default";
 
-    private final Map<LabelNode, Integer> labelNodeIndex = new HashMap<LabelNode, Integer>();
+    private Map<LabelNode, Integer> labelNodeIndex;
 
     private ControlFlowGraph graph;
 
     public ControlFlowGraph build(MethodNode mn, String methodName) {
 
-        labelNodeIndex.clear();
         graph = new ControlFlowGraphImpl(methodName, mn.instructions);
 
-        for (int i = 0; i < mn.instructions.size(); i++) {
-            AbstractInsnNode node = mn.instructions.get(i);
-            if (node.getType() == AbstractInsnNode.LABEL) {
-                labelNodeIndex.put((LabelNode) node, i);
-            }
-        }
+        labelNodeIndex = ASMUtil.getLabelNodeIndexMap(mn.instructions);
 
         List<TryCatchBlock> tryCatchBlocks = new ArrayList<TryCatchBlock>();
         for (int i = 0; i < mn.tryCatchBlocks.size(); i++) {
@@ -86,14 +81,6 @@ public class ControlFlowGraphBuilder {
 
         analyseInstructions(mn.instructions);
         analyseTryCatchBlocks(tryCatchBlocks);
-
-        if (tryCatchBlocks.size() > 0) {
-            logger.log(Level.FINER, "Try catch blocks:");
-            for (TryCatchBlock tcb : tryCatchBlocks) {
-                logger.log(Level.FINER, String.format("  %1$-10s%2$-10s%3$-10s", 
-                        tcb.getTryStart(), tcb.getTryEnd(), tcb.getCatchStart()));
-            }
-        }
         
         return graph;
     }

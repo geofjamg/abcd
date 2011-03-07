@@ -26,7 +26,9 @@ public interface Edge {
     EdgeCategory getCategory();
     
     void setCategory(EdgeCategory category);
-    
+
+    boolean isLoopBack();
+
     Object getValue();
     
     void setValue(Object value);

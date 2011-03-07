@@ -72,7 +72,7 @@ public class DOTUtil {
         BasicBlock target = graph.getEdgeTarget(edge);
         writer.append("  \"").append(source.toString()).append("\" -> \"")
                 .append(target.toString()).append("\" [");
-        if (edge.getCategory() == EdgeCategory.BACK) {
+        if (edge.isLoopBack()) {
             writer.append("color=red");
         } else if (edge.isLoopExit()) {
             writer.append("color=green");
