@@ -27,6 +27,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.JumpIfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
@@ -238,6 +239,12 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
         }
         writer.decrIndent();
         writer.write("}");
+        return null;
+    }
+
+    public Void visit(LabeledStatement stmt, Void arg) {
+        writer.write(stmt.getLabel()).write(":").writeSpace();
+        stmt.getStmt().accept(this, arg);
         return null;
     }
 }

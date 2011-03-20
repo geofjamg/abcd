@@ -33,12 +33,14 @@ import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.JumpIfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
@@ -222,6 +224,7 @@ public class ConditionalExpressionRefactoring implements StatementVisitor<Object
     }
 
     public Object visit(JumpIfStatement stmt, Object arg) {
+        stmt.getCondition().accept(choiceExprRemover, null);
         return null;
     }
 
@@ -234,10 +237,20 @@ public class ConditionalExpressionRefactoring implements StatementVisitor<Object
     }
 
     public Object visit(LookupOrTableSwitchStatement stmt, Object arg) {
+        stmt.getCondition().accept(choiceExprRemover, null);
         return null;
     }
 
     public Object visit(SwitchCaseStatement stmt, Object arg) {
+        stmt.getCondition().accept(choiceExprRemover, null);
+        for (CaseStatement _case : stmt.getCases()) {
+            _case.getBlockStmt().accept(this, arg);
+        }
+        return null;
+    }
+
+    public Object visit(LabeledStatement stmt, Object arg) {
+        stmt.getStmt().accept(this, arg);
         return null;
     }
 }

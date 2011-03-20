@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
+import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -123,6 +124,14 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
     }
 
     public Collection<Statement> visit(SwitchCaseStatement stmt, Void arg) {
+        for (CaseStatement _case : stmt.getCases()) {
+            _case.getBlockStmt().accept(this, arg);
+        }
+        return null;
+    }
+
+    public Collection<Statement> visit(LabeledStatement stmt, Void arg) {
+        stmt.getStmt().accept(this, arg);
         return null;
     }
 }
