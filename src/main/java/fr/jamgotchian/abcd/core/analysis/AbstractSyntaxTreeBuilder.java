@@ -44,7 +44,7 @@ import fr.jamgotchian.abcd.core.region.CaseRegion;
 import fr.jamgotchian.abcd.core.region.CatchRegion;
 import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
 import fr.jamgotchian.abcd.core.region.IfThenRegion;
-import fr.jamgotchian.abcd.core.region.LeafRegion;
+import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.LoopRegion;
 import fr.jamgotchian.abcd.core.region.LoopSubRegion;
@@ -84,9 +84,9 @@ public class AbstractSyntaxTreeBuilder {
 
     private void buildAST(Region region, BlockStatement blockStmt) {
         switch (region.getType()) {
-            case LEAF: {
-                LeafRegion leaf = (LeafRegion) region;
-                for (Statement stmt : ((BasicBlockAnalysisDataImpl) leaf.getBlock().getData()).getUsefullStatements()) {
+            case BASIC_BLOCK: {
+                BasicBlockRegion basicBlockRegion = (BasicBlockRegion) region;
+                for (Statement stmt : ((BasicBlockAnalysisDataImpl) basicBlockRegion.getBlock().getData()).getUsefullStatements()) {
                     blockStmt.add(stmt);
                 }
                 break;

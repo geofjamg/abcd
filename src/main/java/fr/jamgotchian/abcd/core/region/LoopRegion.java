@@ -92,7 +92,7 @@ public class LoopRegion extends AbstractRegion {
         return Collections.unmodifiableList(subRegions);
     }
        
-    public Collection<Region> getInternalRegions() {
+    public Collection<Region> getChildRegions() {
         List<Region> regions = new ArrayList<Region>();
         regions.add(loopTailRegion);
         for (LoopSubRegion b : subRegions) {
@@ -101,7 +101,7 @@ public class LoopRegion extends AbstractRegion {
         return regions;
     }
 
-    public Collection<Edge> getInternalEdges() {
+    public Collection<Edge> getChildEdges() {
         Set<Edge> edges = new HashSet<Edge>();
         edges.add(backEdge);
         for (LoopSubRegion b : subRegions) {

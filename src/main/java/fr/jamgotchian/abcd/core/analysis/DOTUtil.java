@@ -20,7 +20,6 @@ package fr.jamgotchian.abcd.core.analysis;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.controlflow.EdgeCategory;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.RegionType;
 import java.io.IOException;
@@ -95,9 +94,9 @@ public class DOTUtil {
     }
 
     private static void writeRegion(Region region, Writer writer, int indent) throws IOException {
-        if (region.getType() == RegionType.LEAF) {
+        if (region.getType() == RegionType.BASIC_BLOCK) {
             writeIndent(writer, indent);
-            writeBlock(region.getEntryBlock(), writer);
+            writeBlock(region.getEntryBasicBlock(), writer);
         } else {
             writeIndent(writer, indent);
             writer.append("subgraph \"cluster_").append(region.getName().toString()).append("\" {\n");
@@ -110,7 +109,7 @@ public class DOTUtil {
             writer.append("labeljust=l;\n");
             writeIndent(writer, indent+1);
             writer.append("color=blue\n");
-            for (Region childRegion : region.getInternalRegions()) {
+            for (Region childRegion : region.getChildRegions()) {
                 writeRegion(childRegion, writer, indent+1);
             }
             writeIndent(writer, indent);

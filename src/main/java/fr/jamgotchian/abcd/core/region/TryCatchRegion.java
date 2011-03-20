@@ -93,7 +93,7 @@ public class TryCatchRegion extends AbstractRegion {
         return null;
     }
 
-    public Collection<Region> getInternalRegions() {
+    public Collection<Region> getChildRegions() {
         List<Region> regions = new ArrayList<Region>();
         regions.add(tryRegion1);
         if (tryRegion2 != null) {
@@ -105,7 +105,7 @@ public class TryCatchRegion extends AbstractRegion {
         return regions;
     }
 
-    public Collection<Edge> getInternalEdges() {
+    public Collection<Edge> getChildEdges() {
         List<Edge> edges = new ArrayList<Edge>();
         edges.add(tryEdge1);
         if (tryEdge2 != null) {

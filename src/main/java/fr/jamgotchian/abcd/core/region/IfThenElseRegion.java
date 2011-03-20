@@ -100,11 +100,11 @@ public class IfThenElseRegion extends AbstractRegion {
         return elseRegion;
     }
 
-    public Collection<Region> getInternalRegions() {
+    public Collection<Region> getChildRegions() {
         return Arrays.asList(ifRegion, thenRegion, elseRegion);
     }
 
-    public Collection<Edge> getInternalEdges() {
+    public Collection<Edge> getChildEdges() {
         return Sets.newHashSet(beforeThenEdge, afterThenEdge, beforeElseEdge, 
                                afterElseEdge);
     }

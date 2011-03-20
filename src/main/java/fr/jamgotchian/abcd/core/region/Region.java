@@ -20,7 +20,6 @@ package fr.jamgotchian.abcd.core.region;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import java.util.Collection;
-import java.util.Set;
 
 /**
  *
@@ -38,15 +37,15 @@ public interface Region {
     
     Region getExitRegionIfUnique();
 
-    BasicBlock getEntryBlock();
+    BasicBlock getEntryBasicBlock();
     
-    BasicBlock getExitBlockIfUnique();
+    BasicBlock getExitBasicBlockIfUnique();
     
-    Collection<Region> getInternalRegions();
+    Collection<Region> getChildRegions();
 
-    Collection<BasicBlock> getInternalBlocks();
+    Collection<BasicBlock> getChildBasicBlocks();
     
-    Collection<Edge> getInternalEdges();
+    Collection<Edge> getChildEdges();
 
     Edge createSyntheticEdge(Collection<Edge> edges);
 }

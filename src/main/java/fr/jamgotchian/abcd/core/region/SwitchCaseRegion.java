@@ -69,21 +69,21 @@ public class SwitchCaseRegion extends AbstractRegion {
         return Collections.unmodifiableList(caseRegions);
     }
     
-    public Collection<Region> getInternalRegions() {
-        Set<Region> internalRegions = new HashSet<Region>();
-        internalRegions.add(switchRegion);
+    public Collection<Region> getChildRegions() {
+        Set<Region> regions = new HashSet<Region>();
+        regions.add(switchRegion);
         for (CaseRegion _case : caseRegions) {
-            internalRegions.add(_case.getRegion());            
+            regions.add(_case.getRegion());            
         }
-        return internalRegions;
+        return regions;
     }
 
-    public Collection<Edge> getInternalEdges() {
-        Set<Edge> internalEdges = new HashSet<Edge>();
+    public Collection<Edge> getChildEdges() {
+        Set<Edge> edges = new HashSet<Edge>();
         for (CaseRegion _case : caseRegions) {
-            internalEdges.add(_case.getIncomingEdge());
-            internalEdges.add(_case.getOutgoingEdge());
+            edges.add(_case.getIncomingEdge());
+            edges.add(_case.getOutgoingEdge());
         }
-        return internalEdges;
+        return edges;
     }
 }

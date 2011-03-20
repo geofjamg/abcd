@@ -271,7 +271,22 @@ public class Test {
         }
 
     }
-
+   
+    public void testNestedIfWithBreak(int a, int b) {
+        for (int i = 0; i < 10; i++) {
+            if (a == 1) {
+                System.out.println("a");
+                if (b == 2) {
+                    System.out.println("b");
+                    break;
+                } else {
+                    System.out.println("c");
+                }
+            }
+            System.out.println("d");
+        }
+    }
+   
     public void testCatch() {
         try {
             a();

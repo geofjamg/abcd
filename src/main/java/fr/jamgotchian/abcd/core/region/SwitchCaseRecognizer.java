@@ -46,7 +46,7 @@ public class SwitchCaseRecognizer implements RegionRecognizer {
         //     C     region D
         //    ...    outgoingExternalEdges
         //
-        BasicBlock blockA = regionA.getExitBlockIfUnique();
+        BasicBlock blockA = regionA.getExitBasicBlockIfUnique();
         if (blockA == null) {
             return null;
         }

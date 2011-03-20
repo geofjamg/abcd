@@ -74,13 +74,13 @@ public class StructuralAnalysis {
     }
 
     private void collapseRegion(Region structuredRegion) {
-        Collection<Region> internalRegions = structuredRegion.getInternalRegions();
+        Collection<Region> internalRegions = structuredRegion.getChildRegions();
 
         logger.log(Level.FINER, "Find {0} region : {1} => {2}",
                 new Object[] {structuredRegion.getTypeName(),
                     internalRegions.toString(), structuredRegion});
 
-        Collection<Edge> internalEdges = structuredRegion.getInternalEdges();
+        Collection<Edge> internalEdges = structuredRegion.getChildEdges();
 
         logger.log(Level.FINEST, "  Internal edges : {0}", regionGraph.toString(internalEdges));
 
@@ -159,10 +159,10 @@ public class StructuralAnalysis {
             regionGraph.addEdge(structuredRegion, region, syntheticEdge);
         }
 
-        for (Edge edge : structuredRegion.getInternalEdges()) {
+        for (Edge edge : structuredRegion.getChildEdges()) {
             regionGraph.removeEdge(edge);
         }
-        for (Region region : structuredRegion.getInternalRegions()) {
+        for (Region region : structuredRegion.getChildRegions()) {
             regionGraph.removeVertex(region);
         }
 
@@ -173,7 +173,7 @@ public class StructuralAnalysis {
     }
 
     private static void buildControlTree(Region parentRegion, MutableTree<Region, Edge> controlTree) {
-        for (Region childRegion : parentRegion.getInternalRegions()) {
+        for (Region childRegion : parentRegion.getChildRegions()) {
            controlTree.addNode(parentRegion, childRegion, new EdgeImpl());
            buildControlTree(childRegion, controlTree);
         }
@@ -184,7 +184,7 @@ public class StructuralAnalysis {
         Map<BasicBlock, Region> block2region = new HashMap<BasicBlock, Region>();
         regionGraph = DirectedGraphs.newDirectedGraph();
         for (BasicBlock block : graph.getBasicBlocks()) {
-            Region region = new LeafRegion(block);
+            Region region = new BasicBlockRegion(block);
             block2region.put(block, region);
             regionGraph.addVertex(region);
         }

@@ -22,7 +22,7 @@ package fr.jamgotchian.abcd.core.region;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public enum RegionType {
-    LEAF,
+    BASIC_BLOCK,
     BLOCK,
     IF_THEN,
     IF_THEN_ELSE,

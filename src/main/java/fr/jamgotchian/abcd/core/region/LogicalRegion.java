@@ -77,11 +77,11 @@ public class LogicalRegion extends AbstractRegion {
         return regionB;
     }
 
-    public Collection<Region> getInternalRegions() {
+    public Collection<Region> getChildRegions() {
         return Arrays.asList(regionA, regionB);
     }
 
-    public Collection<Edge> getInternalEdges() {
+    public Collection<Edge> getChildEdges() {
         return Sets.newHashSet(trueEdgeA, falseEdgeA, trueEdgeB, falseEdgeB);
     }
 

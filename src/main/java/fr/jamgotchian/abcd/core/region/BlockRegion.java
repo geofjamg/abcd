@@ -30,13 +30,13 @@ import java.util.Set;
  */
 public class BlockRegion extends AbstractRegion {
  
-    private final Set<Edge> internalEdges;
+    private final Set<Edge> edges;
     
     private final List<Region> regions;
     
-    BlockRegion(Set<Edge> internalEdges, List<Region> regions) {
-        if (internalEdges == null) {
-            throw new ABCDException("internalEdges == null");
+    BlockRegion(Set<Edge> edges, List<Region> regions) {
+        if (edges == null) {
+            throw new ABCDException("edges == null");
         }                           
         if (regions == null) {
             throw new ABCDException("regions == null");
@@ -44,7 +44,7 @@ public class BlockRegion extends AbstractRegion {
         if (regions.size() < 2) {
             throw new ABCDException("regions < 2");
         }
-        this.internalEdges = internalEdges;
+        this.edges = edges;
         this.regions = regions;
     }
     
@@ -64,11 +64,11 @@ public class BlockRegion extends AbstractRegion {
         return Collections.unmodifiableList(regions);
     }
 
-    public Collection<Region> getInternalRegions() {
+    public Collection<Region> getChildRegions() {
         return Collections.unmodifiableList(regions);
     }
 
-    public Collection<Edge> getInternalEdges() {
-        return Collections.unmodifiableSet(internalEdges);
+    public Collection<Edge> getChildEdges() {
+        return Collections.unmodifiableSet(edges);
     }
 }

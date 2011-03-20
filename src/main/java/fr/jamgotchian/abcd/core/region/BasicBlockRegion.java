@@ -27,11 +27,11 @@ import java.util.Collections;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LeafRegion implements Region {
+public class BasicBlockRegion implements Region {
 
     private final BasicBlock block;
 
-    LeafRegion(BasicBlock block) {
+    BasicBlockRegion(BasicBlock block) {
         if (block == null) {
             throw new ABCDException("block == null");
         }
@@ -39,7 +39,7 @@ public class LeafRegion implements Region {
     }
 
     public RegionType getType() {
-        return RegionType.LEAF;
+        return RegionType.BASIC_BLOCK;
     }
 
     public String getTypeName() {
@@ -58,23 +58,23 @@ public class LeafRegion implements Region {
         return null;
     }
 
-    public BasicBlock getEntryBlock() {
+    public BasicBlock getEntryBasicBlock() {
         return block;
     }
 
-    public BasicBlock getExitBlockIfUnique() {
+    public BasicBlock getExitBasicBlockIfUnique() {
         return block;
     }
 
-    public Collection<Region> getInternalRegions() {
+    public Collection<Region> getChildRegions() {
         return Collections.emptyList();
     }
 
-    public Collection<BasicBlock> getInternalBlocks() {
+    public Collection<BasicBlock> getChildBasicBlocks() {
         return Collections.singleton(block);
     }
 
-    public Collection<Edge> getInternalEdges() {
+    public Collection<Edge> getChildEdges() {
         return Collections.emptySet();
     }
 
