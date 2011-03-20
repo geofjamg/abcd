@@ -17,38 +17,39 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
+import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.Set;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class PostDominatorsFinder extends BackwardDataFlowAnalysis<Set<BasicBlock>>  {
+class PostDominatorsFinder<N ,E> extends BackwardDataFlowAnalysis<N, E, Set<N>>  {
 
     private final DominatorsFinder dominatorsFinder;  
     
-    PostDominatorsFinder(ControlFlowGraph graph) {
-        super(graph);
-        dominatorsFinder = new DominatorsFinder(graph);
+    PostDominatorsFinder(DirectedGraph<N, E> graph, N exitNode) {
+        super(graph, exitNode);
+        dominatorsFinder = new DominatorsFinder(graph, exitNode);
     }
 
     @Override
-    public Set<BasicBlock> getInitValue(BasicBlock block, boolean isStartBlock) {
-        return dominatorsFinder.getInitValue(block, isStartBlock);
+    public Set<N> getInitValue(N node, boolean isStartNode) {
+        return dominatorsFinder.getInitValue(node, isStartNode);
     }
 
     @Override
-    public Set<BasicBlock> combineValues(Set<BasicBlock> value1, Set<BasicBlock> value2) {
+    public Set<N> combineValues(Set<N> value1, Set<N> value2) {
         return dominatorsFinder.combineValues(value1, value2);
     }
 
     @Override
-    public Set<BasicBlock> applyTranferFunction(BasicBlock block, Set<BasicBlock> inValue) {
-        return dominatorsFinder.applyTranferFunction(block, inValue);
+    public Set<N> applyTranferFunction(N node, Set<N> inValue) {
+        return dominatorsFinder.applyTranferFunction(node, inValue);
     }
 
     @Override
-    public boolean valuesEqual(Set<BasicBlock> value1, Set<BasicBlock> value2) {
+    public boolean valuesEqual(Set<N> value1, Set<N> value2) {
         return dominatorsFinder.valuesEqual(value1, value2);
     }
 }

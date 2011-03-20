@@ -17,21 +17,11 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-import java.util.Collection;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class ForwardDataFlowAnalysis<N, E, V> extends DataFlowAnalysis<N, E, V> {
-  
-    public ForwardDataFlowAnalysis(DirectedGraph<N, E> graph, N entryNode) {
-        super(graph, entryNode);
-    }
-    
-    final protected Collection<N> getPredecessorsOf(N node) {
-        return getGraph().getPredecessorsOf(node);
-    }
+public interface EdgeFactory<E> {
 
+    E createEdge();
 }

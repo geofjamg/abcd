@@ -79,7 +79,7 @@ public class ConditionalExpressionRefactoring implements StatementVisitor<Object
                 Multimap<BasicBlock, Expression> forkBlocks = HashMultimap.create();
                 for (Expression expr : choiceExpr.getChoices()) {
                     BasicBlock block = expr.getBasicBlock();
-                    DominatorInfo dominatorInfo = block.getGraph().getDominatorInfo();
+                    DominatorInfo<BasicBlock, Edge> dominatorInfo = block.getGraph().getDominatorInfo();
                     BasicBlock forkBlock = dominatorInfo.getDominatorsTree().getParent(block);
                     forkBlocks.put(forkBlock, expr);
                 }
@@ -94,7 +94,7 @@ public class ConditionalExpressionRefactoring implements StatementVisitor<Object
 
                         BasicBlock block1 = expr1.getBasicBlock();
                         BasicBlock block2 = expr2.getBasicBlock();
-                        DominatorInfo dominatorInfo = forkBlock.getGraph().getDominatorInfo();
+                        DominatorInfo<BasicBlock, Edge> dominatorInfo = forkBlock.getGraph().getDominatorInfo();
                         Edge forkEdge1 = dominatorInfo.getPostDominanceFrontierOf(block1).iterator().next();
                         Edge forkEdge2 = dominatorInfo.getPostDominanceFrontierOf(block2).iterator().next();
                         Expression thenExpr = null; 

@@ -22,12 +22,12 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.LabelManager;
+import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import fr.jamgotchian.abcd.core.graph.Matrix;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
-import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
 import fr.jamgotchian.abcd.core.util.RangeMap;
@@ -74,7 +74,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private Tree<BasicBlock, Edge> dfst;
 
-    private DominatorInfo dominatorInfo;
+    private DominatorInfo<BasicBlock, Edge> dominatorInfo;
 
     private final Multimap<BasicBlock, ForkJoinInfo> joinBlocks;
 
@@ -82,6 +82,13 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private final List<ExceptionHandler> exceptionHandlers;
 
+    private static class EdgeFactoryImpl implements EdgeFactory<Edge> {
+
+        public Edge createEdge() {
+            return new EdgeImpl();
+        }
+    } 
+    
     public ControlFlowGraphImpl(String name, InsnList instructions) {
         this(name, new BasicBlockImpl(Integer.MIN_VALUE, -1, BasicBlockType.ENTRY));
         if (instructions == null) {
@@ -127,6 +134,10 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return labelManager;
     }
 
+    public DirectedGraph<BasicBlock, Edge> getGraph() {
+        return DirectedGraphs.unmodifiableDirectedGraph(graph);
+    }
+    
     public BasicBlock getEntryBlock() {
         return entryBlock;
     }
@@ -135,7 +146,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return exitBlock;
     }
 
-    public DominatorInfo getDominatorInfo() {
+    public DominatorInfo<BasicBlock, Edge> getDominatorInfo() {
         return dominatorInfo;
     }
 
@@ -336,7 +347,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     public void analyse() {
         removeUnreachableBlock();
         removeUnnecessaryBlock();
-        dominatorInfo = DominatorInfo.create(this);
+        dominatorInfo = DominatorInfo.create(graph, entryBlock, exitBlock, new EdgeFactoryImpl());
         performDepthFirstSearch();
         analyseForkJoin();
         analyseEdgeCategory();

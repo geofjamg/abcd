@@ -32,7 +32,7 @@ import java.util.List;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StackSizeAnalysis extends ForwardDataFlowAnalysis<Integer> {
+public class StackSizeAnalysis extends ForwardDataFlowAnalysis<BasicBlock, Edge, Integer> {
 
     private static class StackEffectAnalyser extends BasicBlockStmtAnalysis {
 
@@ -105,7 +105,7 @@ public class StackSizeAnalysis extends ForwardDataFlowAnalysis<Integer> {
     }
 
     public StackSizeAnalysis(ControlFlowGraph graph) {
-        super(graph);
+        super(graph.getGraph(), graph.getEntryBlock());
         for (BasicBlock block : graph.getBasicBlocks()) {
             block.visit(new StackEffectAnalyser());
         }

@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
+import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,54 +27,49 @@ import java.util.Map;
  * 
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class DataFlowAnalysis<V> {
+public abstract class DataFlowAnalysis<N ,E, V> {
 
-    protected abstract BasicBlock getEntryBlock();
+    private final DirectedGraph<N, E> graph;
+    
+    private final N entryNode;
 
-    protected abstract Collection<BasicBlock> getPredecessorsOf(BasicBlock block);
-
-    protected abstract V getInitValue(BasicBlock block, boolean isStartBlock);
-
-    protected abstract V combineValues(V value1, V value2);
-
-    protected abstract V applyTranferFunction(BasicBlock block, V inValue);
-
-    protected abstract boolean valuesEqual(V value1, V value2);
-
-    private final ControlFlowGraph graph;
-
-    public DataFlowAnalysis(ControlFlowGraph graph) {
+    public DataFlowAnalysis(DirectedGraph<N, E> graph, N entryNode) {
         this.graph = graph;
+        this.entryNode = entryNode;
     }
 
-    public ControlFlowGraph getGraph() {
+    public DirectedGraph<N, E> getGraph() {
         return graph;
     }
 
-    public Map<BasicBlock, V> analyse() {
-        Map<BasicBlock, V> values = new HashMap<BasicBlock, V>();
+    public N getEntryNode() {
+        return entryNode;
+    }
 
-        for (BasicBlock block : graph.getBasicBlocks()) {
-           values.put(block, getInitValue(block, block.equals(getEntryBlock())));
+    public Map<N, V> analyse() {
+        Map<N, V> values = new HashMap<N, V>();
+
+        for (N node : graph.getVertices()) {
+           values.put(node, getInitValue(node, node.equals(getEntryNode())));
         }
 
         boolean change = true;
         while (change) {
             change = false;
-            for (BasicBlock b : graph.getBasicBlocks()) {
-                if (!b.equals(getEntryBlock())) {
-                    V outBefore = values.get(b);
+            for (N n : graph.getVertices()) {
+                if (!n.equals(getEntryNode())) {
+                    V outBefore = values.get(n);
                     V in = null;
-                    for (BasicBlock p : getPredecessorsOf(b)) {
+                    for (N p : getPredecessorsOf(n)) {
                         if (in == null) {
                             in = values.get(p);
                         } else {
                             in = combineValues(in, values.get(p));
                         }
                     }
-                    V out = applyTranferFunction(b, in);
+                    V out = applyTranferFunction(n, in);
                     if (!valuesEqual(outBefore, out)) {
-                        values.put(b, out);
+                        values.put(n, out);
                         change = true;
                     }
                 }
@@ -81,4 +77,14 @@ public abstract class DataFlowAnalysis<V> {
         }
         return values;
     }
+    
+    protected abstract Collection<N> getPredecessorsOf(N node);
+
+    protected abstract V getInitValue(N node, boolean isStartNode);
+
+    protected abstract V combineValues(V value1, V value2);
+
+    protected abstract V applyTranferFunction(N node, V inValue);
+
+    protected abstract boolean valuesEqual(V value1, V value2);
 }

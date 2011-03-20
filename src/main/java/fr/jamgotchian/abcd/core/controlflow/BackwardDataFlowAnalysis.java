@@ -17,24 +17,21 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
+import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.Collection;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class BackwardDataFlowAnalysis<V> extends DataFlowAnalysis<V> {
+public abstract class BackwardDataFlowAnalysis<N, E, V> extends DataFlowAnalysis<N, E, V> {
 
-    public BackwardDataFlowAnalysis(ControlFlowGraph graph) {
-        super(graph);
+    public BackwardDataFlowAnalysis(DirectedGraph<N, E> graph, N exitNode) {
+        super(graph, exitNode);
     }
 
-    final protected BasicBlock getEntryBlock() {
-        return getGraph().getExitBlock();
-    }
-
-    final protected Collection<BasicBlock> getPredecessorsOf(BasicBlock block) {
-        return getGraph().getSuccessorsOf(block);
+    final protected Collection<N> getPredecessorsOf(N node) {
+        return getGraph().getSuccessorsOf(node);
     }
 
 }

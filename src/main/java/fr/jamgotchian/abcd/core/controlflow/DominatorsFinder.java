@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
+import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import fr.jamgotchian.abcd.core.util.Sets;
 import java.util.Arrays;
@@ -28,31 +29,31 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class DominatorsFinder extends ForwardDataFlowAnalysis<Set<BasicBlock>>  {
+class DominatorsFinder<N, E> extends ForwardDataFlowAnalysis<N, E, Set<N>>  {
 
-    DominatorsFinder(ControlFlowGraph graph) {
-        super(graph);
+    DominatorsFinder(DirectedGraph<N, E> graph, N entryNode) {
+        super(graph, entryNode);
     }
 
     @Override
-    public Set<BasicBlock> getInitValue(BasicBlock block, boolean isStartBlock) {
-        if (isStartBlock) {
-            return new HashSet<BasicBlock>(Arrays.asList(block));
+    public Set<N> getInitValue(N node, boolean isStartNode) {
+        if (isStartNode) {
+            return new HashSet<N>(Arrays.asList(node));
         } else {
-            return new HashSet<BasicBlock>(getGraph().getBasicBlocks());
+            return new HashSet<N>(getGraph().getVertices());
         }
     }
 
     @Override
-    public Set<BasicBlock> combineValues(Set<BasicBlock> value1, Set<BasicBlock> value2) {
-        return Sets.intersection(value1 == null ? Collections.<BasicBlock>emptySet() : value1, 
-                                 value2 == null ? Collections.<BasicBlock>emptySet() : value2);
+    public Set<N> combineValues(Set<N> value1, Set<N> value2) {
+        return Sets.intersection(value1 == null ? Collections.<N>emptySet() : value1,
+                                 value2 == null ? Collections.<N>emptySet() : value2);
     }
 
     @Override
-    public Set<BasicBlock> applyTranferFunction(BasicBlock block, Set<BasicBlock> inValue) {
-        Set<BasicBlock> outValue = new HashSet<BasicBlock>();
-        outValue.add(block);
+    public Set<N> applyTranferFunction(N node, Set<N> inValue) {
+        Set<N> outValue = new HashSet<N>();
+        outValue.add(node);
         if (inValue != null) {
             outValue.addAll(inValue);
         }
@@ -60,7 +61,7 @@ class DominatorsFinder extends ForwardDataFlowAnalysis<Set<BasicBlock>>  {
     }
 
     @Override
-    public boolean valuesEqual(Set<BasicBlock> value1, Set<BasicBlock> value2) {
+    public boolean valuesEqual(Set<N> value1, Set<N> value2) {
         return Collections3.sameContent(value1, value2);
-    }    
+    }
 }
