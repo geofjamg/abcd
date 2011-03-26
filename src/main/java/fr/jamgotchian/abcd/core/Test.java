@@ -233,6 +233,26 @@ public class Test {
 
     public void testFinallyWithBreak() {
         int v = 1;
+        for (int i = 0; i < 3; i++) {
+            try {
+                a();
+                if(v == 1) {
+                    try {
+                        System.out.println("zzz");
+                    } finally {
+                        System.out.println("ssss");
+                    }
+                    break;
+                }
+                c();
+            } finally {
+                b();
+            }
+        }
+    }
+
+    public void testFinallyWithBreak1() {
+        int v = 1;
         while (true) {
             try {
                 a();
@@ -459,7 +479,9 @@ public class Test {
                     break TUTU;
                 }
             }
-        }        
+            c();
+        }
+        d();
     }
 
     public void testBreakLabel2() {

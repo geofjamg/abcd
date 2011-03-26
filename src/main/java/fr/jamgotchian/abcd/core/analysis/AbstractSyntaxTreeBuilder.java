@@ -19,10 +19,10 @@ package fr.jamgotchian.abcd.core.analysis;
 import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryOperator;
-import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.BreakStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.DoWhileStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
@@ -32,7 +32,6 @@ import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
-import fr.jamgotchian.abcd.core.ast.stmt.Statements;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
@@ -45,16 +44,16 @@ import fr.jamgotchian.abcd.core.region.CatchRegion;
 import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
 import fr.jamgotchian.abcd.core.region.IfThenRegion;
 import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
+import fr.jamgotchian.abcd.core.region.IfBreakRegion;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.LoopRegion;
-import fr.jamgotchian.abcd.core.region.LoopSubRegion;
-import fr.jamgotchian.abcd.core.region.LoopType;
 import fr.jamgotchian.abcd.core.region.LogicalRegion;
 import fr.jamgotchian.abcd.core.region.LogicalType;
 import fr.jamgotchian.abcd.core.region.SwitchCaseRegion;
 import fr.jamgotchian.abcd.core.region.TryCatchRegion;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -83,6 +82,9 @@ public class AbstractSyntaxTreeBuilder {
     }
 
     private void buildAST(Region region, BlockStatement blockStmt) {
+        logger.log(Level.FINEST, "Build AST from region {0} {1}", 
+                new Object[] {region, region.getTypeName()});
+        
         switch (region.getType()) {
             case BASIC_BLOCK: {
                 BasicBlockRegion basicBlockRegion = (BasicBlockRegion) region;
@@ -173,52 +175,46 @@ public class AbstractSyntaxTreeBuilder {
                 break;
             }
 
+            case IF_BREAK: {
+                IfBreakRegion ifBreak = (IfBreakRegion) region;
+                buildAST(ifBreak.getIfRegion(), blockStmt);
+                JumpIfStatement jumpIfStmt = (JumpIfStatement) blockStmt.getLast();
+                jumpIfStmt.remove();
+                BlockStatement thenBlockStmt = new BlockStatement();                
+                thenBlockStmt.add(new BreakStatement());
+                Expression condition = jumpIfStmt.getCondition();
+                if (ifBreak.isInvertCond()) {
+                    condition = ExpressionInverter.invert(condition);
+                }
+                IfStatement ifStmt = new IfStatement(condition, thenBlockStmt);
+                blockStmt.add(ifStmt);
+                break;
+            }
+                
             case LOOP: {
                 LoopRegion loopRegion = (LoopRegion) region;
                 BlockStatement bodyBlockStmt = new BlockStatement();
 
-                List<LoopSubRegion> subRegions = new ArrayList<LoopSubRegion>(loopRegion.getSubRegions());
-
-                Expression condition = null;
-
-                if (loopRegion.getLoopType() == LoopType.WHILE) {
-                    if (subRegions.size() > 0) {
-                        buildAST(subRegions.get(0).getLoopRegion(), bodyBlockStmt);
-                        subRegions.remove(0);
-                        JumpIfStatement jumpIfStmt = (JumpIfStatement) bodyBlockStmt.getLast();
-                        jumpIfStmt.remove();
-                        condition = ExpressionInverter.invert(jumpIfStmt.getCondition());
-                    } else { // while(true) ...
-                        condition = new Constant(Boolean.TRUE);
-                    }
-                }
-
-                for (LoopSubRegion subRegion : subRegions) {
-                    buildAST(subRegion.getLoopRegion(), bodyBlockStmt);
-                    JumpIfStatement jumpIfStmt = (JumpIfStatement) bodyBlockStmt.getLast();
-                    jumpIfStmt.remove();
-                    bodyBlockStmt.add(Statements.createIfThenBreakStmt(ExpressionInverter.invert(jumpIfStmt.getCondition())));
-                }
-
-                buildAST(loopRegion.getLoopTailRegion(), bodyBlockStmt);
-
+                buildAST(loopRegion.getLoopRegion(), bodyBlockStmt);
+                
                 switch (loopRegion.getLoopType()) {
-                    case WHILE:
-                        blockStmt.add(new WhileStatement(condition, bodyBlockStmt));
-                        break;
-
-                    case DO_WHILE: {
-                        JumpIfStatement jumpIfStmt = (JumpIfStatement) bodyBlockStmt.getLast();
-                        jumpIfStmt.remove();
-                        DoWhileStatement doWhileStmt = new DoWhileStatement(bodyBlockStmt, jumpIfStmt.getCondition());
-                        blockStmt.add(doWhileStmt);
+                    case WHILE: {
+                        IfStatement ifStmt = (IfStatement) bodyBlockStmt.getFirst();
+                        ifStmt.remove();
+                        Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
+                        blockStmt.add(new WhileStatement(condition, bodyBlockStmt));                        
                         break;
                     }
-
+                        
+                    case DO_WHILE:
+                        JumpIfStatement jumpIfStmt = (JumpIfStatement) bodyBlockStmt.getLast();
+                        jumpIfStmt.remove();
+                        blockStmt.add(new DoWhileStatement(bodyBlockStmt, jumpIfStmt.getCondition()));
+                        break;
+                        
                     default:
                         throw new AssertionError();
                 }
-
                 break;
             }
 

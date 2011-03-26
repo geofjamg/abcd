@@ -19,6 +19,8 @@ package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
+import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -116,5 +118,28 @@ public class TryCatchRegion extends AbstractRegion {
             edges.add(_catch.getOutgoingEdge());
         }
         return edges;
+    }
+
+    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+        graph.addVertex(this);
+        Regions.moveIncomingEdges(graph, tryRegion1, this);
+        graph.addEdge(this, graph.getEdgeTarget(tryEdge2 != null ? tryEdge2 : tryEdge1), new EdgeImpl());
+        graph.removeEdge(tryEdge1);
+        if (tryEdge2 != null) {
+            graph.removeEdge(tryEdge2);
+        }
+        Regions.moveOutgoingEdges(graph, tryRegion1, this);
+        graph.removeVertex(tryRegion1);
+        if (tryRegion2 != null) {
+            Regions.moveOutgoingEdges(graph, tryRegion2, this);
+            graph.removeVertex(tryRegion2);
+        }
+        for (CatchRegion _catch : catchRegions) {
+            graph.removeEdge(_catch.getIncomingEdge());
+            graph.removeEdge(_catch.getOutgoingEdge());
+            // move residual exceptional edges
+            Regions.moveOutgoingEdges(graph, _catch.getRegion(), this);
+            graph.removeVertex(_catch.getRegion());
+        }
     }
 }

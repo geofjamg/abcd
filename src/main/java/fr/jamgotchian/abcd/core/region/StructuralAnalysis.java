@@ -17,8 +17,6 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
@@ -30,10 +28,8 @@ import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,97 +70,14 @@ public class StructuralAnalysis {
     }
 
     private void collapseRegion(Region structuredRegion) {
-        Collection<Region> internalRegions = structuredRegion.getChildRegions();
-
         logger.log(Level.FINER, "Find {0} region : {1} => {2}",
                 new Object[] {structuredRegion.getTypeName(),
-                    internalRegions.toString(), structuredRegion});
+                    structuredRegion.getChildRegions().toString(), structuredRegion});
 
-        Collection<Edge> internalEdges = structuredRegion.getChildEdges();
+        logger.log(Level.FINEST, "  Internal edges : {0}", 
+                regionGraph.toString(structuredRegion.getChildEdges()));
 
-        logger.log(Level.FINEST, "  Internal edges : {0}", regionGraph.toString(internalEdges));
-
-        Set<Region> externalPredecessors = new HashSet<Region>();
-        Multimap<Region, Edge> externalSuccessors = HashMultimap.create();
-        Set<Edge> externalIncomingEdges = new HashSet<Edge>();
-        Set<Edge> externalOutgoingEdges = new HashSet<Edge>();
-        Set<Edge> externalLoopEdges = new HashSet<Edge>();
-
-        for (Region r : internalRegions) {
-            for (Edge e : new HashSet<Edge>(regionGraph.getOutgoingEdgesOf(r))) {
-                if (!internalEdges.contains(e)) {
-                    Region target = regionGraph.getEdgeTarget(e);
-                    if (internalRegions.contains(target)) {
-                        externalLoopEdges.add(e);
-                    } else {
-                        externalOutgoingEdges.add(e);
-                    }
-                }
-            }
-            for (Edge e : new HashSet<Edge>(regionGraph.getIncomingEdgesOf(r))) {
-                if (!internalEdges.contains(e)) {
-                    Region source = regionGraph.getEdgeSource(e);
-                    if (internalRegions.contains(source)) {
-                        externalLoopEdges.add(e);
-                    } else {
-                        externalIncomingEdges.add(e);
-                    }
-                }
-            }
-        }
-
-        for (Edge e : internalEdges) {
-            Region source = regionGraph.getEdgeSource(e);
-            Region target = regionGraph.getEdgeTarget(e);
-            if (!internalRegions.contains(source)) {
-                externalPredecessors.add(source);
-            }
-            if (!internalRegions.contains(target)) {
-                externalSuccessors.put(target, e);
-            }
-        }
-
-        logger.log(Level.FINEST, "  External incoming edges : {0}", regionGraph.toString(externalIncomingEdges));
-        logger.log(Level.FINEST, "  External outgoing edges : {0}", regionGraph.toString(externalOutgoingEdges));
-        logger.log(Level.FINEST, "  External predecessors : {0}", externalPredecessors);
-        logger.log(Level.FINEST, "  External successors : {0}", externalSuccessors.keySet());
-
-        regionGraph.addVertex(structuredRegion);
-
-        for (Edge edge : externalLoopEdges) {
-            regionGraph.removeEdge(edge);
-            regionGraph.addEdge(structuredRegion, structuredRegion, edge);
-        }
-        for (Edge edge : externalIncomingEdges) {
-            Region source = regionGraph.getEdgeSource(edge);
-            regionGraph.removeEdge(edge);
-            if (!regionGraph.containsEdge(source, structuredRegion)) {
-                regionGraph.addEdge(source, structuredRegion, edge);
-            }
-        }
-        for (Edge edge : externalOutgoingEdges) {
-            Region target = regionGraph.getEdgeTarget(edge);
-            regionGraph.removeEdge(edge);
-            if (!regionGraph.containsEdge(structuredRegion, target)) {
-                regionGraph.addEdge(structuredRegion, target, edge);
-            }
-        }
-        for (Region region : externalPredecessors) {
-            regionGraph.addEdge(region, structuredRegion, new EdgeImpl());
-        }
-        for (Map.Entry<Region, Collection<Edge>> entry : externalSuccessors.asMap().entrySet()) {
-            Region region = entry.getKey();
-            Collection<Edge> edges = entry.getValue();
-            Edge syntheticEdge = structuredRegion.createSyntheticEdge(edges);
-            regionGraph.addEdge(structuredRegion, region, syntheticEdge);
-        }
-
-        for (Edge edge : structuredRegion.getChildEdges()) {
-            regionGraph.removeEdge(edge);
-        }
-        for (Region region : structuredRegion.getChildRegions()) {
-            regionGraph.removeVertex(region);
-        }
+        structuredRegion.collapse(regionGraph);
 
         if (structuredRegion.getEntryRegion().equals(entryRegion)) {
             logger.log(Level.FINEST, "  New entry region : {0}", structuredRegion);
@@ -219,8 +132,8 @@ public class StructuralAnalysis {
                 }
             }
 
-//            logger.log(Level.FINEST, "Region graph :\n{0}",
-//                    DirectedGraphs.toString(regionGraph, entryRegion));
+            logger.log(Level.FINEST, "Region graph :\n{0}",
+                    DirectedGraphs.toString(regionGraph, entryRegion));
         }
 
         Set<Region> rootRegions = regionGraph.getVertices();

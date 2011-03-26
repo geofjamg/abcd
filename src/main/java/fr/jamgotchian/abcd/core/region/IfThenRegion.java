@@ -20,6 +20,8 @@ package fr.jamgotchian.abcd.core.region;
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
+import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -42,7 +44,7 @@ public class IfThenRegion extends AbstractRegion {
     private final boolean invertCondition;
     
     IfThenRegion(Edge beforeThenEdge, Edge afterThenEdge, Edge jumpEdge,
-                        Region ifRegion, Region thenRegion, boolean invertCondition) {
+                 Region ifRegion, Region thenRegion, boolean invertCondition) {
         if (beforeThenEdge == null) {
             throw new ABCDException("beforeThenEdge == null");
         }
@@ -96,5 +98,16 @@ public class IfThenRegion extends AbstractRegion {
 
     public Collection<Edge> getChildEdges() {
         return Sets.newHashSet(beforeThenEdge, afterThenEdge, jumpEdge);
+    }
+    
+    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+        graph.addVertex(this);
+        Regions.moveIncomingEdges(graph, ifRegion, this);
+        graph.addEdge(this, graph.getEdgeTarget(afterThenEdge), new EdgeImpl());
+        graph.removeEdge(beforeThenEdge);
+        graph.removeEdge(afterThenEdge);
+        graph.removeEdge(jumpEdge);
+        graph.removeVertex(ifRegion);
+        graph.removeVertex(thenRegion);
     }
 }

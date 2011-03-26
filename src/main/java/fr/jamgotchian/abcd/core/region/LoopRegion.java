@@ -17,14 +17,12 @@
 
 package fr.jamgotchian.abcd.core.region;
 
+import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import java.util.ArrayList;
+import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
+import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -33,81 +31,75 @@ import java.util.Set;
 public class LoopRegion extends AbstractRegion {
 
     private final LoopType loopType;
-    
-    private final Region loopTailRegion;
+
+    private final Region loopRegion;
 
     private final Edge backEdge;
 
-    private final List<LoopSubRegion> subRegions;
-    
-    public LoopRegion(LoopType loopType, Edge backEdge, Region loopTailRegion,
-                      List<LoopSubRegion> subRegions) {
+    public LoopRegion(LoopType loopType, Edge backEdge, Region loopRegion) {
         if (loopType == null) {
             throw new ABCDException("loopType == null");
         }
         if (backEdge == null) {
             throw new ABCDException("backEdge == null");
-        }                               
-        if (loopTailRegion == null) {
-            throw new ABCDException("loopTailRegion == null");
         }
-        if (subRegions == null) {
-            throw new ABCDException("subRegions == null");
+        if (loopRegion == null) {
+            throw new ABCDException("loopRegion == null");
         }
         this.loopType = loopType;
         this.backEdge = backEdge;
-        this.loopTailRegion = loopTailRegion;
-        this.subRegions = subRegions;
+        this.loopRegion = loopRegion;
     }
 
     public RegionType getType() {
         return RegionType.LOOP;
     }
-    
+
     public LoopType getLoopType() {
         return loopType;
     }
 
     public Region getEntryRegion() {
-        if (subRegions.isEmpty()) {
-            return loopTailRegion;
-        } else {
-            return subRegions.get(0).getLoopRegion();
-        }
+        return loopRegion;
     }
 
     public Region getExitRegionIfUnique() {
-        return loopTailRegion;
+        return loopRegion;
     }
 
-    public Region getLoopTailRegion() {
-        return loopTailRegion;
+    public Region getLoopRegion() {
+        return loopRegion;
     }
 
-    public Edge getLoopBackEdge() {
+    public Edge getBackEdge() {
         return backEdge;
     }
 
-    public List<LoopSubRegion> getSubRegions() {
-        return Collections.unmodifiableList(subRegions);
-    }
-       
     public Collection<Region> getChildRegions() {
-        List<Region> regions = new ArrayList<Region>();
-        regions.add(loopTailRegion);
-        for (LoopSubRegion b : subRegions) {
-            regions.add(b.getLoopRegion());
-        }
-        return regions;
+        return Sets.newHashSet(loopRegion);
     }
 
     public Collection<Edge> getChildEdges() {
-        Set<Edge> edges = new HashSet<Edge>();
-        edges.add(backEdge);
-        for (LoopSubRegion b : subRegions) {
-            edges.add(b.getLoopEdge());
-            edges.add(b.getLoopExitEdge());
+        return Sets.newHashSet(backEdge);
+    }
+
+    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+        graph.addVertex(this);
+        Regions.moveIncomingEdges(graph, loopRegion, this);
+        graph.removeEdge(backEdge);
+        switch (loopType) {
+            case WHILE:
+                Region exitRegion = ((IfBreakRegion) loopRegion.getEntryRegion()).getBreakRegion();
+                graph.addEdge(this, exitRegion, new EdgeImpl());
+                break;
+
+            case DO_WHILE:
+                Regions.moveOutgoingEdges(graph, loopRegion, this);
+                break;
+
+            default:
+                throw new AssertionError();
         }
-        return edges;
+        graph.removeVertex(loopRegion);
     }
 }

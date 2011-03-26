@@ -17,12 +17,8 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.controlflow.EdgeCategory;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  *
@@ -30,116 +26,61 @@ import java.util.List;
  */
 class LoopRecognizer implements RegionRecognizer {
 
-    public Region recognize(DirectedGraph<Region, Edge> graph, Region loopHeadRegion) {
-        Region structuredRegion = null;
-        if (Regions.getPredecessorCountOf(graph, loopHeadRegion, false) == 2
-                && (Regions.getSuccessorCountOf(graph, loopHeadRegion, false) == 1
-                || Regions.getSuccessorCountOf(graph, loopHeadRegion, false) == 2)) {
-
-            Iterator<Edge> it = Regions.getIncomingEdgesOf(graph, loopHeadRegion, false).iterator();
+    public Region recognize(DirectedGraph<Region, Edge> graph, Region loopRegion) {
+        if (Regions.getPredecessorCountOf(graph, loopRegion, false) == 2) {
+            Iterator<Edge> it = Regions.getIncomingEdgesOf(graph, loopRegion, false).iterator();
             Edge incomingEdge1 = it.next();
             Edge incomingEdge2 = it.next();
-            it = Regions.getOutgoingEdgesOf(graph, loopHeadRegion, false).iterator();
-            Edge outgoingEdge1 = it.next();
-            Edge outgoingEdge2 = null;
-            if (it.hasNext()) {
-                outgoingEdge2 = it.next();
-            }
-
+            Region loopHeadRegion = loopRegion.getEntryRegion();
+            Region loopTailRegion = loopRegion.getExitRegionIfUnique();
             //
-            // check for a loop region
+            // check for a while loop region
             //
             //     ...
             //      |
-            //      X<--
-            //    / |   |
+            //      |<--
             //      X   |
-            //    / |   |
-            //     ...
-            //      |   |
-            //      X---
-            //      |
+            //       ---
             //
-            Edge loopBackEdge = null;
-            List<LoopSubRegion> subRegions = null;
-            if (incomingEdge1.equals(outgoingEdge1) || incomingEdge1.equals(outgoingEdge2)) {
-                loopBackEdge = incomingEdge1;
-                subRegions = Collections.emptyList();
-            } else if (incomingEdge2.equals(outgoingEdge1) || incomingEdge2.equals(outgoingEdge2)) {
-                loopBackEdge = incomingEdge2;
-                subRegions = Collections.emptyList();
-            } else if (incomingEdge1.isLoopBack()) {
-                loopBackEdge = incomingEdge1;
-            } else if (incomingEdge2.isLoopBack()) {
-                loopBackEdge = incomingEdge2;
+            if (loopHeadRegion != null && loopHeadRegion.getType() == RegionType.IF_BREAK
+                    && Regions.getSuccessorCountOf(graph, loopRegion, false) == 1) {
+                Edge outgoingEdge = Regions.getFirstOutgoingEdgeOf(graph, loopRegion, false);
+                if (outgoingEdge.isLoopBack()
+                        && (outgoingEdge.equals(incomingEdge1) || outgoingEdge.equals(incomingEdge2))) {
+                    return new LoopRegion(LoopType.WHILE, outgoingEdge, loopRegion);
+                } else {
+                    return null;
+                }
             }
-
-            if (loopBackEdge != null) {
-                Region loopTailRegion = graph.getEdgeSource(loopBackEdge);
-
-                if (Regions.getPredecessorCountOf(graph, loopTailRegion, false) == 1) {
-
-                    subRegions = new ArrayList<LoopSubRegion>();
-
-                    Region loopRegion = null;
-                    for (loopRegion = Regions.getFirstPredecessorOf(graph, loopTailRegion, false);
-                            !loopRegion.equals(loopHeadRegion);
-                            loopRegion = Regions.getFirstPredecessorOf(graph, loopRegion, false)) {
-
-                        if (Regions.getPredecessorCountOf(graph, loopRegion, false) == 1
-                                && Regions.getSuccessorCountOf(graph, loopRegion, false) == 2) {
-                            Iterator<Edge> itE = Regions.getOutgoingEdgesOf(graph, loopRegion, false).iterator();
-                            Edge maybeExitEdge1 = itE.next();
-                            Edge maybeExitEdge2 = itE.next();
-
-                            Edge loopExitEdge = null;
-                            Edge loopEdge = null;
-                            if (maybeExitEdge1.isLoopExit() && !maybeExitEdge2.isLoopExit()) {
-                                loopExitEdge = maybeExitEdge1;
-                                loopEdge = maybeExitEdge2;
-                            } else if (maybeExitEdge2.isLoopExit() && !maybeExitEdge1.isLoopExit()) {
-                                loopExitEdge = maybeExitEdge2;
-                                loopEdge = maybeExitEdge1;
-                            }
-
-                            if (loopExitEdge == null || loopEdge == null) {
-                                subRegions = null;
-                                break;
-                            } else {
-                                subRegions.add(0, new LoopSubRegion(loopRegion, loopEdge, loopExitEdge));
-                            }
-                        }
-                    }
-
-                    if (loopRegion.equals(loopHeadRegion)) {
-                        Iterator<Edge> itE = Regions.getOutgoingEdgesOf(graph, loopRegion, false).iterator();
-                        Edge maybeExitEdge1 = itE.next();
-                        Edge maybeExitEdge2 = itE.next();
-
-                        Edge loopExitEdge = null;
-                        Edge loopEdge = null;
-                        if (maybeExitEdge1.isLoopExit() && !maybeExitEdge2.isLoopExit()) {
-                            loopExitEdge = maybeExitEdge1;
-                            loopEdge = maybeExitEdge2;
-                        } else if (maybeExitEdge2.isLoopExit() && !maybeExitEdge1.isLoopExit()) {
-                            loopExitEdge = maybeExitEdge2;
-                            loopEdge = maybeExitEdge1;
-                        }
-
-                        if (loopExitEdge != null && loopEdge != null) {
-                            subRegions.add(0, new LoopSubRegion(loopRegion, loopEdge, loopExitEdge));
-                        }
-                    }
+            //
+            // check for a do while loop region
+            //
+            //     ...
+            //      |
+            //      |<--
+            //      X   |
+            //      |---
+            //      |
+            //     ...
+            //
+            else if (loopTailRegion != null && loopTailRegion.getType() == RegionType.IF_THEN_ELSE
+                    && Regions.getSuccessorCountOf(graph, loopRegion, false) == 2) {
+                it = Regions.getOutgoingEdgesOf(graph, loopRegion, false).iterator();
+                Edge outgoingEdge1 = it.next();
+                Edge outgoingEdge2 = it.next();
+                if (outgoingEdge1.isLoopBack()
+                        && (outgoingEdge1.equals(incomingEdge1) || outgoingEdge1.equals(incomingEdge2))) {
+                    return new LoopRegion(LoopType.DO_WHILE, outgoingEdge1, loopRegion);
+                } else if (outgoingEdge2.isLoopBack()
+                        && (outgoingEdge2.equals(incomingEdge1) || outgoingEdge2.equals(incomingEdge2))) {
+                    return new LoopRegion(LoopType.DO_WHILE, outgoingEdge2, loopRegion);
+                } else {
+                    return null;
                 }
-
-                if (subRegions != null) {
-                    LoopType loopType = Regions.getSuccessorCountOf(graph, loopTailRegion, false) == 1
-                            ? LoopType.WHILE : LoopType.DO_WHILE;
-                    structuredRegion = new LoopRegion(loopType, loopBackEdge, loopTailRegion, subRegions);
-                }
+            } else {
+                return null;
             }
         }
-
-        return structuredRegion;
+        return null;
     }
 }

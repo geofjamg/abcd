@@ -19,6 +19,8 @@ package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
+import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -85,5 +87,17 @@ public class SwitchCaseRegion extends AbstractRegion {
             edges.add(_case.getOutgoingEdge());
         }
         return edges;
+    }
+
+    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+        graph.addVertex(this);
+        graph.addEdge(this, graph.getEdgeTarget(caseRegions.get(0).getOutgoingEdge()), new EdgeImpl());
+        for (CaseRegion _case : caseRegions) {
+            graph.removeEdge(_case.getIncomingEdge());
+            graph.removeEdge(_case.getOutgoingEdge());
+            graph.removeVertex(_case.getRegion());
+        }        
+        Regions.moveIncomingEdges(graph, switchRegion, this);
+        graph.removeVertex(switchRegion);
     }
 }

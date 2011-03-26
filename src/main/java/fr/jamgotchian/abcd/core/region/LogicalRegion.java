@@ -21,7 +21,7 @@ import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
-import fr.jamgotchian.abcd.core.util.Collections3;
+import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -93,47 +93,52 @@ public class LogicalRegion extends AbstractRegion {
         return regionB;
     }
 
-    @Override
-    public Edge createSyntheticEdge(Collection<Edge> edges) {
-        Edge syntheticEdge = null;
+    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+        graph.addVertex(this);
+        Regions.moveIncomingEdges(graph, regionA, this);
+        Edge trueEdge = null;
+        Edge falseEdge = null;
+        Region trueRegion = null;
+        Region falseRegion = null;
         switch (type) {
             case AND:
-                if (Collections3.sameContent(edges, Arrays.asList(trueEdgeB))) {
-                    syntheticEdge = new EdgeImpl(Boolean.TRUE, trueEdgeB.isLoopExit());
-                } else if (Collections3.sameContent(edges, Arrays.asList(falseEdgeB, falseEdgeA))) {
-                    syntheticEdge = new EdgeImpl(Boolean.FALSE, falseEdgeB.isLoopExit() && falseEdgeA.isLoopExit());
-                }
-                break;
-
-            case OR:
-                if (Collections3.sameContent(edges, Arrays.asList(falseEdgeB))) {
-                    syntheticEdge = new EdgeImpl(Boolean.FALSE, falseEdgeB.isLoopExit());
-                } else if (Collections3.sameContent(edges, Arrays.asList(trueEdgeB, trueEdgeA))) {
-                    syntheticEdge = new EdgeImpl(Boolean.TRUE, trueEdgeB.isLoopExit() && trueEdgeA.isLoopExit());
-                }
+                trueEdge = trueEdgeB;
+                trueRegion = graph.getEdgeTarget(trueEdgeB);
+                falseEdge = new EdgeImpl(Boolean.FALSE, falseEdgeB.isLoopExit() && falseEdgeA.isLoopExit());
+                falseRegion = graph.getEdgeTarget(falseEdgeB);
                 break;
 
             case AND_INVERT_B:
-                if (Collections3.sameContent(edges, Arrays.asList(falseEdgeB))) {
-                    syntheticEdge = new EdgeImpl(Boolean.FALSE, falseEdgeB.isExceptional());
-                } else if (Collections3.sameContent(edges, Arrays.asList(trueEdgeB, falseEdgeA))) {
-                    syntheticEdge = new EdgeImpl(Boolean.TRUE, trueEdgeB.isLoopExit() && falseEdgeA.isLoopExit());
-                }
+                trueEdge = trueEdgeB;
+                trueRegion = graph.getEdgeTarget(falseEdgeB);
+                falseEdge = new EdgeImpl(Boolean.FALSE, trueEdgeB.isLoopExit() && falseEdgeA.isLoopExit());
+                falseRegion = graph.getEdgeTarget(trueEdgeB);
+                break;
+                
+            case OR:
+                trueEdge = new EdgeImpl(Boolean.TRUE, trueEdgeB.isLoopExit() && trueEdgeA.isLoopExit());
+                trueRegion = graph.getEdgeTarget(trueEdgeB);
+                falseEdge = falseEdgeB;
+                falseRegion = graph.getEdgeTarget(falseEdgeB);
                 break;
 
             case OR_INVERT_B:
-                if (Collections3.sameContent(edges, Arrays.asList(trueEdgeB))) {
-                    syntheticEdge = new EdgeImpl(Boolean.FALSE, trueEdgeB.isLoopExit());
-                } else if (Collections3.sameContent(edges, Arrays.asList(falseEdgeB, trueEdgeA))) {
-                    syntheticEdge = new EdgeImpl(Boolean.TRUE, falseEdgeB.isLoopExit() && trueEdgeA.isLoopExit());
-                }
+                trueEdge = new EdgeImpl(Boolean.TRUE, falseEdgeB.isLoopExit() && trueEdgeA.isLoopExit());
+                trueRegion = graph.getEdgeTarget(falseEdgeB);
+                falseEdge = falseEdgeB;
+                falseRegion = graph.getEdgeTarget(trueEdgeB);
                 break;
+                
+            default:
+                throw new AssertionError();
         }
-        
-        if (syntheticEdge == null) {
-            throw new ABCDException("Cannot create synthetic edge");
-        }
-        return syntheticEdge;
+        graph.removeEdge(trueEdgeA);
+        graph.removeEdge(falseEdgeA);
+        graph.removeEdge(trueEdgeB);
+        graph.removeEdge(falseEdgeB);
+        graph.removeVertex(regionA);
+        graph.removeVertex(regionB);
+        graph.addEdge(this, trueRegion, trueEdge);
+        graph.addEdge(this, falseRegion, falseEdge);
     }
-
 }

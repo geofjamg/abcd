@@ -18,8 +18,6 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -58,12 +56,20 @@ public abstract class AbstractRegion implements Region {
         return blocks;
     }
 
+    public Collection<Region> getBreakRegions() {
+        Set<Region> regions = new HashSet<Region>();
+        addBreakRegion(regions);
+        return regions;
+    }
+
+    public void addBreakRegion(Collection<Region> regions) {
+        for (Region child : getChildRegions()) {
+            child.addBreakRegion(regions);
+        }
+    }
+
     public RegionName getName() {
         return getEntryRegion().getName().getParent();
-    }
-    
-    public Edge createSyntheticEdge(Collection<Edge> edges) {
-        return new EdgeImpl();
     }
     
     @Override

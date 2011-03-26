@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
 
 /**
@@ -47,5 +48,9 @@ public interface Region {
     
     Collection<Edge> getChildEdges();
 
-    Edge createSyntheticEdge(Collection<Edge> edges);
+    Collection<Region> getBreakRegions();
+
+    void addBreakRegion(Collection<Region> regions);
+    
+    void collapse(MutableDirectedGraph<Region, Edge> graph);
 }

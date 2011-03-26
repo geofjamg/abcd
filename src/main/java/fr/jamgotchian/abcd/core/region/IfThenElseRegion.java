@@ -20,6 +20,8 @@ package fr.jamgotchian.abcd.core.region;
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
+import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -100,6 +102,22 @@ public class IfThenElseRegion extends AbstractRegion {
         return elseRegion;
     }
 
+    public Edge getAfterElseEdge() {
+        return afterElseEdge;
+    }
+
+    public Edge getAfterThenEdge() {
+        return afterThenEdge;
+    }
+
+    public Edge getBeforeElseEdge() {
+        return beforeElseEdge;
+    }
+
+    public Edge getBeforeThenEdge() {
+        return beforeThenEdge;
+    }
+
     public Collection<Region> getChildRegions() {
         return Arrays.asList(ifRegion, thenRegion, elseRegion);
     }
@@ -107,5 +125,18 @@ public class IfThenElseRegion extends AbstractRegion {
     public Collection<Edge> getChildEdges() {
         return Sets.newHashSet(beforeThenEdge, afterThenEdge, beforeElseEdge, 
                                afterElseEdge);
+    }
+
+    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+        graph.addVertex(this);
+        Regions.moveIncomingEdges(graph, ifRegion, this);
+        graph.addEdge(this, graph.getEdgeTarget(afterThenEdge), new EdgeImpl());
+        graph.removeEdge(beforeThenEdge);
+        graph.removeEdge(beforeElseEdge);
+        graph.removeEdge(afterThenEdge);
+        graph.removeEdge(afterElseEdge);
+        graph.removeVertex(ifRegion);
+        graph.removeVertex(thenRegion);
+        graph.removeVertex(elseRegion);
     }
 }

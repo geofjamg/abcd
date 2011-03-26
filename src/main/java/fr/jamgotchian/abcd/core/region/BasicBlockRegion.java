@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.region;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -83,8 +84,15 @@ public class BasicBlockRegion implements Region {
         return new RegionName(block);
     }
 
-    public Edge createSyntheticEdge(Collection<Edge> edges) {
-        throw new ABCDException("Cannot create synthetic edge");
+    public Collection<Region> getBreakRegions() {
+        return Collections.emptySet();
+    }
+
+    public void addBreakRegion(Collection<Region> regions) {
+    }
+
+    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+        throw new ABCDException("Cannot reduce a basic block region");
     }
 
     @Override

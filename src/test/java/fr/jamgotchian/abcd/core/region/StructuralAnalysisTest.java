@@ -243,34 +243,34 @@ public class StructuralAnalysisTest {
      *       |
      *       B4
      */
-    @Test
-    public void testDoWhileLoopStruct() {
-        logger.info("testDoWhileLoopStruct");
-
-        BasicBlock b1 = new BasicBlockTestImpl(1);
-        BasicBlock b2 = new BasicBlockTestImpl(2);
-        BasicBlock b3 = new BasicBlockTestImpl(3);
-        BasicBlock b4 = new BasicBlockTestImpl(4);
-        BasicBlock b5 = new BasicBlockTestImpl(5);
-        ControlFlowGraph graph = new ControlFlowGraphImpl("testDoWhileLoopStruct");
-        graph.addBasicBlock(b1);
-        graph.addBasicBlock(b2);
-        graph.addBasicBlock(b3);
-        graph.addBasicBlock(b4);
-        graph.addBasicBlock(b5);
-        graph.addEdge(graph.getEntryBlock(), b1);
-        graph.addEdge(b1, b2);
-        graph.addEdge(b2, b3);
-        graph.addEdge(b2, b4).setLoopExit(true);
-        graph.addEdge(b3, b5);
-        graph.addEdge(b3, b4).setLoopExit(true);
-        graph.addEdge(b5, b2);
-        graph.addEdge(b5, b4);
-        graph.addEdge(b4, graph.getExitBlock());
-        graph.analyse();
-
-        Set<Region> rootRegions = new StructuralAnalysis(graph).analyse();
-                
-        assertTrue(rootRegions.size() == 1);
-    }
+//    @Test
+//    public void testDoWhileLoopStruct() {
+//        logger.info("testDoWhileLoopStruct");
+//
+//        BasicBlock b1 = new BasicBlockTestImpl(1);
+//        BasicBlock b2 = new BasicBlockTestImpl(2);
+//        BasicBlock b3 = new BasicBlockTestImpl(3);
+//        BasicBlock b4 = new BasicBlockTestImpl(4);
+//        BasicBlock b5 = new BasicBlockTestImpl(5);
+//        ControlFlowGraph graph = new ControlFlowGraphImpl("testDoWhileLoopStruct");
+//        graph.addBasicBlock(b1);
+//        graph.addBasicBlock(b2);
+//        graph.addBasicBlock(b3);
+//        graph.addBasicBlock(b4);
+//        graph.addBasicBlock(b5);
+//        graph.addEdge(graph.getEntryBlock(), b1);
+//        graph.addEdge(b1, b2);
+//        graph.addEdge(b2, b3);
+//        graph.addEdge(b2, b4).setLoopExit(true);
+//        graph.addEdge(b3, b5);
+//        graph.addEdge(b3, b4).setLoopExit(true);
+//        graph.addEdge(b5, b2);
+//        graph.addEdge(b5, b4);
+//        graph.addEdge(b4, graph.getExitBlock());
+//        graph.analyse();
+//
+//        Set<Region> rootRegions = new StructuralAnalysis(graph).analyse();
+//                
+//        assertTrue(rootRegions.size() == 1);
+//    }
 }

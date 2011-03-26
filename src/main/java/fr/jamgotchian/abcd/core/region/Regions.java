@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.region;
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
+import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -191,4 +192,34 @@ public class Regions {
     public static boolean sameHandlers(DirectedGraph<Region, Edge> graph, Region... regions) {
         return sameHandlers(graph, Arrays.asList(regions));
     }
+     
+    public static void moveIncomingEdges(MutableDirectedGraph<Region, Edge> graph, Region from, Region to) {
+        Collection<Edge> incomingEdges = graph.getIncomingEdgesOf(from);
+        for (Edge incomingEdge : new ArrayList<Edge>(incomingEdges)) {
+            Region source = graph.getEdgeSource(incomingEdge);
+            graph.removeEdge(incomingEdge);
+            graph.addEdge(source, to, incomingEdge);
+        }
+    }
+    
+    public static void moveOutgoingEdges(MutableDirectedGraph<Region, Edge> graph, Region from, Region to) {
+        Collection<Edge> outgoingEdges = graph.getOutgoingEdgesOf(from);
+        for (Edge outgoingEdge : new ArrayList<Edge>(outgoingEdges)) {
+            Region target = graph.getEdgeTarget(outgoingEdge);
+            graph.removeEdge(outgoingEdge);
+            graph.addEdge(to, target, outgoingEdge);
+        }
+    }
+     
+    public static void removeRegions(MutableDirectedGraph<Region, Edge> graph, Collection<Region> regions) {
+        for (Region region : regions) {
+            graph.removeVertex(region);
+        }         
+    }
+        
+    public static void removeEdges(MutableDirectedGraph<Region, Edge> graph, Collection<Edge> edges) {
+        for (Edge edge : edges) {
+            graph.removeEdge(edge);
+        }
+    }    
 }
