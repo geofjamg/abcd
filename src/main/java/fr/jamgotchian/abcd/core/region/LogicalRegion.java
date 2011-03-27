@@ -18,7 +18,6 @@
 package fr.jamgotchian.abcd.core.region;
 
 import com.google.common.collect.Sets;
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
@@ -95,6 +94,7 @@ public class LogicalRegion extends AbstractRegion {
 
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
+        Regions.moveHandlers(graph, regionA, this);
         Regions.moveIncomingEdges(graph, regionA, this);
         Edge trueEdge = null;
         Edge falseEdge = null;

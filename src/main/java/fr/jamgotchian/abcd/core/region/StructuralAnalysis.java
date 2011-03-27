@@ -21,6 +21,7 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
+import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import fr.jamgotchian.abcd.core.graph.MutableTree;
@@ -67,6 +68,10 @@ public class StructuralAnalysis {
 
     public StructuralAnalysis(ControlFlowGraph graph) {
         this.graph = graph;
+    }
+
+    public DirectedGraph<Region, Edge> getRegionGraph() {
+        return DirectedGraphs.unmodifiableDirectedGraph(regionGraph);
     }
 
     private void collapseRegion(Region structuredRegion) {

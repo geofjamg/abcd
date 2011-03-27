@@ -20,6 +20,8 @@ package fr.jamgotchian.abcd.core.analysis;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.graph.DirectedGraph;
+import fr.jamgotchian.abcd.core.graph.VertexToString;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.RegionType;
 import java.io.IOException;
@@ -35,6 +37,12 @@ public class DOTUtil {
     private DOTUtil() {
     }
 
+    private static class DefaultVertexToString<V> implements VertexToString<V> {
+        public String toString(V vertex) {
+            return vertex.toString();
+        }
+    }
+        
     private static void writeBlock(BasicBlock block, Writer writer) throws IOException {
         writer.append("\"").append(block.toString()).append("\" [");
         if (block.getType() != null) {
@@ -66,11 +74,12 @@ public class DOTUtil {
         writer.append("];\n");
     }
 
-    private static void writeEdge(ControlFlowGraph graph, Edge edge, Writer writer) throws IOException {
-        BasicBlock source = graph.getEdgeSource(edge);
-        BasicBlock target = graph.getEdgeTarget(edge);
-        writer.append("  \"").append(source.toString()).append("\" -> \"")
-                .append(target.toString()).append("\" [");
+    private static <V, E> void writeEdge(DirectedGraph<V, Edge> graph, Edge edge, 
+            Writer writer, VertexToString<V> toStr) throws IOException {
+        V source = graph.getEdgeSource(edge);
+        V target = graph.getEdgeTarget(edge);
+        writer.append("  \"").append(toStr.toString(source)).append("\" -> \"")
+                .append(toStr.toString(target)).append("\" [");
         if (edge.isLoopBack()) {
             writer.append("color=red");
         } else if (edge.isLoopExit()) {
@@ -119,8 +128,9 @@ public class DOTUtil {
 
     public static void writeCFG(ControlFlowGraph graph, Set<Region> rootRegions, Writer writer) throws IOException {
         writer.append("digraph CFG {\n");
+        VertexToString<BasicBlock> toStr = new DefaultVertexToString<BasicBlock>();
         for (Edge edge : graph.getEdges()) {
-            writeEdge(graph, edge, writer);
+            writeEdge(graph.getGraph(), edge, writer, toStr);
         }
         if (rootRegions == null) {
             for (BasicBlock block : graph.getBasicBlocks()) {
@@ -131,6 +141,16 @@ public class DOTUtil {
                 writeRegion(rootRegion, writer, 1);
             }
         }
+        writer.append("}");
+    }
+    
+    public static <V> void writeGraph(DirectedGraph<V, Edge> graph, String name, 
+                                      Writer writer, VertexToString<V> toStr) 
+            throws IOException {
+        writer.append("digraph ").append(name).append(" {\n");
+        for (Edge edge : graph.getEdges()) {
+            writeEdge(graph, edge, writer, toStr);
+        }        
         writer.append("}");
     }
 }

@@ -470,6 +470,16 @@ public class Test {
         d();
     }
 
+    public void testBreak4() {
+        for (int i = 0; i < 3; i++) {
+            if (i == 1) {
+                System.out.println("a");
+                break;
+            }
+            System.out.println("b");
+        }
+    }
+
     public void testBreakLabel() {
         TUTU: for (int i = 0; i < 3; i++) {
             a();

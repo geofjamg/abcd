@@ -129,6 +129,7 @@ public class IfThenElseRegion extends AbstractRegion {
 
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
+        Regions.moveHandlers(graph, ifRegion, this);
         Regions.moveIncomingEdges(graph, ifRegion, this);
         graph.addEdge(this, graph.getEdgeTarget(afterThenEdge), new EdgeImpl());
         graph.removeEdge(beforeThenEdge);

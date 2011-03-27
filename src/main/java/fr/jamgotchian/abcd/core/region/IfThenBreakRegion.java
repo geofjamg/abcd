@@ -21,6 +21,7 @@ import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -28,24 +29,30 @@ import java.util.Collections;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class IfBreakRegion extends AbstractRegion {
+public class IfThenBreakRegion extends AbstractRegion {
 
     private final Region ifRegion;
-    
+
     private final Region breakRegion;
 
-    private final Edge breakEdge;
-    
     private final Edge elseEdge;
+
+    private final Edge thenEdge;
+
+    private final Region thenRegion;
+
+    private final Edge thenEdge2;
 
     private final boolean invertCond;
 
-    public IfBreakRegion(Region ifRegion, Region breakRegion, Edge breakEdge, 
-                         Edge elseEdge, boolean invertCond) {
+    public IfThenBreakRegion(Region ifRegion, Region breakRegion, Edge elseEdge, Edge thenEdge,
+                             Region thenRegion, Edge thenEdge2, boolean invertCond) {
         this.ifRegion = ifRegion;
         this.breakRegion = breakRegion;
-        this.breakEdge = breakEdge;
         this.elseEdge = elseEdge;
+        this.thenEdge = thenEdge;
+        this.thenRegion = thenRegion;
+        this.thenEdge2 = thenEdge2;
         this.invertCond = invertCond;
     }
 
@@ -57,20 +64,28 @@ public class IfBreakRegion extends AbstractRegion {
         return breakRegion;
     }
 
-    public Edge getBreakEdge() {
-        return breakEdge;
-    }
-
     public Edge getElseEdge() {
         return elseEdge;
+    }
+
+    public Edge getThenEdge() {
+        return thenEdge;
+    }
+
+    public Region getThenRegion() {
+        return thenRegion;
+    }
+
+    public Edge getThenEdge2() {
+        return thenEdge2;
     }
 
     public boolean isInvertCond() {
         return invertCond;
     }
-    
+
     public RegionType getType() {
-        return RegionType.IF_BREAK;
+        return RegionType.IF_THEN_BREAK;
     }
 
     public Region getEntryRegion() {
@@ -82,11 +97,19 @@ public class IfBreakRegion extends AbstractRegion {
     }
 
     public Collection<Region> getChildRegions() {
-        return Collections.singleton(ifRegion);
+        if (thenRegion == null) {
+            return Collections.singleton(ifRegion);
+        } else {
+            return Arrays.asList(ifRegion, thenRegion);
+        }
     }
 
     public Collection<Edge> getChildEdges() {
-        return Sets.newHashSet(breakEdge, elseEdge);
+        if (thenEdge2 == null) {
+            return Sets.newHashSet(thenEdge, elseEdge);
+        } else {
+            return Sets.newHashSet(thenEdge, elseEdge, thenEdge2);
+        }
     }
 
     @Override
@@ -97,11 +120,18 @@ public class IfBreakRegion extends AbstractRegion {
 
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
-        Region elseRegion = graph.getEdgeTarget(elseEdge);
+        Regions.moveHandlers(graph, ifRegion, this);
+        Region joinRegion = graph.getEdgeTarget(elseEdge);
         graph.removeEdge(elseEdge);
-        graph.removeEdge(breakEdge);
+        graph.removeEdge(thenEdge);
+        if (thenEdge2 != null) {
+            graph.removeEdge(thenEdge2);
+        }
         Regions.moveIncomingEdges(graph, ifRegion, this);
         graph.removeVertex(ifRegion);
-        graph.addEdge(this, elseRegion, new EdgeImpl());
+        if (thenRegion != null) {
+            graph.removeVertex(thenRegion);
+        }
+        graph.addEdge(this, joinRegion, new EdgeImpl());
     }
 }

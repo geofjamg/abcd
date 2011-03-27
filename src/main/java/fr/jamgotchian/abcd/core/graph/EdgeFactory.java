@@ -15,20 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.region;
+package fr.jamgotchian.abcd.core.graph;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public enum RegionType {
-    BASIC_BLOCK,
-    BLOCK,
-    IF_THEN,
-    IF_THEN_ELSE,
-    IF_THEN_BREAK,
-    SWITCH_CASE,
-    LOOP,
-    LOGICAL,
-    TRY_CATCH
+public interface EdgeFactory<E> {
+
+    E createEdge();
 }

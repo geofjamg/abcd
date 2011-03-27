@@ -85,11 +85,12 @@ public class LoopRegion extends AbstractRegion {
 
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
+        Regions.moveHandlers(graph, loopRegion, this);
         Regions.moveIncomingEdges(graph, loopRegion, this);
         graph.removeEdge(backEdge);
         switch (loopType) {
             case WHILE:
-                Region exitRegion = ((IfBreakRegion) loopRegion.getEntryRegion()).getBreakRegion();
+                Region exitRegion = ((IfThenBreakRegion) loopRegion.getEntryRegion()).getBreakRegion();
                 graph.addEdge(this, exitRegion, new EdgeImpl());
                 break;
 

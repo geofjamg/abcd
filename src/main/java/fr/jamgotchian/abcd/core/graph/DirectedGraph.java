@@ -17,6 +17,8 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -68,6 +70,8 @@ public interface DirectedGraph<V, E> {
     void reversePostOrderDFS(V v, Set<V> visited, List<V> vertices, List<E> edges, boolean invert);
 
     Tree<V, E> getReversePostOrderDFST(V root, boolean invert);
+   
+    void writeDOT(String name, Writer writer) throws IOException;
    
     String toString(Collection<E> edges);
 

@@ -75,6 +75,7 @@ public class BlockRegion extends AbstractRegion {
 
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
+        Regions.moveHandlers(graph, regions.get(0), this);
         Regions.moveIncomingEdges(graph, regions.get(0), this);
         Regions.moveOutgoingEdges(graph, regions.get(regions.size()-1), this);
         Regions.removeEdges(graph, edges);

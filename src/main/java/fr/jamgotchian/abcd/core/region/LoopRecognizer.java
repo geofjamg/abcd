@@ -42,7 +42,7 @@ class LoopRecognizer implements RegionRecognizer {
             //      X   |
             //       ---
             //
-            if (loopHeadRegion != null && loopHeadRegion.getType() == RegionType.IF_BREAK
+            if (loopHeadRegion != null && loopHeadRegion.getType() == RegionType.IF_THEN_BREAK
                     && Regions.getSuccessorCountOf(graph, loopRegion, false) == 1) {
                 Edge outgoingEdge = Regions.getFirstOutgoingEdgeOf(graph, loopRegion, false);
                 if (outgoingEdge.isLoopBack()

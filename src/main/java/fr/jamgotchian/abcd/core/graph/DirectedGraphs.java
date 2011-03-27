@@ -18,6 +18,8 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -130,6 +132,10 @@ public class DirectedGraphs {
 
         public boolean containsEdge(V source, V target) {
             return delegate.containsEdge(source, target);
+        }
+
+        public void writeDOT(String name, Writer writer) throws IOException {
+            delegate.writeDOT(name, writer);
         }
     }
 

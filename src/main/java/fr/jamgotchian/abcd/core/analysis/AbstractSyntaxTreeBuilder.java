@@ -44,7 +44,7 @@ import fr.jamgotchian.abcd.core.region.CatchRegion;
 import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
 import fr.jamgotchian.abcd.core.region.IfThenRegion;
 import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
-import fr.jamgotchian.abcd.core.region.IfBreakRegion;
+import fr.jamgotchian.abcd.core.region.IfThenBreakRegion;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.LoopRegion;
 import fr.jamgotchian.abcd.core.region.LogicalRegion;
@@ -63,7 +63,11 @@ import java.util.logging.Logger;
 public class AbstractSyntaxTreeBuilder {
 
     private static final Logger logger = Logger.getLogger(AbstractSyntaxTreeBuilder.class.getName());
-
+    
+    static {
+        logger.setLevel(Level.FINER);
+    }
+    
     public AbstractSyntaxTreeBuilder() {
     }
 
@@ -175,12 +179,15 @@ public class AbstractSyntaxTreeBuilder {
                 break;
             }
 
-            case IF_BREAK: {
-                IfBreakRegion ifBreak = (IfBreakRegion) region;
+            case IF_THEN_BREAK: {
+                IfThenBreakRegion ifBreak = (IfThenBreakRegion) region;
                 buildAST(ifBreak.getIfRegion(), blockStmt);
                 JumpIfStatement jumpIfStmt = (JumpIfStatement) blockStmt.getLast();
                 jumpIfStmt.remove();
                 BlockStatement thenBlockStmt = new BlockStatement();                
+                if (ifBreak.getThenRegion() != null) {
+                    buildAST(ifBreak.getThenRegion(), thenBlockStmt);
+                }
                 thenBlockStmt.add(new BreakStatement());
                 Expression condition = jumpIfStmt.getCondition();
                 if (ifBreak.isInvertCond()) {

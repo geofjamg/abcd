@@ -18,6 +18,8 @@
 package fr.jamgotchian.abcd.core.graph;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -385,6 +387,17 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
         builder.append("]");
         return builder.toString();
+    }
+    
+    public void writeDOT(String name, Writer writer) throws IOException {
+        writer.append("digraph ").append(name).append(" {\n");
+        for (E edge : getEdges()) {
+            V source = getEdgeSource(edge);
+            V target = getEdgeTarget(edge);
+            writer.append("  \"").append(source.toString()).append("\" -> \"")
+                    .append(target.toString()).append("\"\n");
+        }
+        writer.append("}");
     }
 
     @Override

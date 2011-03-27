@@ -192,22 +192,35 @@ public class Regions {
     public static boolean sameHandlers(DirectedGraph<Region, Edge> graph, Region... regions) {
         return sameHandlers(graph, Arrays.asList(regions));
     }
-     
+
+    public static void moveHandlers(MutableDirectedGraph<Region, Edge> graph, Region region1, Region region2) {
+        Collection<Edge> exceptionalEdges = getOutgoingEdgesOf(graph, region1, true);
+        for (Edge edge : exceptionalEdges) {
+            Region handler = graph.getEdgeTarget(edge);
+            graph.removeEdge(edge);
+            graph.addEdge(region2, handler, edge);
+        }
+    }
+    
     public static void moveIncomingEdges(MutableDirectedGraph<Region, Edge> graph, Region from, Region to) {
         Collection<Edge> incomingEdges = graph.getIncomingEdgesOf(from);
         for (Edge incomingEdge : new ArrayList<Edge>(incomingEdges)) {
-            Region source = graph.getEdgeSource(incomingEdge);
-            graph.removeEdge(incomingEdge);
-            graph.addEdge(source, to, incomingEdge);
+            if (!incomingEdge.isExceptional()) {
+                Region source = graph.getEdgeSource(incomingEdge);
+                graph.removeEdge(incomingEdge);
+                graph.addEdge(source, to, incomingEdge);
+            }
         }
     }
     
     public static void moveOutgoingEdges(MutableDirectedGraph<Region, Edge> graph, Region from, Region to) {
         Collection<Edge> outgoingEdges = graph.getOutgoingEdgesOf(from);
         for (Edge outgoingEdge : new ArrayList<Edge>(outgoingEdges)) {
-            Region target = graph.getEdgeTarget(outgoingEdge);
-            graph.removeEdge(outgoingEdge);
-            graph.addEdge(to, target, outgoingEdge);
+            if (!outgoingEdge.isExceptional()) {
+                Region target = graph.getEdgeTarget(outgoingEdge);
+                graph.removeEdge(outgoingEdge);
+                graph.addEdge(to, target, outgoingEdge);
+            }
         }
     }
      

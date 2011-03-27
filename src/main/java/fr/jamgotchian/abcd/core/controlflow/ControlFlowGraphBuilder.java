@@ -147,6 +147,13 @@ public class ControlFlowGraphBuilder {
 
                     logger.log(Level.FINER, "  JumpIf : current={0}, true={1}, false={2}",
                                              new Object[]{currentBlock, thenBlock, elseBlock});
+                } else if (labelInstIdx == currentInstIdx + 1) {
+                    // remove unnecessary instructions
+                    BasicBlockSplit splitResult1 = graph.splitBasicBlockAt(currentInstIdx);
+                    BasicBlockSplit splitResult2 = graph.splitBasicBlockAt(currentInstIdx+2);
+                    graph.removeEdge(splitResult1.getBlockBefore(), splitResult1.getBlockAfter());
+                    graph.removeEdge(splitResult2.getBlockBefore(), splitResult2.getBlockAfter());
+                    graph.addEdge(splitResult1.getBlockBefore(), splitResult2.getBlockAfter());
                 } else if (labelInstIdx < currentInstIdx) {
                     // find the "label" block containing the label instruction
                     BasicBlockSplit labelSplitResult = graph.splitBasicBlockAt(labelInstIdx);

@@ -35,6 +35,7 @@ import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
 import fr.jamgotchian.abcd.core.analysis.ConditionalExpressionRefactoring;
 import fr.jamgotchian.abcd.core.analysis.DOTUtil;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactoring;
+import fr.jamgotchian.abcd.core.graph.VertexToString;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
@@ -269,13 +270,23 @@ public class ABCDContext {
                     new ControlFlowGraphStmtAnalysis().analyse(graph);
 
                     logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
-                    rootRegions = new StructuralAnalysis(graph).analyse();
+                    StructuralAnalysis analysis = new StructuralAnalysis(graph);
+                    rootRegions = analysis.analyse();
+                    
+                    Writer writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_RG.dot");
+                    DOTUtil.writeGraph(analysis.getRegionGraph(), "RG", writer, new VertexToString<Region>() {
+
+                        public String toString(Region region) {
+                            return region + " (" + region.getTypeName() + ")";
+                        }
+                    });
+                    writer.close();
                 }
 
                 Writer writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_CFG.dot");
                 DOTUtil.writeCFG(graph, rootRegions, writer);
                 writer.close();
-
+                
                 writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_DT.dot");
                 graph.getDominatorInfo().getDominatorsTree().writeDOT("DT", writer);
                 writer.close();
