@@ -24,14 +24,18 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public enum UnaryOperator {
-    INCREMENT,
-    DECREMENT,
+    POST_INCREMENT,
+    POST_DECREMENT,
+    PRE_INCREMENT,
+    PRE_DECREMENT,
     MINUS;
 
     public static UnaryOperator getInverse(UnaryOperator op) {
         switch (op) {
-            case INCREMENT:
-            case DECREMENT:
+            case POST_INCREMENT:
+            case POST_DECREMENT:
+            case PRE_INCREMENT:
+            case PRE_DECREMENT:
             case MINUS:
                 return op;
             default:

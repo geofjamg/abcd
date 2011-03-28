@@ -114,6 +114,10 @@ public class Test {
         System.out.println("b");
     }
     
+    public boolean testNot(boolean a) {
+        return !a;
+    }
+    
     public void testIfElse(int a) {
         if (a > 1) {
             a();
@@ -749,11 +753,21 @@ public class Test {
         String[] a = { "a" , "b" };
     }
     
+    int testMinusOp(int a) {
+        return 3 * -(a + 1) + 5;
+    }
+    
     void testInc() {
         int a = 0;
         a++;
         a += 2;
         a = a + 3;
+    }
+
+    void testDec() {
+        int a = 0;
+        a--;
+        a -= 17;
     }
     
     void testPostInc() {

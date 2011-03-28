@@ -89,14 +89,30 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
     }
 
     public Void visit(UnaryExpression expr, BlockStatement blockStmt) {
-        expr.getExpr().accept(this, blockStmt);
         switch (expr.getOperator()) {
-            case DECREMENT:
+            case MINUS:
+                writer.write("-");
+                expr.getExpr().accept(this, blockStmt);
+                break;                
+                
+            case POST_DECREMENT:
+                expr.getExpr().accept(this, blockStmt);
                 writer.write("--");
                 break;
 
-            case INCREMENT:
+            case POST_INCREMENT:
+                expr.getExpr().accept(this, blockStmt);
                 writer.write("++");
+                break;
+            
+            case PRE_DECREMENT:
+                writer.write("--");
+                expr.getExpr().accept(this, blockStmt);
+                break;
+
+            case PRE_INCREMENT:
+                writer.write("++");
+                expr.getExpr().accept(this, blockStmt);
                 break;
                             
             default:

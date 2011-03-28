@@ -87,16 +87,16 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     BasicBlockStmtAnalysis(ExpressionStack stack) {
         this.stack = stack;
     }
-    
+
     protected void pushExpr(Expression expr, BasicBlock block) {
         expr.setBasicBlock(block);
         stack.push(expr);
     }
-     
+
     private void addStmt(BasicBlock block, Expression expr) {
         addStmt(block, new ExpressionStatement(expr));
     }
-    
+
     protected void addStmt(BasicBlock block, Statement stmt) {
         logger.log(Level.FINER, "Add stmt : {0}", OutputUtil.toText(stmt));
 
@@ -105,7 +105,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
     public void before(BasicBlock block) {
     }
-    
+
     public void visitFieldInsn(BasicBlock block, int index, FieldInsnNode node) {
 
         switch (node.getOpcode()) {
@@ -135,9 +135,21 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     }
 
     public void visitIincInsn(BasicBlock block, int index, IincInsnNode node) {
-        addStmt(block, new AssignExpression(new LocalVariable(node.var),
-                                                   new Constant(Integer.valueOf(node.incr)),
-                                                   AssignOperator.PLUS));
+        if (node.incr == 1) {
+            addStmt(block, new UnaryExpression(new LocalVariable(node.var),
+                                               UnaryOperator.POST_INCREMENT));
+        } else if (node.incr == -1) {
+            addStmt(block, new UnaryExpression(new LocalVariable(node.var),
+                                               UnaryOperator.POST_DECREMENT));
+        } else if (node.incr > 1) {
+            addStmt(block, new AssignExpression(new LocalVariable(node.var),
+                                                new Constant(Integer.valueOf(node.incr)),
+                                                AssignOperator.PLUS));
+        } else if (node.incr < -1) {
+            addStmt(block, new AssignExpression(new LocalVariable(node.var),
+                                                new Constant(Integer.valueOf(-node.incr)),
+                                                AssignOperator.MINUS));
+        }
     }
 
     public void visitInsn(BasicBlock block, int index, InsnNode node) {
@@ -395,7 +407,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case ARETURN:
                 addStmt(block, new ReturnStatement(stack.pop()));
                 break;
-                
+
             case RETURN:
                 addStmt(block, new ReturnStatement());
                 break;

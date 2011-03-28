@@ -43,10 +43,10 @@ public class ForLoopRefactoring extends StatementModifierVisitor {
                 Expression conditionExpr = whileStmt.getCondition();
                 if (!whileStmt.getBody().isEmpty() && Statements.isAnIncrement(whileStmt.getBody().getLast())) {
                     ExpressionStatement updateStmt = (ExpressionStatement) whileStmt.getBody().getLast();
-                    AssignExpression updateExpr = (AssignExpression) updateStmt.getExpression();
+                    Expression updateExpr = (Expression) updateStmt.getExpression();
                     updateStmt.remove();
                     ForStatement forStmt = new ForStatement(initExpr, conditionExpr, updateExpr,
-                                                                  whileStmt.getBody());
+                                                            whileStmt.getBody());
                     whileStmt.remove();
                     return Collections.<Statement>singleton(forStmt);
                 }

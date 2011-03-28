@@ -22,6 +22,8 @@ import fr.jamgotchian.abcd.core.ast.expr.AssignOperator;
 import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
+import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
+import fr.jamgotchian.abcd.core.ast.expr.UnaryOperator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -98,13 +100,20 @@ public class Statements {
         }
         
         ExpressionStatement exprStmt = (ExpressionStatement) stmt;
-        if (!(exprStmt.getExpression() instanceof AssignExpression)) {
+        if (exprStmt.getExpression() instanceof AssignExpression) {
+            AssignExpression assignExpr = (AssignExpression) exprStmt.getExpression();
+
+            return assignExpr.getOperator() == AssignOperator.PLUS
+                    || assignExpr.getOperator() == AssignOperator.MINUS;
+        } else if (exprStmt.getExpression() instanceof UnaryExpression) {
+            UnaryExpression unaryExpr = (UnaryExpression) exprStmt.getExpression();
+
+            return unaryExpr.getOperator() == UnaryOperator.POST_INCREMENT
+                    || unaryExpr.getOperator() == UnaryOperator.POST_DECREMENT
+                    || unaryExpr.getOperator() == UnaryOperator.PRE_INCREMENT
+                    || unaryExpr.getOperator() == UnaryOperator.PRE_DECREMENT;
+        } else {
             return false;
         }
-        
-        AssignExpression assignExpr = (AssignExpression) exprStmt.getExpression();
-        
-        return assignExpr.getOperator() == AssignOperator.PLUS ||
-               assignExpr.getOperator() == AssignOperator.MINUS;
     }
 }
