@@ -43,5 +43,9 @@ public interface Edge {
     
     void setLoopExit(boolean loopExit);
     
+    boolean isSelfLoop();
+
+    void setSelfLoop(boolean selfLoop);
+    
     Edge clone();
 }

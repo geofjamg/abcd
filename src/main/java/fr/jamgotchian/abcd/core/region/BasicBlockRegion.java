@@ -31,6 +31,8 @@ import java.util.Collections;
 public class BasicBlockRegion implements Region {
 
     private final BasicBlock block;
+    
+    private boolean breakTarget;
 
     BasicBlockRegion(BasicBlock block) {
         if (block == null) {
@@ -47,7 +49,7 @@ public class BasicBlockRegion implements Region {
         return getType().toString();
     }
 
-    public BasicBlock getBlock() {
+    public BasicBlock getBasicBlock() {
         return block;
     }
 
@@ -55,24 +57,12 @@ public class BasicBlockRegion implements Region {
         return null;
     }
 
-    public Region getExitRegionIfUnique() {
+    public Region getExitRegion() {
         return null;
-    }
-
-    public BasicBlock getEntryBasicBlock() {
-        return block;
-    }
-
-    public BasicBlock getExitBasicBlockIfUnique() {
-        return block;
     }
 
     public Collection<Region> getChildRegions() {
         return Collections.emptyList();
-    }
-
-    public Collection<BasicBlock> getChildBasicBlocks() {
-        return Collections.singleton(block);
     }
 
     public Collection<Edge> getChildEdges() {
@@ -88,7 +78,15 @@ public class BasicBlockRegion implements Region {
         return Collections.emptySet();
     }
 
-    public void addBreakRegion(Collection<Region> regions) {
+    public void addBreakTargetRegion(Collection<Region> regions) {
+    }
+
+    public boolean isBreakTarget() {
+        return breakTarget;
+    }
+    
+    public void setBreakTarget(boolean breakTarget) {
+        this.breakTarget = breakTarget;
     }
 
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {

@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.region;
 
 import com.google.common.base.Objects;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
@@ -164,7 +165,7 @@ public class Regions {
             for (Edge edge2 : edges2) {
                 Region handler2 = graph.getEdgeTarget(edge2);
                 String exceptionClassName2 = (String) edge2.getValue();
-                if (handler1.equals(handler2) 
+                if (handler1.equals(handler2)
                         && Objects.equal(exceptionClassName1, exceptionClassName2)) {
                     found = true;
                     break;
@@ -176,7 +177,7 @@ public class Regions {
         }
         return true;
     }
-    
+
     public static boolean sameHandlers(DirectedGraph<Region, Edge> graph, List<Region> regions) {
         if (regions.size() <= 1) {
             return true;
@@ -201,7 +202,7 @@ public class Regions {
             graph.addEdge(region2, handler, edge);
         }
     }
-    
+
     public static void moveIncomingEdges(MutableDirectedGraph<Region, Edge> graph, Region from, Region to) {
         Collection<Edge> incomingEdges = graph.getIncomingEdgesOf(from);
         for (Edge incomingEdge : new ArrayList<Edge>(incomingEdges)) {
@@ -212,7 +213,7 @@ public class Regions {
             }
         }
     }
-    
+
     public static void moveOutgoingEdges(MutableDirectedGraph<Region, Edge> graph, Region from, Region to) {
         Collection<Edge> outgoingEdges = graph.getOutgoingEdgesOf(from);
         for (Edge outgoingEdge : new ArrayList<Edge>(outgoingEdges)) {
@@ -223,16 +224,48 @@ public class Regions {
             }
         }
     }
-     
+
     public static void removeRegions(MutableDirectedGraph<Region, Edge> graph, Collection<Region> regions) {
         for (Region region : regions) {
             graph.removeVertex(region);
-        }         
+        }
     }
-        
+
     public static void removeEdges(MutableDirectedGraph<Region, Edge> graph, Collection<Edge> edges) {
         for (Edge edge : edges) {
             graph.removeEdge(edge);
         }
-    }    
+    }
+    
+    public static Region getDeepEntryRegion(DirectedGraph<Region, Edge> graph, Region region) {
+        Region entry = null;
+        for (Region r = region; r.getType() != RegionType.BASIC_BLOCK; r = r.getEntryRegion()) {
+            entry = r;
+        }
+        return entry;
+    }
+
+    public static Region getDeepExitRegion(DirectedGraph<Region, Edge> graph, Region region) {
+        Region entry = null;
+        for (Region r = region; r != null && r.getType() != RegionType.BASIC_BLOCK; r = r.getExitRegion()) {
+            entry = r;
+        }
+        return entry;
+    }
+    
+    public static BasicBlock getDeepEntryBasicBlock(DirectedGraph<Region, Edge> graph, Region region) {
+        Region r = null;
+        for (r = region; r.getType() != RegionType.BASIC_BLOCK; r = r.getEntryRegion()) {
+            // nothing
+        }
+        return ((BasicBlockRegion) r).getBasicBlock();
+    }
+
+    public static BasicBlock getDeepExitBasicBlock(DirectedGraph<Region, Edge> graph, Region region) {
+        Region r = null;
+        for (r = region; r != null && r.getType() != RegionType.BASIC_BLOCK; r = r.getExitRegion()) {
+            // nothing
+        }
+        return r == null ? null : ((BasicBlockRegion) r).getBasicBlock();
+    }
 }

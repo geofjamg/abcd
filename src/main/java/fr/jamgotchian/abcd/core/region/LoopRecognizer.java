@@ -31,54 +31,31 @@ class LoopRecognizer implements RegionRecognizer {
             Iterator<Edge> it = Regions.getIncomingEdgesOf(graph, loopRegion, false).iterator();
             Edge incomingEdge1 = it.next();
             Edge incomingEdge2 = it.next();
-            Region loopHeadRegion = loopRegion.getEntryRegion();
-            Region loopTailRegion = loopRegion.getExitRegionIfUnique();
+            
             //
-            // check for a while loop region
+            // check for a loop region
             //
             //     ...
             //      |
             //      |<--
-            //      X   |
-            //       ---
+            //      A   |
+            //      |---
             //
-            if (loopHeadRegion != null && loopHeadRegion.getType() == RegionType.IF_THEN_BREAK
-                    && Regions.getSuccessorCountOf(graph, loopRegion, false) == 1) {
+            if (Regions.getSuccessorCountOf(graph, loopRegion, false) == 1) {
                 Edge outgoingEdge = Regions.getFirstOutgoingEdgeOf(graph, loopRegion, false);
                 if (outgoingEdge.isLoopBack()
                         && (outgoingEdge.equals(incomingEdge1) || outgoingEdge.equals(incomingEdge2))) {
-                    return new LoopRegion(LoopType.WHILE, outgoingEdge, loopRegion);
-                } else {
-                    return null;
+                    LoopType type = LoopType.INFINITE;
+                    Region loopTailRegion = Regions.getDeepExitRegion(graph, loopRegion);
+                    Region loopHeadRegion = Regions.getDeepEntryRegion(graph, loopRegion);
+                    if (loopRegion.getType() == RegionType.IF_THEN_BREAK
+                            || (loopTailRegion != null && loopTailRegion.getType() == RegionType.IF_THEN_BREAK)) {
+                        type = LoopType.DO_WHILE;
+                    } else if (loopHeadRegion != null && loopHeadRegion.getType() == RegionType.IF_THEN_BREAK) {
+                        type = LoopType.WHILE;
+                    }
+                    return new LoopRegion(type, outgoingEdge, loopRegion);
                 }
-            }
-            //
-            // check for a do while loop region
-            //
-            //     ...
-            //      |
-            //      |<--
-            //      X   |
-            //      |---
-            //      |
-            //     ...
-            //
-            else if (loopTailRegion != null && loopTailRegion.getType() == RegionType.IF_THEN_ELSE
-                    && Regions.getSuccessorCountOf(graph, loopRegion, false) == 2) {
-                it = Regions.getOutgoingEdgesOf(graph, loopRegion, false).iterator();
-                Edge outgoingEdge1 = it.next();
-                Edge outgoingEdge2 = it.next();
-                if (outgoingEdge1.isLoopBack()
-                        && (outgoingEdge1.equals(incomingEdge1) || outgoingEdge1.equals(incomingEdge2))) {
-                    return new LoopRegion(LoopType.DO_WHILE, outgoingEdge1, loopRegion);
-                } else if (outgoingEdge2.isLoopBack()
-                        && (outgoingEdge2.equals(incomingEdge1) || outgoingEdge2.equals(incomingEdge2))) {
-                    return new LoopRegion(LoopType.DO_WHILE, outgoingEdge2, loopRegion);
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
             }
         }
         return null;

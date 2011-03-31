@@ -72,7 +72,7 @@ public class LogicalRegion extends AbstractRegion {
         return regionA;
     }
 
-    public Region getExitRegionIfUnique() {
+    public Region getExitRegion() {
         return regionB;
     }
 

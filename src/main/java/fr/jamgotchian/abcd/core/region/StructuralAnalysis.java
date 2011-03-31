@@ -79,10 +79,22 @@ public class StructuralAnalysis {
                 new Object[] {structuredRegion.getTypeName(),
                     structuredRegion.getChildRegions().toString(), structuredRegion});
 
-        logger.log(Level.FINEST, "  Internal edges : {0}", 
+        logger.log(Level.FINEST, "  Internal edges : {0}",
                 regionGraph.toString(structuredRegion.getChildEdges()));
 
         structuredRegion.collapse(regionGraph);
+
+        switch (structuredRegion.getType()) {
+            case IF_THEN_BREAK:
+                logger.log(Level.FINER, "  Break target : {0}",
+                        ((IfThenBreakRegion) structuredRegion).getBreakTargetRegion());
+                break;
+            case LOOP: {
+                logger.log(Level.FINER, "  Natural exit : {0}", 
+                        regionGraph.getFirstSuccessorOf(structuredRegion));
+                break;
+            }
+        }
 
         if (structuredRegion.getEntryRegion().equals(entryRegion)) {
             logger.log(Level.FINEST, "  New entry region : {0}", structuredRegion);
@@ -123,8 +135,8 @@ public class StructuralAnalysis {
             Region structuredRegion = null;
             for (Region region : reverseNodes) {
                 for (RegionRecognizer recognizer : RECOGNIZERS) {
-//                    logger.log(Level.FINEST, "Check for region with {0} at {1}",
-//                            new Object[] {recognizer.getClass().getSimpleName(), region});
+                    logger.log(Level.FINEST, "Check for region with {0} at {1}",
+                            new Object[] {recognizer.getClass().getSimpleName(), region});
                     structuredRegion = recognizer.recognize(regionGraph, region);
                     if (structuredRegion != null) {
                         break;
@@ -137,8 +149,8 @@ public class StructuralAnalysis {
                 }
             }
 
-            logger.log(Level.FINEST, "Region graph :\n{0}",
-                    DirectedGraphs.toString(regionGraph, entryRegion));
+//            logger.log(Level.FINEST, "Region graph :\n{0}",
+//                    DirectedGraphs.toString(regionGraph, entryRegion));
         }
 
         Set<Region> rootRegions = regionGraph.getVertices();

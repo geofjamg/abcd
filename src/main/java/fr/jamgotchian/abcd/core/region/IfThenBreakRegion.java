@@ -19,7 +19,6 @@ package fr.jamgotchian.abcd.core.region;
 
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,22 +32,22 @@ public class IfThenBreakRegion extends AbstractRegion {
 
     private final Region ifRegion;
 
-    private final Region breakRegion;
+    private final Region breakTargetRegion;
 
     private final Edge elseEdge;
 
     private final Edge thenEdge;
 
-    private final Region thenRegion;
+    private Region thenRegion;
 
-    private final Edge thenEdge2;
+    private Edge thenEdge2;
 
     private final boolean invertCond;
 
-    public IfThenBreakRegion(Region ifRegion, Region breakRegion, Edge elseEdge, Edge thenEdge,
-                             Region thenRegion, Edge thenEdge2, boolean invertCond) {
+    IfThenBreakRegion(Region ifRegion, Region breakTargetRegion, Edge elseEdge, Edge thenEdge,
+                      Region thenRegion, Edge thenEdge2, boolean invertCond) {
         this.ifRegion = ifRegion;
-        this.breakRegion = breakRegion;
+        this.breakTargetRegion = breakTargetRegion;
         this.elseEdge = elseEdge;
         this.thenEdge = thenEdge;
         this.thenRegion = thenRegion;
@@ -60,24 +59,32 @@ public class IfThenBreakRegion extends AbstractRegion {
         return ifRegion;
     }
 
-    public Region getBreakRegion() {
-        return breakRegion;
-    }
-
-    public Edge getElseEdge() {
-        return elseEdge;
+    public Region getBreakTargetRegion() {
+        return breakTargetRegion;
     }
 
     public Edge getThenEdge() {
         return thenEdge;
     }
 
+    public Edge getElseEdge() {
+        return elseEdge;
+    }
+
     public Region getThenRegion() {
         return thenRegion;
     }
 
+    public void setThenRegion(Region thenRegion) {
+        this.thenRegion = thenRegion;
+    }
+
     public Edge getThenEdge2() {
         return thenEdge2;
+    }
+
+    public void setThenEdge2(Edge thenEdge2) {
+        this.thenEdge2 = thenEdge2;
     }
 
     public boolean isInvertCond() {
@@ -92,7 +99,7 @@ public class IfThenBreakRegion extends AbstractRegion {
         return ifRegion;
     }
 
-    public Region getExitRegionIfUnique() {
+    public Region getExitRegion() {
         return null;
     }
 
@@ -113,25 +120,34 @@ public class IfThenBreakRegion extends AbstractRegion {
     }
 
     @Override
-    public void addBreakRegion(Collection<Region> regions) {
-        super.addBreakRegion(regions);
-        regions.add(breakRegion);
+    public void addBreakTargetRegion(Collection<Region> regions) {
+        super.addBreakTargetRegion(regions);
+        regions.add(breakTargetRegion);
     }
 
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+        breakTargetRegion.setBreakTarget(true);
         graph.addVertex(this);
         Regions.moveHandlers(graph, ifRegion, this);
-        Region joinRegion = graph.getEdgeTarget(elseEdge);
-        graph.removeEdge(elseEdge);
-        graph.removeEdge(thenEdge);
-        if (thenEdge2 != null) {
-            graph.removeEdge(thenEdge2);
+        if (graph.getEdgeTarget(elseEdge).equals(ifRegion)) {
+            graph.removeEdge(elseEdge);
+            graph.removeEdge(thenEdge);
+            Regions.moveIncomingEdges(graph, ifRegion, this);
+            graph.removeVertex(ifRegion);
+            graph.addEdge(this, this, elseEdge);
+        } else {
+            Region elseRegion = graph.getEdgeTarget(elseEdge);
+            graph.removeEdge(elseEdge);
+            graph.removeEdge(thenEdge);
+            if (thenEdge2 != null) {
+                graph.removeEdge(thenEdge2);
+            }
+            Regions.moveIncomingEdges(graph, ifRegion, this);
+            graph.removeVertex(ifRegion);
+            if (thenRegion != null) {
+                graph.removeVertex(thenRegion);
+            }
+            graph.addEdge(this, elseRegion, elseEdge);
         }
-        Regions.moveIncomingEdges(graph, ifRegion, this);
-        graph.removeVertex(ifRegion);
-        if (thenRegion != null) {
-            graph.removeVertex(thenRegion);
-        }
-        graph.addEdge(this, joinRegion, new EdgeImpl());
     }
 }

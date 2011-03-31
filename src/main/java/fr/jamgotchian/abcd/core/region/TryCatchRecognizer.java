@@ -35,13 +35,13 @@ public class TryCatchRecognizer implements RegionRecognizer {
 
         for (Region regionC : handlersOfA) {
             Collection<Region> successorsOfC = Regions.getSuccessorsOf(graph, regionC, false);
-            if (successorsOfC.size() != 1 
+            if (successorsOfC.size() != 1
                     || !successorsOfC.iterator().next().equals(regionB)) {
                 continue;
             }
             if (Regions.getPredecessorCountOf(graph, regionC, true) != 1) {
                 continue;
-            }            
+            }
             Edge edgeAC = graph.getEdge(regionA, regionC);
             Edge edgeCB = graph.getEdge(regionC, regionB);
             String exceptionClassName = (String) edgeAC.getValue();
@@ -54,7 +54,7 @@ public class TryCatchRecognizer implements RegionRecognizer {
         if (catchs.isEmpty()) {
             return null;
         }
-        
+
         Edge edgeAB = graph.getEdge(regionA, regionB);
 
         return new TryCatchRegion(regionA, edgeAB, null, null, catchs);
@@ -106,13 +106,11 @@ public class TryCatchRecognizer implements RegionRecognizer {
         //
         // check for try catch region form 1
         //
-        //    ...        incomingExternalEdge
-        //     A         region A
+        //     A
         //     |  \  \
         //     |  C1 C2  handler region Ci
         //     |  /  /
-        //     B         region B
-        //    ...        outgoingExternalEdges
+        //     B
         //
         TryCatchRegion structuredRegion = recognizeForm1(graph, regionA, handlersOfA, regionB);
         if (structuredRegion != null) {
@@ -122,13 +120,11 @@ public class TryCatchRecognizer implements RegionRecognizer {
         //
         // check for try catch region form 2
         //
-        //    ...        incomingExternalEdge
-        //     A         region A
+        //     A
         //     |  \  \
         //     B  C1 C2  handler region Ci
         //     |  /  /
-        //     D         region D
-        //    ...        outgoingExternalEdges
+        //     D
         //
         if (Regions.getSuccessorCountOf(graph, regionB, false) != 1
                 || Regions.getPredecessorCountOf(graph, regionB, false) != 1) {

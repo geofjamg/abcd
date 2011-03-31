@@ -38,15 +38,13 @@ public class SwitchCaseRecognizer implements RegionRecognizer {
         //
         // check switch case region
         //
-        //    ...    incomingExternalEdge
-        //     A     region A
+        //     A
         //   / | \
-        //  BO B1 B2 ... region Bi
+        //  BO B1 B2
         //   \ | /
-        //     C     region D
-        //    ...    outgoingExternalEdges
+        //     C
         //
-        BasicBlock blockA = regionA.getExitBasicBlockIfUnique();
+        BasicBlock blockA = Regions.getDeepExitBasicBlock(graph, regionA);
         if (blockA == null) {
             return null;
         }
@@ -59,7 +57,7 @@ public class SwitchCaseRecognizer implements RegionRecognizer {
         }
         Set<Region> regionCi = new HashSet<Region>();
         for (Region regionB : regionBi) {
-            if (Regions.getSuccessorCountOf(graph, regionB, false) != 1 
+            if (Regions.getSuccessorCountOf(graph, regionB, false) != 1
                     || Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
                 return null;
             }
@@ -67,7 +65,7 @@ public class SwitchCaseRecognizer implements RegionRecognizer {
         }
         if (regionCi.size() != 1) {
             return null;
-        } 
+        }
         Map<Object, CaseRegion> caseRegions = new HashMap<Object, CaseRegion>();
         for (Region regionB : regionBi) {
             Edge incomingEdge = Regions.getFirstIncomingEdgeOf(graph, regionB, false);

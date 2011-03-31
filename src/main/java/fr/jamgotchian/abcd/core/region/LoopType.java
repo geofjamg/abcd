@@ -23,5 +23,6 @@ package fr.jamgotchian.abcd.core.region;
  */
 public enum LoopType {
     WHILE,
-    DO_WHILE
+    DO_WHILE,
+    INFINITE
 }

@@ -57,7 +57,7 @@ public class BlockRegion extends AbstractRegion {
         return regions.get(0);
     }
 
-    public Region getExitRegionIfUnique() {
+    public Region getExitRegion() {
         return regions.get(regions.size()-1);
     }
 

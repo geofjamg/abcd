@@ -59,7 +59,7 @@ public class SwitchCaseRegion extends AbstractRegion {
          return switchRegion;
     }
 
-    public Region getExitRegionIfUnique() {
+    public Region getExitRegion() {
         return null;
     }
 

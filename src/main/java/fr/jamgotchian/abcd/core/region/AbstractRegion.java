@@ -17,7 +17,6 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +25,9 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class AbstractRegion implements Region {
+abstract class AbstractRegion implements Region {
+
+    private boolean breakTarget;
 
     public AbstractRegion() {
     }
@@ -35,43 +36,30 @@ public abstract class AbstractRegion implements Region {
         return getType().toString();
     }
 
-    public BasicBlock getEntryBasicBlock() {
-        return getEntryRegion().getEntryBasicBlock();
-    }
-
-    public BasicBlock getExitBasicBlockIfUnique() {
-        Region region = getExitRegionIfUnique();
-        if (region == null) {
-            return null;
-        } else {
-            return region.getExitBasicBlockIfUnique();
-        }
-    }
-
-    public Collection<BasicBlock> getChildBasicBlocks() {
-        Set<BasicBlock> blocks = new HashSet<BasicBlock>();
-        for (Region region : getChildRegions()) {
-            blocks.addAll(region.getChildBasicBlocks());
-        }
-        return blocks;
-    }
-
     public Collection<Region> getBreakRegions() {
         Set<Region> regions = new HashSet<Region>();
-        addBreakRegion(regions);
+        addBreakTargetRegion(regions);
         return regions;
     }
 
-    public void addBreakRegion(Collection<Region> regions) {
+    public void addBreakTargetRegion(Collection<Region> regions) {
         for (Region child : getChildRegions()) {
-            child.addBreakRegion(regions);
+            child.addBreakTargetRegion(regions);
         }
+    }
+
+    public boolean isBreakTarget() {
+        return breakTarget;
+    }
+
+    public void setBreakTarget(boolean breakTarget) {
+        this.breakTarget = breakTarget;
     }
 
     public RegionName getName() {
         return getEntryRegion().getName().getParent();
     }
-    
+
     @Override
     public String toString() {
         return getName().toString();

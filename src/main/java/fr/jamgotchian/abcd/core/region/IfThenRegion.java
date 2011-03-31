@@ -76,7 +76,7 @@ public class IfThenRegion extends AbstractRegion {
          return ifRegion;
     }
 
-    public Region getExitRegionIfUnique() {
+    public Region getExitRegion() {
         return null;
     }
 

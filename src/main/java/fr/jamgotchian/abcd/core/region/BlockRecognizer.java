@@ -68,12 +68,19 @@ class BlockRecognizer implements RegionRecognizer {
         }
         return null;
     }
-    
+
     private boolean isBlockForward(DirectedGraph<Region, Edge> graph, Region regionA) {
         if (Regions.getSuccessorCountOf(graph, regionA, false) != 1) {
             return false;
         }
-        Region regionB = Regions.getFirstSuccessorOf(graph, regionA, false);
+        Edge edgeAB = Regions.getFirstOutgoingEdgeOf(graph, regionA, false);
+        if (edgeAB.isLoopExit()) {
+            return false;
+        }
+        Region regionB = graph.getEdgeTarget(edgeAB);
+        if (regionB.isBreakTarget()) {
+            return false;
+        }
         if (Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
             return false;
         }
@@ -81,10 +88,14 @@ class BlockRecognizer implements RegionRecognizer {
     }
 
     private boolean isBlockBackward(DirectedGraph<Region, Edge> graph, Region regionA) {
+        if (regionA.isBreakTarget()) {
+            return false;
+        }
         if (Regions.getPredecessorCountOf(graph, regionA, false) != 1) {
             return false;
         }
-        Region regionB = Regions.getFirstPredecessorOf(graph, regionA, false);
+        Edge edgeBA = Regions.getFirstIncomingEdgeOf(graph, regionA, false);
+        Region regionB = graph.getEdgeSource(edgeBA);
         if (Regions.getSuccessorCountOf(graph, regionB, false) != 1) {
             return false;
         }
@@ -95,26 +106,22 @@ class BlockRecognizer implements RegionRecognizer {
         //
         // check for block region forward
         //
-        //  ...    incomingExternalEdge
-        //   A    regionA
+        //   A
         //   |
-        //  ...             internalRegions = regionA ... regionZ
+        //  ...
         //   |
-        //   Z    region Z
-        //  ...    outgoingExternalEdges
+        //   Z
         //
         Region structuredRegion = checkForward(graph, regionA);
 
         //
         // check for block region backward
         //
-        //  ...    incomingExternalEdge
-        //   Z    regionZ
+        //   Z
         //   |
-        //  ...             internalRegions = regionZ ... regionA
+        //  ...
         //   |
-        //   A    region A
-        //  ...    outgoingExternalEdges
+        //   A
         //
         if (structuredRegion == null) {
             structuredRegion = checkBackward(graph, regionA);

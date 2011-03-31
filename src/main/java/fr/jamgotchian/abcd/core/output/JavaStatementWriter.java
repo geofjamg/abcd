@@ -154,7 +154,7 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
         stmt.getBody().accept(this, null);
         writer.write(" ").writeKeyword("while").writeSpace().write("(");
         stmt.getCondition().accept(exprVisitor, stmt.getBlock());
-        writer.write(") ");
+        writer.write(");");
         return null;
     }
 

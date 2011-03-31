@@ -92,7 +92,7 @@ public class AbstractSyntaxTreeBuilder {
         switch (region.getType()) {
             case BASIC_BLOCK: {
                 BasicBlockRegion basicBlockRegion = (BasicBlockRegion) region;
-                for (Statement stmt : ((BasicBlockAnalysisDataImpl) basicBlockRegion.getBlock().getData()).getUsefullStatements()) {
+                for (Statement stmt : ((BasicBlockAnalysisDataImpl) basicBlockRegion.getBasicBlock().getData()).getUsefullStatements()) {
                     blockStmt.add(stmt);
                 }
                 break;
@@ -214,9 +214,10 @@ public class AbstractSyntaxTreeBuilder {
                     }
                         
                     case DO_WHILE:
-                        JumpIfStatement jumpIfStmt = (JumpIfStatement) bodyBlockStmt.getLast();
-                        jumpIfStmt.remove();
-                        blockStmt.add(new DoWhileStatement(bodyBlockStmt, jumpIfStmt.getCondition()));
+                        IfStatement ifStmt = (IfStatement) bodyBlockStmt.getLast();
+                        ifStmt.remove();
+                        Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
+                        blockStmt.add(new DoWhileStatement(bodyBlockStmt, condition));
                         break;
                         
                     default:

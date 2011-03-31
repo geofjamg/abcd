@@ -90,7 +90,7 @@ public class TryCatchRegion extends AbstractRegion {
         return tryRegion1;
     }
 
-    public Region getExitRegionIfUnique() {
+    public Region getExitRegion() {
         return null;
     }
 

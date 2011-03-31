@@ -33,6 +33,7 @@ public class LogicalRecognizer implements RegionRecognizer {
                                 Edge trueEdgeA, Edge falseEdgeA) {
         //
         // check for AND
+        //
         //     A
         //   t/ \f
         //   B   \
@@ -42,7 +43,7 @@ public class LogicalRecognizer implements RegionRecognizer {
         if (regionB.equals(regionA)) {
             return null;
         }
-        BasicBlock exitBlockB = regionB.getExitBasicBlockIfUnique();
+        BasicBlock exitBlockB = Regions.getDeepExitBasicBlock(graph, regionB);
         if (exitBlockB == null) {
             return null;
         }
@@ -85,6 +86,7 @@ public class LogicalRecognizer implements RegionRecognizer {
                                Edge trueEdgeA, Edge falseEdgeA) {
         //
         // check for OR
+        //
         //     A
         //   f/ \t
         //   B   \
@@ -94,7 +96,7 @@ public class LogicalRecognizer implements RegionRecognizer {
         if (regionB.equals(regionA)) {
             return null;
         }
-        BasicBlock exitBlockB = regionB.getExitBasicBlockIfUnique();
+        BasicBlock exitBlockB = Regions.getDeepExitBasicBlock(graph, regionB);
         if (exitBlockB == null) {
             return null;
         }

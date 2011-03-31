@@ -33,6 +33,8 @@ public class EdgeImpl implements Edge {
 
     private boolean loopExit;
 
+    private boolean selfLoop; 
+    
     public EdgeImpl() {
         this(false);
     }
@@ -50,6 +52,7 @@ public class EdgeImpl implements Edge {
         this.value = value;
         stackSize = -1;
         this.loopExit = loopExit;
+        selfLoop = false;
     }
     
     private EdgeImpl(EdgeImpl other) {
@@ -65,7 +68,7 @@ public class EdgeImpl implements Edge {
     }
 
     public boolean isLoopBack() {
-        return category != null && category == EdgeCategory.BACK;
+        return selfLoop || (category != null && category == EdgeCategory.BACK);
     }
     
     public void setCategory(EdgeCategory category) {
@@ -98,6 +101,14 @@ public class EdgeImpl implements Edge {
 
     public void setLoopExit(boolean loopExit) {
         this.loopExit = loopExit;
+    }
+
+    public boolean isSelfLoop() {
+        return selfLoop;
+    }
+
+    public void setSelfLoop(boolean selfLoop) {
+        this.selfLoop = selfLoop;
     }
     
     @Override

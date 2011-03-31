@@ -22,6 +22,7 @@ import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.VertexToString;
+import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.RegionType;
 import java.io.IOException;
@@ -105,7 +106,7 @@ public class DOTUtil {
     private static void writeRegion(Region region, Writer writer, int indent) throws IOException {
         if (region.getType() == RegionType.BASIC_BLOCK) {
             writeIndent(writer, indent);
-            writeBlock(region.getEntryBasicBlock(), writer);
+            writeBlock(((BasicBlockRegion) region).getBasicBlock(), writer);
         } else {
             writeIndent(writer, indent);
             writer.append("subgraph \"cluster_").append(region.getName().toString()).append("\" {\n");

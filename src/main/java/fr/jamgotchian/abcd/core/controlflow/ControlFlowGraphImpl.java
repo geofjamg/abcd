@@ -500,6 +500,11 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             } else {
                 e.setCategory(EdgeCategory.CROSS);
             }
+            
+            // self loop
+            if (source.equals(target)) {
+                e.setSelfLoop(true);
+            }
 
             logger.log(Level.FINEST, "Edge Category of {0} -> {1} : {2}",
                     new Object[] {source, target, e.getCategory()});
@@ -541,6 +546,14 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 for (BasicBlock block : nl.getLoop()) {
                     block.setLoopLevel(block.getLoopLevel()+1);
                 }
+            }
+        }
+            
+        // self loop
+        for (Edge edge : graph.getEdges()) {
+            if (edge.isSelfLoop()) {
+                BasicBlock block = graph.getEdgeSource(edge);
+                block.setLoopLevel(block.getLoopLevel()+1);
             }
         }
 

@@ -63,7 +63,7 @@ public class LoopRegion extends AbstractRegion {
         return loopRegion;
     }
 
-    public Region getExitRegionIfUnique() {
+    public Region getExitRegion() {
         return loopRegion;
     }
 
@@ -88,19 +88,35 @@ public class LoopRegion extends AbstractRegion {
         Regions.moveHandlers(graph, loopRegion, this);
         Regions.moveIncomingEdges(graph, loopRegion, this);
         graph.removeEdge(backEdge);
+        IfThenBreakRegion ifThenBreak = null;
         switch (loopType) {
-            case WHILE:
-                Region exitRegion = ((IfThenBreakRegion) loopRegion.getEntryRegion()).getBreakRegion();
-                graph.addEdge(this, exitRegion, new EdgeImpl());
+            case WHILE: {
+                ifThenBreak = (IfThenBreakRegion) Regions.getDeepEntryRegion(graph, loopRegion);
                 break;
+            }
 
             case DO_WHILE:
-                Regions.moveOutgoingEdges(graph, loopRegion, this);
+                ifThenBreak = (IfThenBreakRegion) Regions.getDeepExitRegion(graph, loopRegion);
                 break;
-
+            
+            case INFINITE:
+                throw new ABCDException("TODO");
+                
             default:
                 throw new AssertionError();
         }
+        Region breakTargetRegion = ifThenBreak.getBreakTargetRegion();
+        if (ifThenBreak.getThenRegion() != null) {
+            graph.addVertex(ifThenBreak.getThenRegion());
+            graph.addEdge(this, ifThenBreak.getThenRegion(), new EdgeImpl());
+            graph.addEdge(ifThenBreak.getThenRegion(), breakTargetRegion, ifThenBreak.getThenEdge2());
+            ifThenBreak.setThenRegion(null);
+            ifThenBreak.setThenEdge2(null);
+        } else {
+            graph.addEdge(this, breakTargetRegion, ifThenBreak.getThenEdge());
+        }
+        breakTargetRegion.setBreakTarget(false);
+
         graph.removeVertex(loopRegion);
     }
 }

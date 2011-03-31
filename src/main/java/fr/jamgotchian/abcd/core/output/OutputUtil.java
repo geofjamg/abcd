@@ -160,4 +160,20 @@ public class OutputUtil {
         }
         return writer.toString();
     }
+    
+    public static String toText(Iterable<Statement> stmts) {
+        StringWriter writer = new StringWriter();
+        try {
+            JavaStatementWriter stmtWriter = new JavaStatementWriter(new TextCodeWriter(writer));
+            BlockStatement blockStmt = new BlockStatement(stmts);
+            blockStmt.accept(stmtWriter, null);
+        } finally {
+            try {
+                writer.close();
+            } catch (IOException exc) {
+                logger.log(Level.SEVERE, exc.toString(), exc);
+            }
+        }
+        return writer.toString();
+    }
 }
