@@ -35,7 +35,9 @@ public class MethodCall extends AbstractExpression {
         this.scope = scope;
         this.methodName = methodName;
         this.arguments = arguments;
-        scope.setParent(this);
+        if (scope != null) {
+            scope.setParent(this);
+        }
         for (Expression arg : arguments) {
             arg.setParent(this);
         }

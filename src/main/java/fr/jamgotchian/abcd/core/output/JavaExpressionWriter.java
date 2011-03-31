@@ -225,8 +225,11 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
     }
 
     public Void visit(MethodCall expr, BlockStatement blockStmt) {
-        expr.getScope().accept(this, blockStmt);
-        writer.write(".").write(expr.getMethodName()).write("(");
+        if (expr.getScope() != null) {
+            expr.getScope().accept(this, blockStmt);
+            writer.write(".");
+        }
+        writer.write(expr.getMethodName()).write("(");
         for (Iterator<Expression> it = expr.getArguments().iterator(); it.hasNext();) {
             Expression argument = it.next();
             argument.accept(this, blockStmt);

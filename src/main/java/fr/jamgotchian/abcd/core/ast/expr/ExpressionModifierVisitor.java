@@ -82,7 +82,10 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
     }
 
     public Expression visit(MethodCall expr, Void arg) {
-        Expression newScope = expr.getScope().accept(this, arg);
+        Expression newScope = null;
+        if (expr.getScope() != null) {
+            newScope = expr.getScope().accept(this, arg);
+        }
         List<Expression> newArguments = new ArrayList<Expression>(expr.getArguments());
         boolean argumentsModified = false;
         for (int i = 0; i < newArguments.size(); i++) {

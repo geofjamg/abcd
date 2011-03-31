@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package fr.jamgotchian.abcd.core.ast.util;
 
 import fr.jamgotchian.abcd.core.ast.expr.ArrayAccess;
@@ -68,8 +67,8 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
 
     public Boolean visit(UnaryExpression expr1, Expression expr2) {
         if (expr2 instanceof UnaryExpression) {
-            return expr1.getOperator() == ((UnaryExpression) expr2).getOperator() &&
-                   expr1.getExpr().accept(this, ((UnaryExpression) expr2).getExpr());
+            return expr1.getOperator() == ((UnaryExpression) expr2).getOperator()
+                    && expr1.getExpr().accept(this, ((UnaryExpression) expr2).getExpr());
         } else {
             return Boolean.FALSE;
         }
@@ -77,9 +76,9 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
 
     public Boolean visit(BinaryExpression expr1, Expression expr2) {
         if (expr2 instanceof BinaryExpression) {
-            return expr1.getOperator() == ((BinaryExpression) expr2).getOperator() &&
-                   expr1.getLeft().accept(this, ((BinaryExpression) expr2).getLeft()) &&
-                   expr1.getRight().accept(this, ((BinaryExpression) expr2).getRight());
+            return expr1.getOperator() == ((BinaryExpression) expr2).getOperator()
+                    && expr1.getLeft().accept(this, ((BinaryExpression) expr2).getLeft())
+                    && expr1.getRight().accept(this, ((BinaryExpression) expr2).getRight());
         } else {
             return Boolean.FALSE;
         }
@@ -87,9 +86,9 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
 
     public Boolean visit(AssignExpression expr1, Expression expr2) {
         if (expr2 instanceof AssignExpression) {
-            return expr1.getOperator() == ((AssignExpression) expr2).getOperator() &&
-                   expr1.getTarget().accept(this, ((AssignExpression) expr2).getTarget()) &&
-                   expr1.getValue().accept(this, ((AssignExpression) expr2).getValue());
+            return expr1.getOperator() == ((AssignExpression) expr2).getOperator()
+                    && expr1.getTarget().accept(this, ((AssignExpression) expr2).getTarget())
+                    && expr1.getValue().accept(this, ((AssignExpression) expr2).getValue());
         } else {
             return Boolean.FALSE;
         }
@@ -105,22 +104,32 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
 
     public Boolean visit(FieldAccess expr1, Expression expr2) {
         if (expr2 instanceof FieldAccess) {
-            return expr1.getScope().accept(this, ((FieldAccess) expr2).getScope()) &&
-                   expr1.getFieldName().equals(((FieldAccess) expr2).getFieldName());
+            return expr1.getScope().accept(this, ((FieldAccess) expr2).getScope())
+                    && expr1.getFieldName().equals(((FieldAccess) expr2).getFieldName());
         } else {
             return Boolean.FALSE;
         }
     }
 
-    private static boolean nullableListEquals(List<?> l1, List<?> l2) {
+    private static boolean nullableListEqual(List<?> l1, List<?> l2) {
         return (l1 == null ? -1 : l1.size()) == (l2 == null ? -1 : l2.size());
+    }
+
+    private boolean nullableExprEqual(Expression expr1, Expression expr2) {
+        if (expr1 == null && expr2 == null) {
+            return true;
+        } else if (expr1 != null && expr2 != null) {
+            return expr1.accept(this, expr2).equals(Boolean.FALSE);
+        } else {
+            return false;
+        }
     }
 
     public Boolean visit(MethodCall expr1, Expression expr2) {
         if (expr2 instanceof MethodCall) {
-            if (!expr1.getMethodName().equals(((MethodCall) expr2).getMethodName()) ||
-                expr1.getScope().accept(this, ((MethodCall) expr2).getScope()).equals(Boolean.FALSE) ||
-                !nullableListEquals(expr1.getArguments(), ((MethodCall) expr2).getArguments())) {
+            if (!expr1.getMethodName().equals(((MethodCall) expr2).getMethodName())
+                    || nullableExprEqual(expr1.getScope(), ((MethodCall) expr2).getScope())
+                    || !nullableListEqual(expr1.getArguments(), ((MethodCall) expr2).getArguments())) {
                 return Boolean.FALSE;
             } else {
                 if (expr1.getArguments() != null) {
@@ -139,9 +148,9 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
 
     public Boolean visit(ConditionalExpression expr1, Expression expr2) {
         if (expr2 instanceof ConditionalExpression) {
-            return expr1.getCondition().accept(this, ((ConditionalExpression) expr2).getCondition()) &&
-                   expr1.getThen().accept(this, ((ConditionalExpression) expr2).getThen()) &&
-                   expr1.getElse().accept(this, ((ConditionalExpression) expr2).getElse());
+            return expr1.getCondition().accept(this, ((ConditionalExpression) expr2).getCondition())
+                    && expr1.getThen().accept(this, ((ConditionalExpression) expr2).getThen())
+                    && expr1.getElse().accept(this, ((ConditionalExpression) expr2).getElse());
         } else {
             return Boolean.FALSE;
         }
@@ -149,8 +158,8 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
 
     public Boolean visit(ObjectCreationExpression expr1, Expression expr2) {
         if (expr2 instanceof ObjectCreationExpression) {
-            if (!expr1.getClassName().equals(((ObjectCreationExpression) expr2).getClassName()) ||
-                !nullableListEquals(expr1.getArguments(), ((ObjectCreationExpression) expr2).getArguments())) {
+            if (!expr1.getClassName().equals(((ObjectCreationExpression) expr2).getClassName())
+                    || !nullableListEqual(expr1.getArguments(), ((ObjectCreationExpression) expr2).getArguments())) {
                 return Boolean.FALSE;
             } else {
                 if (expr1.getArguments() != null) {
@@ -169,9 +178,9 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
 
     public Boolean visit(ArrayCreationExpression expr1, Expression expr2) {
         if (expr2 instanceof ArrayCreationExpression) {
-            if (!expr1.getTypeName().equals(((ArrayCreationExpression) expr2).getTypeName()) ||
-                expr1.getArrayCountExpr().accept(this, ((ArrayCreationExpression) expr2).getArrayCountExpr()).equals(Boolean.FALSE) ||
-                !nullableListEquals(expr1.getInitValues(), ((ArrayCreationExpression) expr2).getInitValues())) {
+            if (!expr1.getTypeName().equals(((ArrayCreationExpression) expr2).getTypeName())
+                    || expr1.getArrayCountExpr().accept(this, ((ArrayCreationExpression) expr2).getArrayCountExpr()).equals(Boolean.FALSE)
+                    || !nullableListEqual(expr1.getInitValues(), ((ArrayCreationExpression) expr2).getInitValues())) {
                 return Boolean.FALSE;
             } else {
                 if (expr1.getInitValues() != null) {
@@ -198,8 +207,8 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
 
     public Boolean visit(CastExpression expr1, Expression expr2) {
         if (expr2 instanceof CastExpression) {
-            return expr1.getExpr().accept(this, ((CastExpression) expr2).getExpr()) &&
-                   expr1.getClassName().equals(((CastExpression) expr2).getClassName());
+            return expr1.getExpr().accept(this, ((CastExpression) expr2).getExpr())
+                    && expr1.getClassName().equals(((CastExpression) expr2).getClassName());
         } else {
             return Boolean.FALSE;
         }
@@ -207,8 +216,8 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
 
     public Boolean visit(ArrayAccess expr1, Expression expr2) {
         if (expr2 instanceof ArrayAccess) {
-            return expr1.getArrayRef().accept(this, ((ArrayAccess) expr2).getArrayRef()) &&
-                   expr1.getArrayCountExpr().accept(this, ((ArrayAccess) expr2).getArrayCountExpr());
+            return expr1.getArrayRef().accept(this, ((ArrayAccess) expr2).getArrayRef())
+                    && expr1.getArrayCountExpr().accept(this, ((ArrayAccess) expr2).getArrayCountExpr());
         } else {
             return Boolean.FALSE;
         }
@@ -236,8 +245,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
                 return (exprs1.isEmpty() && exprs2.isEmpty());
             }
         } else {
-            return Boolean.FALSE;            
+            return Boolean.FALSE;
         }
     }
-
 }

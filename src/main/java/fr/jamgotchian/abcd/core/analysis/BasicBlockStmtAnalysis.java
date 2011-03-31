@@ -611,9 +611,16 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 case INVOKEVIRTUAL:
                 case INVOKESPECIAL:
                 case INVOKEINTERFACE:
-                case INVOKEDYNAMIC:
-                    expr = new MethodCall(stack.pop(), node.name, args);
+                case INVOKEDYNAMIC: {
+                    Expression scope = stack.pop();
+                    // replace this.foo() by foo()
+                    if (scope instanceof LocalVariable 
+                            && ((LocalVariable) scope).getIndex() == 0) {
+                        scope = null;
+                    }
+                    expr = new MethodCall(scope, node.name, args);
                     break;
+                }
 
                 case INVOKESTATIC:
                     expr = new MethodCall(new ClassExpression(node.owner.replace('/', '.')),
