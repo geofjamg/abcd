@@ -793,6 +793,15 @@ public class Test {
         }
     }
     
+    void testSynchronized() {
+        final Object lock = new Object();
+        System.out.println("a");
+        synchronized (lock) {
+            System.out.println("b");
+        }
+        System.out.println("c");
+    }
+    
 //    public static void main(String[] args) {
 //        new Test().testBreakLabel2();
 //    }
