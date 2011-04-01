@@ -43,10 +43,25 @@ import java.util.Set;
  */
 public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Expression> {
 
-    private static final ExpressionEqualityChecker instance = new ExpressionEqualityChecker();
+    private static final ExpressionEqualityChecker INSTANCE = new ExpressionEqualityChecker();
 
     public static boolean equal(Expression expr1, Expression expr2) {
-        return expr1.accept(instance, expr2);
+        return nullableExprEqual(INSTANCE, expr1, expr2);
+    }
+
+    private static boolean nullableListEqual(List<?> l1, List<?> l2) {
+        return (l1 == null ? -1 : l1.size()) == (l2 == null ? -1 : l2.size());
+    }
+
+    private static boolean nullableExprEqual(ExpressionVisitor<Boolean, Expression> visitor,
+                                             Expression expr1, Expression expr2) {
+        if (expr1 == null && expr2 == null) {
+            return true;
+        } else if (expr1 != null && expr2 != null) {
+            return expr1.accept(visitor, expr2).equals(Boolean.TRUE);
+        } else {
+            return false;
+        }
     }
 
     public Boolean visit(Constant expr1, Expression expr2) {
@@ -111,24 +126,10 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
-    private static boolean nullableListEqual(List<?> l1, List<?> l2) {
-        return (l1 == null ? -1 : l1.size()) == (l2 == null ? -1 : l2.size());
-    }
-
-    private boolean nullableExprEqual(Expression expr1, Expression expr2) {
-        if (expr1 == null && expr2 == null) {
-            return true;
-        } else if (expr1 != null && expr2 != null) {
-            return expr1.accept(this, expr2).equals(Boolean.FALSE);
-        } else {
-            return false;
-        }
-    }
-
     public Boolean visit(MethodCall expr1, Expression expr2) {
         if (expr2 instanceof MethodCall) {
             if (!expr1.getMethodName().equals(((MethodCall) expr2).getMethodName())
-                    || nullableExprEqual(expr1.getScope(), ((MethodCall) expr2).getScope())
+                    || nullableExprEqual(this, expr1.getScope(), ((MethodCall) expr2).getScope())
                     || !nullableListEqual(expr1.getArguments(), ((MethodCall) expr2).getArguments())) {
                 return Boolean.FALSE;
             } else {

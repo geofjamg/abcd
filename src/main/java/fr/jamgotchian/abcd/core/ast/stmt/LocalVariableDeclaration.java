@@ -44,4 +44,18 @@ public class LocalVariableDeclaration {
     public String getTypeName() {
         return typeName;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof LocalVariableDeclaration)) {
+            return false;
+        }
+        LocalVariableDeclaration decl = (LocalVariableDeclaration) obj;
+        return index == decl.index && typeName.equals(decl.typeName);
+    }
+
+    @Override
+    public int hashCode() {
+        return index + typeName.hashCode();
+    }
 }
