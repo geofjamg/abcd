@@ -128,26 +128,18 @@ public class IfThenBreakRegion extends AbstractRegion {
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {
         breakTargetRegion.setBreakTarget(true);
         graph.addVertex(this);
+        Region elseRegion = graph.getEdgeTarget(elseEdge);
         Regions.moveHandlers(graph, ifRegion, this);
-        if (graph.getEdgeTarget(elseEdge).equals(ifRegion)) {
-            graph.removeEdge(elseEdge);
-            graph.removeEdge(thenEdge);
-            Regions.moveIncomingEdges(graph, ifRegion, this);
-            graph.removeVertex(ifRegion);
-            graph.addEdge(this, this, elseEdge);
-        } else {
-            Region elseRegion = graph.getEdgeTarget(elseEdge);
-            graph.removeEdge(elseEdge);
-            graph.removeEdge(thenEdge);
-            if (thenEdge2 != null) {
-                graph.removeEdge(thenEdge2);
-            }
-            Regions.moveIncomingEdges(graph, ifRegion, this);
-            graph.removeVertex(ifRegion);
-            if (thenRegion != null) {
-                graph.removeVertex(thenRegion);
-            }
-            graph.addEdge(this, elseRegion, elseEdge);
+        graph.removeEdge(elseEdge);
+        graph.removeEdge(thenEdge);
+        if (thenEdge2 != null) {
+            graph.removeEdge(thenEdge2);
         }
+        Regions.moveIncomingEdges(graph, ifRegion, this);
+        graph.removeVertex(ifRegion);
+        if (thenRegion != null) {
+            graph.removeVertex(thenRegion);
+        }
+        graph.addEdge(this, elseRegion.equals(ifRegion) ? this : elseRegion, elseEdge);
     }
 }
