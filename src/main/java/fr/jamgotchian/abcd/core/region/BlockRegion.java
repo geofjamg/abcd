@@ -77,7 +77,7 @@ public class BlockRegion extends AbstractRegion {
         graph.addVertex(this);
         Regions.moveHandlers(graph, regions.get(0), this);
         Regions.moveIncomingEdges(graph, regions.get(0), this);
-        Regions.moveOutgoingEdges(graph, regions.get(regions.size()-1), this);
+        Regions.moveUnexceptionalOutgoingEdges(graph, regions.get(regions.size()-1), this);
         Regions.removeEdges(graph, edges);
         Regions.removeRegions(graph, regions);
     }

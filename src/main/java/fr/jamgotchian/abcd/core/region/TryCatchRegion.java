@@ -132,9 +132,9 @@ public class TryCatchRegion extends AbstractRegion {
         }
         graph.addEdge(this, exitRegion, exitEdge);
         if (tryRegion2 != null) {
-            Regions.moveOutgoingEdges(graph, tryRegion2, this);
+            Regions.moveUnexceptionalOutgoingEdges(graph, tryRegion2, this);
         } else {
-            Regions.moveOutgoingEdges(graph, tryRegion1, this);
+            Regions.moveUnexceptionalOutgoingEdges(graph, tryRegion1, this);
         }
         for (CatchRegion _catch : catchRegions) {
             graph.removeEdge(_catch.getIncomingEdge());

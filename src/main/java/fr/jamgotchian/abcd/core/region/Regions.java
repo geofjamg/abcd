@@ -206,15 +206,14 @@ public class Regions {
     public static void moveIncomingEdges(MutableDirectedGraph<Region, Edge> graph, Region from, Region to) {
         Collection<Edge> incomingEdges = graph.getIncomingEdgesOf(from);
         for (Edge incomingEdge : new ArrayList<Edge>(incomingEdges)) {
-            if (!incomingEdge.isExceptional()) {
                 Region source = graph.getEdgeSource(incomingEdge);
                 graph.removeEdge(incomingEdge);
                 graph.addEdge(source, to, incomingEdge);
-            }
         }
     }
 
-    public static void moveOutgoingEdges(MutableDirectedGraph<Region, Edge> graph, Region from, Region to) {
+    public static void moveUnexceptionalOutgoingEdges(MutableDirectedGraph<Region, Edge> graph, 
+                                                      Region from, Region to) {
         Collection<Edge> outgoingEdges = graph.getOutgoingEdgesOf(from);
         for (Edge outgoingEdge : new ArrayList<Edge>(outgoingEdges)) {
             if (!outgoingEdge.isExceptional()) {
