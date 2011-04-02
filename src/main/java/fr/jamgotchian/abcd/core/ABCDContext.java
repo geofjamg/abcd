@@ -32,9 +32,10 @@ import fr.jamgotchian.abcd.core.output.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.output.TextCodeWriter;
 import fr.jamgotchian.abcd.core.analysis.ControlFlowGraphStmtAnalysis;
 import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
-import fr.jamgotchian.abcd.core.analysis.ConditionalExpressionRefactoring;
+import fr.jamgotchian.abcd.core.analysis.ConditionalExpressionRefactorer;
 import fr.jamgotchian.abcd.core.analysis.DOTUtil;
-import fr.jamgotchian.abcd.core.analysis.ForLoopRefactoring;
+import fr.jamgotchian.abcd.core.analysis.ForLoopRefactorer;
+import fr.jamgotchian.abcd.core.analysis.Refactorer;
 import fr.jamgotchian.abcd.core.graph.VertexToString;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.Region;
@@ -52,6 +53,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +78,10 @@ public class ABCDContext {
     public static final boolean DEBUG = false;
 
     private static final Logger logger;
+                
+    private static List<Refactorer> REFACTORERS = Collections.unmodifiableList(
+            Arrays.<Refactorer>asList(new ForLoopRefactorer(),
+                                      new ConditionalExpressionRefactorer()));
 
     static {
         // root logger configuration
@@ -211,8 +218,9 @@ public class ABCDContext {
                 logger.log(Level.FINE, "////////// Build AST of {0} //////////", methodSignature);
                 new AbstractSyntaxTreeBuilder().build(rootRegion, method.getBody());
 
-                method.getBody().accept(new ForLoopRefactoring(), null);
-                method.getBody().accept(new ConditionalExpressionRefactoring(), null);
+                for (Refactorer refactorer : REFACTORERS) {
+                    refactorer.refactor(method.getBody());
+                }
 
             } catch (Exception exc) {
                 logger.log(Level.SEVERE, exc.toString(), exc);

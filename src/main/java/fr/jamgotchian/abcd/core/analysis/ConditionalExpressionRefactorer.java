@@ -63,9 +63,13 @@ import java.util.logging.Logger;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ConditionalExpressionRefactoring implements StatementVisitor<Object, Object> {
+public class ConditionalExpressionRefactorer implements StatementVisitor<Object, Object>, Refactorer {
     
-    private static final Logger logger = Logger.getLogger(ConditionalExpressionRefactoring.class.getName());
+    private static final Logger logger = Logger.getLogger(ConditionalExpressionRefactorer.class.getName());
+
+    public void refactor(BlockStatement blockStmt) {
+        blockStmt.accept(this, null);
+    }
 
     private static class ChoiceExpressionRemover extends ExpressionModifierVisitor {
 

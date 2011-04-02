@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.analysis;
 
 import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
+import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ForStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
@@ -32,8 +33,12 @@ import java.util.Collections;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ForLoopRefactoring extends StatementModifierVisitor {
+public class ForLoopRefactorer extends StatementModifierVisitor implements Refactorer {
 
+    public void refactor(BlockStatement blockStmt) {
+        blockStmt.accept(this, null);
+    }
+    
     @Override
     public Collection<Statement> visit(ExpressionStatement stmt, Void arg) {
         if (Statements.isAnAssignment(stmt)) {
