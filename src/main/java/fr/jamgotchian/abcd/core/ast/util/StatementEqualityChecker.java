@@ -39,6 +39,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.SynchronizedStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
@@ -318,4 +319,14 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    public Boolean visit(SynchronizedStatement stmt, Statement arg) {
+        if (arg instanceof SynchronizedStatement) {
+            SynchronizedStatement stmt2 = (SynchronizedStatement) arg;
+            if (!ExpressionEqualityChecker.equal(stmt.getExpression(), stmt2.getExpression())) {
+                return Boolean.FALSE;
+            }
+            return stmt.getBody().accept(this, stmt2.getBody());
+        }
+        return Boolean.FALSE;
+    }
 }

@@ -43,6 +43,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.SynchronizedStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
@@ -64,7 +65,7 @@ import java.util.logging.Logger;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class ConditionalExpressionRefactorer implements StatementVisitor<Object, Object>, Refactorer {
-    
+
     private static final Logger logger = Logger.getLogger(ConditionalExpressionRefactorer.class.getName());
 
     public void refactor(BlockStatement blockStmt) {
@@ -75,9 +76,9 @@ public class ConditionalExpressionRefactorer implements StatementVisitor<Object,
 
         @Override
         public Expression visit(ChoiceExpression choiceExpr, Void arg) {
-            
+
             ChoiceExpression oldChoiceExpr = new ChoiceExpression(new HashSet<Expression>(choiceExpr.getChoices()));
-            
+
             boolean change = true;
             while (change) {
                 change = false;
@@ -103,14 +104,14 @@ public class ConditionalExpressionRefactorer implements StatementVisitor<Object,
                         DominatorInfo<BasicBlock, Edge> dominatorInfo = forkBlock.getGraph().getDominatorInfo();
                         Edge forkEdge1 = dominatorInfo.getPostDominanceFrontierOf(block1).iterator().next();
                         Edge forkEdge2 = dominatorInfo.getPostDominanceFrontierOf(block2).iterator().next();
-                        Expression thenExpr = null; 
+                        Expression thenExpr = null;
                         Expression elseExpr = null;
                         if (Boolean.TRUE.equals(forkEdge1.getValue()) && Boolean.FALSE.equals(forkEdge2.getValue())) {
-                            thenExpr = expr1; 
-                            elseExpr = expr2; 
+                            thenExpr = expr1;
+                            elseExpr = expr2;
                         } else if (Boolean.FALSE.equals(forkEdge1.getValue()) && Boolean.TRUE.equals(forkEdge2.getValue())) {
-                            thenExpr = expr2; 
-                            elseExpr = expr1; 
+                            thenExpr = expr2;
+                            elseExpr = expr1;
                         }
                         if (thenExpr != null && elseExpr != null) {
                             BasicBlockAnalysisDataImpl forkData = (BasicBlockAnalysisDataImpl) forkBlock.getData();
@@ -132,9 +133,9 @@ public class ConditionalExpressionRefactorer implements StatementVisitor<Object,
 
             if (choiceExpr.getChoices().size() == 1) {
                 Expression condExpr = choiceExpr.getChoices().iterator().next();
-                logger.log(Level.FINEST, "Refactor choice : {0} -> {1}", 
-                        new Object[] {ExpressionStackImpl.toString(oldChoiceExpr), 
-                                      ExpressionStackImpl.toString(condExpr)}); 
+                logger.log(Level.FINEST, "Refactor choice : {0} -> {1}",
+                        new Object[] {ExpressionStackImpl.toString(oldChoiceExpr),
+                                      ExpressionStackImpl.toString(condExpr)});
                 return condExpr;
             } else {
                 logger.log(Level.SEVERE, "Conditional expression refactoring error");
@@ -259,7 +260,7 @@ public class ConditionalExpressionRefactorer implements StatementVisitor<Object,
         stmt.getStmt().accept(this, arg);
         return null;
     }
-        
+
     public Object visit(MonitorEnterStatement stmt, Object arg) {
         stmt.getObjectRef().accept(choiceExprRemover, null);
         return null;
@@ -269,4 +270,10 @@ public class ConditionalExpressionRefactorer implements StatementVisitor<Object,
         stmt.getObjectRef().accept(choiceExprRemover, null);
         return null;
     }
+
+    public Object visit(SynchronizedStatement stmt, Object arg) {
+        stmt.getExpression().accept(choiceExprRemover, null);
+        return null;
+    }
+
 }

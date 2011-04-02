@@ -62,5 +62,7 @@ public interface StatementVisitor<R, A> {
     R visit(MonitorEnterStatement stmt, A arg);
     
     R visit(MonitorExitStatement stmt, A arg);
+    
+    R visit(SynchronizedStatement stmt, A arg);
 
 }

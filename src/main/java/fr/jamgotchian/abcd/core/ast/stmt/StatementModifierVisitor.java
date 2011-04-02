@@ -143,4 +143,8 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
         return null;
     }
 
+    public Collection<Statement> visit(SynchronizedStatement stmt, Void arg) {
+        return null;
+    }
+    
 }

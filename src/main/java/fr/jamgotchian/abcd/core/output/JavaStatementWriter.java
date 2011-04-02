@@ -37,6 +37,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.SynchronizedStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
@@ -137,7 +138,7 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
                   .write(_catch.getExceptionVarDecl().getTypeName())
                   .writeSpace().write(stmt.getBlock().getVariable(_catch.getExceptionVarDecl().getIndex()))
                   .write(")").writeSpace();
-            _catch.getBlockStmt().accept(this, null);            
+            _catch.getBlockStmt().accept(this, null);
         }
         if (stmt.getFinally() != null) {
             writer.writeSpace().writeKeyword("finally").writeSpace();
@@ -251,16 +252,24 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
     }
 
     public Void visit(MonitorEnterStatement stmt, Void arg) {
-        writer.writeKeyword("monitorenter ");
+        writer.writeKeyword("monitorenter").writeSpace();
         stmt.getObjectRef().accept(exprVisitor, stmt.getBlock());
         writer.write(";");
         return null;
     }
 
     public Void visit(MonitorExitStatement stmt, Void arg) {
-        writer.writeKeyword("monitorexit ");
+        writer.writeKeyword("monitorexit").writeSpace();
         stmt.getObjectRef().accept(exprVisitor, stmt.getBlock());
         writer.write(";");
+        return null;
+    }
+
+    public Void visit(SynchronizedStatement stmt, Void arg) {
+        writer.writeKeyword("synchronized").writeSpace().write("(");
+        stmt.getExpression().accept(exprVisitor, stmt.getBlock());
+        writer.write(")");
+        stmt.getBody().accept(this, null);
         return null;
     }
 }
