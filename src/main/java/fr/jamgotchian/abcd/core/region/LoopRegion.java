@@ -20,7 +20,6 @@ package fr.jamgotchian.abcd.core.region;
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
 
@@ -98,22 +97,36 @@ public class LoopRegion extends AbstractRegion {
             case DO_WHILE:
                 ifThenBreak = (IfThenBreakRegion) Regions.getDeepExitRegion(graph, loopRegion);
                 break;
-            
+
             case INFINITE:
                 throw new ABCDException("TODO");
-                
+
             default:
                 throw new AssertionError();
         }
         Region breakTargetRegion = ifThenBreak.getBreakTargetRegion();
-        if (ifThenBreak.getThenRegion() != null) {
-            graph.addVertex(ifThenBreak.getThenRegion());
-            graph.addEdge(this, ifThenBreak.getThenRegion(), new EdgeImpl());
-            graph.addEdge(ifThenBreak.getThenRegion(), breakTargetRegion, ifThenBreak.getThenEdge2());
-            ifThenBreak.setThenRegion(null);
-            ifThenBreak.setThenEdge2(null);
-        } else {
-            graph.addEdge(this, breakTargetRegion, ifThenBreak.getThenEdge());
+        boolean before = ifThenBreak.getBeforeThenRegion() != null
+                && ifThenBreak.getBeforeThenEdge() != null;
+        boolean after = ifThenBreak.getAfterThenRegion() != null
+                && ifThenBreak.getAfterThenEdge() != null;
+        if (after && before) {
+            graph.addVertex(ifThenBreak.getBeforeThenRegion());
+            graph.addVertex(ifThenBreak.getAfterThenRegion());
+            graph.addEdge(this, ifThenBreak.getBeforeThenRegion(), ifThenBreak.getBeforeThenEdge());
+            graph.addEdge(ifThenBreak.getBeforeThenRegion(), ifThenBreak.getAfterThenRegion(), ifThenBreak.getThenBreakEdge());
+            graph.addEdge(ifThenBreak.getAfterThenRegion(), breakTargetRegion, ifThenBreak.getAfterThenEdge());
+            ifThenBreak.setBeforeThenRegion(null);
+            ifThenBreak.setBeforeThenEdge(null);
+            ifThenBreak.setAfterThenRegion(null);
+            ifThenBreak.setAfterThenEdge(null);
+        } else if (after && !before) {
+            graph.addVertex(ifThenBreak.getAfterThenRegion());
+            graph.addEdge(this, ifThenBreak.getAfterThenRegion(), ifThenBreak.getThenBreakEdge());
+            graph.addEdge(ifThenBreak.getAfterThenRegion(), breakTargetRegion, ifThenBreak.getAfterThenEdge());
+            ifThenBreak.setAfterThenRegion(null);
+            ifThenBreak.setAfterThenEdge(null);
+        } else if (!after && !before) {
+            graph.addEdge(this, breakTargetRegion, ifThenBreak.getThenBreakEdge());
         }
         breakTargetRegion.setBreakTarget(false);
 

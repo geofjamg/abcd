@@ -141,6 +141,8 @@ class IfThenElseRecognizer implements RegionRecognizer {
         //   B   C
         //   |   |
         //   D   E
+        //   |   |
+        //   F   G
         //
         if (edgeAB.isLoopExit() && !edgeAC.isLoopExit()) {
             boolean invertCond = Boolean.FALSE.equals(edgeAB.getValue());
@@ -151,21 +153,21 @@ class IfThenElseRecognizer implements RegionRecognizer {
                 Region regionD = graph.getEdgeTarget(edgeBD);
                 if (Regions.sameHandlers(graph, regionA, regionB)) {
                     //  A : if region
-                    //  B : then region
+                    //  B : after then region
                     //  D : break target region
-                    //  AB : then edge => loop exit
-                    //  BD : then edge 2
+                    //  AB : then break edge
+                    //  BD : after then edge
                     //  AC : else edge
-                    return new IfThenBreakRegion(regionA, regionD, edgeAC,
-                                                 edgeAB, regionB, edgeBD,
-                                                 invertCond);
+                    return IfThenBreakRegion.newInstance2(regionA, regionD, edgeAC,
+                                                          edgeAB, regionB, edgeBD,
+                                                          invertCond);
                 }
             } else {
                 //  A : if region
-                //  AB : then edge => loop exit
+                //  AB : then break edge
                 //  AC : else edge
-                return new IfThenBreakRegion(regionA, regionB, edgeAC, edgeAB,
-                                             null, null, invertCond);
+                return IfThenBreakRegion.newInstance(regionA, regionB, edgeAC, edgeAB,
+                                                     invertCond);
             }
         }
 
@@ -175,60 +177,72 @@ class IfThenElseRecognizer implements RegionRecognizer {
                     && Regions.getPredecessorCountOf(graph, regionC, false) == 1
                     && !regionC.isBreakTarget()) {
                 //  A : if region
-                //  C : then region
+                //  C : after then region
                 //  E : break target region
-                //  AC : then edge => loop exit
-                //  CE : then edge 2
+                //  AC : then break edge
+                //  CE : after then edge
                 //  AB : else edge
                 Edge edgeCE = Regions.getFirstOutgoingEdgeOf(graph, regionC, false);
                 Region regionE = graph.getEdgeTarget(edgeCE);
                 if (Regions.sameHandlers(graph, regionA, regionC)) {
-                    return new IfThenBreakRegion(regionA, regionE, edgeAB,
-                                                 edgeAC, regionC, edgeCE,
-                                                 invertCond);
+                    return IfThenBreakRegion.newInstance2(regionA, regionE, edgeAB,
+                                                          edgeAC, regionC, edgeCE,
+                                                          invertCond);
                 }
             } else {
                 //  A : if region
-                //  AC : then edge => loop exit
+                //  AC : then break edge
                 //  AB : else edge
-                return new IfThenBreakRegion(regionA, regionC, edgeAB, edgeAC,
-                                             null, null, invertCond);
+                return IfThenBreakRegion.newInstance(regionA, regionC, edgeAB, edgeAC,
+                                                     invertCond);
             }
         }
 
         //  A : if region
-        //  B : then region
-        //  AB : then edge
-        //  BD : then edge 2 => loop exit
+        //  B : before then region
+        //  D : after then region
+        //  AB : before then edge
+        //  BD : then break edge
+        //  DF : after then edge
         //  AC : else edge
-//        if (Regions.getSuccessorCountOf(graph, regionB, false) == 1
-//                && Regions.sameHandlers(graph, regionA, regionB)) {
-//            Edge edgeBD = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
-//            if (edgeBD.isLoopExit()) {
-//                boolean invertCond = Boolean.FALSE.equals(edgeAB.getValue());
-//                Region regionD = graph.getEdgeTarget(edgeBD);
-//                return new IfThenBreakRegion(regionA, regionD, edgeAC,
-//                                             edgeAB, regionB, edgeBD,
-//                                             invertCond);
-//            }
-//        }
+        if (Regions.getSuccessorCountOf(graph, regionB, false) == 1
+                && Regions.sameHandlers(graph, regionA, regionB)) {
+            Edge edgeBD = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
+            if (edgeBD.isLoopExit()) {
+                Region regionD = graph.getEdgeTarget(edgeBD);
+                if (Regions.getSuccessorCountOf(graph, regionD, false) == 1) {
+                    Edge edgeDF = Regions.getFirstOutgoingEdgeOf(graph, regionD, false);
+                    Region regionF = graph.getEdgeTarget(edgeDF);
+                    boolean invertCond = Boolean.FALSE.equals(edgeAB.getValue());
+                    return IfThenBreakRegion.newInstance3(regionA, regionF, edgeAC,
+                                                          edgeBD, regionB, edgeAB,
+                                                          regionD, edgeDF, invertCond);
+                }
+            }
+        }
 
         //  A : if region
-        //  C : then region
-        //  AC : then edge
-        //  CE : then edge 2 => loop exit
+        //  C : before then region
+        //  E : before then region
+        //  AC : before then edge
+        //  CE : then break edge
+        //  EG : after then edge
         //  AB : else edge
-//        if (Regions.getSuccessorCountOf(graph, regionC, false) == 1
-//                && Regions.sameHandlers(graph, regionA, regionC)) {
-//            Edge edgeCE = Regions.getFirstOutgoingEdgeOf(graph, regionC, false);
-//            if (edgeCE.isLoopExit()) {
-//                boolean invertCond = Boolean.FALSE.equals(edgeAC.getValue());
-//                Region regionE = graph.getEdgeTarget(edgeCE);
-//                return new IfThenBreakRegion(regionA, regionE, edgeAB,
-//                                             edgeAC, regionC, edgeCE,
-//                                             invertCond);
-//            }
-//        }
+        if (Regions.getSuccessorCountOf(graph, regionC, false) == 1
+                && Regions.sameHandlers(graph, regionA, regionC)) {
+            Edge edgeCE = Regions.getFirstOutgoingEdgeOf(graph, regionC, false);
+            if (edgeCE.isLoopExit()) {
+                boolean invertCond = Boolean.FALSE.equals(edgeAC.getValue());
+                Region regionE = graph.getEdgeTarget(edgeCE);
+                if (Regions.getSuccessorCountOf(graph, regionE, false) == 1) {
+                    Edge edgeEG = Regions.getFirstOutgoingEdgeOf(graph, regionE, false);
+                    Region regionG = graph.getEdgeTarget(edgeEG);
+                    return IfThenBreakRegion.newInstance3(regionA, regionG, edgeAB,
+                                                          edgeCE, regionC, edgeAC,
+                                                          regionE, edgeEG, invertCond);
+                }
+            }
+        }
 
         return null;
     }

@@ -63,11 +63,11 @@ import java.util.logging.Logger;
 public class AbstractSyntaxTreeBuilder {
 
     private static final Logger logger = Logger.getLogger(AbstractSyntaxTreeBuilder.class.getName());
-    
+
     static {
         logger.setLevel(Level.FINER);
     }
-    
+
     public AbstractSyntaxTreeBuilder() {
     }
 
@@ -86,9 +86,9 @@ public class AbstractSyntaxTreeBuilder {
     }
 
     private void buildAST(Region region, BlockStatement blockStmt) {
-        logger.log(Level.FINEST, "Build AST from region {0} {1}", 
+        logger.log(Level.FINEST, "Build AST from region {0} {1}",
                 new Object[] {region, region.getTypeName()});
-        
+
         switch (region.getType()) {
             case BASIC_BLOCK: {
                 BasicBlockRegion basicBlockRegion = (BasicBlockRegion) region;
@@ -184,9 +184,12 @@ public class AbstractSyntaxTreeBuilder {
                 buildAST(ifBreak.getIfRegion(), blockStmt);
                 JumpIfStatement jumpIfStmt = (JumpIfStatement) blockStmt.getLast();
                 jumpIfStmt.remove();
-                BlockStatement thenBlockStmt = new BlockStatement();                
-                if (ifBreak.getThenRegion() != null) {
-                    buildAST(ifBreak.getThenRegion(), thenBlockStmt);
+                BlockStatement thenBlockStmt = new BlockStatement();
+                if (ifBreak.getBeforeThenRegion() != null) {
+                    buildAST(ifBreak.getBeforeThenRegion(), thenBlockStmt);
+                }
+                if (ifBreak.getAfterThenRegion() != null) {
+                    buildAST(ifBreak.getAfterThenRegion(), thenBlockStmt);
                 }
                 thenBlockStmt.add(new BreakStatement());
                 Expression condition = jumpIfStmt.getCondition();
@@ -197,29 +200,29 @@ public class AbstractSyntaxTreeBuilder {
                 blockStmt.add(ifStmt);
                 break;
             }
-                
+
             case LOOP: {
                 LoopRegion loopRegion = (LoopRegion) region;
                 BlockStatement bodyBlockStmt = new BlockStatement();
 
                 buildAST(loopRegion.getLoopRegion(), bodyBlockStmt);
-                
+
                 switch (loopRegion.getLoopType()) {
                     case WHILE: {
                         IfStatement ifStmt = (IfStatement) bodyBlockStmt.getFirst();
                         ifStmt.remove();
                         Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
-                        blockStmt.add(new WhileStatement(condition, bodyBlockStmt));                        
+                        blockStmt.add(new WhileStatement(condition, bodyBlockStmt));
                         break;
                     }
-                        
+
                     case DO_WHILE:
                         IfStatement ifStmt = (IfStatement) bodyBlockStmt.getLast();
                         ifStmt.remove();
                         Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
                         blockStmt.add(new DoWhileStatement(bodyBlockStmt, condition));
                         break;
-                        
+
                     default:
                         throw new AssertionError();
                 }
@@ -250,14 +253,14 @@ public class AbstractSyntaxTreeBuilder {
 
                 BlockStatement tryBlockStmt = new BlockStatement();
                 buildAST(tryCatchRegion.getTryRegion1(), tryBlockStmt);
-                
+
                 if (tryCatchRegion.getTryRegion2() != null) {
-                    buildAST(tryCatchRegion.getTryRegion2(), tryBlockStmt);                    
+                    buildAST(tryCatchRegion.getTryRegion2(), tryBlockStmt);
                 }
 
                 List<CatchStatement> catchStmts = new ArrayList<CatchStatement>();
                 for (CatchRegion catchRegion : tryCatchRegion.getCatchRegions()) {
-                    
+
                     BlockStatement catchBlockStmt = new BlockStatement();
                     buildAST(catchRegion.getRegion(), catchBlockStmt);
 

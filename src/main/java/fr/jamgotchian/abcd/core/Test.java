@@ -558,6 +558,16 @@ public class Test {
         c();
     }
 
+    private void testSwitchWithEmptyDefaultCase(int a) {
+        System.out.println("a");
+        switch (a) {
+            case 0:
+                System.out.println("b");
+                break;
+        }
+        System.out.println("c");
+    }
+
     public void testSwitch(int a) {
         switch (a) {
             case 0:

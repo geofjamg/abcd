@@ -17,12 +17,11 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -36,22 +35,56 @@ public class IfThenBreakRegion extends AbstractRegion {
 
     private final Edge elseEdge;
 
-    private final Edge thenEdge;
+    private final Edge thenBreakEdge;
 
-    private Region thenRegion;
+    private Region afterThenRegion;
 
-    private Edge thenEdge2;
+    private Edge afterThenEdge;
+
+    private Region beforeThenRegion;
+
+    private Edge beforeThenEdge;
 
     private final boolean invertCond;
 
-    IfThenBreakRegion(Region ifRegion, Region breakTargetRegion, Edge elseEdge, Edge thenEdge,
-                      Region thenRegion, Edge thenEdge2, boolean invertCond) {
+    static IfThenBreakRegion newInstance(Region ifRegion, Region breakTargetRegion, 
+                                         Edge elseEdge, Edge thenBreakEdge,
+                                         boolean invertCond) {
+        return new IfThenBreakRegion(ifRegion, breakTargetRegion, elseEdge, thenBreakEdge, 
+                                     null, null, null, null, 
+                                     invertCond);
+    }
+
+    static IfThenBreakRegion newInstance2(Region ifRegion, Region breakTargetRegion, 
+                                          Edge elseEdge, Edge thenBreakEdge,
+                                          Region afterThenRegion, Edge afterThenEdge,
+                                          boolean invertCond) {
+        return new IfThenBreakRegion(ifRegion, breakTargetRegion, elseEdge, thenBreakEdge, 
+                                     null, null, afterThenRegion, afterThenEdge, 
+                                     invertCond);
+    }
+    
+    static IfThenBreakRegion newInstance3(Region ifRegion, Region breakTargetRegion, 
+                                          Edge elseEdge, Edge thenBreakEdge,
+                                          Region beforeThenRegion, Edge beforeThenEdge,
+                                          Region afterThenRegion, Edge afterThenEdge,
+                                          boolean invertCond) {
+        return new IfThenBreakRegion(ifRegion, breakTargetRegion, elseEdge, thenBreakEdge, 
+                                     beforeThenRegion, beforeThenEdge, afterThenRegion, afterThenEdge, 
+                                     invertCond);
+    }
+    
+    private IfThenBreakRegion(Region ifRegion, Region breakTargetRegion, Edge elseEdge, Edge thenBreakEdge,
+                      Region beforeThenRegion, Edge beforeThenEdge, Region afterThenRegion, Edge afterThenEdge, 
+                      boolean invertCond) {
         this.ifRegion = ifRegion;
         this.breakTargetRegion = breakTargetRegion;
         this.elseEdge = elseEdge;
-        this.thenEdge = thenEdge;
-        this.thenRegion = thenRegion;
-        this.thenEdge2 = thenEdge2;
+        this.thenBreakEdge = thenBreakEdge;
+        this.beforeThenRegion = beforeThenRegion;
+        this.beforeThenEdge = beforeThenEdge;
+        this.afterThenRegion = afterThenRegion;
+        this.afterThenEdge = afterThenEdge;
         this.invertCond = invertCond;
     }
 
@@ -63,30 +96,46 @@ public class IfThenBreakRegion extends AbstractRegion {
         return breakTargetRegion;
     }
 
-    public Edge getThenEdge() {
-        return thenEdge;
+    public Edge getThenBreakEdge() {
+        return thenBreakEdge;
     }
 
     public Edge getElseEdge() {
         return elseEdge;
     }
 
-    public Region getThenRegion() {
-        return thenRegion;
+    public Region getAfterThenRegion() {
+        return afterThenRegion;
     }
 
-    public void setThenRegion(Region thenRegion) {
-        this.thenRegion = thenRegion;
+    public void setAfterThenRegion(Region afterThenRegion) {
+        this.afterThenRegion = afterThenRegion;
     }
 
-    public Edge getThenEdge2() {
-        return thenEdge2;
+    public Edge getAfterThenEdge() {
+        return afterThenEdge;
     }
 
-    public void setThenEdge2(Edge thenEdge2) {
-        this.thenEdge2 = thenEdge2;
+    public void setAfterThenEdge(Edge afterThenEdge) {
+        this.afterThenEdge = afterThenEdge;
     }
 
+    public Region getBeforeThenRegion() {
+        return beforeThenRegion;
+    }
+
+    public Edge getBeforeThenEdge() {
+        return beforeThenEdge;
+    }
+
+    public void setBeforeThenRegion(Region beforeThenRegion) {
+        this.beforeThenRegion = beforeThenRegion;
+    }
+
+    public void setBeforeThenEdge(Edge beforeThenEdge) {
+        this.beforeThenEdge = beforeThenEdge;
+    }
+    
     public boolean isInvertCond() {
         return invertCond;
     }
@@ -104,19 +153,27 @@ public class IfThenBreakRegion extends AbstractRegion {
     }
 
     public Collection<Region> getChildRegions() {
-        if (thenRegion == null) {
-            return Collections.singleton(ifRegion);
-        } else {
-            return Arrays.asList(ifRegion, thenRegion);
+        Set<Region> regions = new HashSet<Region>(1);
+        regions.add(ifRegion);
+        if (beforeThenRegion != null) {
+            regions.add(beforeThenRegion);
         }
+        if (afterThenRegion != null) {
+            regions.add(afterThenRegion);
+        }
+        return regions;
     }
 
     public Collection<Edge> getChildEdges() {
-        if (thenEdge2 == null) {
-            return Sets.newHashSet(thenEdge, elseEdge);
-        } else {
-            return Sets.newHashSet(thenEdge, elseEdge, thenEdge2);
+        Set<Edge> edges = new HashSet<Edge>(1);
+        edges.add(thenBreakEdge);
+        if (beforeThenEdge != null) {
+            edges.add(beforeThenEdge);
         }
+        if (afterThenEdge != null) {
+            edges.add(afterThenEdge);
+        }
+        return edges;
     }
 
     @Override
@@ -131,14 +188,20 @@ public class IfThenBreakRegion extends AbstractRegion {
         Region elseRegion = graph.getEdgeTarget(elseEdge);
         Regions.moveHandlers(graph, ifRegion, this);
         graph.removeEdge(elseEdge);
-        graph.removeEdge(thenEdge);
-        if (thenEdge2 != null) {
-            graph.removeEdge(thenEdge2);
+        graph.removeEdge(thenBreakEdge);
+        if (beforeThenEdge != null) {
+            graph.removeEdge(beforeThenEdge);
+        }
+        if (afterThenEdge != null) {
+            graph.removeEdge(afterThenEdge);
         }
         Regions.moveIncomingEdges(graph, ifRegion, this);
         graph.removeVertex(ifRegion);
-        if (thenRegion != null) {
-            graph.removeVertex(thenRegion);
+        if (beforeThenRegion != null) {
+            graph.removeVertex(beforeThenRegion);
+        }
+        if (afterThenRegion != null) {
+            graph.removeVertex(afterThenRegion);
         }
         graph.addEdge(this, elseRegion.equals(ifRegion) ? this : elseRegion, elseEdge);
     }
