@@ -98,38 +98,39 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
     }
 
     public Void visit(Method method, Void _void) {
-        BlockStatement body = method.getBody();
         for (Modifier mod : method.getModifiers()) {
             writer.write(mod).writeSpace();
         }
-        if (method.getReturnTypeName() != null) {
-            writer.write(method.getReturnTypeName()).writeSpace();
-        }
-        writer.write(method.getName()).write("(");
-        List<LocalVariableDeclaration> arguments = method.getArguments();
-        for (int i = 0; i < arguments.size(); i++) {
-            LocalVariableDeclaration argument = arguments.get(i);
-            String argumentName = method.getBody().getVariable(argument.getIndex());
-            writer.write(argument.getTypeName()).writeSpace().write(argumentName);
-            if (i < arguments.size()-1) {
-                writer.write(",").writeSpace();
+        if (!"<clinit>".equals(method.getName())) {
+            if (method.getReturnTypeName() != null) {
+                writer.write(method.getReturnTypeName()).writeSpace();
             }
-        }
-        writer.write(")");
-        writer.incrIndent();
-        if (method.getExceptions().size() > 0) {
-            writer.newLine().writeKeyword("throws").writeSpace();
-            List<String> exceptions = method.getExceptions();
-            for (int i = 0; i < exceptions.size(); i++) {
-                writer.write(exceptions.get(i));
-                if (i < exceptions.size()-1) {
-                    writer.write(", ");
+            writer.write(method.getName()).write("(");
+            List<LocalVariableDeclaration> arguments = method.getArguments();
+            for (int i = 0; i < arguments.size(); i++) {
+                LocalVariableDeclaration argument = arguments.get(i);
+                String argumentName = method.getBody().getVariable(argument.getIndex());
+                writer.write(argument.getTypeName()).writeSpace().write(argumentName);
+                if (i < arguments.size()-1) {
+                    writer.write(",").writeSpace();
                 }
             }
+            writer.write(")");
+            writer.incrIndent();
+            if (method.getExceptions().size() > 0) {
+                writer.newLine().writeKeyword("throws").writeSpace();
+                List<String> exceptions = method.getExceptions();
+                for (int i = 0; i < exceptions.size(); i++) {
+                    writer.write(exceptions.get(i));
+                    if (i < exceptions.size()-1) {
+                        writer.write(", ");
+                    }
+                }
+            }
+            writer.writeSpace();
+            writer.decrIndent();
         }
-        writer.writeSpace();
-        writer.decrIndent();
-        body.accept(stmtVisitor, null);
+        method.getBody().accept(stmtVisitor, null);
         return null;
     }
 }
