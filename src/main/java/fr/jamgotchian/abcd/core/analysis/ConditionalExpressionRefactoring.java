@@ -36,6 +36,8 @@ import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.MonitorEnterStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
@@ -251,6 +253,16 @@ public class ConditionalExpressionRefactoring implements StatementVisitor<Object
 
     public Object visit(LabeledStatement stmt, Object arg) {
         stmt.getStmt().accept(this, arg);
+        return null;
+    }
+        
+    public Object visit(MonitorEnterStatement stmt, Object arg) {
+        stmt.getObjectRef().accept(choiceExprRemover, null);
+        return null;
+    }
+
+    public Object visit(MonitorExitStatement stmt, Object arg) {
+        stmt.getObjectRef().accept(choiceExprRemover, null);
         return null;
     }
 }

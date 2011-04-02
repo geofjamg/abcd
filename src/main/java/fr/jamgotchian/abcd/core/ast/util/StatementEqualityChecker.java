@@ -32,6 +32,8 @@ import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.MonitorEnterStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
@@ -292,6 +294,26 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
                 return Boolean.FALSE;
             }
             return stmt.getStmt().accept(this, stmt2.getStmt());
+        }
+        return Boolean.FALSE;
+    }
+
+    public Boolean visit(MonitorEnterStatement stmt, Statement arg) {
+        if (arg instanceof MonitorEnterStatement) {
+            MonitorEnterStatement stmt2 = (MonitorEnterStatement) arg;
+            if (!ExpressionEqualityChecker.equal(stmt.getObjectRef(), stmt2.getObjectRef())) {
+                return Boolean.FALSE;
+            }
+        }
+        return Boolean.FALSE;
+    }
+
+    public Boolean visit(MonitorExitStatement stmt, Statement arg) {
+        if (arg instanceof MonitorExitStatement) {
+            MonitorExitStatement stmt2 = (MonitorExitStatement) arg;
+            if (!ExpressionEqualityChecker.equal(stmt.getObjectRef(), stmt2.getObjectRef())) {
+                return Boolean.FALSE;
+            }
         }
         return Boolean.FALSE;
     }

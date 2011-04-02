@@ -30,6 +30,8 @@ import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.MonitorEnterStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
@@ -245,6 +247,20 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
     public Void visit(LabeledStatement stmt, Void arg) {
         writer.write(stmt.getLabel()).write(":").writeSpace();
         stmt.getStmt().accept(this, arg);
+        return null;
+    }
+
+    public Void visit(MonitorEnterStatement stmt, Void arg) {
+        writer.writeKeyword("monitorenter ");
+        stmt.getObjectRef().accept(exprVisitor, stmt.getBlock());
+        writer.write(";");
+        return null;
+    }
+
+    public Void visit(MonitorExitStatement stmt, Void arg) {
+        writer.writeKeyword("monitorexit ");
+        stmt.getObjectRef().accept(exprVisitor, stmt.getBlock());
+        writer.write(";");
         return null;
     }
 }

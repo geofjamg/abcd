@@ -58,5 +58,9 @@ public interface StatementVisitor<R, A> {
     R visit(SwitchCaseStatement stmt, A arg);
     
     R visit(LabeledStatement stmt, A arg);
+    
+    R visit(MonitorEnterStatement stmt, A arg);
+    
+    R visit(MonitorExitStatement stmt, A arg);
 
 }

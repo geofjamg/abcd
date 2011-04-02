@@ -47,6 +47,8 @@ import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.JumpIfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.MonitorEnterStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
@@ -421,8 +423,12 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 break;
 
             case MONITORENTER:
+                addStmt(block, new MonitorEnterStatement(stack.pop()));
+                break;
+                
             case MONITOREXIT:
-                throw new ABCDException("TODO");
+                addStmt(block, new MonitorExitStatement(stack.pop()));
+                break;
         }
     }
 

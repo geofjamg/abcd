@@ -134,4 +134,13 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
         stmt.getStmt().accept(this, arg);
         return null;
     }
+
+    public Collection<Statement> visit(MonitorEnterStatement stmt, Void arg) {
+        return null;
+    }
+
+    public Collection<Statement> visit(MonitorExitStatement stmt, Void arg) {
+        return null;
+    }
+
 }
