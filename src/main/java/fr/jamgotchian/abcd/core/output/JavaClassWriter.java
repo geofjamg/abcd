@@ -21,7 +21,6 @@ import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.ClassVisitor;
 import fr.jamgotchian.abcd.core.ast.Field;
 import fr.jamgotchian.abcd.core.ast.Method;
-import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
 import java.util.List;
@@ -46,8 +45,6 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
     }
 
     public Void visit(Class _class, Void arg) {
-        
-
         for (Modifier mod : _class.getModifiers()) {
             writer.write(mod).writeSpace();
         }
@@ -78,6 +75,11 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
             writer.newLine();
         }
 
+        for (Class innerClass : _class.getInnerClasses()) {
+            visit(innerClass, null);
+            writer.newLine();
+        }
+        
         for (Method method : _class.getMethods()) {
             method.accept(this, null);
             writer.newLine().newLine();

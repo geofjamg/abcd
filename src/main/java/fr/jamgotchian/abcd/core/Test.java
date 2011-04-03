@@ -58,6 +58,24 @@ public class Test {
             driiing2();
         }
     }
+
+    public class InnerTestClass2 {
+        
+        class InnerInnerTestClass {
+            void aaa() {
+                System.out.println("aaa");
+            }
+        }
+        
+        void hello() {
+            a();
+        }
+        
+        void hello2() {
+            int a = driiing(3);
+            driiing2();
+        }
+    }
     
     public void testInnerClass() {
         new InnerTestClass().hello();

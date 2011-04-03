@@ -44,18 +44,18 @@ import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.SimplestFormatter;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +64,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.EmptyVisitor;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -78,7 +81,7 @@ public class ABCDContext {
     public static final boolean DEBUG = false;
 
     private static final Logger logger;
-                
+
     private static List<Refactorer> REFACTORERS = Collections.unmodifiableList(
             Arrays.<Refactorer>asList(new ForLoopRefactorer(),
                                       new ConditionalExpressionRefactorer()));
@@ -97,59 +100,75 @@ public class ABCDContext {
         logger.setLevel(Level.FINER);
     }
 
-    public static void decompile(InputStream is, OutputStream os) throws IOException {
-        new ABCDContext(is).decompile(os);
+    public static void decompile(File classFile, OutputStream os) throws IOException {
+        new ABCDContext().decompileFile(classFile, os);
     }
 
-    public static void analyse(InputStream is, File outputDir, boolean drawRegions) throws IOException {
-        new ABCDContext(is).analyse(outputDir, drawRegions);
+    public static void analyse(File classFile, File outputDir, boolean drawRegions) throws IOException {
+        new ABCDContext().analyseFile(classFile, outputDir, drawRegions);
     }
 
-    private final ClassNode cn;
+    private final Map<String, String> innerClasses = new HashMap<String, String>();
 
-    private final Map<String, MethodNode> methodNodes;
+    public ABCDContext() {
+    }
 
-    public ABCDContext(InputStream is) throws IOException {
-        cn = new ClassNode();
-        ClassReader cr = new ClassReader(is);
+    private void decompileFile(File classFile, OutputStream os) throws IOException {
+        Class _class = decompileClass(classFile);
+
+        CompilationUnit compilUnit = new CompilationUnit(_class.getPackage());
+        compilUnit.getClasses().add(_class);
+
+        File classDir = classFile.getParentFile();
+        analyseInnerClassesFromSyntheticFields(classDir);
+
+        // find class root directory
+        File classRootDir = classDir.getAbsoluteFile();
+        int packageDepth = _class.getPackage().getName().split("\\.").length;
+        for (int i = 0; i < packageDepth; i++) {
+            classRootDir = classRootDir.getParentFile();
+        }
+
+        decompileInnerClass(_class, classRootDir);
+
+        if (os != null) {
+            Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
+            try {
+                compilUnit.accept(new JavaCompilationUnitWriter(new TextCodeWriter(writer, 4), DEBUG), null);
+            } finally {
+                writer.close();
+            }
+        }
+    }
+
+    private Class decompileClass(File classFile) throws IOException {
+        ClassNode cn = new ClassNode();
+        ClassReader cr = new ClassReader(new FileInputStream(classFile));
         cr.accept(cn, 0);
 
-        methodNodes = new LinkedHashMap<String, MethodNode>();
-        for (MethodNode mn : (List<MethodNode>) cn.methods) {
-            String methodSignature = ASMUtil.getMethodSignature(cn, mn);
-            methodNodes.put(methodSignature, mn);
-        }
-    }
+        Package _package = new Package(ASMUtil.getPackageName(cn));
 
-    public Set<String> getMethodSignatures() {
-        return methodNodes.keySet();
-    }
+        String className = cn.name.replace('/', '.');
 
-    public void decompile(OutputStream os) throws IOException {
-        String name = cn.name.replace('/', '.');
+        logger.fine("");
+        logger.log(Level.FINE, "########## Decompile class {0} ##########", className);
+        logger.fine("");
 
-        Package _package = null;
-        String simpleName = null;
-        int lastDotIndex = name.lastIndexOf('.');
+        String simpleClassName = null;
+        int lastDotIndex = className.lastIndexOf('.');
         if (lastDotIndex != -1) {
-            String packageName = name.substring(0, lastDotIndex);
-            _package = new Package(packageName);
-            simpleName = name.substring(lastDotIndex+1);
+            simpleClassName = className.substring(lastDotIndex+1);
         } else {
-            simpleName = name;
+            simpleClassName = className;
         }
-
-        CompilationUnit compilUnit = new CompilationUnit(_package);
-
-        String superName = null;
+        String superClassName = null;
         if (cn.superName != null) {
-            superName = cn.superName.replace('/', '.');
+            superClassName = cn.superName.replace('/', '.');
         }
         Set<Modifier> classModifiers = ASMUtil.getModifiers(cn.access);
         classModifiers.remove(Modifier.SYNCHRONIZED); // ???
 
-        Class _class = new Class(simpleName, superName, classModifiers);
-        compilUnit.getClasses().add(_class);
+        Class _class = new Class(_package, simpleClassName, superClassName, classModifiers);
 
         for (String _interface : (List<String>) cn.interfaces) {
             _class.addInterface(_interface.replace('/', '.'));
@@ -162,10 +181,8 @@ public class ABCDContext {
                                         fieldType.getClassName()));
         }
 
-        for (Map.Entry<String, MethodNode> entry : methodNodes.entrySet()) {
-            String methodSignature = entry.getKey();
-            MethodNode mn = entry.getValue();
-
+        for (MethodNode mn : (List<MethodNode>) cn.methods) {
+            String methodSignature = ASMUtil.getMethodSignature(cn, mn);
             String returnTypeName = ASMUtil.getReturnTypeName(mn);
             String methodName = ASMUtil.getMethodName(cn, mn);
             boolean constructor = "<init>".equals(mn.name);
@@ -231,34 +248,97 @@ public class ABCDContext {
                 method.getBody().add(Statements.createThrowStmt(InternalError.class, "Decompilation failed"));
             }
         }
+        return _class;
+    }
 
-        if (os != null) {
-            Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
-            try {
-                compilUnit.accept(new JavaCompilationUnitWriter(new TextCodeWriter(writer, 4), DEBUG), null);
-            } finally {
-                writer.close();
+    private void analyseInnerClassesFromSyntheticFields(File dir) throws IOException {
+        assert dir.isDirectory();
+        logger.log(Level.FINEST, "Analyse inner classes of directory ", dir.getName());
+
+        innerClasses.clear();
+
+        File[] classFiles = dir.listFiles(new FileFilter() {
+
+            public boolean accept(File pathname) {
+                return pathname.getName().endsWith(".class");
+            }
+        });
+
+        for (final File classFile : classFiles) {
+            ClassReader cr = new ClassReader(new FileInputStream(classFile));
+            cr.accept(new EmptyVisitor() {
+
+                private String innerClassName;
+
+                @Override
+                public void visit(int version, int access, String name, String signature,
+                                  String superName, String[] interfaces) {
+                    innerClassName = name.replace('/', '.');
+                }
+
+                @Override
+                public FieldVisitor visitField(int access, String name, String desc,
+                                               String signature, Object value) {
+                    if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
+                        Type type = Type.getType(desc);
+                        if (type.getSort() == Type.OBJECT) {
+                            innerClasses.put(innerClassName, type.getClassName());
+                        }
+                    }
+                    return super.visitField(access, name, desc, signature, value);
+                }
+
+            }, 0);
+        }
+    }
+
+    private void decompileInnerClass(Class outerClass, File classRootDir) throws IOException {
+        String outerClassName = outerClass.getQualifiedName();
+        for (Map.Entry<String, String> entry : innerClasses.entrySet()) {
+            String innerClassName = entry.getKey();
+            if (outerClassName.equals(entry.getValue())) {
+                String innerClassFileName = classRootDir.getAbsolutePath() + '/'
+                        + innerClassName.replace('.', '/') + ".class";
+                File innerClassFile = new File(innerClassFileName);
+                Class innerClass = decompileClass(innerClassFile);
+                outerClass.addInnerClass(innerClass);
+
+                decompileInnerClass(innerClass, classRootDir);
             }
         }
     }
 
-    public void analyse(File outputDir, boolean drawRegions) throws IOException {
+    private void analyseFile(File classFile, File outputDir, boolean drawRegions) throws IOException {
         if (!outputDir.exists())
             throw new ABCDException(outputDir + " does not exist");
 
         if (!outputDir.isDirectory())
             throw new ABCDException(outputDir + " is not a directory");
 
-        for (Map.Entry<String, MethodNode> entry : methodNodes.entrySet()) {
-            String methodSignature = entry.getKey();
-            MethodNode mn = entry.getValue();
+        ClassNode cn = new ClassNode();
+        ClassReader cr = new ClassReader(new FileInputStream(classFile));
+        cr.accept(cn, 0);
+
+        logger.fine("");
+        logger.log(Level.FINE, "########## Analyse class {0} ##########", cn.name.replace('/', '.'));
+        logger.fine("");
+
+        File classDir = classFile.getParentFile();
+        analyseInnerClassesFromSyntheticFields(classDir);
+
+        StringBuilder builder = new StringBuilder();
+        ASMUtil.printInnerClasses(innerClasses, builder);
+        logger.log(Level.FINER, "Inner classes :\n{0}", builder.toString());
+
+        for (MethodNode mn : (List<MethodNode>) cn.methods) {
+            String methodSignature = ASMUtil.getMethodSignature(cn, mn);
 
             try {
                 logger.log(Level.FINE, "********** Analyse method {0} **********", methodSignature);
 
                 logger.log(Level.FINER, "Bytecode :\n{0}", OutputUtil.toText(mn.instructions));
 
-                StringBuilder builder = new StringBuilder();
+                builder = new StringBuilder();
                 ASMUtil.printTryCatchBlocks(mn, builder);
                 logger.log(Level.FINER, "Try catch blocks :\n{0}", builder.toString());
 
@@ -280,7 +360,7 @@ public class ABCDContext {
                     logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
                     StructuralAnalysis analysis = new StructuralAnalysis(graph);
                     rootRegions = analysis.analyse();
-                    
+
                     Writer writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_RG.dot");
                     DOTUtil.writeGraph(analysis.getRegionGraph(), "RG", writer, new VertexToString<Region>() {
 
@@ -294,7 +374,7 @@ public class ABCDContext {
                 Writer writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_CFG.dot");
                 DOTUtil.writeCFG(graph, rootRegions, writer);
                 writer.close();
-                
+
                 writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_DT.dot");
                 graph.getDominatorInfo().getDominatorsTree().writeDOT("DT", writer);
                 writer.close();
@@ -321,16 +401,16 @@ public class ABCDContext {
         }
         String cmd = args[0];
         String classFileName = args[1];
+        File classFile = new File(classFileName);
         if ("-decompile".equals(cmd)) {
             if (args.length != 3) {
                 printUsage();
             }
             String javaFileName = args[2];
             try {
-                InputStream is = new FileInputStream(classFileName);
                 OutputStream os = new FileOutputStream(javaFileName);
 
-                ABCDContext.decompile(is, os);
+                ABCDContext.decompile(classFile, os);
             } catch (IOException exc) {
                 logger.log(Level.SEVERE, exc.toString(), exc);
             }
@@ -345,8 +425,7 @@ public class ABCDContext {
                 }
             }
             try {
-                InputStream is = new FileInputStream(classFileName);
-                ABCDContext.analyse(is, outputDir, drawRegions);
+                ABCDContext.analyse(classFile, outputDir, drawRegions);
             } catch (IOException exc) {
                 logger.log(Level.SEVERE, exc.toString(), exc);
             }

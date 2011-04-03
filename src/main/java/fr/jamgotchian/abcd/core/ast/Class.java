@@ -28,6 +28,8 @@ import javax.lang.model.element.Modifier;
  */
 public class Class {
 
+    private final Package _package;
+    
     private final String name;
 
     private final String superName;
@@ -38,17 +40,29 @@ public class Class {
 
     private final List<Field> fields;
 
+    private final List<Class> innerClasses;
+    
     private final List<Method> methods;
 
-    public Class(String name, String superName, Set<Modifier> modifiers) {
+    public Class(Package _package, String name, String superName, Set<Modifier> modifiers) {
+        this._package = _package;
         this.name = name;
         this.superName = superName;
         this.modifiers = modifiers;
         interfaces = new ArrayList<String>();
         fields = new ArrayList<Field>();
+        innerClasses = new ArrayList<Class>();
         methods = new ArrayList<Method>();
     }
 
+    public Package getPackage() {
+        return _package;
+    }
+
+    public String getQualifiedName() {
+        return _package.getName() + "." + name;
+    }
+    
     public String getName() {
         return name;
     }
@@ -77,6 +91,14 @@ public class Class {
         fields.add(field);
     }
 
+    public List<Class> getInnerClasses() {
+        return innerClasses;
+    }
+    
+    public void addInnerClass(Class _class) {
+        innerClasses.add(_class);
+    }
+    
     public List<Method> getMethods() {
         return methods;
     }

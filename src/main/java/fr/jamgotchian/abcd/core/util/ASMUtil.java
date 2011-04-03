@@ -80,6 +80,15 @@ public class ASMUtil implements Opcodes {
         return modifiers;
     }
 
+    public static String getPackageName(ClassNode cn) {
+        String packageName = "";
+        int lastDotIndex = cn.name.lastIndexOf('/');
+        if (lastDotIndex != -1) {
+            packageName = cn.name.substring(0, lastDotIndex);
+        }
+        return packageName.replace('/', '.');
+    }
+
     public static String getMethodName(ClassNode cn, MethodNode mn) {
         String methodName;
         if ("<init>".equals(mn.name)) {
@@ -114,7 +123,7 @@ public class ASMUtil implements Opcodes {
 
     public static String getReturnTypeName(MethodNode mn) {
         if ("<init>".equals(mn.name)) {
-            return "";
+            return null;
         } else {
             Type returnType = Type.getReturnType(mn.desc);
             return returnType.getClassName();
@@ -131,7 +140,7 @@ public class ASMUtil implements Opcodes {
         }
         return labelNodeIndex;
     }
-    
+
     public static void printLocalVariableTable(MethodNode mn, StringBuilder builder) {
         Map<LabelNode, Integer> labelNodeIndex = getLabelNodeIndexMap(mn.instructions);
         List<String> indexColumn = new ArrayList<String>();
@@ -154,7 +163,7 @@ public class ASMUtil implements Opcodes {
         }
         printTable(builder, indexColumn, startColumn, endColumn, nameColumn, typeColumn);
     }
-    
+
     public static void printTryCatchBlocks(MethodNode mn, StringBuilder builder) {
         Map<LabelNode, Integer> labelNodeIndex = getLabelNodeIndexMap(mn.instructions);
         int rowCount = mn.tryCatchBlocks.size() + 1;
@@ -182,6 +191,20 @@ public class ASMUtil implements Opcodes {
             typeColumn.add(exceptionClassName);
         }
         printTable(builder, tryStartColumn, tryEndColumn, catchStartColumn, typeColumn);
+    }
+
+    public static void printInnerClasses(Map<String, String> innerClasses, StringBuilder builder) {
+        List<String> innerClassColumn = new ArrayList<String>();
+        List<String> outerClassColumn = new ArrayList<String>();
+        innerClassColumn.add("Inner class");
+        outerClassColumn.add("Outer class");
+        for (Map.Entry<String, String> entry : innerClasses.entrySet()) {
+            String innerClass = entry.getKey();
+            String outerClass = entry.getValue();
+            innerClassColumn.add(innerClass);
+            outerClassColumn.add(outerClass);
+        }
+        printTable(builder, innerClassColumn, outerClassColumn);
     }
 
     private static void printTable(StringBuilder out, List<String>... columns) {
