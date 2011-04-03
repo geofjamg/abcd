@@ -24,32 +24,51 @@ public class Test {
         B,
         C
     }
-    
 
     int zz;
     float ee;
-//
-//    public Test(int zz, float ee) {
-//        this.zz = zz;
-//        this.ee = ee;
-//    }
+
+    public Test(int zz, float ee) {
+        this.zz = zz;
+        this.ee = ee;
+    }
+
+    static public class InnerStaticTestClass {
+        void hello() {
+            System.out.println("hello");
+        }
+    }
+
+    private int driiing(int i) {
+        System.out.println("driing");
+        return i+1;
+    }
+
+    void driiing2() {
+        System.out.println("driing2");
+    }
     
-//
-//    static public class InnerStaticTestClass {
-//
-//    }
-//
-//    public class InnerTestClass {
-//        void hello() {
-//            a();
-//        }
-//    }
+    public class InnerTestClass {
+        void hello() {
+            a();
+        }
+        
+        void hello2() {
+            int a = driiing(3);
+            driiing2();
+        }
+    }
+    
+    public void testInnerClass() {
+        new InnerTestClass().hello();
+    }
 //
 //    public Test() {
 //    }
 //
-//    Test(Test t) {
-//    }
+    Test(Test t) {
+        driiing(2);
+    }
 
 //    private void methodWithInnerClass() {
 //      Runnable runnable = new Runnable() {
@@ -567,6 +586,18 @@ public class Test {
         }
         System.out.println("c");
     }
+    
+    private void testSwitchWithEmptyCase(int a) {
+        System.out.println("a");
+        switch (a) {
+            case 0:
+                System.out.println("b");
+                break;
+            case 1:
+                break;
+        }
+        System.out.println("c");
+    }
 
     public void testSwitch(int a) {
         switch (a) {
@@ -617,6 +648,29 @@ public class Test {
             default:
                 c();
                 break;
+        }
+    }
+    
+    public void testSwitchTryCatch(int a) {
+        try {
+            switch (a) {
+                case 0:
+                    try {
+                        System.out.println("a");
+                    } catch (Exception exc) {
+                        System.out.println("e");
+                    }
+                    System.out.println("f");
+                    break;
+                case 1:
+                    System.out.println("b");
+                    break;
+                default:
+                    System.out.println("c");
+                    break;
+            }
+        } catch (Exception exc) {
+            System.out.println("d");
         }
     }
    
@@ -687,15 +741,15 @@ public class Test {
         t.b = 3.4f;
     }
 
-//    public void testThrow() {
-//        throw new IllegalArgumentException("hello");
-//    }
-//    
-//    public void testThrow2() {
-//        IllegalStateException exc = new IllegalStateException("hello");
-//        int a = 1;
-//        throw exc;
-//    }
+    public void testThrow() {
+        throw new IllegalArgumentException("hello");
+    }
+    
+    public void testThrow2() {
+        IllegalStateException exc = new IllegalStateException("hello");
+        int a = 1;
+        throw exc;
+    }
     
     public void testThrow3(int a) {
         System.out.println("a");
@@ -818,6 +872,16 @@ public class Test {
             System.out.println("b");
         }
         System.out.println("c");
+    }
+    
+    void testPrimitiveTypeCast() {
+        float f = 3.45577f;
+        int i = (int)f;
+        short s = (short) i;
+        char c = (char) i;
+        double d = 5556.6788d;
+        f = (float) d;
+        System.out.println(i);
     }
     
 //    public static void main(String[] args) {

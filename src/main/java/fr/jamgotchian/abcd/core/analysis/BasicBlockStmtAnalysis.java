@@ -381,20 +381,65 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 throw new ABCDException("TODO");
 
             case I2L:
+                pushExpr(new CastExpression("long", stack.pop()), block);
+                break;
+
             case I2F:
+                pushExpr(new CastExpression("float", stack.pop()), block);
+                break;
+
             case I2D:
+                pushExpr(new CastExpression("double", stack.pop()), block);
+                break;
+
             case L2I:
+                pushExpr(new CastExpression("int", stack.pop()), block);
+                break;
+
             case L2F:
+                pushExpr(new CastExpression("float", stack.pop()), block);
+                break;
+
             case L2D:
+                pushExpr(new CastExpression("double", stack.pop()), block);
+                break;
+
             case F2I:
+                pushExpr(new CastExpression("int", stack.pop()), block);
+                break;
+
             case F2L:
+                pushExpr(new CastExpression("long", stack.pop()), block);
+                break;
+
             case F2D:
+                pushExpr(new CastExpression("double", stack.pop()), block);
+                break;
+
             case D2I:
+                pushExpr(new CastExpression("int", stack.pop()), block);
+                break;
+
             case D2L:
+                pushExpr(new CastExpression("long", stack.pop()), block);
+                break;
+
             case D2F:
+                pushExpr(new CastExpression("float", stack.pop()), block);
+                break;
+
             case I2B:
+                pushExpr(new CastExpression("byte", stack.pop()), block);
+                break;
+
             case I2C:
+                pushExpr(new CastExpression("char", stack.pop()), block);
+                break;
+
             case I2S:
+                pushExpr(new CastExpression("short", stack.pop()), block);
+                break;
+
             case LCMP:
             case FCMPL:
             case FCMPG:
@@ -425,7 +470,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case MONITORENTER:
                 addStmt(block, new MonitorEnterStatement(stack.pop()));
                 break;
-                
+
             case MONITOREXIT:
                 addStmt(block, new MonitorExitStatement(stack.pop()));
                 break;
@@ -620,7 +665,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 case INVOKEDYNAMIC: {
                     Expression scope = stack.pop();
                     // replace this.foo() by foo()
-                    if (scope instanceof LocalVariable 
+                    if (scope instanceof LocalVariable
                             && ((LocalVariable) scope).getIndex() == 0) {
                         scope = null;
                     }
