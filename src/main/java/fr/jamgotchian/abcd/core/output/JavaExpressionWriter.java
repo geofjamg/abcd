@@ -144,6 +144,10 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
             case DIV:
                 writer.write("/");
                 break;
+                
+            case REMAINDER:
+                writer.write("%");
+                break;
 
             case EQ:
                 writer.write("==");

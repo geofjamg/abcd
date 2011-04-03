@@ -884,6 +884,10 @@ public class Test {
         System.out.println(i);
     }
     
+    int testRemainder(int i) {
+        return i % 3;
+    }
+    
 //    public static void main(String[] args) {
 //        new Test().testBreakLabel2();
 //    }
