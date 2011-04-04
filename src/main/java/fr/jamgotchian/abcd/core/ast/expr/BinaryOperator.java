@@ -39,6 +39,7 @@ public enum BinaryOperator {
     SHIFT_RIGHT,
     AND,
     OR,
+    XOR,
     INSTANCE_OF;
 
     public static BinaryOperator getInverse(BinaryOperator op) {

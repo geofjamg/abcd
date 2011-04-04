@@ -377,8 +377,12 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             }
 
             case IXOR:
-            case LXOR:
-                throw new ABCDException("TODO");
+            case LXOR: {
+                Expression right = stack.pop();
+                Expression left = stack.pop();
+                pushExpr(new BinaryExpression(left, right, BinaryOperator.XOR), block);
+                break;
+            }
 
             case I2L:
                 pushExpr(new CastExpression("long", stack.pop()), block);

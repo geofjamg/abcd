@@ -1,16 +1,16 @@
 /*
  *  Copyright (C) 2010 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
- * 
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHwriter ANY WARRANTY; withwriter even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -42,15 +42,15 @@ import java.util.Iterator;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatement> {
-    
+
     private final CodeWriter writer;
 
     private final boolean debug;
-    
+
     public JavaExpressionWriter(CodeWriter writer) {
         this(writer, false);
     }
-    
+
     public JavaExpressionWriter(CodeWriter writer, boolean debug) {
         this.writer = writer;
         this.debug = debug;
@@ -79,7 +79,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
             case DIV:
                 writer.write("/=");
                 break;
-                
+
             default:
                 throw new AssertionError();
         }
@@ -93,8 +93,8 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
             case MINUS:
                 writer.write("-");
                 expr.getExpr().accept(this, blockStmt);
-                break;                
-                
+                break;
+
             case POST_DECREMENT:
                 expr.getExpr().accept(this, blockStmt);
                 writer.write("--");
@@ -104,7 +104,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
                 expr.getExpr().accept(this, blockStmt);
                 writer.write("++");
                 break;
-            
+
             case PRE_DECREMENT:
                 writer.write("--");
                 expr.getExpr().accept(this, blockStmt);
@@ -114,7 +114,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
                 writer.write("++");
                 expr.getExpr().accept(this, blockStmt);
                 break;
-                            
+
             default:
                 throw new AssertionError();
         }
@@ -144,7 +144,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
             case DIV:
                 writer.write("/");
                 break;
-                
+
             case REMAINDER:
                 writer.write("%");
                 break;
@@ -172,7 +172,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
             case LE:
                 writer.write("<=");
                 break;
-            
+
             case INSTANCE_OF:
                 writer.write("instanceof");
                 break;
@@ -184,7 +184,11 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
             case OR:
                 writer.write("||");
                 break;
-                
+
+            case XOR:
+                writer.write("^");
+                break;
+
             default:
                 throw new AssertionError();
         }

@@ -906,6 +906,10 @@ public class Test {
         return i % 3;
     }
     
+    boolean testXor(boolean a, boolean b) {
+        return a ^ b;
+    }
+    
 //    public static void main(String[] args) {
 //        new Test().testBreakLabel2();
 //    }
