@@ -180,10 +180,14 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
     public Boolean visit(ArrayCreationExpression expr1, Expression expr2) {
         if (expr2 instanceof ArrayCreationExpression) {
             if (!expr1.getTypeName().equals(((ArrayCreationExpression) expr2).getTypeName())
-                    || expr1.getArrayCountExpr().accept(this, ((ArrayCreationExpression) expr2).getArrayCountExpr()).equals(Boolean.FALSE)
                     || !nullableListEqual(expr1.getInitValues(), ((ArrayCreationExpression) expr2).getInitValues())) {
                 return Boolean.FALSE;
             } else {
+                for (int i = 0; i < expr1.getArrayLengthExprs().size(); i++) {
+                    if (expr1.getArrayLengthExprs().get(i).accept(this, ((ArrayCreationExpression) expr2).getArrayLengthExprs().get(i)).equals(Boolean.FALSE)) {
+                        return Boolean.FALSE;
+                    }
+                }
                 if (expr1.getInitValues() != null) {
                     for (int i = 0; i < expr1.getInitValues().size(); i++) {
                         if (expr1.getInitValues().get(i).accept(this, ((ArrayCreationExpression) expr2).getInitValues().get(i)).equals(Boolean.FALSE)) {
@@ -218,7 +222,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
     public Boolean visit(ArrayAccess expr1, Expression expr2) {
         if (expr2 instanceof ArrayAccess) {
             return expr1.getArrayRef().accept(this, ((ArrayAccess) expr2).getArrayRef())
-                    && expr1.getArrayCountExpr().accept(this, ((ArrayAccess) expr2).getArrayCountExpr());
+                    && expr1.getArrayIndexExpr().accept(this, ((ArrayAccess) expr2).getArrayIndexExpr());
         } else {
             return Boolean.FALSE;
         }

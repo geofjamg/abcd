@@ -25,19 +25,19 @@ public class ArrayAccess extends AbstractExpression {
 
     private final Expression arrayRef;
 
-    private final Expression arrayCountExpr;
+    private final Expression arrayIndexExpr;
 
-    public ArrayAccess(Expression arrayRef, Expression arrayCountExpr) {
+    public ArrayAccess(Expression arrayRef, Expression arrayIndexExpr) {
         this.arrayRef = arrayRef;
-        this.arrayCountExpr = arrayCountExpr;
+        this.arrayIndexExpr = arrayIndexExpr;
     }
 
     public Expression getArrayRef() {
         return arrayRef;
     }
 
-    public Expression getArrayCountExpr() {
-        return arrayCountExpr;
+    public Expression getArrayIndexExpr() {
+        return arrayIndexExpr;
     }
 
     public <R, A> R accept(ExpressionVisitor<R, A> visitor, A arg) {

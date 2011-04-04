@@ -138,7 +138,7 @@ public class BytecodeWriter implements BasicBlockVisitor {
 
     public void visitMultiANewArrayInsn(BasicBlock block, int index, MultiANewArrayInsnNode node) {
         try {
-            writer.writeMultiANewArrayInstn(index, node.getOpcode());
+            writer.writeMultiANewArrayInstn(index, node.getOpcode(), node.desc, node.dims);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }

@@ -697,7 +697,12 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     }
 
     public void visitMultiANewArrayInsn(BasicBlock block, int index, MultiANewArrayInsnNode node) {
-        throw new ABCDException("TODO");
+        String typeName = Type.getType(node.desc).getElementType().getClassName(); 
+        List<Expression> arrayLengthExpr = new ArrayList<Expression>(node.dims);
+        for (int i = 0; i < node.dims; i++) {
+            arrayLengthExpr.add(0, stack.pop());
+        }
+        pushExpr(new ArrayCreationExpression(typeName, arrayLengthExpr), block);
     }
 
     public void visitTableSwitchInsn(BasicBlock block, int index, TableSwitchInsnNode node) {

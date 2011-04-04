@@ -298,9 +298,12 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
             }
             writer.write("}");
         } else {
-            writer.writeKeyword("new").writeSpace().write(expr.getTypeName()).write("[");
-            expr.getArrayCountExpr().accept(this, blockStmt);
-            writer.write("]");
+            writer.writeKeyword("new").writeSpace().write(expr.getTypeName());
+            for (Expression arrayLengthExpr : expr.getArrayLengthExprs()) {
+                writer.write("[");
+                arrayLengthExpr.accept(this, blockStmt);
+                writer.write("]");
+            }
         }
         return null;
     }
@@ -321,7 +324,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
     public Void visit(ArrayAccess expr, BlockStatement blockStmt) {
         expr.getArrayRef().accept(this, blockStmt);
         writer.write("[");
-        expr.getArrayCountExpr().accept(this, blockStmt);
+        expr.getArrayIndexExpr().accept(this, blockStmt);
         writer.write("]");
         return null;
     }

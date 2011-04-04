@@ -47,7 +47,7 @@ public interface InstnWriter {
 
     void writeLookupSwitchInstn(int index, int opcode, List<Integer> keys, int defaultLabel, List<Integer> labels) throws IOException;
 
-    void writeMultiANewArrayInstn(int index, int opcode) throws IOException;
+    void writeMultiANewArrayInstn(int index, int opcode, String type, int dims) throws IOException;
 
     void writeTableSwitchInstn(int index, int opcode, int min, int max, int defaultLabel, List<Integer> labels) throws IOException;
 

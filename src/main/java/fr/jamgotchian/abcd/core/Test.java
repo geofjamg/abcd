@@ -922,6 +922,15 @@ public class Test {
         return a >>> 3;
     }
     
+    void testMultiArray(int size) {
+        int[][][] a = new int[4][4][4 * size + 1];
+        String[][] s = new String[34][6];
+    }
+
+    void testMultiArrayInitializer() {
+        int[][] a = { {2, 2}, {2, 2} };
+    }
+    
 //    public static void main(String[] args) {
 //        new Test().testBreakLabel2();
 //    }

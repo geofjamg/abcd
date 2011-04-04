@@ -146,10 +146,14 @@ public abstract class AbstractInstnWriter implements InstnWriter {
         writeEol();
     }
 
-    public void writeMultiANewArrayInstn(int index, int opcode) throws IOException {
+    public void writeMultiANewArrayInstn(int index, int opcode, String type, int dims) throws IOException {
         writeIndex(index);
         writeIndent();
         writeOpcode(opcode);
+        writeSpace();
+        writer.write(type);
+        writeSpace();
+        writer.write(Integer.toString(dims));
         writeEol();
     }
 

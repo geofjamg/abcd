@@ -89,9 +89,9 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         List<Expression> newArguments = new ArrayList<Expression>(expr.getArguments());
         boolean argumentsModified = false;
         for (int i = 0; i < newArguments.size(); i++) {
-            Expression argument = newArguments.get(i).accept(this, arg);
-            if (argument != null) {
-                newArguments.set(i, argument);
+            Expression newArgument = newArguments.get(i).accept(this, arg);
+            if (newArgument != null) {
+                newArguments.set(i, newArgument);
                 argumentsModified = true;
             }
         }
@@ -121,9 +121,9 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         List<Expression> newArguments = new ArrayList<Expression>(expr.getArguments());
         boolean argumentsModified = false;
         for (int i = 0; i < newArguments.size(); i++) {
-            Expression argument = newArguments.get(i).accept(this, arg);
-            if (argument != null) {
-                newArguments.set(i, argument);
+            Expression newArgument = newArguments.get(i).accept(this, arg);
+            if (newArgument != null) {
+                newArguments.set(i, newArgument);
                 argumentsModified = true;
             }
         }
@@ -135,11 +135,19 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
     }
 
     public Expression visit(ArrayCreationExpression expr, Void arg) {
-        Expression newArrayCountExpr = expr.getArrayCountExpr().accept(this, arg);
-        if (newArrayCountExpr == null) {
-            return null;
+        List<Expression> newArrayLengthExprs = new ArrayList<Expression>(expr.getArrayLengthExprs());
+        boolean lengthModified = false;
+        for (int i = 0; i < newArrayLengthExprs.size(); i++) {
+            Expression newArrayLengthExpr = newArrayLengthExprs.get(i).accept(this, arg);
+            if (newArrayLengthExpr != null) {
+                newArrayLengthExprs.set(i, newArrayLengthExpr);
+                lengthModified = true;
+            }
+        }
+        if (lengthModified) {
+            return new ArrayCreationExpression(expr.getTypeName(), newArrayLengthExprs);
         } else {
-            return new ArrayCreationExpression(expr.getTypeName(), newArrayCountExpr);
+            return null;
         }
     }
 
@@ -163,12 +171,12 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
 
     public Expression visit(ArrayAccess expr, Void arg) {
         Expression newArrayRef = expr.getArrayRef().accept(this, arg);
-        Expression newArrayCount = expr.getArrayCountExpr().accept(this, arg);
-        if (newArrayRef == null && newArrayCount == null) {
+        Expression newArrayIndex = expr.getArrayIndexExpr().accept(this, arg);
+        if (newArrayRef == null && newArrayIndex == null) {
             return null;
         } else {
             return new ArrayAccess(newArrayRef != null ? newArrayRef : expr.getArrayRef(), 
-                                   newArrayCount != null ? newArrayCount : expr.getArrayCountExpr());
+                                   newArrayIndex != null ? newArrayIndex : expr.getArrayIndexExpr());
         }
     }
 
