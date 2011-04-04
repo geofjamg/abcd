@@ -357,8 +357,12 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             }
 
             case IUSHR:
-            case LUSHR:
-                throw new ABCDException("TODO");
+            case LUSHR: {
+                Expression right = stack.pop();
+                Expression left = stack.pop();
+                pushExpr(new BinaryExpression(left, right, BinaryOperator.LOGICAL_SHIFT_RIGHT), block);
+                break;
+            }
 
             case IAND:
             case LAND: {

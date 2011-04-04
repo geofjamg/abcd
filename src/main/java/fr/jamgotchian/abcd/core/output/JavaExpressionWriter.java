@@ -189,6 +189,18 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
                 writer.write("^");
                 break;
 
+            case SHIFT_LEFT:
+                writer.write("<<");
+                break;
+
+            case SHIFT_RIGHT:
+                writer.write(">>");
+                break;
+
+            case LOGICAL_SHIFT_RIGHT:
+                writer.write(">>>");
+                break;
+
             default:
                 throw new AssertionError();
         }

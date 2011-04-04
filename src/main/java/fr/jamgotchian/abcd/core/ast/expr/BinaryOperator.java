@@ -37,6 +37,7 @@ public enum BinaryOperator {
     REMAINDER,
     SHIFT_LEFT,
     SHIFT_RIGHT,
+    LOGICAL_SHIFT_RIGHT,
     AND,
     OR,
     XOR,

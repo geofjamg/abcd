@@ -910,6 +910,18 @@ public class Test {
         return a ^ b;
     }
     
+    int testShiftLeft(int a) {
+        return a << 3;
+    }
+
+    int testShiftRight(int a) {
+        return a >> 3;
+    }
+
+    int testLogicalShiftRight(int a) {
+        return a >>> 3;
+    }
+    
 //    public static void main(String[] args) {
 //        new Test().testBreakLabel2();
 //    }
