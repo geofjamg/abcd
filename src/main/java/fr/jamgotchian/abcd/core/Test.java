@@ -417,13 +417,13 @@ public class Test {
         }
     }
     
-    public void testWhile() {
+    public void testInfiniteLoop() {
         while(true) {
             a();
         }
     }
 
-    public void testNestedWhile() {
+    public void testInfiniteLoop2() {
         while(true) {
             a();
             while(true) {
@@ -431,6 +431,16 @@ public class Test {
             }
         }
     }
+
+//    public void testInfiniteLoop3(int a) {
+//        for (int i = 0; i < a; i++) {
+//            a();
+//            while(true) {
+//                b();
+//            }
+//        }
+//        c();
+//    }
 
     public void testFor() {
         for (int i = 0; i < 3; i++) {
@@ -471,6 +481,28 @@ public class Test {
                 }
             }
         }
+    }
+    
+    public void testForIfReturn() {
+        for (int i = 0; i < 3; i++) {
+            if (i == 1) {
+                System.out.println("a");
+                return;
+            }
+            System.out.println("b");
+        }
+        System.out.println("c");
+    }
+
+    public void testForIfThrow() throws ClassCastException {
+        for (int i = 0; i < 3; i++) {
+            if (i == 1) {
+                System.out.println("a");
+                throw new ClassCastException("aaaa");
+            }
+            System.out.println("b");
+        }
+        System.out.println("c");
     }
 
     public void testBreak() {
@@ -620,6 +652,22 @@ public class Test {
             default:
                 c();
         }
+    }
+
+    public void testSwitchOneReturn(int a) {
+        switch (a) {
+            case 0:
+                System.out.println("a");
+                return;
+            case 1:
+                System.out.println("b");
+                break;
+                
+            default:
+                System.out.println("c");
+                break;
+        }
+        System.out.println("d");
     }
 
     public void testSwitchThrow(int a) {

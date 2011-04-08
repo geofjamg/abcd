@@ -35,6 +35,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
@@ -193,7 +194,11 @@ public class AbstractSyntaxTreeBuilder {
                 if (ifBreak.getAfterThenRegion() != null) {
                     buildAST(ifBreak.getAfterThenRegion(), thenBlockStmt);
                 }
-                thenBlockStmt.add(new BreakStatement());
+                Statement lastStmt = thenBlockStmt.getLast();
+                if (!(lastStmt instanceof ReturnStatement)
+                        && !(lastStmt instanceof ThrowStatement)) {
+                    thenBlockStmt.add(new BreakStatement());
+                }
                 Expression condition = jumpIfStmt.getCondition();
                 if (ifBreak.isInvertCond()) {
                     condition = ExpressionInverter.invert(condition);
@@ -242,7 +247,7 @@ public class AbstractSyntaxTreeBuilder {
                 List<CaseStatement> cases = new ArrayList<CaseStatement>();
                 for (CaseRegion caseRegion : switchCase.getCaseRegions()) {
                     List<Statement> caseStmts = new ArrayList<Statement>();
-                    
+
                     // TODO : remove the compound statement ?
                     BlockStatement caseCompoundStmt = new BlockStatement();
                     buildAST(caseRegion.getRegion(), caseCompoundStmt);
@@ -250,7 +255,7 @@ public class AbstractSyntaxTreeBuilder {
                     if (!(caseCompoundStmt.getLast() instanceof ReturnStatement)) {
                         caseStmts.add(new BreakStatement());
                     }
-                    
+
                     cases.add(new CaseStatement(caseRegion.getValues(), caseStmts));
                 }
                 blockStmt.add(new SwitchCaseStatement(lookupOrTableSwitchStmt.getCondition(), cases));
