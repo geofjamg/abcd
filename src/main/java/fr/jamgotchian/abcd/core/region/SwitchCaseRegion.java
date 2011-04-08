@@ -75,7 +75,9 @@ public class SwitchCaseRegion extends AbstractRegion {
         Set<Region> regions = new HashSet<Region>();
         regions.add(switchRegion);
         for (CaseRegion _case : caseRegions) {
-            regions.add(_case.getRegion());            
+            if (_case.getRegion() != null) {
+                regions.add(_case.getRegion()); 
+            }
         }
         return regions;
     }
@@ -84,7 +86,9 @@ public class SwitchCaseRegion extends AbstractRegion {
         Set<Edge> edges = new HashSet<Edge>();
         for (CaseRegion _case : caseRegions) {
             edges.add(_case.getIncomingEdge());
-            edges.add(_case.getOutgoingEdge());
+            if (_case.getOutgoingEdge() != null) {
+                edges.add(_case.getOutgoingEdge());
+            }
         }
         return edges;
     }
@@ -92,12 +96,17 @@ public class SwitchCaseRegion extends AbstractRegion {
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
         Regions.moveHandlers(graph, switchRegion, this);
-        graph.addEdge(this, graph.getEdgeTarget(caseRegions.get(0).getOutgoingEdge()), new EdgeImpl());
+        Region switchExitRegion = null;
         for (CaseRegion _case : caseRegions) {
             graph.removeEdge(_case.getIncomingEdge());
-            graph.removeEdge(_case.getOutgoingEdge());
-            graph.removeVertex(_case.getRegion());
+            if (_case.getOutgoingEdge() != null
+                    && _case.getRegion() != null) {
+                switchExitRegion = graph.getEdgeTarget(_case.getOutgoingEdge());
+                graph.removeEdge(_case.getOutgoingEdge());
+                graph.removeVertex(_case.getRegion());
+            }
         }        
+        graph.addEdge(this, switchExitRegion, new EdgeImpl());
         Regions.moveIncomingEdges(graph, switchRegion, this);
         graph.removeVertex(switchRegion);
     }

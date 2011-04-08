@@ -248,12 +248,18 @@ public class AbstractSyntaxTreeBuilder {
                 for (CaseRegion caseRegion : switchCase.getCaseRegions()) {
                     List<Statement> caseStmts = new ArrayList<Statement>();
 
-                    // TODO : remove the compound statement ?
-                    BlockStatement caseCompoundStmt = new BlockStatement();
-                    buildAST(caseRegion.getRegion(), caseCompoundStmt);
-                    caseStmts.add(caseCompoundStmt);
-                    if (!(caseCompoundStmt.getLast() instanceof ReturnStatement)) {
-                        caseStmts.add(new BreakStatement());
+                    if (caseRegion.getRegion() != null) {
+                        BlockStatement caseCompoundStmt = new BlockStatement();
+                        buildAST(caseRegion.getRegion(), caseCompoundStmt);
+                        for (Statement stmt : caseCompoundStmt) {                            
+                            caseStmts.add(stmt);
+                        }
+                        caseCompoundStmt.clear();
+                        if (!(caseStmts.get(caseStmts.size()-1) instanceof ReturnStatement)) {
+                            caseStmts.add(new BreakStatement());
+                        }
+                    } else {
+                        caseStmts.add(new BreakStatement());                        
                     }
 
                     cases.add(new CaseStatement(caseRegion.getValues(), caseStmts));

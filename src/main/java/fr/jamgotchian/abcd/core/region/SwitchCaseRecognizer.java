@@ -22,12 +22,14 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.CaseValues;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
+import fr.jamgotchian.abcd.core.util.Sets;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  *
@@ -52,30 +54,69 @@ public class SwitchCaseRecognizer implements RegionRecognizer {
         if (blockA.getType() == null || blockA.getType() != BasicBlockType.SWITCH) {
             return null;
         }
-        Collection<Region> regionBi = Regions.getSuccessorsOf(graph, regionA, false);
-        if (regionBi.isEmpty()) {
+        Set<Edge> edgesAB
+                = new HashSet<Edge>(Regions.getOutgoingEdgesOf(graph, regionA, false));
+        if (edgesAB.isEmpty()) {
             return null;
         }
-        Set<Region> regionCi = new HashSet<Region>();
-        for (Region regionB : regionBi) {
-            if (Regions.getSuccessorCountOf(graph, regionB, false) != 1
-                    || Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
-                return null;
+
+        List<CaseRegion> caseRegions = new ArrayList<CaseRegion>();
+
+        for (Iterator<Edge> itE = edgesAB.iterator(); itE.hasNext();) {
+            Edge edgeAB = itE.next();
+            Region regionB = graph.getEdgeTarget(edgeAB);
+            BasicBlock exitBlockOfRegionB = Regions.getDeepExitBasicBlock(graph, regionB);
+            if (exitBlockOfRegionB != null
+                    && exitBlockOfRegionB.getType() == BasicBlockType.RETURN) {
+                Edge edgeBExit = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
+                CaseValues value = (CaseValues) edgeAB.getValue();
+                caseRegions.add(new CaseRegion(regionB, edgeAB, edgeBExit, value));
+                itE.remove();
             }
-            regionCi.add(Regions.getFirstSuccessorOf(graph, regionB, false));
         }
-        if (regionCi.size() != 1) {
+
+        if (edgesAB.size() > 0) {
+            // find join region
+            List<Set<Region>> regionsBC = new ArrayList<Set<Region>>();
+            for (Edge edgeAB : edgesAB) {
+                Set<Region> regionBC = new HashSet<Region>();
+                Region regionB = graph.getEdgeTarget(edgeAB);
+                regionBC.add(regionB);
+                regionBC.add(Regions.getFirstSuccessorOf(graph, regionB, false));
+                regionsBC.add(regionBC);
+            }
+
+            Set<Region> intersect = Sets.intersection(regionsBC);
+            if (intersect.size() == 1) {
+                Region regionC = intersect.iterator().next();
+
+                for (Edge edgeAB : edgesAB) {
+                    Region regionB = graph.getEdgeTarget(edgeAB);
+                    CaseValues value = (CaseValues) edgeAB.getValue();
+                    if (regionB.equals(regionC)) { // empty case
+                        caseRegions.add(new CaseRegion(null, edgeAB, null, value));
+                    } else {
+                        Edge edgeBC = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
+                        caseRegions.add(new CaseRegion(regionB, edgeAB, edgeBC, value));
+                    }
+                }
+                
+                edgesAB.clear();
+            }
+        }
+
+        if (edgesAB.size() > 0) {
             return null;
         }
+
         // to order cases by value (with default value at the end)
-        Map<CaseValues, CaseRegion> caseRegions = new TreeMap<CaseValues, CaseRegion>();
-        for (Region regionB : regionBi) {
-            Edge incomingEdge = Regions.getFirstIncomingEdgeOf(graph, regionB, false);
-            Edge outgoingEdge = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
-            CaseValues value = (CaseValues) incomingEdge.getValue();
-            caseRegions.put(value, new CaseRegion(regionB, incomingEdge, outgoingEdge, value));
-        }
-        return new SwitchCaseRegion(regionA, new ArrayList<CaseRegion>(caseRegions.values()));
+        Collections.sort(caseRegions, new Comparator<CaseRegion>() {
+            public int compare(CaseRegion o1, CaseRegion o2) {
+                return o1.getValues().compareTo(o2.getValues());
+            }
+        });
+
+        return new SwitchCaseRegion(regionA, caseRegions);
     }
 
 }

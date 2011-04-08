@@ -54,7 +54,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     private static final Logger logger = Logger.getLogger(ControlFlowGraphImpl.class.getName());
 
     static {
-        logger.setLevel(Level.FINEST);
+        logger.setLevel(Level.FINER);
     }
 
     private final String name;
