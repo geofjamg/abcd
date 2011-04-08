@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.region;
 
+import fr.jamgotchian.abcd.core.controlflow.CaseValues;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 
 /**
@@ -31,13 +32,13 @@ public class CaseRegion {
     
     private final Edge outgoingEdge;
     
-    private final Object value;
+    private final CaseValues values;
 
-    CaseRegion(Region region, Edge incomingEdge, Edge outgoingEdge, Object value) {
+    CaseRegion(Region region, Edge incomingEdge, Edge outgoingEdge, CaseValues values) {
         this.region = region;
         this.incomingEdge = incomingEdge;
         this.outgoingEdge = outgoingEdge;
-        this.value = value;
+        this.values = values;
     }
 
     public Region getRegion() {
@@ -52,7 +53,7 @@ public class CaseRegion {
         return outgoingEdge;
     }
 
-    public Object getValue() {
-        return value;
+    public CaseValues getValues() {
+        return values;
     }
 }

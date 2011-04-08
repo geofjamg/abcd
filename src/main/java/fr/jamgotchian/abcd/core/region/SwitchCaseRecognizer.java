@@ -19,14 +19,15 @@ package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
+import fr.jamgotchian.abcd.core.controlflow.CaseValues;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  *
@@ -38,11 +39,11 @@ public class SwitchCaseRecognizer implements RegionRecognizer {
         //
         // check switch case region
         //
-        //     A
-        //   / | \
-        //  BO B1 B2
-        //   \ | /
-        //     C
+        //      A
+        //   / |  |  \
+        //  BO B1 | default
+        //   \ |  |  /
+        //      C
         //
         BasicBlock blockA = Regions.getDeepExitBasicBlock(graph, regionA);
         if (blockA == null) {
@@ -66,11 +67,12 @@ public class SwitchCaseRecognizer implements RegionRecognizer {
         if (regionCi.size() != 1) {
             return null;
         }
-        Map<Object, CaseRegion> caseRegions = new HashMap<Object, CaseRegion>();
+        // to order cases by value (with default value at the end)
+        Map<CaseValues, CaseRegion> caseRegions = new TreeMap<CaseValues, CaseRegion>();
         for (Region regionB : regionBi) {
             Edge incomingEdge = Regions.getFirstIncomingEdgeOf(graph, regionB, false);
             Edge outgoingEdge = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
-            Object value = incomingEdge.getValue();
+            CaseValues value = (CaseValues) incomingEdge.getValue();
             caseRegions.put(value, new CaseRegion(regionB, incomingEdge, outgoingEdge, value));
         }
         return new SwitchCaseRegion(regionA, new ArrayList<CaseRegion>(caseRegions.values()));

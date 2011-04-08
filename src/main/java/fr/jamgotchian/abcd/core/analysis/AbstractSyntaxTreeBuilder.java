@@ -31,6 +31,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.JumpIfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
@@ -241,7 +242,11 @@ public class AbstractSyntaxTreeBuilder {
                 for (CaseRegion caseRegion : switchCase.getCaseRegions()) {
                     BlockStatement caseBlockStmt = new BlockStatement();
                     buildAST(caseRegion.getRegion(), caseBlockStmt);
-                    cases.add(new CaseStatement(caseRegion.getValue(), caseBlockStmt));
+                    Statement lastStmt = caseBlockStmt.getLast();
+                    if (!(lastStmt instanceof ReturnStatement)) {
+                        caseBlockStmt.add(new BreakStatement());
+                    }
+                    cases.add(new CaseStatement(caseRegion.getValues(), caseBlockStmt));
                 }
                 blockStmt.add(new SwitchCaseStatement(lookupOrTableSwitchStmt.getCondition(), cases));
 

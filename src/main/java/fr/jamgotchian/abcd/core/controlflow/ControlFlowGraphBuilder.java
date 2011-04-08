@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.controlflow;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -42,12 +43,10 @@ import org.objectweb.asm.tree.MethodNode;
 public class ControlFlowGraphBuilder {
 
     private static final Logger logger = Logger.getLogger(ControlFlowGraphBuilder.class.getName());
-    
+
     static {
         logger.setLevel(Level.FINEST);
     }
-    
-    private static final String DEFAULT = "default";
 
     private Map<LabelNode, Integer> labelNodeIndex;
 
@@ -80,7 +79,7 @@ public class ControlFlowGraphBuilder {
 
         analyseInstructions(mn.instructions);
         analyseTryCatchBlocks(tryCatchBlocks);
-        
+
         return graph;
     }
 
@@ -148,7 +147,11 @@ public class ControlFlowGraphBuilder {
                     logger.log(Level.FINER, "  JumpIf : current={0}, true={1}, false={2}",
                                              new Object[]{currentBlock, thenBlock, elseBlock});
                 } else if (labelInstIdx == currentInstIdx + 1) {
-                    // remove unnecessary instructions
+                    // remove unnecessary jump
+                    //
+                    // n     jumpif Lx
+                    // n+1   Lx:
+                    //
                     BasicBlockSplit splitResult1 = graph.splitBasicBlockAt(currentInstIdx);
                     BasicBlockSplit splitResult2 = graph.splitBasicBlockAt(currentInstIdx+2);
                     graph.removeEdge(splitResult1.getBlockBefore(), splitResult1.getBlockAfter());
@@ -212,23 +215,35 @@ public class ControlFlowGraphBuilder {
         }
     }
 
-    private void analyseSwitchNode(int currentInstIdx, List<LabelNode> labels, List<Object> keys) {
+    private void analyseSwitchNode(int currentInstIdx, List<LabelNode> labels, List<CaseValues> values) {
         BasicBlockSplit switchSplitResult = graph.splitBasicBlockAt(currentInstIdx+1);
         BasicBlock switchBlock = switchSplitResult.getBlockBefore();
         BasicBlock remainingBlock = switchSplitResult.getBlockAfter();
 
         graph.removeEdge(switchBlock, remainingBlock);
 
-        List<BasicBlock> caseBlocks = new ArrayList<BasicBlock>();
-
+        // first split and then link to allow parallel edges (several value to
+        // the same case basic block)
+        Map<BasicBlock, CaseValues> caseBlocks = new LinkedHashMap<BasicBlock, CaseValues>();
         for (int i = 0; i < labels.size(); i++) {
             LabelNode label = labels.get(i);
-            Object key = keys.get(i);
+            CaseValues value = values.get(i);
             int caseInstnIdx = labelNodeIndex.get(label);
             BasicBlockSplit caseSplitResult = graph.splitBasicBlockAt(caseInstnIdx);
             BasicBlock caseBlock = caseSplitResult.getBlockAfter();
-            graph.addEdge(switchBlock, caseBlock).setValue(key);
-            caseBlocks.add(caseBlock);
+            CaseValues oldKey = caseBlocks.get(caseBlock);
+            if (oldKey == null) {
+                caseBlocks.put(caseBlock, value);
+            } else {
+                // case with multiple values
+                oldKey.merge(value);
+            }
+        }
+
+        for (Map.Entry<BasicBlock, CaseValues> entry : caseBlocks.entrySet()) {
+            BasicBlock caseBlock = entry.getKey();
+            CaseValues value = entry.getValue();
+            graph.addEdge(switchBlock, caseBlock).setValue(value);
         }
 
         // necessary to tag the switch block after all case have been splitted
@@ -258,11 +273,13 @@ public class ControlFlowGraphBuilder {
                     List<LabelNode> labels = new ArrayList<LabelNode>(switchNode.labels.size()+1);
                     labels.addAll(switchNode.labels);
                     labels.add(switchNode.dflt);
-                    List<Object> keys = new ArrayList<Object>(switchNode.labels.size()+1);
-                    keys.addAll(switchNode.keys);
-                    keys.add(DEFAULT);
+                    List<CaseValues> values = new ArrayList<CaseValues>(switchNode.labels.size()+1);
+                    for (Object key : switchNode.keys) {
+                        values.add(CaseValues.newValue(key.toString()));
+                    }
+                    values.add(CaseValues.newDefaultValue());
 
-                    analyseSwitchNode(currentInstIdx, labels, keys);
+                    analyseSwitchNode(currentInstIdx, labels, values);
                     break;
                 }
 
@@ -272,13 +289,13 @@ public class ControlFlowGraphBuilder {
                     List<LabelNode> labels = new ArrayList<LabelNode>(switchNode.labels.size()+1);
                     labels.addAll(switchNode.labels);
                     labels.add(switchNode.dflt);
-                    List<Object> keys = new ArrayList<Object>(switchNode.labels.size()+1);
+                    List<CaseValues> values = new ArrayList<CaseValues>(switchNode.labels.size()+1);
                     for (int key = switchNode.min; key <= switchNode.max; key++) {
-                        keys.add(key);
+                        values.add(CaseValues.newValue(Integer.toString(key)));
                     }
-                    keys.add(DEFAULT);
+                    values.add(CaseValues.newDefaultValue());
 
-                    analyseSwitchNode(currentInstIdx, labels, keys);
+                    analyseSwitchNode(currentInstIdx, labels, values);
                     break;
                 }
 

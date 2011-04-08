@@ -43,6 +43,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.common.Label;
+import fr.jamgotchian.abcd.core.controlflow.CaseValues;
 import java.util.Iterator;
 
 public class JavaStatementWriter implements StatementVisitor<Void, Void> {
@@ -230,13 +231,18 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
         writer.write(")").writeSpace().write("{").newLine();
         writer.incrIndent();
         for (CaseStatement _case : stmt.getCases()) {
-            Object value = _case.getValue();
-            if ("default".equals(value)) {
-                writer.writeKeyword("default");
-            } else {
-                writer.writeKeyword("case").writeSpace().write(_case.getValue());
+            for (Iterator<String> it = _case.getValues().getValues().iterator(); it.hasNext();) {
+                String value = it.next();
+                if (CaseValues.isDefault(value)) {
+                    writer.writeKeyword("default").write(":");
+                } else {
+                    writer.writeKeyword("case").writeSpace().write(value).write(":");
+                }
+                if (it.hasNext()) {
+                    writer.newLine();
+                }
             }
-            writer.write(":").writeSpace();
+            writer.writeSpace();
             _case.getBlockStmt().accept(this, arg);
             writer.newLine();
         }

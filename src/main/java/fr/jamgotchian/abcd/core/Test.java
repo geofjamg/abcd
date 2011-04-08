@@ -595,28 +595,6 @@ public class Test {
         c();
     }
 
-    private void testSwitchWithEmptyDefaultCase(int a) {
-        System.out.println("a");
-        switch (a) {
-            case 0:
-                System.out.println("b");
-                break;
-        }
-        System.out.println("c");
-    }
-    
-    private void testSwitchWithEmptyCase(int a) {
-        System.out.println("a");
-        switch (a) {
-            case 0:
-                System.out.println("b");
-                break;
-            case 1:
-                break;
-        }
-        System.out.println("c");
-    }
-
     public void testSwitch(int a) {
         switch (a) {
             case 0:
@@ -643,8 +621,52 @@ public class Test {
                 c();
         }
     }
+
+    public void testSwitchThrow(int a) {
+        switch (a) {
+            case 0:
+                throw new IllegalArgumentException();
+                
+            case 1:
+                System.out.println("b");
+                break;
+        }
+    }
+
+    public void testSwitchInfiniteLoop(int a) {
+        switch (a) {
+            case 0:
+                while(true);
+                
+            case 1:
+                System.out.println("b");
+                break;
+        }
+    }
+
+    public void testSwitchWithEmptyDefaultCase(int a) {
+        System.out.println("a");
+        switch (a) {
+            case 0:
+                System.out.println("b");
+                break;
+        }
+        System.out.println("c");
+    }
+    
+    public void testSwitchWithEmptyCase(int a) {
+        System.out.println("a");
+        switch (a) {
+            case 0:
+                System.out.println("b");
+                break;
+            case 1:
+                break;
+        }
+        System.out.println("c");
+    }
    
-    public void testFallthroughSwitch(int a) {
+    public void testFallthroughSwitchEmptyBlock(int a) {
         switch (a) {
             case 0:
             case 1:
@@ -656,7 +678,7 @@ public class Test {
         }
     }
 
-    public void testFallthroughSwitch2(int a) {
+    public void testFallthroughSwitchNonEmptyBlock(int a) {
         switch (a + 3) {
             case 0:
                 a();

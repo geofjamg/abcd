@@ -276,7 +276,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
             while (it1.hasNext() && it2.hasNext()) {
                 CaseStatement case1 = it1.next();
                 CaseStatement case2 = it2.next();
-                if (!Objects.equal(case1.getValue(), case2.getValue())) {
+                if (!case1.getValues().equals(case2.getValues())) {
                     return Boolean.FALSE;
                 }
                 if (Boolean.FALSE.equals(case1.getBlockStmt().accept(this, case2.getBlockStmt()))) {

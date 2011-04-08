@@ -227,9 +227,9 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case BALOAD:
             case CALOAD:
             case SALOAD: {
-                Expression arrayCountExpr = stack.pop();
+                Expression arrayIndexExpr = stack.pop();
                 Expression arrayRef = stack.pop();
-                pushExpr(new ArrayAccess(arrayRef, arrayCountExpr), block);
+                pushExpr(new ArrayAccess(arrayRef, arrayIndexExpr), block);
                 break;
             }
 
@@ -242,14 +242,14 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case CASTORE:
             case SASTORE: {
                 Expression valueExpr = stack.pop();
-                Expression arrayCountExpr = stack.pop();
+                Expression arrayIndexExpr = stack.pop();
                 Expression arrayRef = stack.pop();
                 if (arrayRef instanceof ArrayCreationExpression) {
                     ((ArrayCreationExpression) arrayRef).addInitValue(valueExpr);
                 } else {
-                    addStmt(block, new AssignExpression(new ArrayAccess(arrayRef, arrayCountExpr),
-                                                                valueExpr,
-                                                                AssignOperator.ASSIGN));
+                    addStmt(block, new AssignExpression(new ArrayAccess(arrayRef, arrayIndexExpr),
+                                                        valueExpr,
+                                                        AssignOperator.ASSIGN));
                 }
                 break;
             }

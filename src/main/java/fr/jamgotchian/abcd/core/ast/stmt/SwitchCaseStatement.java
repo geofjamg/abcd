@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.controlflow.CaseValues;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,17 +31,17 @@ public class SwitchCaseStatement extends AbstractStatement {
 
     public static class CaseStatement {
         
-        private final Object value;
+        private final CaseValues values;
         
         private final BlockStatement blockStmt;
 
-        public CaseStatement(Object value, BlockStatement blockStmt) {
-            this.value = value;
+        public CaseStatement(CaseValues values, BlockStatement blockStmt) {
+            this.values = values;
             this.blockStmt = blockStmt;
         }
 
-        public Object getValue() {
-            return value;
+        public CaseValues getValues() {
+            return values;
         }
 
         public BlockStatement getBlockStmt() {

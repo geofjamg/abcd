@@ -167,5 +167,21 @@ public class DirectedGraphImplTest {
         assertTrue(graph.getSuccessorsOf(v2).isEmpty());
         assertTrue(graph.getOutgoingEdgesOf(v2).isEmpty());
     }
-
+    
+    @Test
+    public void testParallelEdges() {
+        Vertex v0 = new Vertex("v", 0);
+        Vertex v1 = new Vertex("v", 1);
+        String e01_1 = "e01_1";
+        String e01_2 = "e01_2";
+        graph.addVertex(v0);
+        graph.addVertex(v1);
+        graph.addEdge(v0, v1, e01_1);
+        graph.addEdge(v0, v1, e01_2);
+        assertTrue(graph.getVertexCount() == 2);
+        assertTrue(graph.getEdgeCount() == 2);
+        assertTrue(Collections3.sameContent(Arrays.asList(v0, v1), graph.getVertices()));
+        assertTrue(Collections3.sameContent(Arrays.asList(e01_1, e01_2), graph.getEdges()));
+    }
+    
 }
