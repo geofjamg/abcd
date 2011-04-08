@@ -17,7 +17,6 @@
 
 package fr.jamgotchian.abcd.core.ast.util;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.BreakStatement;
@@ -279,8 +278,15 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
                 if (!case1.getValues().equals(case2.getValues())) {
                     return Boolean.FALSE;
                 }
-                if (Boolean.FALSE.equals(case1.getBlockStmt().accept(this, case2.getBlockStmt()))) {
+                List<Statement> caseStmt1 = case1.getStmts();
+                List<Statement> caseStmt2 = case1.getStmts();
+                if (caseStmt1.size() != caseStmt2.size()) {
                     return Boolean.FALSE;
+                }
+                for (int i = 0; i < caseStmt1.size(); i++) {
+                    if (Boolean.FALSE.equals(caseStmt1.get(i).accept(this, caseStmt2.get(i)))) {
+                        return Boolean.FALSE;
+                    }                    
                 }
             }
             return Boolean.TRUE;

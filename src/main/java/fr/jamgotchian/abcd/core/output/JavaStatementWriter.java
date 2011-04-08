@@ -238,13 +238,14 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
                 } else {
                     writer.writeKeyword("case").writeSpace().write(value).write(":");
                 }
-                if (it.hasNext()) {
-                    writer.newLine();
-                }
+                writer.newLine();
             }
-            writer.writeSpace();
-            _case.getBlockStmt().accept(this, arg);
-            writer.newLine();
+            writer.incrIndent();
+            for (Statement stmt2 : _case.getStmts()) {
+                stmt2.accept(this, arg);
+                writer.newLine();
+            }
+            writer.decrIndent();
         }
         writer.decrIndent();
         writer.write("}");

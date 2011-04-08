@@ -125,7 +125,9 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
 
     public Collection<Statement> visit(SwitchCaseStatement stmt, Void arg) {
         for (CaseStatement _case : stmt.getCases()) {
-            _case.getBlockStmt().accept(this, arg);
+            for (Statement stmt2 : _case.getStmts()) {
+                stmt2.accept(this, arg);
+            }
         }
         return null;
     }

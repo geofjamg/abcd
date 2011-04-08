@@ -251,7 +251,9 @@ public class ConditionalExpressionRefactorer implements StatementVisitor<Object,
     public Object visit(SwitchCaseStatement stmt, Object arg) {
         stmt.getCondition().accept(choiceExprRemover, null);
         for (CaseStatement _case : stmt.getCases()) {
-            _case.getBlockStmt().accept(this, arg);
+            for (Statement stmt2 : _case.getStmts()) {
+                stmt2.accept(this, arg);
+            }
         }
         return null;
     }

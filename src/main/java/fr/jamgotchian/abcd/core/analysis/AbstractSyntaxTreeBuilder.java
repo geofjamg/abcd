@@ -93,7 +93,8 @@ public class AbstractSyntaxTreeBuilder {
         switch (region.getType()) {
             case BASIC_BLOCK: {
                 BasicBlockRegion basicBlockRegion = (BasicBlockRegion) region;
-                for (Statement stmt : ((BasicBlockAnalysisDataImpl) basicBlockRegion.getBasicBlock().getData()).getUsefullStatements()) {
+                BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) basicBlockRegion.getBasicBlock().getData();
+                for (Statement stmt : data.getUsefullStatements()) {
                     blockStmt.add(stmt);
                 }
                 break;
@@ -240,13 +241,17 @@ public class AbstractSyntaxTreeBuilder {
 
                 List<CaseStatement> cases = new ArrayList<CaseStatement>();
                 for (CaseRegion caseRegion : switchCase.getCaseRegions()) {
-                    BlockStatement caseBlockStmt = new BlockStatement();
-                    buildAST(caseRegion.getRegion(), caseBlockStmt);
-                    Statement lastStmt = caseBlockStmt.getLast();
-                    if (!(lastStmt instanceof ReturnStatement)) {
-                        caseBlockStmt.add(new BreakStatement());
+                    List<Statement> caseStmts = new ArrayList<Statement>();
+                    
+                    // TODO : remove the compound statement ?
+                    BlockStatement caseCompoundStmt = new BlockStatement();
+                    buildAST(caseRegion.getRegion(), caseCompoundStmt);
+                    caseStmts.add(caseCompoundStmt);
+                    if (!(caseCompoundStmt.getLast() instanceof ReturnStatement)) {
+                        caseStmts.add(new BreakStatement());
                     }
-                    cases.add(new CaseStatement(caseRegion.getValues(), caseBlockStmt));
+                    
+                    cases.add(new CaseStatement(caseRegion.getValues(), caseStmts));
                 }
                 blockStmt.add(new SwitchCaseStatement(lookupOrTableSwitchStmt.getCondition(), cases));
 

@@ -681,12 +681,20 @@ public class Test {
     public void testFallthroughSwitchNonEmptyBlock(int a) {
         switch (a + 3) {
             case 0:
-                a();
+                System.out.println("a");
             case 1:
-                b();
+                System.out.println("b");
                 break;
+            case 2:
+                System.out.println("c");
+            case 3:
+                System.out.println("d");
+            case 4:
+                System.out.println("e");
+                break;
+
             default:
-                c();
+                System.out.println("f");
                 break;
         }
     }

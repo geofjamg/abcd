@@ -30,27 +30,27 @@ import java.util.List;
 public class SwitchCaseStatement extends AbstractStatement {
 
     public static class CaseStatement {
-        
-        private final CaseValues values;
-        
-        private final BlockStatement blockStmt;
 
-        public CaseStatement(CaseValues values, BlockStatement blockStmt) {
+        private final CaseValues values;
+
+        private final List<Statement> stmts;
+
+        public CaseStatement(CaseValues values, List<Statement> stmts) {
             this.values = values;
-            this.blockStmt = blockStmt;
+            this.stmts = stmts;
         }
 
         public CaseValues getValues() {
             return values;
         }
 
-        public BlockStatement getBlockStmt() {
-            return blockStmt;
+        public List<Statement> getStmts() {
+            return stmts;
         }
     }
-    
+
     private final Expression condition;
-    
+
     private final List<CaseStatement> cases;
 
     public SwitchCaseStatement(Expression condition, List<CaseStatement> cases) {
@@ -70,7 +70,9 @@ public class SwitchCaseStatement extends AbstractStatement {
     @Override
     public void setBlock(BlockStatement block) {
         for (CaseStatement _case : cases) {
-            _case.getBlockStmt().setBlock(block);
+            for (Statement stmt : _case.getStmts()) {
+                stmt.setBlock(block);
+            }
         }
         super.setBlock(block);
     }
@@ -82,7 +84,7 @@ public class SwitchCaseStatement extends AbstractStatement {
     public List<CaseStatement> getCases() {
         return Collections.unmodifiableList(cases);
     }
-    
+
     public <R, A> R accept(StatementVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
