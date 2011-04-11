@@ -1038,6 +1038,22 @@ public class Test {
         }
     }
     
+    void testLongFloatDoubleComparison() {
+        for (long j = 0; j < 3; j++) {
+            System.out.println(j);
+        }
+        for (float j = 0; j < 3; j++) {
+            System.out.println(j);
+        }
+        for (double j = 0; j < 3; j++) {
+            System.out.println(j);
+        }
+        double a = 1;
+        if (a > 3.45) {
+            System.out.println("ss");
+        }
+    }
+    
     void testSynchronized() {
         final Object lock = new Object();
         System.out.println("a");

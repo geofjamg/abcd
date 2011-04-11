@@ -452,8 +452,12 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case FCMPL:
             case FCMPG:
             case DCMPL:
-            case DCMPG:
-                throw new ABCDException("TODO");
+            case DCMPG: {
+                Expression value2 = stack.pop();
+                Expression value1 = stack.pop();
+                pushExpr(new BinaryExpression(value1, value2, BinaryOperator.MINUS), block);
+                break;
+            }
 
             case IRETURN:
             case LRETURN:
@@ -697,7 +701,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     }
 
     public void visitMultiANewArrayInsn(BasicBlock block, int index, MultiANewArrayInsnNode node) {
-        String typeName = Type.getType(node.desc).getElementType().getClassName(); 
+        String typeName = Type.getType(node.desc).getElementType().getClassName();
         List<Expression> arrayLengthExpr = new ArrayList<Expression>(node.dims);
         for (int i = 0; i < node.dims; i++) {
             arrayLengthExpr.add(0, stack.pop());
