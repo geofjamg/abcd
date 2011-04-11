@@ -115,7 +115,7 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
     }
 
     public Void visit(CommentStatement stmt, Void arg) {
-        writer.write("/*").write(stmt.getComment()).write("*/").newLine();
+        writer.write("/*").write(stmt.getComment()).write("*/");
         return null;
     }
 

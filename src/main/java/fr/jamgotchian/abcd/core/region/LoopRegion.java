@@ -21,7 +21,9 @@ import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  *
@@ -35,7 +37,9 @@ public class LoopRegion extends AbstractRegion {
 
     private final Edge backEdge;
 
-    public LoopRegion(LoopType loopType, Edge backEdge, Region loopRegion) {
+    private final int loopID;
+
+    public LoopRegion(LoopType loopType, Edge backEdge, Region loopRegion, int loopID) {
         if (loopType == null) {
             throw new ABCDException("loopType == null");
         }
@@ -48,6 +52,7 @@ public class LoopRegion extends AbstractRegion {
         this.loopType = loopType;
         this.backEdge = backEdge;
         this.loopRegion = loopRegion;
+        this.loopID = loopID;
     }
 
     public RegionType getType() {
@@ -74,6 +79,10 @@ public class LoopRegion extends AbstractRegion {
         return backEdge;
     }
 
+    public int getLoopID() {
+        return loopID;
+    }
+
     public Collection<Region> getChildRegions() {
         return Sets.newHashSet(loopRegion);
     }
@@ -94,21 +103,39 @@ public class LoopRegion extends AbstractRegion {
                 break;
             }
 
-            case DO_WHILE:
+            case DO_WHILE: {
                 ifThenBreak = (IfThenBreakRegion) Regions.getDeepExitRegion(graph, loopRegion);
                 break;
+            }
 
-            case INFINITE:
-                throw new ABCDException("TODO");
+            case INFINITE: {
+                List<IfThenBreakRegion> ifThenBreaks = new ArrayList<IfThenBreakRegion>();
+                for (IfThenBreakRegion ifThenBreak2 : getChildRegions(IfThenBreakRegion.class)) {
+                    if (ifThenBreak2.getBreakTargetRegion().getBreakTargetStatus() == BreakTargetStatus.UNASSIGNED) {
+                        ifThenBreaks.add(ifThenBreak2);
+                    }
+                }
+                if (ifThenBreaks.size() != 1) {
+                    throw new ABCDException("ifThenBreaks.size() != 1");
+                }
+                ifThenBreak = ifThenBreaks.iterator().next();
+                break;
+            }
 
             default:
                 throw new AssertionError();
         }
+
         Region breakTargetRegion = ifThenBreak.getBreakTargetRegion();
+        if (breakTargetRegion.getBreakTargetStatus() == BreakTargetStatus.ASSIGNED) {
+            throw new ABCDException("Break target already assigned to another loop");
+        }
+        breakTargetRegion.setBreakTargetStatus(BreakTargetStatus.ASSIGNED);
+        breakTargetRegion.setBreakLoopID(loopID);
+
         boolean before = ifThenBreak.getBeforeThenRegion() != null
                 && ifThenBreak.getBeforeThenEdge() != null;
-        boolean after = ifThenBreak.getAfterThenRegion() != null
-                && ifThenBreak.getAfterThenEdge() != null;
+        boolean after = ifThenBreak.getAfterThenRegion() != null;
         if (after && before) {
             graph.addVertex(ifThenBreak.getBeforeThenRegion());
             graph.addVertex(ifThenBreak.getAfterThenRegion());
@@ -128,7 +155,6 @@ public class LoopRegion extends AbstractRegion {
         } else if (!after && !before) {
             graph.addEdge(this, breakTargetRegion, ifThenBreak.getThenBreakEdge());
         }
-        breakTargetRegion.setBreakTarget(false);
 
         graph.removeVertex(loopRegion);
     }

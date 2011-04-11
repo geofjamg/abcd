@@ -47,35 +47,35 @@ public class IfThenBreakRegion extends AbstractRegion {
 
     private final boolean invertCond;
 
-    static IfThenBreakRegion newInstance(Region ifRegion, Region breakTargetRegion, 
+    static IfThenBreakRegion newInstance(Region ifRegion, Region breakTargetRegion,
                                          Edge elseEdge, Edge thenBreakEdge,
                                          boolean invertCond) {
-        return new IfThenBreakRegion(ifRegion, breakTargetRegion, elseEdge, thenBreakEdge, 
-                                     null, null, null, null, 
+        return new IfThenBreakRegion(ifRegion, breakTargetRegion, elseEdge, thenBreakEdge,
+                                     null, null, null, null,
                                      invertCond);
     }
 
-    static IfThenBreakRegion newInstance2(Region ifRegion, Region breakTargetRegion, 
+    static IfThenBreakRegion newInstance2(Region ifRegion, Region breakTargetRegion,
                                           Edge elseEdge, Edge thenBreakEdge,
                                           Region afterThenRegion, Edge afterThenEdge,
                                           boolean invertCond) {
-        return new IfThenBreakRegion(ifRegion, breakTargetRegion, elseEdge, thenBreakEdge, 
-                                     null, null, afterThenRegion, afterThenEdge, 
+        return new IfThenBreakRegion(ifRegion, breakTargetRegion, elseEdge, thenBreakEdge,
+                                     null, null, afterThenRegion, afterThenEdge,
                                      invertCond);
     }
-    
-    static IfThenBreakRegion newInstance3(Region ifRegion, Region breakTargetRegion, 
+
+    static IfThenBreakRegion newInstance3(Region ifRegion, Region breakTargetRegion,
                                           Edge elseEdge, Edge thenBreakEdge,
                                           Region beforeThenRegion, Edge beforeThenEdge,
                                           Region afterThenRegion, Edge afterThenEdge,
                                           boolean invertCond) {
-        return new IfThenBreakRegion(ifRegion, breakTargetRegion, elseEdge, thenBreakEdge, 
-                                     beforeThenRegion, beforeThenEdge, afterThenRegion, afterThenEdge, 
+        return new IfThenBreakRegion(ifRegion, breakTargetRegion, elseEdge, thenBreakEdge,
+                                     beforeThenRegion, beforeThenEdge, afterThenRegion, afterThenEdge,
                                      invertCond);
     }
-    
+
     private IfThenBreakRegion(Region ifRegion, Region breakTargetRegion, Edge elseEdge, Edge thenBreakEdge,
-                      Region beforeThenRegion, Edge beforeThenEdge, Region afterThenRegion, Edge afterThenEdge, 
+                      Region beforeThenRegion, Edge beforeThenEdge, Region afterThenRegion, Edge afterThenEdge,
                       boolean invertCond) {
         this.ifRegion = ifRegion;
         this.breakTargetRegion = breakTargetRegion;
@@ -135,7 +135,7 @@ public class IfThenBreakRegion extends AbstractRegion {
     public void setBeforeThenEdge(Edge beforeThenEdge) {
         this.beforeThenEdge = beforeThenEdge;
     }
-    
+
     public boolean isInvertCond() {
         return invertCond;
     }
@@ -149,7 +149,7 @@ public class IfThenBreakRegion extends AbstractRegion {
     }
 
     public Region getExitRegion() {
-        return null;
+        return ifRegion;
     }
 
     public Collection<Region> getChildRegions() {
@@ -176,14 +176,11 @@ public class IfThenBreakRegion extends AbstractRegion {
         return edges;
     }
 
-    @Override
-    public void addBreakTargetRegion(Collection<Region> regions) {
-        super.addBreakTargetRegion(regions);
-        regions.add(breakTargetRegion);
-    }
-
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {
-        breakTargetRegion.setBreakTarget(true);
+        // change break target region to unassigned
+        if (breakTargetRegion != null) {
+            breakTargetRegion.setBreakTargetStatus(BreakTargetStatus.UNASSIGNED);
+        }
         graph.addVertex(this);
         Region elseRegion = graph.getEdgeTarget(elseEdge);
         Regions.moveHandlers(graph, ifRegion, this);

@@ -212,6 +212,15 @@ public class Regions {
         }
     }
 
+    public static void moveOutgoingEdges(MutableDirectedGraph<Region, Edge> graph, Region from, Region to) {
+        Collection<Edge> outgoingEdges = graph.getOutgoingEdgesOf(from);
+        for (Edge outgoingEdge : new ArrayList<Edge>(outgoingEdges)) {
+                Region target = graph.getEdgeTarget(outgoingEdge);
+                graph.removeEdge(outgoingEdge);
+                graph.addEdge(to, target, outgoingEdge);
+        }
+    }
+
     public static void moveUnexceptionalOutgoingEdges(MutableDirectedGraph<Region, Edge> graph, 
                                                       Region from, Region to) {
         Collection<Edge> outgoingEdges = graph.getOutgoingEdgesOf(from);

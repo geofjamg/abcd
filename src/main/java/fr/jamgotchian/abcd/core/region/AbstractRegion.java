@@ -17,9 +17,10 @@
 
 package fr.jamgotchian.abcd.core.region;
 
+import fr.jamgotchian.abcd.core.common.ABCDException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  *
@@ -27,33 +28,52 @@ import java.util.Set;
  */
 abstract class AbstractRegion implements Region {
 
-    private boolean breakTarget;
+    private BreakTargetStatus breakTargetStatus;
+
+    private int breakLoopID;
 
     public AbstractRegion() {
+        breakTargetStatus = BreakTargetStatus.NONE;
+        breakLoopID = -1;
     }
 
     public String getTypeName() {
         return getType().toString();
     }
 
-    public Collection<Region> getBreakRegions() {
-        Set<Region> regions = new HashSet<Region>();
-        addBreakTargetRegion(regions);
+    public <T> Collection<T> getChildRegions(Class<T> clazz) {
+        List<T> regions = new ArrayList<T>();
+        addChildRegions(regions, clazz);
         return regions;
     }
 
-    public void addBreakTargetRegion(Collection<Region> regions) {
+    public <T> void addChildRegions(Collection<T> regions, Class<T> clazz) {
+        if (getClass() == clazz) {
+            regions.add((T) this);
+        }
         for (Region child : getChildRegions()) {
-            child.addBreakTargetRegion(regions);
+            child.addChildRegions(regions, clazz);
         }
     }
 
-    public boolean isBreakTarget() {
-        return breakTarget;
+    public BreakTargetStatus getBreakTargetStatus() {
+        return breakTargetStatus;
     }
 
-    public void setBreakTarget(boolean breakTarget) {
-        this.breakTarget = breakTarget;
+    public int getBreakLoopID() {
+        return breakLoopID;
+    }
+
+    public void setBreakLoopID(int breakLoopID) {
+        this.breakLoopID = breakLoopID;
+    }
+
+    public void setBreakTargetStatus(BreakTargetStatus breakTargetStatus) {
+//        if (breakTargetStatus.ordinal() < this.breakTargetStatus.ordinal()) {
+//            throw new ABCDException("Cannot change break target status from "
+//                    + this.breakTargetStatus + " to " + breakTargetStatus);
+//        }
+        this.breakTargetStatus = breakTargetStatus;
     }
 
     public RegionName getName() {

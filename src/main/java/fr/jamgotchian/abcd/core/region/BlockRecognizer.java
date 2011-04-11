@@ -29,6 +29,12 @@ import java.util.Set;
  */
 class BlockRecognizer implements RegionRecognizer {
 
+    private final boolean doNotCollapseExitRegion;
+
+    public BlockRecognizer(boolean doNotCollapseExitRegion) {
+        this.doNotCollapseExitRegion = doNotCollapseExitRegion;
+    }
+    
     private BlockRegion checkForward(DirectedGraph<Region, Edge> graph, Region regionA) {
         if (Regions.getSuccessorCountOf(graph, regionA, false) != 1) {
             return null;
@@ -78,20 +84,26 @@ class BlockRecognizer implements RegionRecognizer {
             return false;
         }
         Region regionB = graph.getEdgeTarget(edgeAB);
-        if (regionB.isBreakTarget()) {
+        if (regionB.getBreakTargetStatus() == BreakTargetStatus.UNASSIGNED) {
             return false;
         }
         if (Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
+            return false;
+        }
+        if (doNotCollapseExitRegion && Regions.getSuccessorCountOf(graph, regionB, false) == 0) {
             return false;
         }
         return Regions.sameHandlers(graph, regionA, regionB);
     }
 
     private boolean isBlockBackward(DirectedGraph<Region, Edge> graph, Region regionA) {
-        if (regionA.isBreakTarget()) {
+        if (regionA.getBreakTargetStatus() == BreakTargetStatus.UNASSIGNED) {
             return false;
         }
         if (Regions.getPredecessorCountOf(graph, regionA, false) != 1) {
+            return false;
+        }
+        if (doNotCollapseExitRegion && Regions.getSuccessorCountOf(graph, regionA, false) == 0) {
             return false;
         }
         Edge edgeBA = Regions.getFirstIncomingEdgeOf(graph, regionA, false);

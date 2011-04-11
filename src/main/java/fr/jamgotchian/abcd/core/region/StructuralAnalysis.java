@@ -45,13 +45,23 @@ public class StructuralAnalysis {
 
     private static final Logger logger = Logger.getLogger(StructuralAnalysis.class.getName());
 
-    private static final List<RegionRecognizer> RECOGNIZERS;
+    private final List<RegionRecognizer> recognizers;
+    private final List<RegionRecognizer> recognizers2;
 
     static {
         logger.setLevel(Level.FINER);
+    }
 
-        RECOGNIZERS = Collections.unmodifiableList(Arrays.asList(/* first, acyclic regions */
-                                                                 new BlockRecognizer(),
+    private final ControlFlowGraph graph;
+
+    private MutableDirectedGraph<Region, Edge> regionGraph;
+    private Region entryRegion;
+    private Region exitRegion;
+
+    public StructuralAnalysis(ControlFlowGraph graph) {
+        this.graph = graph;
+        recognizers = Collections.unmodifiableList(Arrays.asList(/* first, acyclic regions */
+                                                                 new BlockRecognizer(true),
                                                                  new LogicalRecognizer(),
                                                                  new IfThenElseRecognizer(),
                                                                  new SwitchCaseRecognizer(),
@@ -59,15 +69,8 @@ public class StructuralAnalysis {
                                                                  new LoopRecognizer(),
                                                                  /* try catch regions */
                                                                  new TryCatchRecognizer()));
-    }
-
-    private final ControlFlowGraph graph;
-
-    private MutableDirectedGraph<Region, Edge> regionGraph;
-    private Region entryRegion;
-
-    public StructuralAnalysis(ControlFlowGraph graph) {
-        this.graph = graph;
+        
+        recognizers2 = Collections.<RegionRecognizer>unmodifiableList(Arrays.asList(new BlockRecognizer(false)));
     }
 
     public DirectedGraph<Region, Edge> getRegionGraph() {
@@ -90,6 +93,7 @@ public class StructuralAnalysis {
                         ((IfThenBreakRegion) structuredRegion).getBreakTargetRegion());
                 break;
             case LOOP: {
+                logger.log(Level.FINER, "  Loop type : {0}", ((LoopRegion) structuredRegion).getLoopType());
                 logger.log(Level.FINER, "  Natural exit : {0}", 
                         regionGraph.getFirstSuccessorOf(structuredRegion));
                 break;
@@ -109,6 +113,27 @@ public class StructuralAnalysis {
         }
     }
 
+    private boolean checkRegions(List<Region> nodes, List<RegionRecognizer> recognizers) {
+        boolean failed = true;
+        for (Region region : nodes) {
+            Region structuredRegion = null;
+            for (RegionRecognizer recognizer : recognizers) {
+                logger.log(Level.FINEST, "Check for region with {0} at {1}",
+                        new Object[] {recognizer.getClass().getSimpleName(), region});
+                structuredRegion = recognizer.recognize(regionGraph, region);
+                if (structuredRegion != null) {
+                    break;
+                }
+            }
+            if (structuredRegion != null) {
+                collapseRegion(structuredRegion);
+                failed = false;
+                break;
+            }
+        }
+        return failed;
+    }
+    
     public Set<Region> analyse() {
         // build initial region graph
         Map<BasicBlock, Region> block2region = new HashMap<BasicBlock, Region>();
@@ -124,31 +149,18 @@ public class StructuralAnalysis {
             regionGraph.addEdge(block2region.get(source), block2region.get(target), edge);
         }
         entryRegion = block2region.get(graph.getEntryBlock());
+        exitRegion = block2region.get(graph.getExitBlock());
 
         // reduce the region graph
         boolean failed = false;
         while (regionGraph.getVertexCount() > 1 && !failed) {
             Tree<Region, Edge> dfst = regionGraph.getReversePostOrderDFST(entryRegion, false);
-            failed = true;
             List<Region> reverseNodes = new ArrayList<Region>(dfst.getNodes());
             Collections.reverse(reverseNodes);
-            Region structuredRegion = null;
-            for (Region region : reverseNodes) {
-                for (RegionRecognizer recognizer : RECOGNIZERS) {
-                    logger.log(Level.FINEST, "Check for region with {0} at {1}",
-                            new Object[] {recognizer.getClass().getSimpleName(), region});
-                    structuredRegion = recognizer.recognize(regionGraph, region);
-                    if (structuredRegion != null) {
-                        break;
-                    }
-                }
-                if (structuredRegion != null) {
-                    collapseRegion(structuredRegion);
-                    failed = false;
-                    break;
-                }
+            failed = checkRegions(reverseNodes, recognizers);
+            if (failed) {
+                failed = checkRegions(reverseNodes, recognizers2);
             }
-
 //            logger.log(Level.FINEST, "Region graph :\n{0}",
 //                    DirectedGraphs.toString(regionGraph, entryRegion));
         }

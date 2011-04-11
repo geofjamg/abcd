@@ -148,7 +148,7 @@ class IfThenElseRecognizer implements RegionRecognizer {
             boolean invertCond = Boolean.FALSE.equals(edgeAB.getValue());
             if (Regions.getSuccessorCountOf(graph, regionB, false) == 1
                     && Regions.getPredecessorCountOf(graph, regionB, false) == 1
-                    && !regionB.isBreakTarget()) {
+                    && regionB.getBreakTargetStatus() != BreakTargetStatus.UNASSIGNED) {
                 Edge edgeBD = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
                 Region regionD = graph.getEdgeTarget(edgeBD);
                 if (Regions.sameHandlers(graph, regionA, regionB)) {
@@ -175,7 +175,7 @@ class IfThenElseRecognizer implements RegionRecognizer {
             boolean invertCond = Boolean.FALSE.equals(edgeAC.getValue());
             if (Regions.getSuccessorCountOf(graph, regionC, false) == 1
                     && Regions.getPredecessorCountOf(graph, regionC, false) == 1
-                    && !regionC.isBreakTarget()) {
+                    && regionC.getBreakTargetStatus() != BreakTargetStatus.UNASSIGNED) {
                 //  A : if region
                 //  C : after then region
                 //  E : break target region

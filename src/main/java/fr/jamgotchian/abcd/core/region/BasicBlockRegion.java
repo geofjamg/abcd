@@ -28,11 +28,9 @@ import java.util.Collections;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BasicBlockRegion implements Region {
+public class BasicBlockRegion extends AbstractRegion {
 
     private final BasicBlock block;
-    
-    private boolean breakTarget;
 
     BasicBlockRegion(BasicBlock block) {
         if (block == null) {
@@ -43,10 +41,6 @@ public class BasicBlockRegion implements Region {
 
     public RegionType getType() {
         return RegionType.BASIC_BLOCK;
-    }
-
-    public String getTypeName() {
-        return getType().toString();
     }
 
     public BasicBlock getBasicBlock() {
@@ -74,27 +68,7 @@ public class BasicBlockRegion implements Region {
         return new RegionName(block);
     }
 
-    public Collection<Region> getBreakRegions() {
-        return Collections.emptySet();
-    }
-
-    public void addBreakTargetRegion(Collection<Region> regions) {
-    }
-
-    public boolean isBreakTarget() {
-        return breakTarget;
-    }
-    
-    public void setBreakTarget(boolean breakTarget) {
-        this.breakTarget = breakTarget;
-    }
-
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {
         throw new ABCDException("Cannot reduce a basic block region");
-    }
-
-    @Override
-    public String toString() {
-        return getName().toString();
     }
 }

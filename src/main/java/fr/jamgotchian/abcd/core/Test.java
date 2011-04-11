@@ -323,7 +323,7 @@ public class Test {
     public void testFinallyWithBreak2() {
         int v = 1;
         try {
-          while (true) {
+            while (true) {
                 a();
                 if(v == 1) {
                     try {
@@ -514,6 +514,19 @@ public class Test {
         }
     }
 
+    public void testWhileTrue(int a) {
+        System.out.println("a");
+        while (true) {
+            System.out.println("b");
+            if (a == 1) {
+                System.out.println("c");
+                break;
+            }
+            System.out.println("d");
+        }
+        System.out.println("e");
+    }
+    
     public void testBreak1() {
         for (int i = 0; i < 3; i++) {
             b();
@@ -655,19 +668,81 @@ public class Test {
     }
 
     public void testSwitchOneReturn(int a) {
-        switch (a) {
-            case 0:
-                System.out.println("a");
-                return;
-            case 1:
-                System.out.println("b");
-                break;
-                
-            default:
-                System.out.println("c");
-                break;
+        for (int i = 0; i < 13; i++) {
+            switch (a) {
+                case 0:
+                    System.out.println("a");
+                    return;
+                case 1:
+                    System.out.println("b");
+                    break;
+
+                default:
+                    System.out.println("c");
+                    break;
+            }
+            System.out.println("d");
         }
-        System.out.println("d");
+        System.out.println("e");
+    }
+
+    public void testSwitchOneReturn2(int a) {
+        for (int i = 0; i < 13; i++) {
+            switch (a) {
+                case 0:
+                    System.out.println("a");
+                    return;
+                case 1:
+                    System.out.println("b");
+                    break;
+
+                default:
+                    System.out.println("c");
+                    break;
+            }
+        }
+        System.out.println("e");
+    }
+
+    public void testSwitchAllReturnExceptOne(int a) {
+        for (int i = 0; i < 13; i++) {
+            switch (a) {
+                case 0:
+                    System.out.println("a");
+                    return;
+                case 1:
+                    System.out.println("b");
+                    break;
+
+                default:
+                    System.out.println("c");
+                    return;
+            }
+            System.out.println("d");
+        }
+        System.out.println("e");
+    }
+
+    public void testSwitchIfReturn(int a) {
+        for (int i = 0; i < 13; i++) {
+            switch (a) {
+                case 0:
+                    if (a == 3) {
+                        System.out.println("a");
+                        return;
+                    }
+                    break;
+                case 1:
+                    System.out.println("b");
+                    break;
+
+                default:
+                    System.out.println("c");
+                    break;
+            }
+            System.out.println("d");
+        }
+        System.out.println("e");
     }
 
     public void testSwitchThrow(int a) {
@@ -740,9 +815,11 @@ public class Test {
             case 4:
                 System.out.println("e");
                 break;
-
-            default:
+            case 5:
                 System.out.println("f");
+                return;
+            default:
+                System.out.println("g");
                 break;
         }
     }

@@ -14,44 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package fr.jamgotchian.abcd.core.region;
-
-import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
-import java.util.Collection;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Region {
-
-    RegionName getName();
-
-    RegionType getType();
-
-    String getTypeName();
-
-    Region getEntryRegion();
-
-    Region getExitRegion();
-
-    Collection<Region> getChildRegions();
-
-    Collection<Edge> getChildEdges();
-
-    <T> Collection<T> getChildRegions(Class<T> clazz);
-
-    <T> void addChildRegions(Collection<T> regions, Class<T> clazz);
-
-    void setBreakTargetStatus(BreakTargetStatus breakTargetStatus);
-
-    BreakTargetStatus getBreakTargetStatus();
-
-    int getBreakLoopID();
-
-    void setBreakLoopID(int breakLoopID);
-
-    void collapse(MutableDirectedGraph<Region, Edge> graph);
+public enum BreakTargetStatus {
+    NONE, /* not a break target */
+    UNASSIGNED, /* unassigned to a loop */
+    ASSIGNED /* assigned to a loop */
 }

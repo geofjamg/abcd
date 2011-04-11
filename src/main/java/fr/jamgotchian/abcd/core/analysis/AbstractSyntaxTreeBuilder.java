@@ -19,10 +19,12 @@ package fr.jamgotchian.abcd.core.analysis;
 import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryOperator;
+import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.BreakStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.CommentStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.DoWhileStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
@@ -197,6 +199,8 @@ public class AbstractSyntaxTreeBuilder {
                 Statement lastStmt = thenBlockStmt.getLast();
                 if (!(lastStmt instanceof ReturnStatement)
                         && !(lastStmt instanceof ThrowStatement)) {
+//                    thenBlockStmt.add(new CommentStatement("Loop ID : " 
+//                            + ifBreak.getBreakTargetRegion().getBreakLoopID()));
                     thenBlockStmt.add(new BreakStatement());
                 }
                 Expression condition = jumpIfStmt.getCondition();
@@ -214,6 +218,7 @@ public class AbstractSyntaxTreeBuilder {
 
                 buildAST(loopRegion.getLoopRegion(), bodyBlockStmt);
 
+//                blockStmt.add(new CommentStatement("Loop ID : " + loopRegion.getLoopID()));
                 switch (loopRegion.getLoopType()) {
                     case WHILE: {
                         IfStatement ifStmt = (IfStatement) bodyBlockStmt.getFirst();
@@ -229,7 +234,11 @@ public class AbstractSyntaxTreeBuilder {
                         Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
                         blockStmt.add(new DoWhileStatement(bodyBlockStmt, condition));
                         break;
-
+                    
+                    case INFINITE:
+                        blockStmt.add(new WhileStatement(new Constant(Boolean.TRUE), bodyBlockStmt));                        
+                        break;
+                        
                     default:
                         throw new AssertionError();
                 }
