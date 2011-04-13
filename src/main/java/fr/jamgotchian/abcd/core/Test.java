@@ -236,6 +236,10 @@ public class Test {
         return (a > 1 ? (z = 1) + 2  + new int[2].length : z++);
     }
 
+    public int testTernaryOperatorLogical(int a, float b, boolean c) {
+        return (a > 1 && b == 3 ? 1 : 3);
+    }
+
     public void testIfElseWithTryCatch(int z) {
         if (z == 1) {
             System.out.println("a");
@@ -1101,10 +1105,21 @@ public class Test {
     void testMultiArrayInitializer() {
         int[][] a = { {2, 2}, {2, 2} };
     }
+ 
+    int function(float e) {
+        return (int)e +1;
+    }
+    
+    void testVoidMethodCall(float e) {
+        System.out.println("a");
+        function(e);
+        System.out.println("b");
+    }
     
 //    public static void main(String[] args) {
 //        new Test().testBreakLabel2();
 //    }
+    
 }
 
 class TOTO {

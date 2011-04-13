@@ -38,11 +38,14 @@ public class BasicBlockAnalysisDataImpl implements BasicBlockAnalysisData {
 
     private ExpressionStack inputStack;
 
-    private int stackEffect;
+    private int stackConsumption;
+    
+    private int stackProduction;
 
     public BasicBlockAnalysisDataImpl() {
         this.statements = new ArrayList<Statement>();
-        stackEffect = 0;
+        stackConsumption = 0;
+        stackProduction = 0;
     }
 
     public int getStatementCount() {
@@ -92,12 +95,19 @@ public class BasicBlockAnalysisDataImpl implements BasicBlockAnalysisData {
         inputStack = stack;
     }
 
-    public int getStackEffect() {
-        return stackEffect;
+    public int getStackConsumption() {
+        return stackConsumption;
     }
 
-    public void setStackEffect(int stackEffect) {
-        this.stackEffect = stackEffect;
+    public void setStackConsumption(int stackConsumption) {
+        this.stackConsumption = stackConsumption;
     }
 
+    public int getStackProduction() {
+        return stackProduction;
+    }
+
+    public void setStackProduction(int stackProduction) {
+        this.stackProduction = stackProduction;
+    }
 }

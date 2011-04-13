@@ -18,16 +18,15 @@
 package fr.jamgotchian.abcd.core.analysis;
 
 import fr.jamgotchian.abcd.core.ast.expr.Constant;
+import fr.jamgotchian.abcd.core.ast.expr.Expression;
+import fr.jamgotchian.abcd.core.ast.stmt.Statement;
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,19 +37,104 @@ import java.util.logging.Logger;
 public class ControlFlowGraphStmtAnalysis {
 
     private static final Logger logger = Logger.getLogger(ControlFlowGraphStmtAnalysis.class.getName());
-    
+
     static {
         logger.setLevel(Level.FINE);
     }
-    
+
+    private static class StackEffectAnalyser extends BasicBlockStmtAnalysis {
+
+        private static final Logger logger = Logger.getLogger(DummyExpressionStack.class.getName());
+
+        static {
+            logger.setLevel(Level.FINE);
+        }
+
+        private static class DummyExpressionStack implements ExpressionStack {
+
+            private static final Expression DUMMY_EXPR = new Constant(null);
+
+            private int stackSize = 0;
+
+            private int consumption = 0;
+
+            public int getProduction() {
+                return Math.max(0, stackSize);
+            }
+
+            public int getConsumption() {
+                return consumption;
+            }
+
+            public void push(Expression expr) {
+                stackSize++;
+            }
+
+            public Expression pop() {
+                stackSize--;
+                if (stackSize < 0) {
+                    consumption++;
+                }
+                return DUMMY_EXPR;
+            }
+
+            public Expression peek() {
+                return DUMMY_EXPR;
+            }
+
+            public int size() {
+                return stackSize;
+            }
+
+            public List<Expression> toList() {
+                throw new ABCDException("Not implemented");
+            }
+
+            @Override
+            public ExpressionStack clone() {
+                throw new ABCDException("Not implemented");
+            }
+
+        }
+
+        public StackEffectAnalyser() {
+            super(new DummyExpressionStack());
+        }
+
+        @Override
+        public void before(BasicBlock block) {
+            super.before(block);
+            Iterator<Edge> itE = block.getGraph().getIncomingEdgesOf(block).iterator();
+            if (itE.hasNext() && itE.next().isExceptional()) {
+                pushExpr(new Constant("EXCEPTION"), block);
+            }
+        }
+
+        @Override
+        public void after(BasicBlock block) {
+            super.after(block);
+            DummyExpressionStack dummyStack = (DummyExpressionStack) stack;
+            logger.log(Level.FINEST, "Stack effect of {0}: +{1} / -{2}",
+                    new Object[] {block, dummyStack.getProduction() , dummyStack.getConsumption()});
+            BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) block.getData();
+            data.setStackConsumption((dummyStack).getConsumption());
+            data.setStackProduction((dummyStack).getProduction());
+        }
+
+        @Override
+        protected void addStmt(BasicBlock block, Statement stmt) {
+            // DO NOTHING
+        }
+    }
+
     private ControlFlowGraph graph;
-    
+
     private void processBlock(BasicBlock block, ExpressionStack inputStack) {
 
         logger.log(Level.FINER, "------ Process block {0} ------", block);
 
         BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) block.getData();
-        
+
         data.setInputStack(inputStack.clone());
 
         ExpressionStack outputStack = inputStack.clone();
@@ -73,63 +157,35 @@ public class ControlFlowGraphStmtAnalysis {
             logger.log(Level.FINEST, "<<< Output stack : {0}", data.getOutputStack());
         }
     }
-    
+
     public void analyse(ControlFlowGraph graph) {
 
         this.graph = graph;
-  
+
         for (BasicBlock block : graph.getBasicBlocks()) {
             block.setData(new BasicBlockAnalysisDataImpl());
-        }
-        
-        Map<BasicBlock, Integer> stackSizes = new StackSizeAnalysis(graph).analyse();
-        for (Map.Entry<BasicBlock, Integer> entry : stackSizes.entrySet()) {
-            BasicBlock block = entry.getKey();
-            int stackSize = entry.getValue();
-            for (Edge e : graph.getOutgoingEdgesOf(block)) {
-                e.setStackSize(stackSize);
-            }
-        }
-
-        for (Edge edge : graph.getEdges()) {
-            logger.log(Level.FINEST, "Stack size at {0} : {1}",
-                    new Object[] {graph.toString(edge), edge.getStackSize()});
-        }
-
-        Map<BasicBlock, Set<BasicBlock>> dependances = new HashMap<BasicBlock, Set<BasicBlock>>();
-        for (BasicBlock block : graph.getBasicBlocks()) {
-            dependances.put(block, new HashSet<BasicBlock>());
-        }
-
-        for (Edge edge : graph.getEdges()) {
-            if (edge.getStackSize() > 0) {
-                BasicBlock source = graph.getEdgeSource(edge);
-                BasicBlock target = graph.getEdgeTarget(edge);
-                dependances.get(target).add(source);
-            }
-        }
-        
-        for (Map.Entry<BasicBlock, Set<BasicBlock>> entry : dependances.entrySet()) {
-            logger.log(Level.FINEST, "Stack dependency of {0} : {1}", 
-                    new Object[] {entry.getKey(), entry.getValue()});
+            block.visit(new StackEffectAnalyser());
         }
 
         List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(graph.getBasicBlocks());
         while (blocksToProcess.size() > 0) {
             for (Iterator<BasicBlock> it = blocksToProcess.iterator(); it.hasNext();) {
                 BasicBlock block = it.next();
-                
+                BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) block.getData();
+
                 boolean isProcessable = true;
                 List<ExpressionStack> stacks = new ArrayList<ExpressionStack>();
-                for (BasicBlock child : dependances.get(block)) {
-                    if (blocksToProcess.contains(child)) {
-                        isProcessable = false;
-                        break;
-                    } else {
-                        stacks.add(((BasicBlockAnalysisDataImpl )child.getData()).getOutputStack().clone());
+                if (data.getStackConsumption() > 0 || data.getStackProduction() > 0) {
+                    for (BasicBlock pred : graph.getPredecessorsOf(block)) {
+                        if (blocksToProcess.contains(pred)) {
+                            isProcessable = false;
+                            break;
+                        } else {
+                            stacks.add(((BasicBlockAnalysisDataImpl )pred.getData()).getOutputStack().clone());
+                        }
                     }
                 }
-                
+
                 if (isProcessable) {
                     ExpressionStack inputStack = null;
                     if (stacks.isEmpty()) {
