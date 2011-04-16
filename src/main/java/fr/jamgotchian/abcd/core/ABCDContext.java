@@ -41,6 +41,7 @@ import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
+import fr.jamgotchian.abcd.core.util.Exceptions;
 import fr.jamgotchian.abcd.core.util.SimplestFormatter;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -214,7 +215,9 @@ public class ABCDContext {
             _class.addMethod(method);
 
             try {
+                logger.log(Level.FINE, "");
                 logger.log(Level.FINE, "********** Decompile method {0} **********", methodSignature);
+                logger.log(Level.FINE, "");
 
                 logger.log(Level.FINE, "////////// Build Control flow graph of {0} //////////", methodSignature);
                 ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
@@ -243,8 +246,12 @@ public class ABCDContext {
                 logger.log(Level.SEVERE, exc.toString(), exc);
 
                 method.getBody().clear();
-                String bc = OutputUtil.toText(mn.instructions);
-                method.getBody().add(new CommentStatement("\n" + bc));
+                StringBuilder msg = new StringBuilder();
+                msg.append(Exceptions.printStackTrace(exc))
+                   .append("\n")
+                   .append(OutputUtil.toText(mn.instructions));
+                
+                method.getBody().add(new CommentStatement("\n" + msg.toString()));
                 method.getBody().add(Statements.createThrowStmt(InternalError.class, "Decompilation failed"));
             }
         }
@@ -382,7 +389,11 @@ public class ABCDContext {
                 writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_PDT.dot");
                 graph.getDominatorInfo().getPostDominatorsTree().writeDOT("PDT", writer);
                 writer.close();
-            } catch (ABCDException exc) {
+            
+                if (rootRegions != null && rootRegions.size() > 1) {
+                    throw new ABCDException("Fail to recognize structure");
+                }
+            } catch (Exception exc) {
                 logger.log(Level.SEVERE, exc.toString(), exc);
             }
         }
