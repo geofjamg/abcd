@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.analysis;
+package fr.jamgotchian.abcd.core.ast.util;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import java.util.List;
@@ -36,5 +36,7 @@ public interface ExpressionStack {
 
     List<Expression> toList();
     
+    Iterable<Expression> toIterable();
+
     ExpressionStack clone();
 }

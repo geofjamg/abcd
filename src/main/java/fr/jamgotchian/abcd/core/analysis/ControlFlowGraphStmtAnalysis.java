@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.analysis;
 
+import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
@@ -77,6 +78,10 @@ public class ControlFlowGraphStmtAnalysis {
         }
 
         public List<Expression> toList() {
+            throw new ABCDException("Not implemented");
+        }
+
+        public Iterable<Expression> toIterable() {
             throw new ABCDException("Not implemented");
         }
 

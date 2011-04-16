@@ -53,6 +53,7 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.output.OutputUtil;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -134,8 +135,8 @@ public class ConditionalExpressionRefactorer implements StatementVisitor<Object,
             if (choiceExpr.getChoices().size() == 1) {
                 Expression condExpr = choiceExpr.getChoices().iterator().next();
                 logger.log(Level.FINEST, "Refactor choice : {0} -> {1}",
-                        new Object[] {ExpressionStackImpl.toString(oldChoiceExpr),
-                                      ExpressionStackImpl.toString(condExpr)});
+                        new Object[] {OutputUtil.toText(oldChoiceExpr),
+                                      OutputUtil.toText(condExpr)});
                 return condExpr;
             } else {
                 logger.log(Level.SEVERE, "Conditional expression refactoring error");

@@ -20,12 +20,14 @@ package fr.jamgotchian.abcd.core.output;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
+import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphImpl;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.objectweb.asm.tree.InsnList;
@@ -91,10 +93,10 @@ public class OutputUtil {
         return writer.toString();
     }
 
-    public static String toText(Expression expr) {
+    public static String toString(Expression expr, CodeWriterFactory factory) {
         StringWriter writer = new StringWriter();
         try {
-            JavaExpressionWriter exprWriter = new JavaExpressionWriter(new TextCodeWriter(writer));
+            JavaExpressionWriter exprWriter = new JavaExpressionWriter(factory.create(writer));
             expr.accept(exprWriter, null);
         } finally {
             try {
@@ -106,11 +108,41 @@ public class OutputUtil {
         return writer.toString();
     }
 
+    public static String toText(Expression expr) {
+        return toString(expr, new TextCodeWriterFactory());
+    }
+
     public static String toHTML(Expression expr) {
+        return toString(expr, new HTMLCodeWriterFactory());
+    }
+
+    public static String toString(Iterable<Expression> exprs, CodeWriterFactory factory) {
+        StringBuilder builder = new StringBuilder("[");
+        Iterator<Expression> it = exprs.iterator();
+        while (it.hasNext()) {
+            Expression expr = it.next();
+            builder.append(OutputUtil.toString(expr, factory));
+            if (it.hasNext()) {
+                builder.append(", ");
+            }
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+
+    public static String toText2(Iterable<Expression> exprs) {
+        return toString(exprs, new TextCodeWriterFactory());
+    }
+
+    public static String toHTML2(Iterable<Expression> exprs) {
+        return toString(exprs, new HTMLCodeWriterFactory());
+    }
+
+    public static String toString(Statement stmt, CodeWriterFactory factory) {
         StringWriter writer = new StringWriter();
         try {
-            JavaExpressionWriter exprWriter = new JavaExpressionWriter(new HTMLCodeWriter(writer));
-            expr.accept(exprWriter, null);
+            JavaStatementWriter stmtWriter = new JavaStatementWriter(factory.create(writer));
+            stmt.accept(stmtWriter, null);
         } finally {
             try {
                 writer.close();
@@ -122,25 +154,33 @@ public class OutputUtil {
     }
 
     public static String toText(Statement stmt) {
-        StringWriter writer = new StringWriter();
-        try {
-            JavaStatementWriter stmtWriter = new JavaStatementWriter(new TextCodeWriter(writer));
-            stmt.accept(stmtWriter, null);
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
-            }
-        }
-        return writer.toString();
+        return toString(stmt, new TextCodeWriterFactory());
     }
 
     public static String toHTML(Statement stmt) {
+        return toString(stmt, new HTMLCodeWriterFactory());
+    }
+
+    public static String toString(Iterable<Statement> stmts,
+                                  ExpressionStack inputStack,
+                                  ExpressionStack outputStack,
+                                  CodeWriterFactory factory) {
         StringWriter writer = new StringWriter();
         try {
-            JavaStatementWriter stmtWriter = new JavaStatementWriter(new HTMLCodeWriter(writer));
-            stmt.accept(stmtWriter, null);
+            CodeWriter codeWriter = factory.create(writer);
+            JavaStatementWriter stmtWriter = new JavaStatementWriter(codeWriter);
+            String infoBefore = null;
+            if (inputStack != null && inputStack.size() > 0) {
+                infoBefore = toString(inputStack.toIterable(), factory);
+            }
+            codeWriter.before(infoBefore);
+            BlockStatement blockStmt = new BlockStatement(stmts);
+            blockStmt.accept(stmtWriter, null);
+            String infoAfter = null;
+            if (outputStack != null && outputStack.size() > 0) {
+                infoAfter = toString(outputStack.toIterable(), factory);
+            }
+            codeWriter.after(infoAfter);
         } finally {
             try {
                 writer.close();
@@ -151,54 +191,21 @@ public class OutputUtil {
         return writer.toString();
     }
 
-    public static String toHTML(Iterable<Statement> stmts) {
-        StringWriter writer = new StringWriter();
-        try {
-            JavaStatementWriter stmtWriter = new JavaStatementWriter(new HTMLCodeWriter(writer));
-            BlockStatement blockStmt = new BlockStatement(stmts);
-            blockStmt.accept(stmtWriter, null);
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
-            }
-        }
-        return writer.toString();
+    public static String toText(Iterable<Statement> stmts,
+                                ExpressionStack inputStack,
+                                ExpressionStack outputStack) {
+        return toString(stmts, inputStack, outputStack, new TextCodeWriterFactory());
     }
-    
-    public static String toDOTHTMLLike(Iterable<Statement> stmts) {
-        StringWriter writer = new StringWriter();
-        try {
-            CodeWriter codeWriter = new DOTHTMLLikeCodeWriter(writer);
-            JavaStatementWriter stmtWriter = new JavaStatementWriter(codeWriter);
-            codeWriter.before();
-            BlockStatement blockStmt = new BlockStatement(stmts);
-            blockStmt.accept(stmtWriter, null);
-            codeWriter.after();
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
-            }
-        }
-        return writer.toString();
+
+    public static String toHTML(Iterable<Statement> stmts,
+                                ExpressionStack inputStack,
+                                ExpressionStack outputStack) {
+        return toString(stmts, inputStack, outputStack, new HTMLCodeWriterFactory());
     }
-    
-    public static String toText(Iterable<Statement> stmts) {
-        StringWriter writer = new StringWriter();
-        try {
-            JavaStatementWriter stmtWriter = new JavaStatementWriter(new TextCodeWriter(writer));
-            BlockStatement blockStmt = new BlockStatement(stmts);
-            blockStmt.accept(stmtWriter, null);
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
-            }
-        }
-        return writer.toString();
+
+    public static String toDOTHTMLLike(Iterable<Statement> stmts,
+                                       ExpressionStack inputStack,
+                                       ExpressionStack outputStack) {
+        return toString(stmts, inputStack, outputStack, new DOTHTMLLikeCodeWriterFactory());
     }
 }

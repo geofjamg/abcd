@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.analysis;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.ChoiceExpression;
+import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionEqualityChecker;
 import java.util.ArrayList;
 import java.util.Arrays;

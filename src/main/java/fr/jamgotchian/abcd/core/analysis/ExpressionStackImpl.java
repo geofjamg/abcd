@@ -17,13 +17,11 @@
 
 package fr.jamgotchian.abcd.core.analysis;
 
+import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +35,7 @@ class ExpressionStackImpl implements ExpressionStack {
     private static final Logger logger = Logger.getLogger(ExpressionStackImpl.class.getName());
 
     static {
-        logger.setLevel(Level.FINER);
+        logger.setLevel(Level.FINEST);
     }
 
     private final ArrayDeque<Expression> stack;
@@ -58,7 +56,8 @@ class ExpressionStackImpl implements ExpressionStack {
             throw new IllegalArgumentException("expr == null");
         }
         stack.push(expr);
-        logger.log(Level.FINEST, "Push {0} -> {1}", new Object[] {toString(expr), toString(stack)});
+        logger.log(Level.FINEST, "Push {0} -> {1}", 
+                new Object[] {OutputUtil.toText(expr), OutputUtil.toText2(stack)});
     }
 
     public Expression pop() {
@@ -66,7 +65,8 @@ class ExpressionStackImpl implements ExpressionStack {
             throw new IllegalStateException("operand stack is empty");
         }
         Expression expr = stack.pop();
-        logger.log(Level.FINEST, "Pop {0} -> {1}", new Object[] {toString(expr), toString(stack)});
+        logger.log(Level.FINEST, "Pop {0} -> {1}", 
+                new Object[] {OutputUtil.toText(expr), OutputUtil.toText2(stack)});
         return expr;
     }
 
@@ -85,32 +85,12 @@ class ExpressionStackImpl implements ExpressionStack {
         return new ArrayList<Expression>(stack);
     }
 
+    public Iterable<Expression> toIterable() {
+        return stack;
+    }
+
     @Override
     public ExpressionStack clone() {
         return new ExpressionStackImpl(this);
     }
-
-    public static String toString(Expression expr) {
-        return toString(Collections.singleton(expr));
-    }
-
-    public static String toString(Collection<Expression> exprs) {
-        StringBuilder builder = new StringBuilder("[");
-        Iterator<Expression> it = exprs.iterator();
-        while (it.hasNext()) {
-            Expression expr = it.next();
-            builder.append(OutputUtil.toText(expr));
-            if (it.hasNext()) {
-                builder.append(", ");
-            }
-        }
-        builder.append("]");
-        return builder.toString();
-    }
-
-    @Override
-    public String toString() {
-        return toString(stack);
-    }
-
 }

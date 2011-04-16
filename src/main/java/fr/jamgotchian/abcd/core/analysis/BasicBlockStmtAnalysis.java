@@ -52,6 +52,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
+import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.*;

@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.output;
 
+import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.common.Label;
 import java.io.IOException;
 import java.io.Writer;
@@ -60,10 +61,10 @@ public abstract class CodeWriter {
         indentLevel++;
     }
 
-    public void before() {
+    public void before(String info) {
     }
 
-    public void after() {
+    public void after(String info) {
     }
 
     protected abstract void writeEol() throws IOException;

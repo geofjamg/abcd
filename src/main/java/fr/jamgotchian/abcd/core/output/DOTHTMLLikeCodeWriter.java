@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.output;
 
+import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.logging.Level;
@@ -31,9 +32,14 @@ public class DOTHTMLLikeCodeWriter extends HTMLCodeWriter {
     }
 
     @Override
-    public void before() {
+    public void before(String info) {
         try {
             writer.write("<table border=\"0\">");
+            if (info != null && info.length() > 0) {
+                writer.write("<tr><td align=\"left\" balign=\"left\" bgcolor=\"orange\">");
+                writer.write(info);
+                writer.write("</td></tr>");
+            }
             writer.write("<tr><td align=\"left\" balign=\"left\">");
         } catch(IOException exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
@@ -41,9 +47,14 @@ public class DOTHTMLLikeCodeWriter extends HTMLCodeWriter {
     }
 
     @Override
-    public void after() {
+    public void after(String info) {
         try {
             writer.write("</td></tr>");
+            if (info != null && info.length() > 0) {
+                writer.write("<tr><td align=\"left\" balign=\"left\" bgcolor=\"orange\">");
+                writer.write(info);
+                writer.write("</td></tr>");
+            }
             writer.write("</table>");
         } catch(IOException exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);

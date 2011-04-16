@@ -119,7 +119,9 @@ public class DOTUtil {
             writer.append("<font color=\"black\">").append(block.getType().toString())
                   .append("</font>");
         } else {
-            writer.append(OutputUtil.toDOTHTMLLike(data.getStatements()));
+            writer.append(OutputUtil.toDOTHTMLLike(data.getStatements(),
+                                                   data.getInputStack(),                               
+                                                   data.getOutputStack()));
         }
         writer.append(" >];\n");
     }

@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.analysis;
 
+import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
