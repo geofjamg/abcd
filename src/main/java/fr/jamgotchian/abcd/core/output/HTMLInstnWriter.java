@@ -35,24 +35,28 @@ public class HTMLInstnWriter extends AbstractInstnWriter {
         super(writer);
     }
 
+    @Override
+    void writeSpace() throws IOException {
+        writer.write("&nbsp ");
+    }
+    
     void writeIndex(int index) throws IOException {
-        StringBuilder builder = new StringBuilder(INDEX_PADDING);
         String indexStr = "";
         if (index != -1) {
             indexStr = String.format("%d:", index);
         }
-        builder.append("<font color=\"gray\">");
-        builder.append(indexStr);
+        writer.write("<font color=\"gray\">");
+        writer.write(indexStr);
         for(int i = indexStr.length(); i < INDEX_PADDING; i++) {
-            builder.append("&nbsp ");
+            writeSpace();
         }
-        builder.append("</font>");
-        writer.write(builder.toString());
+        writer.write("</font>");
     }
 
     void writeIndent(int count) throws IOException {
         for (int i = 0; i < count; i++) {
-            writer.write("&nbsp &nbsp ");
+            writeSpace();
+            writeSpace();
         }
     }
 
@@ -69,15 +73,15 @@ public class HTMLInstnWriter extends AbstractInstnWriter {
         writer.write("</font>");
     }
 
-    void writeEol() throws IOException {
-        writer.append("<br>");
+    public void writeEol() throws IOException {
+        writer.append("<br/>");
     }
 
     void writeLt() throws IOException {
         writer.append("&lt;");
     }
 
-    void writegt() throws IOException {
+    void writeGt() throws IOException {
         writer.append("&gt;");
     }
 
@@ -87,23 +91,19 @@ public class HTMLInstnWriter extends AbstractInstnWriter {
         writer.write("</b>");
     }
 
-    public void writeProperty(String name, Color color) throws IOException {
+    public void write(String name, Color color) throws IOException {
         writer.write("<font color=\"");
         writer.write(Colors.toString(color));
         writer.write("\">");
-        writer.write("<center>");
         writer.write(name);
-        writer.write("</center>");
         writer.write("</font>");
     }
 
     public void begin() throws IOException {
         writer.write("<html><body>");
-//        writer.write("<font size=\"3\" color=\"black\">");
     }
 
     public void end() throws IOException {
-//        writer.write("</font>");
         writer.write("</body></html>");
     }
 

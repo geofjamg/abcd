@@ -159,7 +159,7 @@ public class Test {
         System.out.println("b");
     }
     
-    void testOuWithAssign(int a, int b) {
+    void testOrWithAssign(int a, int b) {
         int c = -1;
         if (a == 1 || (c = a) == 2) {
             System.out.println("a");

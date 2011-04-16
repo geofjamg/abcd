@@ -62,7 +62,7 @@ public class TextInstnWriter extends AbstractInstnWriter {
         writer.write(Integer.toString(label));
     }
 
-    void writeEol() throws IOException {
+    public void writeEol() throws IOException {
         writer.append("\n");
     }
 
@@ -70,7 +70,7 @@ public class TextInstnWriter extends AbstractInstnWriter {
         writer.append("<;");
     }
 
-    void writegt() throws IOException {
+    void writeGt() throws IOException {
         writer.append(">");
     }
     
@@ -78,7 +78,7 @@ public class TextInstnWriter extends AbstractInstnWriter {
         writer.append("line");
     }
 
-    public void writeProperty(String name, Color color) throws IOException {
+    public void write(String name, Color color) throws IOException {
         writer.write(name);
         writeEol();
     }

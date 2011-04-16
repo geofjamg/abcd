@@ -158,19 +158,21 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
                 break;
 
             case GE:
-                writer.write(">=");
+                writer.writeGt();
+                writer.write("=");
                 break;
 
             case GT:
-                writer.write(">");
+                writer.writeGt();
                 break;
 
             case LT:
-                writer.write("<");
+                writer.writeLt();
                 break;
 
             case LE:
-                writer.write("<=");
+                writer.writeLt();
+                writer.write("=");
                 break;
 
             case INSTANCE_OF:
@@ -178,7 +180,8 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
                 break;
 
             case AND:
-                writer.write("&&");
+                writer.writeAmpersand();
+                writer.writeAmpersand();
                 break;
 
             case OR:
@@ -194,11 +197,14 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
                 break;
 
             case SHIFT_RIGHT:
-                writer.write(">>");
+                writer.writeGt();
+                writer.writeGt();
                 break;
 
             case LOGICAL_SHIFT_RIGHT:
-                writer.write(">>>");
+                writer.writeGt();
+                writer.writeGt();
+                writer.writeGt();
                 break;
 
             default:

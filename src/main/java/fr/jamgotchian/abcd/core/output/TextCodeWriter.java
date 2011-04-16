@@ -49,4 +49,29 @@ public class TextCodeWriter extends CodeWriter {
         }
         return this;
     }
+    
+    public void writeLt() {
+        try {
+            writer.append("<");
+        } catch(IOException exc) {
+            logger.log(Level.SEVERE, exc.toString(), exc);
+        }
+
+    }
+
+    public void writeGt() {
+        try {
+            writer.append("<");
+        } catch(IOException exc) {
+            logger.log(Level.SEVERE, exc.toString(), exc);
+        }
+    }
+
+    public void writeAmpersand() {
+        try {
+            writer.append("&");
+        } catch(IOException exc) {
+            logger.log(Level.SEVERE, exc.toString(), exc);
+        }
+    }    
 }

@@ -18,10 +18,12 @@
 package fr.jamgotchian.abcd.core.analysis;
 
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.VertexToString;
+import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.RegionType;
@@ -43,8 +45,34 @@ public class DOTUtil {
             return vertex.toString();
         }
     }
-        
-    private static void writeBlock(BasicBlock block, Writer writer) throws IOException {
+
+    public enum BasicBlockWritingMode {
+        INSTN_RANGE,
+        BYTECODE,
+        STATEMENTS
+    }
+
+    private static void writeBasicBlock(BasicBlock block, Writer writer,
+                                        BasicBlockWritingMode mode) throws IOException {
+        switch (mode) {
+            case INSTN_RANGE:
+                writeBasicBlockInstnRange(block, writer);
+                break;
+
+            case BYTECODE:
+                writeBasicBlockBytecode(block, writer);
+                break;
+
+            case STATEMENTS:
+                writeBasicBlockStatements(block, writer);
+                break;
+
+            default:
+                throw new InternalError();
+        }
+    }
+
+    private static void writeBasicBlockInstnRange(BasicBlock block, Writer writer) throws IOException {
         writer.append("\"").append(block.toString()).append("\" [");
         if (block.getType() != null) {
             switch (block.getType()) {
@@ -75,7 +103,28 @@ public class DOTUtil {
         writer.append("];\n");
     }
 
-    private static <V, E> void writeEdge(DirectedGraph<V, Edge> graph, Edge edge, 
+    private static void writeBasicBlockBytecode(BasicBlock block, Writer writer) throws IOException {
+        writer.append("\"").append(block.toString())
+              .append("\" [shape=box, color=black, label=< ")
+              .append(OutputUtil.toDOTHTMLLike(block))
+              .append(" >];\n");
+    }
+
+    private static void writeBasicBlockStatements(BasicBlock block, Writer writer) throws IOException {
+        BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) block.getData();
+        writer.append("\"").append(block.toString())
+              .append("\" [shape=box, color=black, label=< ");
+        if (block.getType() == BasicBlockType.ENTRY
+                || block.getType() == BasicBlockType.EXIT) {
+            writer.append("<font color=\"black\">").append(block.getType().toString())
+                  .append("</font>");
+        } else {
+            writer.append(OutputUtil.toDOTHTMLLike(data.getStatements()));
+        }
+        writer.append(" >];\n");
+    }
+
+    private static <V, E> void writeEdge(DirectedGraph<V, Edge> graph, Edge edge,
             Writer writer, VertexToString<V> toStr) throws IOException {
         V source = graph.getEdgeSource(edge);
         V target = graph.getEdgeTarget(edge);
@@ -103,10 +152,11 @@ public class DOTUtil {
         }
     }
 
-    private static void writeRegion(Region region, Writer writer, int indent) throws IOException {
+    private static void writeRegion(Region region, Writer writer, BasicBlockWritingMode mode,
+                                    int indent) throws IOException {
         if (region.getType() == RegionType.BASIC_BLOCK) {
             writeIndent(writer, indent);
-            writeBlock(((BasicBlockRegion) region).getBasicBlock(), writer);
+            writeBasicBlock(((BasicBlockRegion) region).getBasicBlock(), writer, mode);
         } else {
             writeIndent(writer, indent);
             writer.append("subgraph \"cluster_").append(region.getName().toString()).append("\" {\n");
@@ -120,14 +170,15 @@ public class DOTUtil {
             writeIndent(writer, indent+1);
             writer.append("color=blue\n");
             for (Region childRegion : region.getChildRegions()) {
-                writeRegion(childRegion, writer, indent+1);
+                writeRegion(childRegion, writer, mode, indent+1);
             }
             writeIndent(writer, indent);
             writer.append("}\n");
         }
     }
 
-    public static void writeCFG(ControlFlowGraph graph, Set<Region> rootRegions, Writer writer) throws IOException {
+    public static void writeCFG(ControlFlowGraph graph, Set<Region> rootRegions,
+                                Writer writer, BasicBlockWritingMode mode) throws IOException {
         writer.append("digraph CFG {\n");
         VertexToString<BasicBlock> toStr = new DefaultVertexToString<BasicBlock>();
         for (Edge edge : graph.getEdges()) {
@@ -135,23 +186,23 @@ public class DOTUtil {
         }
         if (rootRegions == null) {
             for (BasicBlock block : graph.getBasicBlocks()) {
-                writeBlock(block, writer);
+                writeBasicBlock(block, writer, mode);
             }
         } else {
             for (Region rootRegion : rootRegions) {
-                writeRegion(rootRegion, writer, 1);
+                writeRegion(rootRegion, writer, mode, 1);
             }
         }
         writer.append("}");
     }
-    
-    public static <V> void writeGraph(DirectedGraph<V, Edge> graph, String name, 
-                                      Writer writer, VertexToString<V> toStr) 
+
+    public static <V> void writeGraph(DirectedGraph<V, Edge> graph, String name,
+                                      Writer writer, VertexToString<V> toStr)
             throws IOException {
         writer.append("digraph ").append(name).append(" {\n");
         for (Edge edge : graph.getEdges()) {
             writeEdge(graph, edge, writer, toStr);
-        }        
+        }
         writer.append("}");
     }
 }

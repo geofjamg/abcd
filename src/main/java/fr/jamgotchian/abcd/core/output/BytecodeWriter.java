@@ -20,6 +20,8 @@ package fr.jamgotchian.abcd.core.output;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockVisitor;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
+import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,17 +51,29 @@ public class BytecodeWriter implements BasicBlockVisitor {
         this.writer = writer;
     }
 
+    private void writeEol(BasicBlock block, int index) throws IOException {
+        if (index < block.getRange().getLast()) {
+            writer.writeEol();
+        }
+    }
+
     public void before(BasicBlock block) {
         try {
             writer.begin();
+            if (block.getType() == BasicBlockType.ENTRY) {
+                writer.write("ENTRY", Color.BLACK);
+            } else if (block.getType() == BasicBlockType.EXIT) {
+                writer.write("EXIT", Color.BLACK);
+            }
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
-    
+
     public void visitFieldInsn(BasicBlock block, int index, FieldInsnNode node) {
         try {
             writer.writeFieldOrMethodInstn(index, node.getOpcode(), node.owner, node.name);
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
@@ -68,6 +82,7 @@ public class BytecodeWriter implements BasicBlockVisitor {
     public void visitIincInsn(BasicBlock block, int index, IincInsnNode node) {
         try {
             writer.writeIIncInstn(index, node.getOpcode(), node.var, node.incr);
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
@@ -76,6 +91,7 @@ public class BytecodeWriter implements BasicBlockVisitor {
     public void visitInsn(BasicBlock block, int index, InsnNode node) {
         try {
             writer.writeInstn(index, node.getOpcode());
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
@@ -84,6 +100,7 @@ public class BytecodeWriter implements BasicBlockVisitor {
     public void visitIntInsn(BasicBlock block, int index, IntInsnNode node) {
         try {
             writer.writeIntInstn(index, node.getOpcode(), node.operand);
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
@@ -92,6 +109,7 @@ public class BytecodeWriter implements BasicBlockVisitor {
     public void visitJumpInsn(BasicBlock block, int index, JumpInsnNode node) {
         try {
             writer.writerJumpInstn(index, node.getOpcode(), block.getGraph().getLabelManager().getLabel(node.label).getId());
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
@@ -100,6 +118,7 @@ public class BytecodeWriter implements BasicBlockVisitor {
     public void visitLabel(BasicBlock block, int index, LabelNode node) {
         try {
             writer.writeLabelInstn(index, block.getGraph().getLabelManager().getLabel(node).getId());
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
@@ -108,6 +127,7 @@ public class BytecodeWriter implements BasicBlockVisitor {
     public void visitLdcInsn(BasicBlock block, int index, LdcInsnNode node) {
         try {
             writer.writeLdcInstn(index, node.getOpcode(), node.cst);
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
@@ -122,7 +142,7 @@ public class BytecodeWriter implements BasicBlockVisitor {
             }
             writer.writeLookupSwitchInstn(index, node.getOpcode(), node.keys,
                                           block.getGraph().getLabelManager().getLabel(node.dflt).getId(), labelsIndex);
-            
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
@@ -131,6 +151,7 @@ public class BytecodeWriter implements BasicBlockVisitor {
     public void visitMethodInsn(BasicBlock block, int index, MethodInsnNode node) {
         try {
             writer.writeFieldOrMethodInstn(index, node.getOpcode(), node.owner, node.name);
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
@@ -139,6 +160,7 @@ public class BytecodeWriter implements BasicBlockVisitor {
     public void visitMultiANewArrayInsn(BasicBlock block, int index, MultiANewArrayInsnNode node) {
         try {
             writer.writeMultiANewArrayInstn(index, node.getOpcode(), node.desc, node.dims);
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
@@ -152,7 +174,8 @@ public class BytecodeWriter implements BasicBlockVisitor {
                 labelsIndex.add(block.getGraph().getLabelManager().getLabel(labelNode).getId());
             }
             writer.writeTableSwitchInstn(index, node.getOpcode(), node.min, node.max,
-                                         block.getGraph().getLabelManager().getLabel(node.dflt).getId(), labelsIndex);            
+                                         block.getGraph().getLabelManager().getLabel(node.dflt).getId(), labelsIndex);
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
@@ -160,7 +183,8 @@ public class BytecodeWriter implements BasicBlockVisitor {
 
     public void visitTypeInsnInsn(BasicBlock block, int index, TypeInsnNode node) {
         try {
-            writer.writeTypeInstn(index, node.getOpcode(), node.desc);            
+            writer.writeTypeInstn(index, node.getOpcode(), node.desc);
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
@@ -169,6 +193,7 @@ public class BytecodeWriter implements BasicBlockVisitor {
     public void visitVarInsn(BasicBlock block, int index, VarInsnNode node) {
         try {
             writer.writeVarInstn(index, node.getOpcode(), node.var);
+            writeEol(block, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }

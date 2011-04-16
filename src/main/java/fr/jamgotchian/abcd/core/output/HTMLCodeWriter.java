@@ -40,7 +40,7 @@ public class HTMLCodeWriter extends CodeWriter {
 
     @Override
     protected void writeEol() throws IOException {
-        writer.write("<br>");
+        writer.write("<br/>");
     }
 
     @Override
@@ -102,5 +102,28 @@ public class HTMLCodeWriter extends CodeWriter {
         }
         return this;
     }
+       
+    public void writeLt() {
+        try {
+            writer.append("&lt;");
+        } catch(IOException exc) {
+            logger.log(Level.SEVERE, exc.toString(), exc);
+        }
+    }
+
+    public void writeGt() {
+        try {
+            writer.append("&gt;");
+        } catch(IOException exc) {
+            logger.log(Level.SEVERE, exc.toString(), exc);
+        }
+    }
     
+    public void writeAmpersand() {
+        try {
+            writer.append("&amp;");
+        } catch(IOException exc) {
+            logger.log(Level.SEVERE, exc.toString(), exc);
+        }
+    }
 }

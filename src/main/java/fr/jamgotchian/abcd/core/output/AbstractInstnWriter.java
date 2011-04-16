@@ -45,11 +45,9 @@ public abstract class AbstractInstnWriter implements InstnWriter {
 
     abstract void writeLabel(int label) throws IOException;
 
-    abstract void writeEol() throws IOException;
-
     abstract void writeLt() throws IOException;
 
-    abstract void writegt() throws IOException;
+    abstract void writeGt() throws IOException;
 
     abstract void writeLineOpcode() throws IOException;
 
@@ -66,8 +64,7 @@ public abstract class AbstractInstnWriter implements InstnWriter {
         writer.append(scope);
         writer.append(".");
         writer.append(fieldOrMethodName);
-        writegt();
-        writeEol();
+        writeGt();
     }
 
     public void writeIIncInstn(int index, int opcode, int var, int incr) throws IOException {
@@ -78,14 +75,12 @@ public abstract class AbstractInstnWriter implements InstnWriter {
         writer.append(Integer.toString(var));
         writeSpace();
         writer.append(Integer.toString(incr));
-        writeEol();
     }
 
     public void writeInstn(int index, int opcode) throws IOException {
         writeIndex(index);
         writeIndent();
         writeOpcode(opcode);
-        writeEol();
     }
 
     public void writeIntInstn(int index, int opcode, int operand) throws IOException {
@@ -94,7 +89,6 @@ public abstract class AbstractInstnWriter implements InstnWriter {
         writeOpcode(opcode);
         writeSpace();
         writer.append(Integer.toString(operand));
-        writeEol();
     }
 
     public void writerJumpInstn(int index, int opcode, int label) throws IOException {
@@ -103,13 +97,11 @@ public abstract class AbstractInstnWriter implements InstnWriter {
         writeOpcode(opcode);
         writeSpace();
         writeLabel(label);
-        writeEol();
     }
 
     public void writeLabelInstn(int index, int label) throws IOException {
         writeIndex(index);
         writeLabel(label);
-        writeEol();
     }
 
     public void writeLdcInstn(int index, int opcode, Object cst) throws IOException {
@@ -118,7 +110,6 @@ public abstract class AbstractInstnWriter implements InstnWriter {
         writeOpcode(opcode);
         writeSpace();
         writer.append(cst.toString());
-        writeEol();
     }
 
     public void writeLookupSwitchInstn(int index, int opcode, List<Integer> keys,
@@ -143,7 +134,6 @@ public abstract class AbstractInstnWriter implements InstnWriter {
         writer.append("default:");
         writeSpace();
         writeLabel(defaultLabel);
-        writeEol();
     }
 
     public void writeMultiANewArrayInstn(int index, int opcode, String type, int dims) throws IOException {
@@ -154,7 +144,6 @@ public abstract class AbstractInstnWriter implements InstnWriter {
         writer.write(type);
         writeSpace();
         writer.write(Integer.toString(dims));
-        writeEol();
     }
 
     public void writeTableSwitchInstn(int index, int opcode, int min, int max,
@@ -181,7 +170,6 @@ public abstract class AbstractInstnWriter implements InstnWriter {
         writer.append("default:");
         writeSpace();
         writeLabel(defaultLabel);
-        writeEol();
     }
 
     public void writeTypeInstn(int index, int opcode, String type) throws IOException {
@@ -191,8 +179,7 @@ public abstract class AbstractInstnWriter implements InstnWriter {
         writeSpace();
         writeLt();
         writer.append(type);
-        writegt();
-        writeEol();
+        writeGt();
     }
 
     public void writeVarInstn(int index, int opcode, int var) throws IOException {
@@ -201,7 +188,6 @@ public abstract class AbstractInstnWriter implements InstnWriter {
         writeOpcode(opcode);
         writeSpace();
         writer.append(Integer.toString(var));
-        writeEol();
     }
 
     public void writeLineInstn(int index, int line, int startLabel) throws IOException {
@@ -212,11 +198,9 @@ public abstract class AbstractInstnWriter implements InstnWriter {
         writer.write(Integer.toString(line));
         writeSpace();
         writeLabel(startLabel);
-        writeEol();
     }
 
     public void writeFrameInstn(int index) throws IOException {
         writeIndex(index);
-        writeEol();
     }
 }

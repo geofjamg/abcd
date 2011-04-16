@@ -77,6 +77,12 @@ public class OutputUtil {
         return writer.toString();
     }
 
+    public static String toDOTHTMLLike(BasicBlock block) {
+        StringWriter writer = new StringWriter();
+        block.visit(new BytecodeWriter(new DOTHTMLLikeInstnWriter(writer)));
+        return writer.toString();
+    }
+
     public static String toHTML(InsnList instructions) {
         StringWriter writer = new StringWriter();
         ControlFlowGraph graph = new ControlFlowGraphImpl("", instructions);
@@ -151,6 +157,25 @@ public class OutputUtil {
             JavaStatementWriter stmtWriter = new JavaStatementWriter(new HTMLCodeWriter(writer));
             BlockStatement blockStmt = new BlockStatement(stmts);
             blockStmt.accept(stmtWriter, null);
+        } finally {
+            try {
+                writer.close();
+            } catch (IOException exc) {
+                logger.log(Level.SEVERE, exc.toString(), exc);
+            }
+        }
+        return writer.toString();
+    }
+    
+    public static String toDOTHTMLLike(Iterable<Statement> stmts) {
+        StringWriter writer = new StringWriter();
+        try {
+            CodeWriter codeWriter = new DOTHTMLLikeCodeWriter(writer);
+            JavaStatementWriter stmtWriter = new JavaStatementWriter(codeWriter);
+            codeWriter.before();
+            BlockStatement blockStmt = new BlockStatement(stmts);
+            blockStmt.accept(stmtWriter, null);
+            codeWriter.after();
         } finally {
             try {
                 writer.close();

@@ -40,11 +40,11 @@ public abstract class CodeWriter {
     private int indentLevel = 0;
 
     private boolean indentNeeded = false;
-    
+
     public CodeWriter(Writer writer) {
         this(writer, DEFAULT_IDENT);
     }
-    
+
     public CodeWriter(Writer writer, int indentSpace) {
         this.writer = writer;
         this.indentSpaces = indentSpace;
@@ -60,10 +60,16 @@ public abstract class CodeWriter {
         indentLevel++;
     }
 
+    public void before() {
+    }
+
+    public void after() {
+    }
+
     protected abstract void writeEol() throws IOException;
-    
+
     public abstract CodeWriter writeSpace();
-    
+
     private void indent() {
         for (int i = 0; i < indentSpaces * indentLevel; i++) {
             writeSpace();
@@ -88,13 +94,19 @@ public abstract class CodeWriter {
         return write(keyword);
     }
 
+    public abstract void writeLt();
+
+    public abstract void writeGt();
+
+    public abstract void writeAmpersand();
+
     public CodeWriter writeQuotedString(String str) {
         write("\"");
         write(str);
         write("\"");
         return this;
     }
-    
+
     public CodeWriter write(Object obj) {
         if (obj == null) {
             return write("null");

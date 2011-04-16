@@ -34,6 +34,7 @@ import fr.jamgotchian.abcd.core.analysis.ControlFlowGraphStmtAnalysis;
 import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
 import fr.jamgotchian.abcd.core.analysis.ConditionalExpressionRefactorer;
 import fr.jamgotchian.abcd.core.analysis.DOTUtil;
+import static fr.jamgotchian.abcd.core.analysis.DOTUtil.BasicBlockWritingMode.*;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.analysis.Refactorer;
 import fr.jamgotchian.abcd.core.graph.VertexToString;
@@ -250,7 +251,7 @@ public class ABCDContext {
                 msg.append(Exceptions.printStackTrace(exc))
                    .append("\n")
                    .append(OutputUtil.toText(mn.instructions));
-                
+
                 method.getBody().add(new CommentStatement("\n" + msg.toString()));
                 method.getBody().add(Statements.createThrowStmt(InternalError.class, "Decompilation failed"));
             }
@@ -359,37 +360,65 @@ public class ABCDContext {
                 logger.log(Level.FINE, "////////// Analyse Control flow of {0} //////////", methodSignature);
                 graph.analyse();
 
+                logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
+                new ControlFlowGraphStmtAnalysis().analyse(graph);
+
+                String baseName = outputDir.getPath() + "/" + methodSignature;
+
                 Set<Region> rootRegions = null;
                 if (drawRegions) {
-                    logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
-                    new ControlFlowGraphStmtAnalysis().analyse(graph);
-
                     logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
                     StructuralAnalysis analysis = new StructuralAnalysis(graph);
                     rootRegions = analysis.analyse();
 
-                    Writer writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_RG.dot");
-                    DOTUtil.writeGraph(analysis.getRegionGraph(), "RG", writer, new VertexToString<Region>() {
+                    Writer writer = new FileWriter(baseName + "_RG.dot");
+                    try {
+                        DOTUtil.writeGraph(analysis.getRegionGraph(), "RG", writer, new VertexToString<Region>() {
 
-                        public String toString(Region region) {
-                            return region + " (" + region.getTypeName() + ")";
-                        }
-                    });
+                            public String toString(Region region) {
+                                return region + " (" + region.getTypeName() + ")";
+                            }
+                        });
+                    } finally {
+                        writer.close();
+                    }
+                }
+
+                Writer writer = new FileWriter(baseName + "_CFG.dot");
+                try {
+                    DOTUtil.writeCFG(graph, rootRegions, writer, INSTN_RANGE);
+                } finally {
                     writer.close();
                 }
 
-                Writer writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_CFG.dot");
-                DOTUtil.writeCFG(graph, rootRegions, writer);
-                writer.close();
+                writer = new FileWriter(baseName + "_BC.dot");
+                try {
+                    DOTUtil.writeCFG(graph, rootRegions, writer, BYTECODE);
+                } finally {
+                    writer.close();
+                }
 
-                writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_DT.dot");
-                graph.getDominatorInfo().getDominatorsTree().writeDOT("DT", writer);
-                writer.close();
+                writer = new FileWriter(baseName + "_STMT.dot");
+                try {
+                    DOTUtil.writeCFG(graph, rootRegions, writer, STATEMENTS);
+                } finally {
+                    writer.close();
+                }
 
-                writer = new FileWriter(outputDir.getPath() + "/" + methodSignature + "_PDT.dot");
-                graph.getDominatorInfo().getPostDominatorsTree().writeDOT("PDT", writer);
-                writer.close();
-            
+                writer = new FileWriter(baseName + "_DT.dot");
+                try {
+                    graph.getDominatorInfo().getDominatorsTree().writeDOT("DT", writer);
+                } finally {
+                    writer.close();
+                }
+
+                writer = new FileWriter(baseName + "_PDT.dot");
+                try {
+                    graph.getDominatorInfo().getPostDominatorsTree().writeDOT("PDT", writer);
+                } finally {
+                    writer.close();
+                }
+
                 if (rootRegions != null && rootRegions.size() > 1) {
                     throw new ABCDException("Fail to recognize structure");
                 }
