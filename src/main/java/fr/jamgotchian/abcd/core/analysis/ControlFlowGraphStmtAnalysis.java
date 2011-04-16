@@ -42,59 +42,56 @@ public class ControlFlowGraphStmtAnalysis {
         logger.setLevel(Level.FINE);
     }
 
+    private static class DummyExpressionStack implements ExpressionStack {
+
+        private static final Expression DUMMY_EXPR = new Constant(null);
+
+        private int stackSize = 0;
+
+        private int consumption = 0;
+
+        public int getProduction() {
+            return Math.max(0, stackSize);
+        }
+
+        public int getConsumption() {
+            return consumption;
+        }
+
+        public void push(Expression expr) {
+            stackSize++;
+        }
+
+        public Expression pop() {
+            stackSize--;
+            consumption = -Math.min(stackSize, 0);
+            return DUMMY_EXPR;
+        }
+
+        public Expression peek() {
+            return DUMMY_EXPR;
+        }
+
+        public int size() {
+            return stackSize;
+        }
+
+        public List<Expression> toList() {
+            throw new ABCDException("Not implemented");
+        }
+
+        @Override
+        public ExpressionStack clone() {
+            throw new ABCDException("Not implemented");
+        }
+    }
+
     private static class StackEffectAnalyser extends BasicBlockStmtAnalysis {
 
         private static final Logger logger = Logger.getLogger(DummyExpressionStack.class.getName());
 
         static {
             logger.setLevel(Level.FINE);
-        }
-
-        private static class DummyExpressionStack implements ExpressionStack {
-
-            private static final Expression DUMMY_EXPR = new Constant(null);
-
-            private int stackSize = 0;
-
-            private int consumption = 0;
-
-            public int getProduction() {
-                return Math.max(0, stackSize);
-            }
-
-            public int getConsumption() {
-                return consumption;
-            }
-
-            public void push(Expression expr) {
-                stackSize++;
-            }
-
-            public Expression pop() {
-                stackSize--;
-                if (stackSize < 0) {
-                    consumption++;
-                }
-                return DUMMY_EXPR;
-            }
-
-            public Expression peek() {
-                return DUMMY_EXPR;
-            }
-
-            public int size() {
-                return stackSize;
-            }
-
-            public List<Expression> toList() {
-                throw new ABCDException("Not implemented");
-            }
-
-            @Override
-            public ExpressionStack clone() {
-                throw new ABCDException("Not implemented");
-            }
-
         }
 
         public StackEffectAnalyser() {
@@ -167,37 +164,48 @@ public class ControlFlowGraphStmtAnalysis {
             block.visit(new StackEffectAnalyser());
         }
 
-        List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(graph.getBasicBlocks());
+        List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(graph.getDFST().getNodes());
         while (blocksToProcess.size() > 0) {
             for (Iterator<BasicBlock> it = blocksToProcess.iterator(); it.hasNext();) {
                 BasicBlock block = it.next();
-                BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) block.getData();
 
-                boolean isProcessable = true;
+                boolean processable = true;
+                for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
+                    if (incomingEdge.isLoopBack()) {
+                        continue;
+                    }
+                    BasicBlock pred = graph.getEdgeSource(incomingEdge);
+                    if (blocksToProcess.contains(pred)) {
+                        processable = false;
+                        break;
+                    }
+                }
+
+                if (!processable) {
+                    break;
+                }
+                
                 List<ExpressionStack> stacks = new ArrayList<ExpressionStack>();
-                if (data.getStackConsumption() > 0 || data.getStackProduction() > 0) {
-                    for (BasicBlock pred : graph.getPredecessorsOf(block)) {
-                        if (blocksToProcess.contains(pred)) {
-                            isProcessable = false;
-                            break;
-                        } else {
-                            stacks.add(((BasicBlockAnalysisDataImpl )pred.getData()).getOutputStack().clone());
-                        }
+                for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
+                    if (incomingEdge.isLoopBack()) {
+                        continue;
                     }
+                    BasicBlock pred = graph.getEdgeSource(incomingEdge);
+                    BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) pred.getData();
+                    stacks.add(data.getOutputStack().clone());
                 }
 
-                if (isProcessable) {
-                    ExpressionStack inputStack = null;
-                    if (stacks.isEmpty()) {
-                        inputStack = new ExpressionStackImpl();
-                    } else if (stacks.size() == 1) {
-                        inputStack = stacks.get(0).clone();
-                    } else {
-                        inputStack = ExpressionStacks.merge(stacks);
-                    }
-                    processBlock(block, inputStack);
-                    it.remove();
+                ExpressionStack inputStack = null;
+                if (stacks.isEmpty()) {
+                    inputStack = new ExpressionStackImpl();
+                } else if (stacks.size() == 1) {
+                    inputStack = stacks.get(0).clone();
+                } else {
+                    inputStack = ExpressionStacks.merge(stacks);
                 }
+                    
+                processBlock(block, inputStack);
+                it.remove();
             }
         }
     }
