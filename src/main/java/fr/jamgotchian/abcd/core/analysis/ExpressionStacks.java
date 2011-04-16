@@ -38,9 +38,14 @@ class ExpressionStacks {
         if (stacks.size() <= 1) {
             throw new ABCDException("stacks.size() <= 1");
         }
-        for (int i = 0; i < stacks.size()-1; i++) {
-            if (stacks.get(i).size() != stacks.get(i+1).size()) {
-                throw new ABCDException("Cannot merge stacks with differents sizes");
+        List<Integer> sizes = new ArrayList<Integer>(stacks.size());
+        for (int i = 0; i < stacks.size(); i++) {
+            sizes.add(stacks.get(i).size());
+        }
+        for (int i = 0; i < sizes.size()-1; i++) {
+            if (sizes.get(i) != sizes.get(i+1)) {
+                throw new ABCDException("Cannot merge stacks with differents sizes : " 
+                        + sizes);
             }
         }
 
