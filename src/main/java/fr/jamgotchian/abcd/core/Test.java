@@ -159,6 +159,14 @@ public class Test {
         System.out.println("b");
     }
     
+    void testOuWithAssign(int a, int b) {
+        int c = -1;
+        if (a == 1 || (c = a) == 2) {
+            System.out.println("a");
+        }
+        System.out.println(c);
+    }
+    
     public boolean testNot(boolean a) {
         return !a;
     }
@@ -392,6 +400,19 @@ public class Test {
         }
     }
 
+    public void testNestedTryCatchReturn() {
+        try {
+            try {
+                System.out.println("a");
+            } catch (IllegalAccessError exc) {
+                System.out.println("b");
+                return;
+            }
+        } catch (Exception exc) {
+            System.out.println("c");
+        }
+    }
+    
     public void testDoWhile() {
         int a = 2;
         do {
@@ -450,6 +471,20 @@ public class Test {
         for (int i = 0; i < 3; i++) {
             a();
         }
+    }
+
+    public void testForReturn(int a) {
+        if (a < 4) {
+            for (int i = 0; i < 3; i++) {
+                System.out.println("a");
+                if (i == 2) {
+                    System.out.println("b");
+                    return;
+                }
+                System.out.println("c");
+            }
+        }
+        System.out.println("c");
     }
 
     public void testNestedFor() {
@@ -1114,6 +1149,10 @@ public class Test {
         System.out.println("a");
         function(e);
         System.out.println("b");
+    }
+        
+    void testMethodCall() {
+        System.out.println(function(1.334f));
     }
     
 //    public static void main(String[] args) {
