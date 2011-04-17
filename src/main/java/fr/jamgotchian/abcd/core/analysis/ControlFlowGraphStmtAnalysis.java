@@ -26,6 +26,7 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.output.OutputUtil;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +42,7 @@ public class ControlFlowGraphStmtAnalysis {
     private static final Logger logger = Logger.getLogger(ControlFlowGraphStmtAnalysis.class.getName());
 
     static {
-        logger.setLevel(Level.FINE);
+        logger.setLevel(Level.FINEST);
     }
 
     private static class DummyExpressionStack implements ExpressionStack {
@@ -148,7 +149,8 @@ public class ControlFlowGraphStmtAnalysis {
         }
 
         if (data.getInputStack().size() > 0) {
-            logger.log(Level.FINEST, ">>> Input stack : {0}", data.getInputStack());
+            logger.log(Level.FINEST, ">>> Input stack : {0}", 
+                    OutputUtil.toText2(data.getInputStack().toIterable()));
         }
 
         BasicBlockStmtAnalysis stmtsBuilder = new BasicBlockStmtAnalysis(outputStack);
@@ -156,7 +158,8 @@ public class ControlFlowGraphStmtAnalysis {
         data.setOutputStack(outputStack);
 
         if (data.getOutputStack().size() > 0) {
-            logger.log(Level.FINEST, "<<< Output stack : {0}", data.getOutputStack());
+            logger.log(Level.FINEST, "<<< Output stack : {0}", 
+                    OutputUtil.toText2(data.getOutputStack().toIterable()));
         }
     }
 
