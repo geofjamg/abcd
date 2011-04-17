@@ -162,7 +162,7 @@ public abstract class AbstractInstnWriter implements InstnWriter {
             writer.append(Integer.toString(i));
             writer.append(':');
             writeSpace();
-            writeLabel(labels.get(i));
+            writeLabel(labels.get(i-min));
             writeEol();
         }
         writeIndex(-1); // just for alignment
