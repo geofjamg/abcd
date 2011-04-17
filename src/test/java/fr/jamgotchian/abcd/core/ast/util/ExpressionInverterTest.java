@@ -32,12 +32,12 @@ public class ExpressionInverterTest {
 
     @Test
     public void test1() {
-        BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newCstExpr(1, null),
-                                                        Expressions.newCstExpr(2, null),
+        BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newIntExpr(1, null),
+                                                        Expressions.newIntExpr(2, null),
                                                         BinaryOperator.GT,
                                                         null);
-        BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newCstExpr(2, null),
-                                                        Expressions.newCstExpr(3, null),
+        BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newIntExpr(2, null),
+                                                        Expressions.newIntExpr(3, null),
                                                         BinaryOperator.NE,
                                                         null);
         BinaryExpression expr3 = Expressions.newBinExpr(expr1,

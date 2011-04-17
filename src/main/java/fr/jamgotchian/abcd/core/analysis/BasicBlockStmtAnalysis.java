@@ -152,14 +152,14 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
         } else if (node.incr > 1) {
             AssignExpression assignExpr
                     = Expressions.newAssignExpr(Expressions.newVarExpr(node.var, block),
-                                                Expressions.newCstExpr(Integer.valueOf(node.incr), block),
+                                                Expressions.newIntExpr(node.incr, block),
                                                 AssignOperator.PLUS,
                                                 block);
             addStmt(block, assignExpr);
         } else if (node.incr < -1) {
             AssignExpression assignExpr
                     = Expressions.newAssignExpr(Expressions.newVarExpr(node.var, block),
-                                                Expressions.newCstExpr(Integer.valueOf(-node.incr), block),
+                                                Expressions.newIntExpr(-node.incr, block),
                                                 AssignOperator.MINUS,
                                                 block);
             addStmt(block, assignExpr);
@@ -172,63 +172,63 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 break;
 
             case ACONST_NULL:
-                stack.push(Expressions.newCstExpr(null, block));
+                stack.push(Expressions.newNullExpr(block));
                 break;
 
             case ICONST_M1:
-                stack.push(Expressions.newCstExpr(Integer.valueOf(1), block));
+                stack.push(Expressions.newIntExpr(1, block));
                 break;
 
             case ICONST_0:
-                stack.push(Expressions.newCstExpr(Integer.valueOf(0), block));
+                stack.push(Expressions.newIntExpr(0, block));
                 break;
 
             case ICONST_1:
-                stack.push(Expressions.newCstExpr(Integer.valueOf(1), block));
+                stack.push(Expressions.newIntExpr(1, block));
                 break;
 
             case ICONST_2:
-                stack.push(Expressions.newCstExpr(Integer.valueOf(2), block));
+                stack.push(Expressions.newIntExpr(2, block));
                 break;
 
             case ICONST_3:
-                stack.push(Expressions.newCstExpr(Integer.valueOf(3), block));
+                stack.push(Expressions.newIntExpr(3, block));
                 break;
 
             case ICONST_4:
-                stack.push(Expressions.newCstExpr(Integer.valueOf(4), block));
+                stack.push(Expressions.newIntExpr(4, block));
                 break;
 
             case ICONST_5:
-                stack.push(Expressions.newCstExpr(Integer.valueOf(5), block));
+                stack.push(Expressions.newIntExpr(5, block));
                 break;
 
             case LCONST_0:
-                stack.push(Expressions.newCstExpr(Long.valueOf(0), block));
+                stack.push(Expressions.newLongExpr(0, block));
                 break;
 
             case LCONST_1:
-                stack.push(Expressions.newCstExpr(Long.valueOf(1), block));
+                stack.push(Expressions.newLongExpr(1, block));
                 break;
 
             case FCONST_0:
-                stack.push(Expressions.newCstExpr(Float.valueOf(0f), block));
+                stack.push(Expressions.newFloatExpr(0f, block));
                 break;
 
             case FCONST_1:
-                stack.push(Expressions.newCstExpr(Float.valueOf(1f), block));
+                stack.push(Expressions.newFloatExpr(1f, block));
                 break;
 
             case FCONST_2:
-                stack.push(Expressions.newCstExpr(Float.valueOf(2f), block));
+                stack.push(Expressions.newFloatExpr(2f, block));
                 break;
 
             case DCONST_0:
-                stack.push(Expressions.newCstExpr(Double.valueOf(0d), block));
+                stack.push(Expressions.newDoubleExpr(0d, block));
                 break;
 
             case DCONST_1:
-                stack.push(Expressions.newCstExpr(Double.valueOf(1d), block));
+                stack.push(Expressions.newDoubleExpr(1d, block));
                 break;
 
             case IALOAD:
@@ -294,7 +294,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 stack.push(expr1);
                 break;
             }
-                
+
             case DUP_X2:
             case DUP2_X1:
             case DUP2_X2:
@@ -518,11 +518,11 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     public void visitIntInsn(BasicBlock block, int index, IntInsnNode node) {
         switch (node.getOpcode()) {
             case BIPUSH:
-                stack.push(Expressions.newCstExpr(Byte.valueOf((byte) node.operand), block));
+                stack.push(Expressions.newByteExpr((byte) node.operand, block));
                 break;
 
             case SIPUSH:
-                stack.push(Expressions.newCstExpr(Short.valueOf((short) node.operand), block));
+                stack.push(Expressions.newShortExpr((short) node.operand, block));
                 break;
 
             case NEWARRAY:
@@ -538,7 +538,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
         switch(node.getOpcode()) {
             case IFEQ: {
                 expr = Expressions.newBinExpr(stack.pop(),
-                                              Expressions.newCstExpr(Integer.valueOf(0), block),
+                                              Expressions.newIntExpr(0, block),
                                               BinaryOperator.EQ,
                                               block);
                 break;
@@ -546,7 +546,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
             case IFNE: {
                 expr = Expressions.newBinExpr(stack.pop(),
-                                              Expressions.newCstExpr(Integer.valueOf(0), block),
+                                              Expressions.newIntExpr(0, block),
                                               BinaryOperator.NE,
                                               block);
                 break;
@@ -554,7 +554,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
             case IFLT: {
                 expr = Expressions.newBinExpr(stack.pop(),
-                                              Expressions.newCstExpr(Integer.valueOf(0), block),
+                                              Expressions.newIntExpr(0, block),
                                               BinaryOperator.LT,
                                               block);
                 break;
@@ -562,7 +562,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
             case IFGE: {
                 expr = Expressions.newBinExpr(stack.pop(),
-                                              Expressions.newCstExpr(Integer.valueOf(0), block),
+                                              Expressions.newIntExpr(0, block),
                                               BinaryOperator.GE,
                                               block);
                 break;
@@ -570,7 +570,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
             case IFGT: {
                 expr = Expressions.newBinExpr(stack.pop(),
-                                              Expressions.newCstExpr(Integer.valueOf(0), block),
+                                              Expressions.newIntExpr(0, block),
                                               BinaryOperator.GT,
                                               block);
                 break;
@@ -578,7 +578,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
             case IFLE: {
                 expr = Expressions.newBinExpr(stack.pop(),
-                                              Expressions.newCstExpr(Integer.valueOf(0), block),
+                                              Expressions.newIntExpr(0, block),
                                               BinaryOperator.LE,
                                               block);
                 break;
@@ -648,7 +648,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
             case IFNULL: {
                 expr = Expressions.newBinExpr(stack.pop(),
-                                              Expressions.newCstExpr(null, block),
+                                              Expressions.newNullExpr(block),
                                               BinaryOperator.EQ,
                                               block);
                 break;
@@ -656,7 +656,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
             case IFNONNULL: {
                 expr = Expressions.newBinExpr(stack.pop(),
-                                              Expressions.newCstExpr(null, block),
+                                              Expressions.newNullExpr(block),
                                               BinaryOperator.NE,
                                               block);
                 break;
@@ -681,9 +681,17 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
     public void visitLdcInsn(BasicBlock block, int index, LdcInsnNode node) {
         if (node.cst instanceof Type) {
-            stack.push(Expressions.newCstExpr(((Type)node.cst).getClassName(), block));
-        } else {
-            stack.push(Expressions.newCstExpr(node.cst, block));
+            stack.push(Expressions.newClsObjExpr(((Type)node.cst).getClassName(), block));
+        } else if (node.cst instanceof Integer) {
+            stack.push(Expressions.newIntExpr((Integer) node.cst, block));            
+        } else if (node.cst instanceof Long) {
+            stack.push(Expressions.newLongExpr((Long) node.cst, block));
+        } else if (node.cst instanceof Float) {
+            stack.push(Expressions.newFloatExpr((Float) node.cst, block));
+        } else if (node.cst instanceof Double) {
+            stack.push(Expressions.newDoubleExpr((Double) node.cst, block));
+        } else if (node.cst instanceof String) {
+            stack.push(Expressions.newStringExpr(node.cst.toString(), block));
         }
     }
 

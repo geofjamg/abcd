@@ -18,7 +18,6 @@
 package fr.jamgotchian.abcd.core.analysis;
 
 import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
-import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
@@ -47,7 +46,7 @@ public class ControlFlowGraphStmtAnalysis {
 
     private static class DummyExpressionStack implements ExpressionStack {
 
-        private static final Expression DUMMY_EXPR = Expressions.newCstExpr(null, null);
+        private static final Expression DUMMY_EXPR = Expressions.newNullExpr(null);
 
         private int stackSize = 0;
 
@@ -110,7 +109,7 @@ public class ControlFlowGraphStmtAnalysis {
             super.before(block);
             Iterator<Edge> itE = block.getGraph().getIncomingEdgesOf(block).iterator();
             if (itE.hasNext() && itE.next().isExceptional()) {
-                stack.push(Expressions.newCstExpr("EXCEPTION", block));
+                stack.push(Expressions.newStringExpr("EXCEPTION", block));
             }
         }
 
@@ -144,8 +143,7 @@ public class ControlFlowGraphStmtAnalysis {
         ExpressionStack outputStack = inputStack.clone();
         Iterator<Edge> itE = graph.getIncomingEdgesOf(block).iterator();
         if (itE.hasNext() && itE.next().isExceptional()) {
-            Constant cst = Expressions.newCstExpr("EXCEPTION", block);
-            outputStack.push(cst);
+            outputStack.push(Expressions.newStringExpr("EXCEPTION", block));
         }
 
         if (data.getInputStack().size() > 0) {

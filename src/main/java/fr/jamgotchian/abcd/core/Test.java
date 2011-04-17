@@ -1159,6 +1159,10 @@ public class Test {
         System.out.println(function(1.334f));
     }
     
+    Class<?> testClassType() {
+        return String.class;
+    }
+    
 //    public static void main(String[] args) {
 //        new Test().testBreakLabel2();
 //    }

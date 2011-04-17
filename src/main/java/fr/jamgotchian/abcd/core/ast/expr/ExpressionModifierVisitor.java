@@ -28,7 +28,43 @@ import java.util.Set;
  */
 public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, Void> {
 
-    public Expression visit(Constant cst, Void arg) {
+    public Expression visit(IntegerLiteralExpression expr, Void arg) {
+        return null;
+    }
+
+    public Expression visit(LongLiteralExpression expr, Void arg) {
+        return null;
+    }
+
+    public Expression visit(ByteLiteralExpression expr, Void arg) {
+        return null;
+    }
+
+    public Expression visit(ShortLiteralExpression expr, Void arg) {
+        return null;
+    }
+
+    public Expression visit(BooleanLiteralExpression expr, Void arg) {
+        return null;
+    }
+
+    public Expression visit(FloatLiteralExpression expr, Void arg) {
+        return null;
+    }
+
+    public Expression visit(DoubleLiteralExpression expr, Void arg) {
+        return null;
+    }
+
+    public Expression visit(StringLiteralExpression expr, Void arg) {
+        return null;
+    }
+
+    public Expression visit(NullLiteralExpression expr, Void arg) {
+        return null;
+    }
+
+    public Expression visit(ClassLiteralExpression expr, Void arg) {
         return null;
     }
 

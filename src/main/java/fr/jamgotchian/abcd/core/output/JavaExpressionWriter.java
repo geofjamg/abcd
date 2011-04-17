@@ -22,17 +22,26 @@ import fr.jamgotchian.abcd.core.ast.expr.ArrayCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ArrayLength;
 import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
+import fr.jamgotchian.abcd.core.ast.expr.BooleanLiteralExpression;
+import fr.jamgotchian.abcd.core.ast.expr.ByteLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.CastExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ClassExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ConditionalExpression;
-import fr.jamgotchian.abcd.core.ast.expr.Constant;
+import fr.jamgotchian.abcd.core.ast.expr.DoubleLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.ChoiceExpression;
+import fr.jamgotchian.abcd.core.ast.expr.ClassLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ExpressionVisitor;
 import fr.jamgotchian.abcd.core.ast.expr.FieldAccess;
+import fr.jamgotchian.abcd.core.ast.expr.FloatLiteralExpression;
+import fr.jamgotchian.abcd.core.ast.expr.IntegerLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
+import fr.jamgotchian.abcd.core.ast.expr.LongLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.MethodCall;
+import fr.jamgotchian.abcd.core.ast.expr.NullLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
+import fr.jamgotchian.abcd.core.ast.expr.ShortLiteralExpression;
+import fr.jamgotchian.abcd.core.ast.expr.StringLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import java.util.Iterator;
@@ -218,15 +227,6 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
         return null;
     }
 
-    public Void visit(Constant expr, BlockStatement blockStmt) {
-        if (expr.getValue() instanceof String) {
-            writer.writeQuotedString(expr.getValue().toString());
-        } else {
-            writer.write(expr.getValue());
-        }
-        return null;
-    }
-
     public Void visit(LocalVariable expr, BlockStatement blockStmt) {
         String name = null;
         if (blockStmt!= null) {
@@ -349,6 +349,56 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
             }
             writer.write(")");
         }
+        return null;
+    }
+
+    public Void visit(IntegerLiteralExpression expr, BlockStatement arg) {
+        writer.write(expr.getValue());
+        return null;
+    }
+
+    public Void visit(LongLiteralExpression expr, BlockStatement arg) {
+        writer.write(expr.getValue());
+        return null;
+    }
+
+    public Void visit(ByteLiteralExpression expr, BlockStatement arg) {
+        writer.write(expr.getValue());
+        return null;
+    }
+
+    public Void visit(ShortLiteralExpression expr, BlockStatement arg) {
+        writer.write(expr.getValue());
+        return null;
+    }
+
+    public Void visit(BooleanLiteralExpression expr, BlockStatement arg) {
+        writer.write(expr.getValue());
+        return null;
+    }
+
+    public Void visit(FloatLiteralExpression expr, BlockStatement arg) {
+        writer.write(expr.getValue());
+        return null;
+    }
+
+    public Void visit(DoubleLiteralExpression expr, BlockStatement arg) {
+        writer.write(expr.getValue());
+        return null;
+    }
+
+    public Void visit(StringLiteralExpression expr, BlockStatement arg) {
+        writer.writeQuotedString(expr.getValue().toString());
+        return null;
+    }
+
+    public Void visit(NullLiteralExpression expr, BlockStatement arg) {
+        writer.write("null");
+        return null;
+    }
+
+    public Void visit(ClassLiteralExpression expr, BlockStatement arg) {
+        writer.write(expr.getValue()).write(".class");
         return null;
     }
 }

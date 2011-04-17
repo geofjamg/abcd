@@ -234,7 +234,7 @@ public class AbstractSyntaxTreeBuilder {
                         break;
 
                     case INFINITE:
-                        blockStmt.add(new WhileStatement(Expressions.newCstExpr(Boolean.TRUE, null), bodyBlockStmt));
+                        blockStmt.add(new WhileStatement(Expressions.newBooleanExpr(true, null), bodyBlockStmt));
                         break;
 
                     default:

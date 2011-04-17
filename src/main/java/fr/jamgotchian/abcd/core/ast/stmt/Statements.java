@@ -19,10 +19,10 @@ package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignOperator;
-import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
+import fr.jamgotchian.abcd.core.ast.expr.StringLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryOperator;
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public class Statements {
     }
     
     public static <E extends Throwable> Statement createThrowStmt(Class<E> excCls, String msg) {
-        Constant msgExpr = Expressions.newCstExpr(msg, null);
+        StringLiteralExpression msgExpr = Expressions.newStringExpr(msg, null);
         ObjectCreationExpression objCreatExpr 
                 = Expressions.newObjCreatExpr(excCls.getName(),
                                               Collections.<Expression>singletonList(msgExpr), 

@@ -34,75 +34,129 @@ public class Expressions {
         expr.setBasicBlock(block);
         return expr;
     }
-    
+
     public static FieldAccess newFieldAccesExpr(Expression scope, String fieldName, BasicBlock block) {
         FieldAccess expr = new FieldAccess(scope, fieldName);
         expr.setBasicBlock(block);
         return expr;
     }
-    
+
     public static AssignExpression newAssignExpr(Expression target, Expression value,
                                                  AssignOperator operator, BasicBlock block) {
         AssignExpression expr = new AssignExpression(target, value, operator);
         expr.setBasicBlock(block);
         return expr;
     }
-    
+
     public static UnaryExpression newUnaryExpr(Expression expr, UnaryOperator operator, BasicBlock block) {
         UnaryExpression expr2 = new UnaryExpression(expr, operator);
         expr2.setBasicBlock(block);
         return expr2;
     }
-    
-    public static Constant newCstExpr(Object value, BasicBlock block) {
-        Constant expr = new Constant(value);
+
+    public static IntegerLiteralExpression newIntExpr(int value, BasicBlock block) {
+        IntegerLiteralExpression expr = new IntegerLiteralExpression(value);
         expr.setBasicBlock(block);
         return expr;
     }
-    
-    public static BinaryExpression newBinExpr(Expression left, Expression right, 
+
+    public static LongLiteralExpression newLongExpr(long value, BasicBlock block) {
+        LongLiteralExpression expr = new LongLiteralExpression(value);
+        expr.setBasicBlock(block);
+        return expr;
+    }
+
+    public static FloatLiteralExpression newFloatExpr(float value, BasicBlock block) {
+        FloatLiteralExpression expr = new FloatLiteralExpression(value);
+        expr.setBasicBlock(block);
+        return expr;
+    }
+
+    public static DoubleLiteralExpression newDoubleExpr(double value, BasicBlock block) {
+        DoubleLiteralExpression expr = new DoubleLiteralExpression(value);
+        expr.setBasicBlock(block);
+        return expr;
+    }
+
+    public static BooleanLiteralExpression newBooleanExpr(boolean value, BasicBlock block) {
+        BooleanLiteralExpression expr = new BooleanLiteralExpression(value);
+        expr.setBasicBlock(block);
+        return expr;
+    }
+
+    public static ByteLiteralExpression newByteExpr(byte value, BasicBlock block) {
+        ByteLiteralExpression expr = new ByteLiteralExpression(value);
+        expr.setBasicBlock(block);
+        return expr;
+    }
+
+    public static ShortLiteralExpression newShortExpr(short value, BasicBlock block) {
+        ShortLiteralExpression expr = new ShortLiteralExpression(value);
+        expr.setBasicBlock(block);
+        return expr;
+    }
+
+    public static StringLiteralExpression newStringExpr(String value, BasicBlock block) {
+        StringLiteralExpression expr = new StringLiteralExpression(value);
+        expr.setBasicBlock(block);
+        return expr;
+    }
+
+    public static NullLiteralExpression newNullExpr(BasicBlock block) {
+        NullLiteralExpression expr = new NullLiteralExpression();
+        expr.setBasicBlock(block);
+        return expr;
+    }
+
+    public static ClassLiteralExpression newClsObjExpr(String value, BasicBlock block) {
+        ClassLiteralExpression expr = new ClassLiteralExpression(value);
+        expr.setBasicBlock(block);
+        return expr;
+    }
+
+    public static BinaryExpression newBinExpr(Expression left, Expression right,
                                               BinaryOperator operator, BasicBlock block) {
         BinaryExpression expr = new BinaryExpression(left, right, operator);
         expr.setBasicBlock(block);
         return expr;
     }
-    
-    public static ArrayAccess newArrayAcces(Expression arrayRef, Expression arrayIndexExpr, 
+
+    public static ArrayAccess newArrayAcces(Expression arrayRef, Expression arrayIndexExpr,
                                             BasicBlock block) {
         ArrayAccess expr = new ArrayAccess(arrayRef, arrayIndexExpr);
         expr.setBasicBlock(block);
         return expr;
     }
-    
-    public static ArrayCreationExpression newArrayCreatExpr(String typeName, 
-                                                            Expression arrayLengthExpr, 
+
+    public static ArrayCreationExpression newArrayCreatExpr(String typeName,
+                                                            Expression arrayLengthExpr,
                                                             BasicBlock block) {
         ArrayCreationExpression expr = new ArrayCreationExpression(typeName, arrayLengthExpr);
         expr.setBasicBlock(block);
         return expr;
     }
 
-    public static ArrayCreationExpression newArrayCreatExpr(String typeName, 
-                                                            List<Expression> arrayLengthExprs, 
+    public static ArrayCreationExpression newArrayCreatExpr(String typeName,
+                                                            List<Expression> arrayLengthExprs,
                                                             BasicBlock block) {
         ArrayCreationExpression expr = new ArrayCreationExpression(typeName, arrayLengthExprs);
         expr.setBasicBlock(block);
         return expr;
     }
-    
+
     public static ArrayLength newArrayLength(Expression arrayRef, BasicBlock block) {
         ArrayLength expr = new ArrayLength(arrayRef);
         expr.setBasicBlock(block);
         return expr;
     }
-    
+
     public static CastExpression newCastExpr(String className, Expression expr,
                                              BasicBlock block) {
         CastExpression expr2 = new CastExpression(className, expr);
         expr2.setBasicBlock(block);
         return expr2;
     }
-    
+
     public static ChoiceExpression newChoiceExpr(Set<Expression> choices, BasicBlock block) {
         ChoiceExpression expr = new ChoiceExpression(choices);
         expr.setBasicBlock(block);
@@ -115,26 +169,26 @@ public class Expressions {
         return expr;
     }
 
-    public static ConditionalExpression newCondExpr(Expression condition, Expression then, 
+    public static ConditionalExpression newCondExpr(Expression condition, Expression then,
                                                     Expression _else, BasicBlock block) {
         ConditionalExpression expr = new ConditionalExpression(condition, then, _else);
         expr.setBasicBlock(block);
         return expr;
     }
-    
+
     public static LocalVariable newVarExpr(int index, BasicBlock block) {
         LocalVariable expr = new LocalVariable(index);
         expr.setBasicBlock(block);
         return expr;
     }
-    
-    public static MethodCall newMethodExpr(Expression scope, String methodName, 
+
+    public static MethodCall newMethodExpr(Expression scope, String methodName,
                                            List<Expression> arguments, BasicBlock block) {
         MethodCall expr = new MethodCall(scope, methodName, arguments);
         expr.setBasicBlock(block);
         return expr;
     }
-    
+
     public static ObjectCreationExpression newObjCreatExpr(String className, List<Expression> arguments,
                                                            BasicBlock block) {
         ObjectCreationExpression expr = new ObjectCreationExpression(className, arguments);

@@ -21,18 +21,27 @@ import fr.jamgotchian.abcd.core.ast.expr.ArrayCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ArrayLength;
 import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
+import fr.jamgotchian.abcd.core.ast.expr.BooleanLiteralExpression;
+import fr.jamgotchian.abcd.core.ast.expr.ByteLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.CastExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ClassExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ConditionalExpression;
-import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.ChoiceExpression;
+import fr.jamgotchian.abcd.core.ast.expr.ClassLiteralExpression;
+import fr.jamgotchian.abcd.core.ast.expr.DoubleLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.FieldAccess;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.expr.MethodCall;
 import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ExpressionVisitor;
+import fr.jamgotchian.abcd.core.ast.expr.FloatLiteralExpression;
+import fr.jamgotchian.abcd.core.ast.expr.IntegerLiteralExpression;
+import fr.jamgotchian.abcd.core.ast.expr.LongLiteralExpression;
+import fr.jamgotchian.abcd.core.ast.expr.NullLiteralExpression;
+import fr.jamgotchian.abcd.core.ast.expr.ShortLiteralExpression;
+import fr.jamgotchian.abcd.core.ast.expr.StringLiteralExpression;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -64,9 +73,76 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
-    public Boolean visit(Constant expr1, Expression expr2) {
-        if (expr2 instanceof Constant) {
-            return ((Constant) expr2).getValue().equals(expr1.getValue());
+    public Boolean visit(IntegerLiteralExpression expr1, Expression expr2) {
+        if (expr2 instanceof IntegerLiteralExpression) {
+            return ((IntegerLiteralExpression) expr2).getValue() == expr1.getValue();
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+
+    public Boolean visit(LongLiteralExpression expr1, Expression expr2) {
+        if (expr2 instanceof LongLiteralExpression) {
+            return ((LongLiteralExpression) expr2).getValue() == expr1.getValue();
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+    
+    public Boolean visit(ByteLiteralExpression expr1, Expression expr2) {
+        if (expr2 instanceof ByteLiteralExpression) {
+            return ((ByteLiteralExpression) expr2).getValue() == expr1.getValue();
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+    
+    public Boolean visit(ShortLiteralExpression expr1, Expression expr2) {
+        if (expr2 instanceof ShortLiteralExpression) {
+            return ((ShortLiteralExpression) expr2).getValue() == expr1.getValue();
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+    
+    public Boolean visit(BooleanLiteralExpression expr1, Expression expr2) {
+        if (expr2 instanceof BooleanLiteralExpression) {
+            return ((BooleanLiteralExpression) expr2).getValue() == expr1.getValue();
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+    
+    public Boolean visit(FloatLiteralExpression expr1, Expression expr2) {
+        if (expr2 instanceof FloatLiteralExpression) {
+            return ((FloatLiteralExpression) expr2).getValue() == expr1.getValue();
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+    public Boolean visit(DoubleLiteralExpression expr1, Expression expr2) {
+        if (expr2 instanceof DoubleLiteralExpression) {
+            return ((DoubleLiteralExpression) expr2).getValue() == expr1.getValue();
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+
+    public Boolean visit(StringLiteralExpression expr1, Expression expr2) {
+        if (expr2 instanceof StringLiteralExpression) {
+            return ((StringLiteralExpression) expr2).getValue().equals(expr1.getValue());
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+
+    public Boolean visit(NullLiteralExpression expr1, Expression expr2) {
+        return (expr2 instanceof NullLiteralExpression ? Boolean.TRUE : Boolean.FALSE);
+    }
+    
+    public Boolean visit(ClassLiteralExpression expr1, Expression expr2) {
+        if (expr2 instanceof ClassLiteralExpression) {
+            return ((ClassLiteralExpression) expr2).getValue().equals(expr1.getValue());
         } else {
             return Boolean.FALSE;
         }
