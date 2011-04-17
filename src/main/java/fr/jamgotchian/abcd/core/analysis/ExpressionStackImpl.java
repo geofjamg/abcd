@@ -22,6 +22,7 @@ import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +57,7 @@ class ExpressionStackImpl implements ExpressionStack {
             throw new IllegalArgumentException("expr == null");
         }
         stack.push(expr);
-        logger.log(Level.FINEST, "Push {0} -> {1}", 
+        logger.log(Level.FINEST, "Push {0} -> {1}",
                 new Object[] {OutputUtil.toText(expr), OutputUtil.toText2(stack)});
     }
 
@@ -65,7 +66,7 @@ class ExpressionStackImpl implements ExpressionStack {
             throw new IllegalStateException("operand stack is empty");
         }
         Expression expr = stack.pop();
-        logger.log(Level.FINEST, "Pop {0} -> {1}", 
+        logger.log(Level.FINEST, "Pop {0} -> {1}",
                 new Object[] {OutputUtil.toText(expr), OutputUtil.toText2(stack)});
         return expr;
     }
@@ -82,7 +83,11 @@ class ExpressionStackImpl implements ExpressionStack {
     }
 
     public List<Expression> toList() {
-        return new ArrayList<Expression>(stack);
+        List<Expression> list = new ArrayList<Expression>(stack.size());
+        for (Iterator<Expression> it = stack.descendingIterator(); it.hasNext();) {
+            list.add(it.next());
+        }
+        return list;
     }
 
     public Iterable<Expression> toIterable() {
