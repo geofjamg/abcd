@@ -61,7 +61,7 @@ public class TextCodeWriter extends CodeWriter {
 
     public void writeGt() {
         try {
-            writer.append("<");
+            writer.append(">");
         } catch(IOException exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
