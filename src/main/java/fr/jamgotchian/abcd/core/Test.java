@@ -248,6 +248,10 @@ public class Test {
         return (a > 1 && b == 3 ? 1 : 3);
     }
 
+    int testSerialTernaryOperators(int a, int b) {
+        return (a > 1 ? 2 : 3) + (b == 4 ? 67 : 334);
+    }
+    
     public void testIfElseWithTryCatch(int z) {
         if (z == 1) {
             System.out.println("a");
