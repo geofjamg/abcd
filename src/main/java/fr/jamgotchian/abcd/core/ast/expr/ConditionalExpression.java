@@ -29,7 +29,7 @@ public class ConditionalExpression extends AbstractExpression {
 
     private final Expression _else;
 
-    public ConditionalExpression(Expression condition, Expression then, Expression _else) {
+    ConditionalExpression(Expression condition, Expression then, Expression _else) {
         if (condition == null) {
             throw new IllegalArgumentException("condition == null");
         }

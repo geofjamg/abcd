@@ -28,14 +28,14 @@ public class ChoiceExpression extends AbstractExpression {
 
     private final Set<Expression> choices;
 
-    public ChoiceExpression(Set<Expression> choices) {
+    ChoiceExpression(Set<Expression> choices) {
         this.choices = choices;
         for (Expression choice : choices) {
             choice.setParent(this);
         }
     }
 
-    public ChoiceExpression() {
+    ChoiceExpression() {
         this(new HashSet<Expression>());
     }
 

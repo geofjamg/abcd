@@ -17,11 +17,10 @@
 
 package fr.jamgotchian.abcd.core.ast.util;
 
-import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryOperator;
-import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
+import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,15 +32,18 @@ public class ExpressionInverterTest {
 
     @Test
     public void test1() {
-        BinaryExpression expr1 = new BinaryExpression(new Constant(1),
-                                                          new Constant(2),
-                                                          BinaryOperator.GT);
-        BinaryExpression expr2 = new BinaryExpression(new Constant(2),
-                                                          new Constant(3),
-                                                          BinaryOperator.NE);
-        BinaryExpression expr3 = new BinaryExpression(expr1,
-                                                          expr2,
-                                                          BinaryOperator.AND);
+        BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newCstExpr(1, null),
+                                                        Expressions.newCstExpr(2, null),
+                                                        BinaryOperator.GT,
+                                                        null);
+        BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newCstExpr(2, null),
+                                                        Expressions.newCstExpr(3, null),
+                                                        BinaryOperator.NE,
+                                                        null);
+        BinaryExpression expr3 = Expressions.newBinExpr(expr1,
+                                                        expr2,
+                                                        BinaryOperator.AND,
+                                                        null);
 
         Expression expr3Inv = ExpressionInverter.invert(expr3);
         Expression expr1Inv = ((BinaryExpression)expr3Inv).getLeft();

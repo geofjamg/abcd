@@ -20,8 +20,10 @@ package fr.jamgotchian.abcd.core.analysis;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.ChoiceExpression;
+import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionEqualityChecker;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +37,7 @@ class ExpressionStacks {
     private ExpressionStacks() {
     }
 
-    static ExpressionStack merge(List<ExpressionStack> stacks) {
+    static ExpressionStack merge(List<ExpressionStack> stacks, BasicBlock block) {
         if (stacks.size() <= 1) {
             throw new ABCDException("stacks.size() <= 1");
         }
@@ -57,7 +59,7 @@ class ExpressionStacks {
             toList.add(stacks.get(i).toList());
         }
         for (int i = 0; i < stacks.get(0).size(); i++) {
-            ChoiceExpression choiceExpr = new ChoiceExpression();
+            ChoiceExpression choiceExpr = Expressions.newChoiceExpr(block);
             for (int j = 0; j < stacks.size(); j++) {
                 choiceExpr.getChoices().add(toList.get(j).get(i));
             }

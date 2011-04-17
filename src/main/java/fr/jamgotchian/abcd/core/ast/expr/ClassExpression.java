@@ -25,7 +25,7 @@ public class ClassExpression extends AbstractExpression {
 
     private final String className;
 
-    public ClassExpression(String className) {
+    ClassExpression(String className) {
         this.className = className;
     }
 

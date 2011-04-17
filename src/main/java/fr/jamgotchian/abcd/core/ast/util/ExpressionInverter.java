@@ -21,6 +21,7 @@ import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ExpressionModifierVisitor;
+import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 
 /**
  *
@@ -37,16 +38,18 @@ public class ExpressionInverter extends ExpressionModifierVisitor {
     @Override
     public Expression visit(UnaryExpression expr, Void arg) {
         Expression newExpr = expr.getExpr().accept(this, arg);
-        return new UnaryExpression(newExpr != null ? newExpr : expr.getExpr(), 
-                                     expr.getOperator().getInverse());
+        return Expressions.newUnaryExpr(newExpr != null ? newExpr : expr.getExpr(), 
+                                        expr.getOperator().getInverse(),
+                                        expr.getBasicBlock());
     }
 
     @Override
     public Expression visit(BinaryExpression expr, Void arg) {
         Expression newLeft = expr.getLeft().accept(this, arg);
         Expression newRight = expr.getRight().accept(this, arg);
-        return new BinaryExpression(newLeft != null ? newLeft : expr.getLeft(), 
+        return Expressions.newBinExpr(newLeft != null ? newLeft : expr.getLeft(), 
                                       newRight != null ? newRight : expr.getRight(), 
-                                      expr.getOperator().getInverse());
+                                      expr.getOperator().getInverse(),
+                                      expr.getBasicBlock());
     }
 }

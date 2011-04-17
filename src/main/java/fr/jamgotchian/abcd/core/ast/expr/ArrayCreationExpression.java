@@ -33,12 +33,12 @@ public class ArrayCreationExpression extends AbstractExpression {
 
     private List<Expression> initValues;
 
-    public ArrayCreationExpression(String typeName, Expression arrayLengthExpr) {
+    ArrayCreationExpression(String typeName, Expression arrayLengthExpr) {
         this.typeName = typeName;
         this.arrayLengthExprs = Collections.singletonList(arrayLengthExpr);
     }
 
-    public ArrayCreationExpression(String typeName, List<Expression> arrayLengthExprs) {
+    ArrayCreationExpression(String typeName, List<Expression> arrayLengthExprs) {
         this.typeName = typeName;
         this.arrayLengthExprs = arrayLengthExprs;
     }

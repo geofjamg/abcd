@@ -17,10 +17,9 @@
 package fr.jamgotchian.abcd.core.analysis;
 
 import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
-import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryOperator;
-import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
+import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.BreakStatement;
@@ -141,8 +140,8 @@ public class AbstractSyntaxTreeBuilder {
                         || logical.getLogicalType() == LogicalType.OR_INVERT_B) {
                     conditionB = ExpressionInverter.invert(conditionB);
                 }
-                jumpIfStmtA.setCondition(new BinaryExpression(conditionA, conditionB,
-                                                              operator));
+                jumpIfStmtA.setCondition(Expressions.newBinExpr(conditionA, conditionB,
+                                                                operator, conditionA.getBasicBlock()));
                 break;
             }
 
@@ -198,7 +197,7 @@ public class AbstractSyntaxTreeBuilder {
                 Statement lastStmt = thenBlockStmt.getLast();
                 if (!(lastStmt instanceof ReturnStatement)
                         && !(lastStmt instanceof ThrowStatement)) {
-//                    thenBlockStmt.add(new CommentStatement("Loop ID : " 
+//                    thenBlockStmt.add(new CommentStatement("Loop ID : "
 //                            + ifBreak.getBreakTargetRegion().getBreakLoopID()));
                     thenBlockStmt.add(new BreakStatement());
                 }
@@ -233,11 +232,11 @@ public class AbstractSyntaxTreeBuilder {
                         Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
                         blockStmt.add(new DoWhileStatement(bodyBlockStmt, condition));
                         break;
-                    
+
                     case INFINITE:
-                        blockStmt.add(new WhileStatement(new Constant(Boolean.TRUE), bodyBlockStmt));                        
+                        blockStmt.add(new WhileStatement(Expressions.newCstExpr(Boolean.TRUE, null), bodyBlockStmt));
                         break;
-                        
+
                     default:
                         throw new AssertionError();
                 }
@@ -259,7 +258,7 @@ public class AbstractSyntaxTreeBuilder {
                     if (caseRegion.getRegion() != null) {
                         BlockStatement caseCompoundStmt = new BlockStatement();
                         buildAST(caseRegion.getRegion(), caseCompoundStmt);
-                        for (Statement stmt : caseCompoundStmt) {                            
+                        for (Statement stmt : caseCompoundStmt) {
                             caseStmts.add(stmt);
                         }
                         caseCompoundStmt.clear();
@@ -267,7 +266,7 @@ public class AbstractSyntaxTreeBuilder {
                             caseStmts.add(new BreakStatement());
                         }
                     } else {
-                        caseStmts.add(new BreakStatement());                        
+                        caseStmts.add(new BreakStatement());
                     }
 
                     cases.add(new CaseStatement(caseRegion.getValues(), caseStmts));

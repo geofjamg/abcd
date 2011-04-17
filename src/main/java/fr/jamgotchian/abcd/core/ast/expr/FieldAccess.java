@@ -27,7 +27,7 @@ public class FieldAccess extends AbstractExpression {
 
     private final String fieldName;
 
-    public FieldAccess(Expression scope, String fieldName) {
+    FieldAccess(Expression scope, String fieldName) {
         this.scope = scope;
         this.fieldName = fieldName;
         scope.setParent(this);

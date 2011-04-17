@@ -27,7 +27,7 @@ public class CastExpression extends AbstractExpression {
 
     private final Expression expr;
 
-    public CastExpression(String className, Expression expr) {
+    CastExpression(String className, Expression expr) {
         this.className = className;
         this.expr = expr;
         expr.setParent(this);

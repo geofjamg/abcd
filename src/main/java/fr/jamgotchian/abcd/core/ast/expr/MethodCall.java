@@ -31,7 +31,7 @@ public class MethodCall extends AbstractExpression {
 
     private final List<Expression> arguments;
 
-    public MethodCall(Expression scope, String methodName, List<Expression> arguments) {
+    MethodCall(Expression scope, String methodName, List<Expression> arguments) {
         this.scope = scope;
         this.methodName = methodName;
         this.arguments = arguments;

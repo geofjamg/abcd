@@ -25,7 +25,7 @@ public class ArrayLength extends AbstractExpression {
 
     private final Expression arrayRef;
         
-    public ArrayLength(Expression arrayRef) {
+    ArrayLength(Expression arrayRef) {
         this.arrayRef = arrayRef;
     }
 

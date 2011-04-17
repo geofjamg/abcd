@@ -27,7 +27,7 @@ public class ArrayAccess extends AbstractExpression {
 
     private final Expression arrayIndexExpr;
 
-    public ArrayAccess(Expression arrayRef, Expression arrayIndexExpr) {
+    ArrayAccess(Expression arrayRef, Expression arrayIndexExpr) {
         this.arrayRef = arrayRef;
         this.arrayIndexExpr = arrayIndexExpr;
     }

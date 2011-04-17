@@ -17,7 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.util;
 
-import fr.jamgotchian.abcd.core.ast.util.ExpressionEqualityChecker;
+import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryOperator;
 import fr.jamgotchian.abcd.core.ast.expr.Constant;
@@ -35,22 +35,34 @@ public class ExpressionEqualityCheckerTest {
 
     @Test
     public void test1() {
-        Constant expr1 = new Constant("a");
-        Constant expr2 = new Constant("a");
+        Constant expr1 = Expressions.newCstExpr("a", null);
+        Constant expr2 = Expressions.newCstExpr("a", null);
         assertTrue(ExpressionEqualityChecker.equal(expr1, expr2));
     }
 
     @Test
     public void test2() {
-        BinaryExpression expr1 = new BinaryExpression(new Constant("a"), new Constant("b"), BinaryOperator.EQ);
-        BinaryExpression expr2 = new BinaryExpression(new Constant("a"), new Constant("b"), BinaryOperator.EQ);
+        BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newCstExpr("a", null), 
+                                                        Expressions.newCstExpr("b", null), 
+                                                        BinaryOperator.EQ,
+                                                        null);
+        BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newCstExpr("a", null), 
+                                                        Expressions.newCstExpr("b", null), 
+                                                        BinaryOperator.EQ,
+                                                        null);
         assertTrue(ExpressionEqualityChecker.equal(expr1, expr2));
     }
 
     @Test
     public void test3() {
-        BinaryExpression expr1 = new BinaryExpression(new Constant("a"), new Constant("b"), BinaryOperator.EQ);
-        BinaryExpression expr2 = new BinaryExpression(new Constant("a"), new Constant("c"), BinaryOperator.EQ);
+        BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newCstExpr("a", null), 
+                                                        Expressions.newCstExpr("b", null), 
+                                                        BinaryOperator.EQ,
+                                                        null);
+        BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newCstExpr("a", null), 
+                                                        Expressions.newCstExpr("c", null), 
+                                                        BinaryOperator.EQ,
+                                                        null);
         assertFalse(ExpressionEqualityChecker.equal(expr1, expr2));
     }
 

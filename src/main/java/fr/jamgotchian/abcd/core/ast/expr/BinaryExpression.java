@@ -29,7 +29,7 @@ public class BinaryExpression extends AbstractExpression {
 
     private final BinaryOperator operator;
 
-    public BinaryExpression(Expression left, Expression right, BinaryOperator operator) {
+    BinaryExpression(Expression left, Expression right, BinaryOperator operator) {
         this.left = left;
         this.right = right;
         this.operator =  operator;

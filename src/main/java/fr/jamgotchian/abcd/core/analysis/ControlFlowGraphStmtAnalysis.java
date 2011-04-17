@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.analysis;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
+import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
@@ -45,7 +46,7 @@ public class ControlFlowGraphStmtAnalysis {
 
     private static class DummyExpressionStack implements ExpressionStack {
 
-        private static final Expression DUMMY_EXPR = new Constant(null);
+        private static final Expression DUMMY_EXPR = Expressions.newCstExpr(null, null);
 
         private int stackSize = 0;
 
@@ -108,7 +109,7 @@ public class ControlFlowGraphStmtAnalysis {
             super.before(block);
             Iterator<Edge> itE = block.getGraph().getIncomingEdgesOf(block).iterator();
             if (itE.hasNext() && itE.next().isExceptional()) {
-                pushExpr(new Constant("EXCEPTION"), block);
+                stack.push(Expressions.newCstExpr("EXCEPTION", block));
             }
         }
 
@@ -142,8 +143,7 @@ public class ControlFlowGraphStmtAnalysis {
         ExpressionStack outputStack = inputStack.clone();
         Iterator<Edge> itE = graph.getIncomingEdgesOf(block).iterator();
         if (itE.hasNext() && itE.next().isExceptional()) {
-            Constant cst = new Constant("EXCEPTION");
-            cst.setBasicBlock(block);
+            Constant cst = Expressions.newCstExpr("EXCEPTION", block);
             outputStack.push(cst);
         }
 
@@ -206,7 +206,7 @@ public class ControlFlowGraphStmtAnalysis {
                 } else if (stacks.size() == 1) {
                     inputStack = stacks.get(0).clone();
                 } else {
-                    inputStack = ExpressionStacks.merge(stacks);
+                    inputStack = ExpressionStacks.merge(stacks, block);
                 }
                     
                 processBlock(block, inputStack);

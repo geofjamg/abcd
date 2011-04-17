@@ -29,7 +29,7 @@ public class ObjectCreationExpression extends AbstractExpression {
 
     private List<Expression> arguments;
 
-    public ObjectCreationExpression(String className, List<Expression> arguments) {
+    ObjectCreationExpression(String className, List<Expression> arguments) {
         this.className = className;
         this.arguments = arguments;
         if (arguments != null) {
@@ -39,7 +39,7 @@ public class ObjectCreationExpression extends AbstractExpression {
         }
     }
 
-    public ObjectCreationExpression(String className) {
+    ObjectCreationExpression(String className) {
         this(className, null);
     }
 

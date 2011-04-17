@@ -25,7 +25,7 @@ public class Constant extends AbstractExpression {
 
     private final Object value;
 
-    public Constant(Object value) {
+    Constant(Object value) {
         this.value = value;
     }
 

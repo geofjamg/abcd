@@ -27,7 +27,7 @@ public class UnaryExpression extends AbstractExpression {
 
     private final UnaryOperator operator;
 
-    public UnaryExpression(Expression expr, UnaryOperator operator) {
+    UnaryExpression(Expression expr, UnaryOperator operator) {
         this.expr = expr;
         this.operator = operator;
         expr.setParent(this);

@@ -27,15 +27,12 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockVisitor;
 import fr.jamgotchian.abcd.core.ast.expr.ArrayAccess;
 import fr.jamgotchian.abcd.core.ast.expr.ArrayCreationExpression;
-import fr.jamgotchian.abcd.core.ast.expr.ArrayLength;
 import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignOperator;
-import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryOperator;
-import fr.jamgotchian.abcd.core.ast.expr.CastExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ClassExpression;
-import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
+import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.FieldAccess;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.expr.MethodCall;
@@ -91,11 +88,6 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
         this.stack = stack;
     }
 
-    protected void pushExpr(Expression expr, BasicBlock block) {
-        expr.setBasicBlock(block);
-        stack.push(expr);
-    }
-
     private void addStmt(BasicBlock block, Expression expr) {
         addStmt(block, new ExpressionStatement(expr));
     }
@@ -112,46 +104,65 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     public void visitFieldInsn(BasicBlock block, int index, FieldInsnNode node) {
 
         switch (node.getOpcode()) {
-            case GETSTATIC:
-                pushExpr(new FieldAccess(new ClassExpression(node.owner.replace('/', '.')),
-                                             node.name), block);
+            case GETSTATIC: {
+                ClassExpression clsExpr = Expressions.newClassExpr(node.owner.replace('/', '.'), block);
+                FieldAccess fieldExpr = Expressions.newFieldAccesExpr(clsExpr, node.name, block);
+                stack.push(fieldExpr);
                 break;
+            }
 
-            case PUTSTATIC:
-                addStmt(block, new AssignExpression(new FieldAccess(new ClassExpression(node.owner.replace('/', '.')), node.name),
-                                                           stack.pop(),
-                                                           AssignOperator.ASSIGN));
+            case PUTSTATIC: {
+                ClassExpression clsExpr = Expressions.newClassExpr(node.owner.replace('/', '.'), block);
+                FieldAccess fieldExpr = Expressions.newFieldAccesExpr(clsExpr, node.name, block);
+                AssignExpression assignExpr = Expressions.newAssignExpr(fieldExpr, stack.pop(), AssignOperator.ASSIGN, block);
+                addStmt(block, assignExpr);
                 break;
+            }
 
-            case GETFIELD:
-                pushExpr(new FieldAccess(stack.pop(), node.name), block);
+            case GETFIELD: {
+                FieldAccess fieldExpr = Expressions.newFieldAccesExpr(stack.pop(), node.name, block);
+                stack.push(fieldExpr);
                 break;
+            }
 
-            case PUTFIELD:
+            case PUTFIELD: {
                 Expression value = stack.pop();
                 Expression objectRef = stack.pop();
-                addStmt(block, new AssignExpression(new FieldAccess(objectRef, node.name),
-                                                           value,
-                                                           AssignOperator.ASSIGN));
+                FieldAccess fieldExpr = Expressions.newFieldAccesExpr(objectRef, node.name, block);
+                AssignExpression assignExpr = Expressions.newAssignExpr(fieldExpr, value, AssignOperator.ASSIGN, block);
+                addStmt(block, assignExpr);
                 break;
+            }
         }
     }
 
     public void visitIincInsn(BasicBlock block, int index, IincInsnNode node) {
         if (node.incr == 1) {
-            addStmt(block, new UnaryExpression(new LocalVariable(node.var),
-                                               UnaryOperator.POST_INCREMENT));
+            UnaryExpression unaryExpr
+                    = Expressions.newUnaryExpr(Expressions.newVarExpr(node.var, block),
+                                               UnaryOperator.POST_INCREMENT,
+                                               block);
+            addStmt(block, unaryExpr);
         } else if (node.incr == -1) {
-            addStmt(block, new UnaryExpression(new LocalVariable(node.var),
-                                               UnaryOperator.POST_DECREMENT));
+            UnaryExpression unaryExpr
+                    = Expressions.newUnaryExpr(Expressions.newVarExpr(node.var, block),
+                                               UnaryOperator.POST_DECREMENT,
+                                               block);
+            addStmt(block, unaryExpr);
         } else if (node.incr > 1) {
-            addStmt(block, new AssignExpression(new LocalVariable(node.var),
-                                                new Constant(Integer.valueOf(node.incr)),
-                                                AssignOperator.PLUS));
+            AssignExpression assignExpr
+                    = Expressions.newAssignExpr(Expressions.newVarExpr(node.var, block),
+                                                Expressions.newCstExpr(Integer.valueOf(node.incr), block),
+                                                AssignOperator.PLUS,
+                                                block);
+            addStmt(block, assignExpr);
         } else if (node.incr < -1) {
-            addStmt(block, new AssignExpression(new LocalVariable(node.var),
-                                                new Constant(Integer.valueOf(-node.incr)),
-                                                AssignOperator.MINUS));
+            AssignExpression assignExpr
+                    = Expressions.newAssignExpr(Expressions.newVarExpr(node.var, block),
+                                                Expressions.newCstExpr(Integer.valueOf(-node.incr), block),
+                                                AssignOperator.MINUS,
+                                                block);
+            addStmt(block, assignExpr);
         }
     }
 
@@ -161,63 +172,63 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 break;
 
             case ACONST_NULL:
-                pushExpr(new Constant(null), block);
+                stack.push(Expressions.newCstExpr(null, block));
                 break;
 
             case ICONST_M1:
-                pushExpr(new Constant(Integer.valueOf(1)), block);
+                stack.push(Expressions.newCstExpr(Integer.valueOf(1), block));
                 break;
 
             case ICONST_0:
-                pushExpr(new Constant(Integer.valueOf(0)), block);
+                stack.push(Expressions.newCstExpr(Integer.valueOf(0), block));
                 break;
 
             case ICONST_1:
-                pushExpr(new Constant(Integer.valueOf(1)), block);
+                stack.push(Expressions.newCstExpr(Integer.valueOf(1), block));
                 break;
 
             case ICONST_2:
-                pushExpr(new Constant(Integer.valueOf(2)), block);
+                stack.push(Expressions.newCstExpr(Integer.valueOf(2), block));
                 break;
 
             case ICONST_3:
-                pushExpr(new Constant(Integer.valueOf(3)), block);
+                stack.push(Expressions.newCstExpr(Integer.valueOf(3), block));
                 break;
 
             case ICONST_4:
-                pushExpr(new Constant(Integer.valueOf(4)), block);
+                stack.push(Expressions.newCstExpr(Integer.valueOf(4), block));
                 break;
 
             case ICONST_5:
-                pushExpr(new Constant(Integer.valueOf(5)), block);
+                stack.push(Expressions.newCstExpr(Integer.valueOf(5), block));
                 break;
 
             case LCONST_0:
-                pushExpr(new Constant(Long.valueOf(0)), block);
+                stack.push(Expressions.newCstExpr(Long.valueOf(0), block));
                 break;
 
             case LCONST_1:
-                pushExpr(new Constant(Long.valueOf(1)), block);
+                stack.push(Expressions.newCstExpr(Long.valueOf(1), block));
                 break;
 
             case FCONST_0:
-                pushExpr(new Constant(Float.valueOf(0f)), block);
+                stack.push(Expressions.newCstExpr(Float.valueOf(0f), block));
                 break;
 
             case FCONST_1:
-                pushExpr(new Constant(Float.valueOf(1f)), block);
+                stack.push(Expressions.newCstExpr(Float.valueOf(1f), block));
                 break;
 
             case FCONST_2:
-                pushExpr(new Constant(Float.valueOf(2f)), block);
+                stack.push(Expressions.newCstExpr(Float.valueOf(2f), block));
                 break;
 
             case DCONST_0:
-                pushExpr(new Constant(Double.valueOf(0d)), block);
+                stack.push(Expressions.newCstExpr(Double.valueOf(0d), block));
                 break;
 
             case DCONST_1:
-                pushExpr(new Constant(Double.valueOf(1d)), block);
+                stack.push(Expressions.newCstExpr(Double.valueOf(1d), block));
                 break;
 
             case IALOAD:
@@ -230,7 +241,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case SALOAD: {
                 Expression arrayIndexExpr = stack.pop();
                 Expression arrayRef = stack.pop();
-                pushExpr(new ArrayAccess(arrayRef, arrayIndexExpr), block);
+                stack.push(Expressions.newArrayAcces(arrayRef, arrayIndexExpr, block));
                 break;
             }
 
@@ -248,9 +259,14 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 if (arrayRef instanceof ArrayCreationExpression) {
                     ((ArrayCreationExpression) arrayRef).addInitValue(valueExpr);
                 } else {
-                    addStmt(block, new AssignExpression(new ArrayAccess(arrayRef, arrayIndexExpr),
+                    ArrayAccess arrayAccesExpr
+                            = Expressions.newArrayAcces(arrayRef, arrayIndexExpr, block);
+                    AssignExpression assignExpr
+                            = Expressions.newAssignExpr(arrayAccesExpr,
                                                         valueExpr,
-                                                        AssignOperator.ASSIGN));
+                                                        AssignOperator.ASSIGN,
+                                                        block);
+                    addStmt(block, assignExpr);
                 }
                 break;
             }
@@ -267,7 +283,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 throw new ABCDException("TODO");
 
             case DUP:
-                pushExpr(stack.peek(), block);
+                stack.push(stack.peek());
                 break;
 
             case DUP_X1:
@@ -279,8 +295,8 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case SWAP: {
                 Expression expr1 = stack.pop();
                 Expression expr2 = stack.pop();
-                pushExpr(expr1, block);
-                pushExpr(expr2, block);
+                stack.push(expr1);
+                stack.push(expr2);
                 break;
             }
 
@@ -290,7 +306,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case DADD: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                pushExpr(new BinaryExpression(left, right, BinaryOperator.PLUS), block);
+                stack.push(Expressions.newBinExpr(left, right, BinaryOperator.PLUS, block));
                 break;
             }
 
@@ -300,7 +316,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case DSUB: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                pushExpr(new BinaryExpression(left, right, BinaryOperator.MINUS), block);
+                stack.push(Expressions.newBinExpr(left, right, BinaryOperator.MINUS, block));
                 break;
             }
 
@@ -310,7 +326,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case DMUL: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                pushExpr(new BinaryExpression(left, right, BinaryOperator.MUL), block);
+                stack.push(Expressions.newBinExpr(left, right, BinaryOperator.MUL, block));
                 break;
             }
 
@@ -320,7 +336,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case DDIV: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                pushExpr(new BinaryExpression(left, right, BinaryOperator.DIV), block);
+                stack.push(Expressions.newBinExpr(left, right, BinaryOperator.DIV, block));
                 break;
             }
 
@@ -330,22 +346,23 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case DREM: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                pushExpr(new BinaryExpression(left, right, BinaryOperator.REMAINDER), block);
+                stack.push(Expressions.newBinExpr(left, right, BinaryOperator.REMAINDER, block));
                 break;
             }
 
             case INEG:
             case LNEG:
             case FNEG:
-            case DNEG:
-                pushExpr(new UnaryExpression(stack.pop(), UnaryOperator.MINUS), block);
+            case DNEG: {
+                stack.push(Expressions.newUnaryExpr(stack.pop(), UnaryOperator.MINUS, block));
                 break;
+            }
 
             case ISHL:
             case LSHL: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                pushExpr(new BinaryExpression(left, right, BinaryOperator.SHIFT_LEFT), block);
+                stack.push(Expressions.newBinExpr(left, right, BinaryOperator.SHIFT_LEFT, block));
                 break;
             }
 
@@ -353,7 +370,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case LSHR: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                pushExpr(new BinaryExpression(left, right, BinaryOperator.SHIFT_RIGHT), block);
+                stack.push(Expressions.newBinExpr(left, right, BinaryOperator.SHIFT_RIGHT, block));
                 break;
             }
 
@@ -361,7 +378,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case LUSHR: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                pushExpr(new BinaryExpression(left, right, BinaryOperator.LOGICAL_SHIFT_RIGHT), block);
+                stack.push(Expressions.newBinExpr(left, right, BinaryOperator.LOGICAL_SHIFT_RIGHT, block));
                 break;
             }
 
@@ -369,7 +386,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case LAND: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                pushExpr(new BinaryExpression(left, right, BinaryOperator.AND), block);
+                stack.push(Expressions.newBinExpr(left, right, BinaryOperator.AND, block));
                 break;
             }
 
@@ -377,7 +394,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case LOR: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                pushExpr(new BinaryExpression(left, right, BinaryOperator.OR), block);
+                stack.push(Expressions.newBinExpr(left, right, BinaryOperator.OR, block));
                 break;
             }
 
@@ -385,68 +402,68 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case LXOR: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                pushExpr(new BinaryExpression(left, right, BinaryOperator.XOR), block);
+                stack.push(Expressions.newBinExpr(left, right, BinaryOperator.XOR, block));
                 break;
             }
 
             case I2L:
-                pushExpr(new CastExpression("long", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("long", stack.pop(), block));
                 break;
 
             case I2F:
-                pushExpr(new CastExpression("float", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("float", stack.pop(), block));
                 break;
 
             case I2D:
-                pushExpr(new CastExpression("double", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("double", stack.pop(), block));
                 break;
 
             case L2I:
-                pushExpr(new CastExpression("int", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("int", stack.pop(), block));
                 break;
 
             case L2F:
-                pushExpr(new CastExpression("float", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("float", stack.pop(), block));
                 break;
 
             case L2D:
-                pushExpr(new CastExpression("double", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("double", stack.pop(), block));
                 break;
 
             case F2I:
-                pushExpr(new CastExpression("int", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("int", stack.pop(), block));
                 break;
 
             case F2L:
-                pushExpr(new CastExpression("long", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("long", stack.pop(), block));
                 break;
 
             case F2D:
-                pushExpr(new CastExpression("double", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("double", stack.pop(), block));
                 break;
 
             case D2I:
-                pushExpr(new CastExpression("int", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("int", stack.pop(), block));
                 break;
 
             case D2L:
-                pushExpr(new CastExpression("long", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("long", stack.pop(), block));
                 break;
 
             case D2F:
-                pushExpr(new CastExpression("float", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("float", stack.pop(), block));
                 break;
 
             case I2B:
-                pushExpr(new CastExpression("byte", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("byte", stack.pop(), block));
                 break;
 
             case I2C:
-                pushExpr(new CastExpression("char", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("char", stack.pop(), block));
                 break;
 
             case I2S:
-                pushExpr(new CastExpression("short", stack.pop()), block);
+                stack.push(Expressions.newCastExpr("short", stack.pop(), block));
                 break;
 
             case LCMP:
@@ -456,7 +473,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case DCMPG: {
                 Expression value2 = stack.pop();
                 Expression value1 = stack.pop();
-                pushExpr(new BinaryExpression(value1, value2, BinaryOperator.MINUS), block);
+                stack.push(Expressions.newBinExpr(value1, value2, BinaryOperator.MINUS, block));
                 break;
             }
 
@@ -473,7 +490,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 break;
 
             case ARRAYLENGTH:
-                pushExpr(new ArrayLength(stack.pop()), block);
+                stack.push(Expressions.newArrayLength(stack.pop(), block));
                 break;
 
             case ATHROW:
@@ -493,15 +510,15 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     public void visitIntInsn(BasicBlock block, int index, IntInsnNode node) {
         switch (node.getOpcode()) {
             case BIPUSH:
-                pushExpr(new Constant(Byte.valueOf((byte) node.operand)), block);
+                stack.push(Expressions.newCstExpr(Byte.valueOf((byte) node.operand), block));
                 break;
 
             case SIPUSH:
-                pushExpr(new Constant(Short.valueOf((short) node.operand)), block);
+                stack.push(Expressions.newCstExpr(Short.valueOf((short) node.operand), block));
                 break;
 
             case NEWARRAY:
-                pushExpr(new ArrayCreationExpression(ATYPES[node.operand], stack.pop()), block);
+                stack.push(Expressions.newArrayCreatExpr(ATYPES[node.operand], stack.pop(), block));
                 break;
         }
     }
@@ -512,94 +529,106 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
         switch(node.getOpcode()) {
             case IFEQ: {
-                expr = new BinaryExpression(stack.pop(), new Constant(Integer.valueOf(0)),
-                                   BinaryOperator.EQ);
+                expr = Expressions.newBinExpr(stack.pop(),
+                                              Expressions.newCstExpr(Integer.valueOf(0), block),
+                                              BinaryOperator.EQ,
+                                              block);
                 break;
             }
 
             case IFNE: {
-                expr = new BinaryExpression(stack.pop(), new Constant(Integer.valueOf(0)),
-                                   BinaryOperator.NE);
+                expr = Expressions.newBinExpr(stack.pop(),
+                                              Expressions.newCstExpr(Integer.valueOf(0), block),
+                                              BinaryOperator.NE,
+                                              block);
                 break;
             }
 
             case IFLT: {
-                expr = new BinaryExpression(stack.pop(), new Constant(Integer.valueOf(0)),
-                                   BinaryOperator.LT);
+                expr = Expressions.newBinExpr(stack.pop(),
+                                              Expressions.newCstExpr(Integer.valueOf(0), block),
+                                              BinaryOperator.LT,
+                                              block);
                 break;
             }
 
             case IFGE: {
-                expr = new BinaryExpression(stack.pop(), new Constant(Integer.valueOf(0)),
-                                   BinaryOperator.GE);
+                expr = Expressions.newBinExpr(stack.pop(),
+                                              Expressions.newCstExpr(Integer.valueOf(0), block),
+                                              BinaryOperator.GE,
+                                              block);
                 break;
             }
 
             case IFGT: {
-                expr = new BinaryExpression(stack.pop(), new Constant(Integer.valueOf(0)),
-                                   BinaryOperator.GT);
+                expr = Expressions.newBinExpr(stack.pop(),
+                                              Expressions.newCstExpr(Integer.valueOf(0), block),
+                                              BinaryOperator.GT,
+                                              block);
                 break;
             }
 
             case IFLE: {
-                expr = new BinaryExpression(stack.pop(), new Constant(Integer.valueOf(0)),
-                                   BinaryOperator.LE);
+                expr = Expressions.newBinExpr(stack.pop(),
+                                              Expressions.newCstExpr(Integer.valueOf(0), block),
+                                              BinaryOperator.LE,
+                                              block);
                 break;
             }
 
             case IF_ICMPEQ: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                expr = new BinaryExpression(left, right, BinaryOperator.EQ);
+                expr = Expressions.newBinExpr(left, right, BinaryOperator.EQ, block);
                 break;
             }
 
             case IF_ICMPNE: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                expr = new BinaryExpression(left, right, BinaryOperator.NE);
+                expr = Expressions.newBinExpr(left, right, BinaryOperator.NE, block);
                 break;
             }
 
             case IF_ICMPLT: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                expr = new BinaryExpression(left, right, BinaryOperator.LT);
+                expr = Expressions.newBinExpr(left, right, BinaryOperator.LT, block);
                 break;
             }
 
             case IF_ICMPGE: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                expr = new BinaryExpression(left, right, BinaryOperator.GE);
+                expr = Expressions.newBinExpr(left, right, BinaryOperator.GE, block);
                 break;
             }
 
             case IF_ICMPGT: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                expr = new BinaryExpression(left, right, BinaryOperator.GT);
+                expr = Expressions.newBinExpr(left, right, BinaryOperator.GT, block);
                 break;
             }
 
             case IF_ICMPLE: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                expr = new BinaryExpression(left, right, BinaryOperator.LE);
+                expr = Expressions.newBinExpr(left, right, BinaryOperator.LE, block);
                 break;
             }
 
             case IF_ACMPEQ: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                expr = new BinaryExpression(left, right, BinaryOperator.EQ);
+                expr = Expressions.newBinExpr(left, right, BinaryOperator.EQ, block);
                 break;
             }
 
             case IF_ACMPNE: {
                 Expression right = stack.pop();
                 Expression left = stack.pop();
-                expr = new BinaryExpression(left, right, BinaryOperator.NE);
+                expr = Expressions.newBinExpr(left, right, BinaryOperator.NE, block);
                 break;
             }
 
@@ -610,12 +639,18 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 throw new ABCDException("TODO : support JSR instruction");
 
             case IFNULL: {
-                expr = new BinaryExpression(stack.pop(), new Constant(null), BinaryOperator.EQ);
+                expr = Expressions.newBinExpr(stack.pop(),
+                                              Expressions.newCstExpr(null, block),
+                                              BinaryOperator.EQ,
+                                              block);
                 break;
             }
 
             case IFNONNULL: {
-                expr = new BinaryExpression(stack.pop(), new Constant(null), BinaryOperator.NE);
+                expr = Expressions.newBinExpr(stack.pop(),
+                                              Expressions.newCstExpr(null, block),
+                                              BinaryOperator.NE,
+                                              block);
                 break;
             }
         }
@@ -638,9 +673,9 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
     public void visitLdcInsn(BasicBlock block, int index, LdcInsnNode node) {
         if (node.cst instanceof Type) {
-            pushExpr(new Constant(((Type)node.cst).getClassName()), block);
+            stack.push(Expressions.newCstExpr(((Type)node.cst).getClassName(), block));
         } else {
-            pushExpr(new Constant(node.cst), block);
+            stack.push(Expressions.newCstExpr(node.cst, block));
         }
     }
 
@@ -682,21 +717,22 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                             && ((LocalVariable) scope).getIndex() == 0) {
                         scope = null;
                     }
-                    expr = new MethodCall(scope, node.name, args);
+                    expr = Expressions.newMethodExpr(scope, node.name, args, block);
                     break;
                 }
 
                 case INVOKESTATIC:
-                    expr = new MethodCall(new ClassExpression(node.owner.replace('/', '.')),
-                                                                  node.name,
-                                                                  args);
+                    expr = Expressions.newMethodExpr(Expressions.newClassExpr(node.owner.replace('/', '.'), block),
+                                                     node.name,
+                                                     args,
+                                                     block);
                     break;
             }
 
             if (returnType == Type.VOID_TYPE) {
                 addStmt(block, expr);
             } else {
-                pushExpr(expr, block);
+                stack.push(expr);
             }
         }
     }
@@ -707,7 +743,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
         for (int i = 0; i < node.dims; i++) {
             arrayLengthExpr.add(0, stack.pop());
         }
-        pushExpr(new ArrayCreationExpression(typeName, arrayLengthExpr), block);
+        stack.push(Expressions.newArrayCreatExpr(typeName, arrayLengthExpr, block));
     }
 
     public void visitTableSwitchInsn(BasicBlock block, int index, TableSwitchInsnNode node) {
@@ -724,21 +760,22 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
         switch (node.getOpcode()) {
             case NEW:
-                pushExpr(new ObjectCreationExpression(typeName), block);
+                stack.push(Expressions.newObjCreatExpr(typeName, block));
                 break;
 
             case ANEWARRAY:
-                pushExpr(new ArrayCreationExpression(typeName, stack.pop()), block);
+                stack.push(Expressions.newArrayCreatExpr(typeName, stack.pop(), block));
                 break;
 
             case CHECKCAST:
-                pushExpr(new CastExpression(typeName, stack.pop()), block);
+                stack.push(Expressions.newCastExpr(typeName, stack.pop(), block));
                 break;
 
             case INSTANCEOF:
-                pushExpr(new BinaryExpression(stack.pop(),
-                                                  new ClassExpression(typeName),
-                                                  BinaryOperator.INSTANCE_OF), block);
+                stack.push(Expressions.newBinExpr(stack.pop(),
+                                                  Expressions.newClassExpr(typeName, block),
+                                                  BinaryOperator.INSTANCE_OF,
+                                                  block));
                 break;
         }
     }
@@ -750,7 +787,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case FLOAD:
             case DLOAD:
             case ALOAD:
-                pushExpr(new LocalVariable(node.var), block);
+                stack.push(Expressions.newVarExpr(node.var, block));
                 break;
 
             case ISTORE:
@@ -758,9 +795,11 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             case FSTORE:
             case DSTORE:
             case ASTORE: {
-                addStmt(block, new AssignExpression(new LocalVariable(node.var),
-                                                           stack.pop(),
-                                                           AssignOperator.ASSIGN));
+                AssignExpression assignExpr
+                        = Expressions.newAssignExpr(Expressions.newVarExpr(node.var, block),
+                                                    stack.pop(),
+                                                    AssignOperator.ASSIGN, block);
+                addStmt(block, assignExpr);
                 break;
             }
 

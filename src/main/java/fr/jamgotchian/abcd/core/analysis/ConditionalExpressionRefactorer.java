@@ -20,9 +20,9 @@ package fr.jamgotchian.abcd.core.analysis;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.ast.expr.ChoiceExpression;
-import fr.jamgotchian.abcd.core.ast.expr.ConditionalExpression;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.ExpressionModifierVisitor;
+import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.BreakStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.CommentStatement;
@@ -78,7 +78,9 @@ public class ConditionalExpressionRefactorer implements StatementVisitor<Object,
         @Override
         public Expression visit(ChoiceExpression choiceExpr, Void arg) {
 
-            ChoiceExpression oldChoiceExpr = new ChoiceExpression(new HashSet<Expression>(choiceExpr.getChoices()));
+            ChoiceExpression oldChoiceExpr
+                    = Expressions.newChoiceExpr(new HashSet<Expression>(choiceExpr.getChoices()),
+                                                choiceExpr.getBasicBlock());
 
             boolean change = true;
             while (change) {
@@ -118,8 +120,9 @@ public class ConditionalExpressionRefactorer implements StatementVisitor<Object,
                             BasicBlockAnalysisDataImpl forkData = (BasicBlockAnalysisDataImpl) forkBlock.getData();
                             JumpIfStatement jumpIfStmt = (JumpIfStatement) forkData.getLastStatement();
                             Expression condition = ExpressionInverter.invert(jumpIfStmt.getCondition());
-                            Expression condExpr = new ConditionalExpression(condition, elseExpr, thenExpr);
-                            condExpr.setBasicBlock(forkBlock);
+                            Expression condExpr
+                                    = Expressions.newCondExpr(condition, elseExpr, thenExpr,
+                                                              forkBlock);
                             choiceExpr.getChoices().remove(expr1);
                             choiceExpr.getChoices().remove(expr2);
                             choiceExpr.getChoices().add(condExpr);

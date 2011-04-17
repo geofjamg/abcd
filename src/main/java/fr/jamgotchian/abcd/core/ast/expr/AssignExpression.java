@@ -29,8 +29,7 @@ public class AssignExpression extends AbstractExpression {
 
     private final AssignOperator operator;
 
-    public AssignExpression(Expression target, Expression value,
-                            AssignOperator operator) {
+    AssignExpression(Expression target, Expression value, AssignOperator operator) {
         this.target = target;
         this.value = value;
         this.operator = operator;

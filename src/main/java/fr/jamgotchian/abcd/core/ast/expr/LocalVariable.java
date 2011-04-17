@@ -25,7 +25,7 @@ public class LocalVariable extends AbstractExpression {
 
     private final int index;
 
-    public LocalVariable(int index) {
+    LocalVariable(int index) {
         this.index = index;
     }
 

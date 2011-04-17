@@ -21,11 +21,12 @@ import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignOperator;
 import fr.jamgotchian.abcd.core.ast.expr.Constant;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
+import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryOperator;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -68,9 +69,12 @@ public class Statements {
     }
     
     public static <E extends Throwable> Statement createThrowStmt(Class<E> excCls, String msg) {
-        return new ThrowStatement(
-                    new ObjectCreationExpression(excCls.getName(),
-                                                   Arrays.<Expression>asList(new Constant(msg))));
+        Constant msgExpr = Expressions.newCstExpr(msg, null);
+        ObjectCreationExpression objCreatExpr 
+                = Expressions.newObjCreatExpr(excCls.getName(),
+                                              Collections.<Expression>singletonList(msgExpr), 
+                                              null);
+        return new ThrowStatement(objCreatExpr);
     }
     
     public static IfStatement createIfThenBreakStmt(Expression condition) {
