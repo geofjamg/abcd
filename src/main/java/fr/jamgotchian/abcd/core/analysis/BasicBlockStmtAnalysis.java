@@ -286,7 +286,15 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 stack.push(stack.peek());
                 break;
 
-            case DUP_X1:
+            case DUP_X1: {
+                Expression expr1 = stack.pop();
+                Expression expr2 = stack.pop();
+                stack.push(expr1);
+                stack.push(expr2);
+                stack.push(expr1);
+                break;
+            }
+                
             case DUP_X2:
             case DUP2_X1:
             case DUP2_X2:
