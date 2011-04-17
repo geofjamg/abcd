@@ -338,6 +338,8 @@ public class ABCDContext {
         ASMUtil.printInnerClasses(innerClasses, builder);
         logger.log(Level.FINER, "Inner classes :\n{0}", builder.toString());
 
+        List<String> errorMsgs = new ArrayList<String>();
+
         for (MethodNode mn : (List<MethodNode>) cn.methods) {
             String methodSignature = ASMUtil.getMethodSignature(cn, mn);
 
@@ -423,9 +425,23 @@ public class ABCDContext {
                     throw new ABCDException("Fail to recognize structure");
                 }
             } catch (Exception exc) {
+                errorMsgs.add(exc.toString() + " (" + methodSignature + ")");
                 logger.log(Level.SEVERE, exc.toString(), exc);
             }
         }
+
+        logger.fine("");
+        logger.log(Level.FINE, "########## Summary {0} ##########", cn.name.replace('/', '.'));
+        logger.fine("");
+        logger.log(Level.FINE, "Succeed : {0}/{1}",
+                new Object[]{cn.methods.size() - errorMsgs.size(), cn.methods.size()});
+        StringBuilder errorStr = new StringBuilder();
+        for (String errorMsg : errorMsgs) {
+            errorStr.append("  ").append(errorMsg).append("\n");
+        }
+        logger.log(Level.FINE, "Failed : {0}/{1}\n{2}",
+                new Object[]{errorMsgs.size(), cn.methods.size(),
+                    errorStr.toString()});
     }
 
     private static void printUsage() {
