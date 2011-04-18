@@ -17,10 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
-import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.Statement;
-import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.Statements;
+import fr.jamgotchian.abcd.core.ast.type.JavaType;
 import java.util.Iterator;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,7 +49,7 @@ public class StatementsTest {
 
     @Test
     public void oneStatementSourceBlockMoveTest() {
-        Statement stmt = new LocalVariableDeclarationStatement(0, Integer.class.getName());
+        Statement stmt = new LocalVariableDeclarationStatement(0, JavaType.INT);
         sourceBlock.add(stmt);
         Assert.assertFalse(sourceBlock.isEmpty());
         Assert.assertTrue(targetBlock.isEmpty());

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
+ * Copyright (C) 2011 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,18 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-package fr.jamgotchian.abcd.core.ast;
+package fr.jamgotchian.abcd.core.ast.type;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface CompilationUnitVisitor<R, A> {
+public interface ClassNameFactory {
 
-    R visit(CompilationUnit compilUnit, A arg);
-
-    R visit(Package _package, A arg);
-    
-    R visit(ImportManager importManager, A arg);
+    ClassName newClassName(String className);
 }

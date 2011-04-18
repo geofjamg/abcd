@@ -28,6 +28,8 @@ public class Test {
     int zz;
     float ee;
 
+    private Runnable run;
+    
     public Test(int zz, float ee) {
         this.zz = zz;
         this.ee = ee;
@@ -111,7 +113,8 @@ public class Test {
         return new int[4];
     }
     
-    protected final String methodWithException() throws IOException, XMLStreamException {
+    protected final java.lang.String methodWithException() 
+            throws IOException, XMLStreamException, NullPointerException {
         return null;
     }
     
@@ -932,10 +935,10 @@ public class Test {
 //    }
 
     public void testAllocation() {
-        String s = new String("sss");
+        java.lang.String s = new java.lang.String("sss");
     }
 
-    public void testInvokation(String s) {
+    public void testInvokation(java.lang.String s) {
         s.length();
     }
 
@@ -981,17 +984,17 @@ public class Test {
     }
 
     public void testInstanceOf() {
-        String a = "sss";
-        if (a instanceof String) {
+        java.lang.String a = "sss";
+        if (a instanceof java.lang.String) {
             System.out.println("yes");
         }
     }
 
     public void testInstanceOf2() {
-        String[] a = new String[2];
+        java.lang.String[] a = new java.lang.String[2];
         a[0] = "aaa";
         a[1] = "bbb";
-        if (a instanceof String[]) {
+        if (a instanceof java.lang.String[]) {
             System.out.println("yes");
         }
     }
@@ -1007,8 +1010,8 @@ public class Test {
     }
     
     public void testCast() {
-        Object s = new String("aaa");
-        System.out.println(((String)s).charAt(0));
+        Object s = new java.lang.String("aaa");
+        System.out.println(((java.lang.String)s).charAt(0));
     }
 
     public void testCast2() {
@@ -1024,7 +1027,7 @@ public class Test {
         char[] d = new char[3 * i + 6];
         byte[] e = new byte[5];
         long[] f = new long[5];
-        String[] g = new String[1];
+        java.lang.String[] g = new java.lang.String[1];
         short[] h = new short[1];
         a[0] = 4;
         b[0] = 4.3f;
@@ -1038,7 +1041,7 @@ public class Test {
     }
     
     void testArrayInitializer() {
-        String[] a = { "a" , "b" };
+        java.lang.String[] a = { "a" , "b" };
     }
     
     int testMinusOp(int a) {
@@ -1138,7 +1141,7 @@ public class Test {
     
     void testMultiArray(int size) {
         int[][][] a = new int[4][4][4 * size + 1];
-        String[][] s = new String[34][6];
+        java.lang.String[][] s = new java.lang.String[34][6];
     }
 
     void testMultiArrayInitializer() {
@@ -1162,6 +1165,27 @@ public class Test {
     Class<?> testClassType() {
         return String.class;
     }
+
+    int[] testReturnArray() {
+        return new int[] { 1, 2};
+    }
+
+    int[][] testReturnDoubleArray() {
+        return null;
+    }
+
+    String[][] testReturnDoubleString() {
+        return null;
+    }
+    
+    class String {
+        
+    }
+    
+    protected final void testImport() {
+        fr.jamgotchian.abcd.core.Test.String a = new fr.jamgotchian.abcd.core.Test.String();
+        java.lang.String b = new java.lang.String();
+    } 
     
 //    public static void main(String[] args) {
 //        new Test().testBreakLabel2();

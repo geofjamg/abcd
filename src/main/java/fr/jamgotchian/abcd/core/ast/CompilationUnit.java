@@ -28,15 +28,22 @@ public class CompilationUnit {
 
     private final Package _package;
 
+    private final ImportManager _import;
+    
     private final List<Class> classes;
 
-    public CompilationUnit(Package _package) {
+    public CompilationUnit(Package _package, ImportManager _import) {
         this._package = _package;
+        this._import = _import;
         classes = new ArrayList<Class>();
     }
 
     public Package getPackage() {
         return _package;
+    }
+
+    public ImportManager getImport() {
+        return _import;
     }
 
     public List<Class> getClasses() {

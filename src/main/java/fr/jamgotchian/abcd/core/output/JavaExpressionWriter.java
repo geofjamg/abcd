@@ -25,7 +25,7 @@ import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.BooleanLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ByteLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.CastExpression;
-import fr.jamgotchian.abcd.core.ast.expr.ClassExpression;
+import fr.jamgotchian.abcd.core.ast.expr.TypeExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ConditionalExpression;
 import fr.jamgotchian.abcd.core.ast.expr.DoubleLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
@@ -239,8 +239,8 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
         return null;
     }
 
-    public Void visit(ClassExpression expr, BlockStatement blockStmt) {
-        writer.write(expr.getClassName());
+    public Void visit(TypeExpression expr, BlockStatement blockStmt) {
+        writer.write(expr.getType());
         return null;
     }
 
@@ -304,7 +304,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
             }
             writer.write("}");
         } else {
-            writer.writeKeyword("new").writeSpace().write(expr.getTypeName());
+            writer.writeKeyword("new").writeSpace().write(expr.getType());
             for (Expression arrayLengthExpr : expr.getArrayLengthExprs()) {
                 writer.write("[");
                 arrayLengthExpr.accept(this, blockStmt);
@@ -321,7 +321,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
     }
 
     public Void visit(CastExpression expr, BlockStatement blockStmt) {
-        writer.write("((").write(expr.getClassName()).write(")").writeSpace();
+        writer.write("((").write(expr.getType()).write(")").writeSpace();
         expr.getExpr().accept(this, blockStmt);
         writer.write(")");
         return null;
@@ -398,7 +398,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
     }
 
     public Void visit(ClassLiteralExpression expr, BlockStatement arg) {
-        writer.write(expr.getValue()).write(".class");
+        writer.write(expr.getClassName()).write(".class");
         return null;
     }
 }

@@ -19,6 +19,8 @@ package fr.jamgotchian.abcd.core.ast;
 
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
+import fr.jamgotchian.abcd.core.ast.type.ClassName;
+import fr.jamgotchian.abcd.core.ast.type.JavaType;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
@@ -33,22 +35,22 @@ public class Method {
 
     private final Set<Modifier> modifiers;
 
-    private final String returnTypeName;
+    private final JavaType returnType;
 
     private final List<LocalVariableDeclaration> arguments;
         
-    private final List<String> exceptions;
+    private final List<ClassName> exceptions;
 
     private final BlockStatement body;
 
     private final boolean constructor;
     
-    public Method(String name, Set<Modifier> modifiers, String returnTypeName, 
-                    List<LocalVariableDeclaration> arguments, List<String> exceptions, 
+    public Method(String name, Set<Modifier> modifiers, JavaType returnType, 
+                    List<LocalVariableDeclaration> arguments, List<ClassName> exceptions, 
                     boolean constructor) {
         this.name = name;
         this.modifiers = modifiers;
-        this.returnTypeName = returnTypeName;
+        this.returnType = returnType;
         this.arguments = arguments;
         this.exceptions = exceptions;
         this.body = new BlockStatement();
@@ -72,15 +74,15 @@ public class Method {
         return modifiers;
     }
 
-    public String getReturnTypeName() {
-        return returnTypeName;
+    public JavaType getReturnType() {
+        return returnType;
     }
 
     public List<LocalVariableDeclaration> getArguments() {
         return arguments;
     }
 
-    public List<String> getExceptions() {
+    public List<ClassName> getExceptions() {
         return exceptions;
     }
 

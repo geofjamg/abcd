@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
+import fr.jamgotchian.abcd.core.ast.type.JavaType;
 
 /**
  *
@@ -41,8 +42,8 @@ public class LocalVariableDeclarationStatement extends AbstractStatement {
         this.initExpr = initExpr;
     }
 
-    public LocalVariableDeclarationStatement(int index, String typeName) {
-        this(new LocalVariableDeclaration(index, typeName), null);
+    public LocalVariableDeclarationStatement(int index, JavaType type) {
+        this(new LocalVariableDeclaration(index, type), null);
     }
 
     public LocalVariableDeclaration getLocalVarDecl() {
@@ -53,8 +54,8 @@ public class LocalVariableDeclarationStatement extends AbstractStatement {
         return localVarDecl.getIndex();
     }
 
-    public String getTypeName() {
-        return localVarDecl.getTypeName();
+    public JavaType getType() {
+        return localVarDecl.getType();
     }
 
     public Expression getInitExpr() {

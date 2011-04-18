@@ -21,6 +21,8 @@ import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.CompilationUnitVisitor;
 import fr.jamgotchian.abcd.core.ast.Package;
+import fr.jamgotchian.abcd.core.ast.type.ClassName;
+import fr.jamgotchian.abcd.core.ast.ImportManager;
 
 /**
  *
@@ -44,6 +46,10 @@ public class JavaCompilationUnitWriter implements CompilationUnitVisitor<Void, V
         if (compilUnit.getPackage() != null) {
             compilUnit.getPackage().accept(this, null);
         }
+        if (compilUnit.getImport().getImports().size() > 0) {
+            writer.newLine();
+            compilUnit.getImport().accept(this, null);
+        }
         writer.newLine();
         for (Class _class : compilUnit.getClasses()) {
             _class.accept(classVisitor, null);
@@ -54,6 +60,14 @@ public class JavaCompilationUnitWriter implements CompilationUnitVisitor<Void, V
 
     public Void visit(Package _package, Void arg) {
         writer.writeKeyword("package").writeSpace().write(_package.getName()).write(";").newLine();
+        return null;
+    }
+
+    public Void visit(ImportManager importManager, Void arg) {
+        for (String className : importManager.getImports()) {
+            writer.writeKeyword("import").writeSpace().write(className)
+                    .write(";").newLine();
+        }
         return null;
     }
 

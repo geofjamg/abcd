@@ -104,7 +104,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         }
     }
 
-    public Expression visit(ClassExpression expr, Void arg) {
+    public Expression visit(TypeExpression expr, Void arg) {
         return null;
     }
 
@@ -181,7 +181,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
             }
         }
         if (lengthModified) {
-            return new ArrayCreationExpression(expr.getTypeName(), newArrayLengthExprs);
+            return new ArrayCreationExpression(expr.getType(), newArrayLengthExprs);
         } else {
             return null;
         }
@@ -201,7 +201,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         if (newExpr == null) {
             return null;
         } else {
-            return new CastExpression(expr.getClassName(), newExpr);
+            return new CastExpression(expr.getType(), newExpr);
         }
     }
 

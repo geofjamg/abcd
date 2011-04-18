@@ -25,6 +25,8 @@ import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.StringLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryOperator;
+import fr.jamgotchian.abcd.core.ast.type.ClassName;
+import fr.jamgotchian.abcd.core.ast.type.ClassNameFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,10 +70,12 @@ public class Statements {
         }
     }
     
-    public static <E extends Throwable> Statement createThrowStmt(Class<E> excCls, String msg) {
+    public static <E extends Throwable> Statement 
+            createThrowStmt(Class<E> excCls, String msg, ClassNameFactory factory) {
         StringLiteralExpression msgExpr = Expressions.newStringExpr(msg, null);
-        ObjectCreationExpression objCreatExpr 
-                = Expressions.newObjCreatExpr(excCls.getName(),
+        ClassName className = factory.newClassName(excCls.getName());
+        ObjectCreationExpression objCreatExpr
+                = Expressions.newObjCreatExpr(className,
                                               Collections.<Expression>singletonList(msgExpr), 
                                               null);
         return new ThrowStatement(objCreatExpr);

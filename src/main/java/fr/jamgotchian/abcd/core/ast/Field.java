@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast;
 
+import fr.jamgotchian.abcd.core.ast.type.JavaType;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 
@@ -30,12 +31,12 @@ public class Field {
 
     private final String name;
 
-    private final String typeName;
+    private final JavaType type;
 
-    public Field(Set<Modifier> modifiers, String name, String typeName) {
+    public Field(Set<Modifier> modifiers, String name, JavaType type) {
         this.modifiers = modifiers;
         this.name = name;
-        this.typeName = typeName;
+        this.type = type;
     }
 
     public Set<Modifier> getModifiers() {
@@ -46,8 +47,8 @@ public class Field {
         return name;
     }
 
-    public String getTypeName() {
-        return typeName;
+    public JavaType getType() {
+        return type;
     }
 
     public <R, A> R accept(ClassVisitor<R, A> visitor, A arg) {

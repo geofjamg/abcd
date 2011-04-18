@@ -21,6 +21,7 @@ import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
+import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
@@ -101,7 +102,7 @@ public class ControlFlowGraphStmtAnalysis {
         }
 
         public StackEffectAnalyser() {
-            super(new DummyExpressionStack());
+            super(new DummyExpressionStack(), new ImportManager());
         }
 
         @Override
@@ -132,6 +133,8 @@ public class ControlFlowGraphStmtAnalysis {
 
     private ControlFlowGraph graph;
 
+    private ImportManager importManager;
+
     private void processBlock(BasicBlock block, ExpressionStack inputStack) {
 
         logger.log(Level.FINER, "------ Process block {0} ------", block);
@@ -147,23 +150,24 @@ public class ControlFlowGraphStmtAnalysis {
         }
 
         if (data.getInputStack().size() > 0) {
-            logger.log(Level.FINEST, ">>> Input stack : {0}", 
+            logger.log(Level.FINEST, ">>> Input stack : {0}",
                     OutputUtil.toText2(data.getInputStack().toIterable()));
         }
 
-        BasicBlockStmtAnalysis stmtsBuilder = new BasicBlockStmtAnalysis(outputStack);
+        BasicBlockStmtAnalysis stmtsBuilder = new BasicBlockStmtAnalysis(outputStack, importManager);
         block.visit(stmtsBuilder);
         data.setOutputStack(outputStack);
 
         if (data.getOutputStack().size() > 0) {
-            logger.log(Level.FINEST, "<<< Output stack : {0}", 
+            logger.log(Level.FINEST, "<<< Output stack : {0}",
                     OutputUtil.toText2(data.getOutputStack().toIterable()));
         }
     }
 
-    public void analyse(ControlFlowGraph graph) {
+    public void analyse(ControlFlowGraph graph, ImportManager importManager) {
 
         this.graph = graph;
+        this.importManager = importManager;
 
         for (BasicBlock block : graph.getBasicBlocks()) {
             block.setData(new BasicBlockAnalysisDataImpl());
@@ -190,7 +194,7 @@ public class ControlFlowGraphStmtAnalysis {
                 if (!processable) {
                     break;
                 }
-                
+
                 List<ExpressionStack> stacks = new ArrayList<ExpressionStack>();
                 for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
                     if (incomingEdge.isLoopBack()) {
@@ -209,7 +213,7 @@ public class ControlFlowGraphStmtAnalysis {
                 } else {
                     inputStack = ExpressionStacks.merge(stacks, block);
                 }
-                    
+
                 processBlock(block, inputStack);
                 it.remove();
             }

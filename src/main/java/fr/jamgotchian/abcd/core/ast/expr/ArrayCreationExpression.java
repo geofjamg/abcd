@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.expr;
 
+import fr.jamgotchian.abcd.core.ast.type.JavaType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,24 +28,24 @@ import java.util.List;
  */
 public class ArrayCreationExpression extends AbstractExpression {
 
-    private final String typeName;
+    private final JavaType type;
 
     private final List<Expression> arrayLengthExprs;
 
     private List<Expression> initValues;
 
-    ArrayCreationExpression(String typeName, Expression arrayLengthExpr) {
-        this.typeName = typeName;
+    ArrayCreationExpression(JavaType type, Expression arrayLengthExpr) {
+        this.type = type;
         this.arrayLengthExprs = Collections.singletonList(arrayLengthExpr);
     }
 
-    ArrayCreationExpression(String typeName, List<Expression> arrayLengthExprs) {
-        this.typeName = typeName;
+    ArrayCreationExpression(JavaType type, List<Expression> arrayLengthExprs) {
+        this.type = type;
         this.arrayLengthExprs = arrayLengthExprs;
     }
 
-    public String getTypeName() {
-        return typeName;
+    public JavaType getType() {
+        return type;
     }
 
     public List<Expression> getArrayLengthExprs() {

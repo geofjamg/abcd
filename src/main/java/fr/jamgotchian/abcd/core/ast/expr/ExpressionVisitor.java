@@ -51,7 +51,7 @@ public interface ExpressionVisitor<R, A> {
 
     R visit(AssignExpression expr, A arg);
 
-    R visit(ClassExpression expr, A arg);
+    R visit(TypeExpression expr, A arg);
 
     R visit(FieldAccess expr, A arg);
 

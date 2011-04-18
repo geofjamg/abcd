@@ -23,6 +23,7 @@ import fr.jamgotchian.abcd.core.ast.Field;
 import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
+import fr.jamgotchian.abcd.core.ast.type.ClassName;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 
@@ -95,7 +96,7 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
         for (Modifier mod : field.getModifiers()) {
             writer.write(mod).writeSpace();
         }
-        writer.write(field.getTypeName()).writeSpace().write(field.getName()).write(";").newLine();
+        writer.write(field.getType()).writeSpace().write(field.getName()).write(";").newLine();
         return null;
     }
 
@@ -104,15 +105,15 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
             writer.write(mod).writeSpace();
         }
         if (!"<clinit>".equals(method.getName())) {
-            if (method.getReturnTypeName() != null) {
-                writer.write(method.getReturnTypeName()).writeSpace();
+            if (method.getReturnType() != null) {
+                writer.write(method.getReturnType()).writeSpace();
             }
             writer.write(method.getName()).write("(");
             List<LocalVariableDeclaration> arguments = method.getArguments();
             for (int i = 0; i < arguments.size(); i++) {
                 LocalVariableDeclaration argument = arguments.get(i);
                 String argumentName = method.getBody().getVariable(argument.getIndex());
-                writer.write(argument.getTypeName()).writeSpace().write(argumentName);
+                writer.write(argument.getType()).writeSpace().write(argumentName);
                 if (i < arguments.size()-1) {
                     writer.write(",").writeSpace();
                 }
@@ -121,7 +122,7 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
             writer.incrIndent();
             if (method.getExceptions().size() > 0) {
                 writer.newLine().writeKeyword("throws").writeSpace();
-                List<String> exceptions = method.getExceptions();
+                List<ClassName> exceptions = method.getExceptions();
                 for (int i = 0; i < exceptions.size(); i++) {
                     writer.write(exceptions.get(i));
                     if (i < exceptions.size()-1) {

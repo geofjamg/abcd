@@ -39,6 +39,9 @@ import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
+import fr.jamgotchian.abcd.core.ast.type.ClassName;
+import fr.jamgotchian.abcd.core.ast.ImportManager;
+import fr.jamgotchian.abcd.core.ast.type.JavaType;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
 import fr.jamgotchian.abcd.core.region.BlockRegion;
 import fr.jamgotchian.abcd.core.region.CaseRegion;
@@ -70,7 +73,10 @@ public class AbstractSyntaxTreeBuilder {
         logger.setLevel(Level.FINER);
     }
 
-    public AbstractSyntaxTreeBuilder() {
+    private final ImportManager importManager;
+
+    public AbstractSyntaxTreeBuilder(ImportManager importManager) {
+        this.importManager = importManager;
     }
 
     public void build(Region rootRegion, BlockStatement methodBody) {
@@ -296,9 +302,10 @@ public class AbstractSyntaxTreeBuilder {
                     exprStmt.remove();
                     LocalVariable excVar = (LocalVariable) ((AssignExpression) exprStmt.getExpression()).getTarget();
 
+                    ClassName exceptionClassName = importManager.newClassName(catchRegion.getExceptionClassName());
+                    JavaType exceptionType = JavaType.newRefType(exceptionClassName);
                     LocalVariableDeclaration varDecl
-                            = new LocalVariableDeclaration(excVar.getIndex(),
-                                                           catchRegion.getExceptionClassName());
+                            = new LocalVariableDeclaration(excVar.getIndex(), exceptionType);
                     catchStmts.add(new CatchStatement(catchBlockStmt, varDecl));
                 }
                 TryCatchFinallyStatement tryCatchStmt

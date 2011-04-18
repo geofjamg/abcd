@@ -17,24 +17,26 @@
 
 package fr.jamgotchian.abcd.core.ast.expr;
 
+import fr.jamgotchian.abcd.core.ast.type.JavaType;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class CastExpression extends AbstractExpression {
 
-    private final String className;
+    private final JavaType type;
 
     private final Expression expr;
 
-    CastExpression(String className, Expression expr) {
-        this.className = className;
+    CastExpression(JavaType type, Expression expr) {
+        this.type = type;
         this.expr = expr;
         expr.setParent(this);
     }
 
-    public String getClassName() {
-        return className;
+    public JavaType getType() {
+        return type;
     }
 
     public Expression getExpr() {

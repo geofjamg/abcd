@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
+import fr.jamgotchian.abcd.core.ast.type.JavaType;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 
 /**
@@ -27,22 +28,22 @@ public class LocalVariableDeclaration {
 
     private final int index;
 
-    private final String typeName;
+    private final JavaType type;
 
-    public LocalVariableDeclaration(int index, String typeName) {
-        if (typeName == null) {
-            throw new ABCDException("typeName == null");
+    public LocalVariableDeclaration(int index, JavaType type) {
+        if (type == null) {
+            throw new ABCDException("type == null");
         }
         this.index = index;
-        this.typeName = typeName;
+        this.type = type;
     }
 
     public int getIndex() {
         return index;
     }
 
-    public String getTypeName() {
-        return typeName;
+    public JavaType getType() {
+        return type;
     }
 
     @Override
@@ -51,11 +52,11 @@ public class LocalVariableDeclaration {
             return false;
         }
         LocalVariableDeclaration decl = (LocalVariableDeclaration) obj;
-        return index == decl.index && typeName.equals(decl.typeName);
+        return index == decl.index && type.equals(decl.type);
     }
 
     @Override
     public int hashCode() {
-        return index + typeName.hashCode();
+        return index + type.hashCode();
     }
 }

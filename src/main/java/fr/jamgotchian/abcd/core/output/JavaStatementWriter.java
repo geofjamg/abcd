@@ -99,7 +99,7 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
     }
 
     public Void visit(LocalVariableDeclarationStatement stmt, Void arg) {
-        writer.write(stmt.getTypeName()).write(" v").write(stmt.getIndex());
+        writer.write(stmt.getType()).write(" v").write(stmt.getIndex());
         if (stmt.getInitExpr() != null) {
             writer.writeSpace().write("=").writeSpace();
             stmt.getInitExpr().accept(exprVisitor, stmt.getBlock());
@@ -136,7 +136,7 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
         stmt.getTry().accept(this, null);
         for (CatchStatement _catch : stmt.getCatchs()) {
             writer.writeSpace().writeKeyword("catch").writeSpace().write("(")
-                  .write(_catch.getExceptionVarDecl().getTypeName())
+                  .write(_catch.getExceptionVarDecl().getType())
                   .writeSpace().write(stmt.getBlock().getVariable(_catch.getExceptionVarDecl().getIndex()))
                   .write(")").writeSpace();
             _catch.getBlockStmt().accept(this, null);

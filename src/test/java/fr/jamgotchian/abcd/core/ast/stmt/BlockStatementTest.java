@@ -17,9 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
-import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.Statement;
-import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
+import fr.jamgotchian.abcd.core.ast.type.JavaType;
 import java.util.Collections;
 import java.util.Iterator;
 import org.junit.Assert;
@@ -52,7 +50,7 @@ public class BlockStatementTest {
 
     @Test
     public void addOneStatementToEmptyBlockTest() {
-        Statement stmt = new LocalVariableDeclarationStatement(0, Integer.class.getName());
+        Statement stmt = new LocalVariableDeclarationStatement(0, JavaType.INT);
         block.add(stmt);
         Assert.assertFalse(block.isEmpty());
         Assert.assertTrue(block.getFirst() == stmt);
@@ -68,8 +66,8 @@ public class BlockStatementTest {
 
     @Test
     public void addTwoStatementToEmptyBlockTest() {
-        Statement stmt0 = new LocalVariableDeclarationStatement(0, Integer.class.getName());
-        Statement stmt1 = new LocalVariableDeclarationStatement(1, Integer.class.getName());
+        Statement stmt0 = new LocalVariableDeclarationStatement(0, JavaType.INT);
+        Statement stmt1 = new LocalVariableDeclarationStatement(1, JavaType.INT);
         block.add(stmt0);
         block.add(stmt1);
         Assert.assertFalse(block.isEmpty());
@@ -89,7 +87,7 @@ public class BlockStatementTest {
 
     @Test
     public void insertOneStatementToEmptyBlockTest() {
-        Statement stmt = new LocalVariableDeclarationStatement(0, Integer.class.getName());
+        Statement stmt = new LocalVariableDeclarationStatement(0, JavaType.INT);
         block.insertAfter(null, stmt);
         Assert.assertFalse(block.isEmpty());
         Assert.assertTrue(block.getFirst() == stmt);
@@ -105,12 +103,12 @@ public class BlockStatementTest {
 
     @Test
     public void insertAtFirstStatementTest() {
-        Statement stmt0 = new LocalVariableDeclarationStatement(0, Integer.class.getName());
-        Statement stmt1 = new LocalVariableDeclarationStatement(1, Integer.class.getName());
+        Statement stmt0 = new LocalVariableDeclarationStatement(0, JavaType.INT);
+        Statement stmt1 = new LocalVariableDeclarationStatement(1, JavaType.INT);
         block.add(stmt0);
         block.add(stmt1);
 
-        Statement stmt2 = new LocalVariableDeclarationStatement(2, Integer.class.getName());
+        Statement stmt2 = new LocalVariableDeclarationStatement(2, JavaType.INT);
         block.insertAfter(null, stmt2);
 
         Assert.assertFalse(block.isEmpty());
@@ -134,12 +132,12 @@ public class BlockStatementTest {
 
     @Test
     public void insertAtMiddleStatementTest() {
-        Statement stmt0 = new LocalVariableDeclarationStatement(0, Integer.class.getName());
-        Statement stmt1 = new LocalVariableDeclarationStatement(1, Integer.class.getName());
+        Statement stmt0 = new LocalVariableDeclarationStatement(0, JavaType.INT);
+        Statement stmt1 = new LocalVariableDeclarationStatement(1, JavaType.INT);
         block.add(stmt0);
         block.add(stmt1);
 
-        Statement stmt2 = new LocalVariableDeclarationStatement(2, Integer.class.getName());
+        Statement stmt2 = new LocalVariableDeclarationStatement(2, JavaType.INT);
         block.insertAfter(stmt0, stmt2);
 
         Assert.assertFalse(block.isEmpty());
@@ -163,12 +161,12 @@ public class BlockStatementTest {
 
     @Test
     public void insertAtLastStatementTest() {
-        Statement stmt0 = new LocalVariableDeclarationStatement(0, Integer.class.getName());
-        Statement stmt1 = new LocalVariableDeclarationStatement(1, Integer.class.getName());
+        Statement stmt0 = new LocalVariableDeclarationStatement(0, JavaType.INT);
+        Statement stmt1 = new LocalVariableDeclarationStatement(1, JavaType.INT);
         block.add(stmt0);
         block.add(stmt1);
 
-        Statement stmt2 = new LocalVariableDeclarationStatement(2, Integer.class.getName());
+        Statement stmt2 = new LocalVariableDeclarationStatement(2, JavaType.INT);
         block.insertAfter(stmt1, stmt2);
 
         Assert.assertFalse(block.isEmpty());
@@ -192,7 +190,7 @@ public class BlockStatementTest {
 
     @Test
     public void removeFreeStatementTest() {
-        Statement stmt = new LocalVariableDeclarationStatement(0, Integer.class.getName());
+        Statement stmt = new LocalVariableDeclarationStatement(0, JavaType.INT);
         try {
             stmt.remove();
             Assert.assertFalse(true);
@@ -203,9 +201,9 @@ public class BlockStatementTest {
 
     @Test
     public void removeMiddleStatementTest() {
-        Statement stmt0 = new LocalVariableDeclarationStatement(0, Integer.class.getName());
-        Statement stmt1 = new LocalVariableDeclarationStatement(1, Integer.class.getName());
-        Statement stmt2 = new LocalVariableDeclarationStatement(2, Integer.class.getName());
+        Statement stmt0 = new LocalVariableDeclarationStatement(0, JavaType.INT);
+        Statement stmt1 = new LocalVariableDeclarationStatement(1, JavaType.INT);
+        Statement stmt2 = new LocalVariableDeclarationStatement(2, JavaType.INT);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
@@ -229,9 +227,9 @@ public class BlockStatementTest {
 
     @Test
     public void removeFirstStatementTest() {
-        Statement stmt0 = new LocalVariableDeclarationStatement(0, Integer.class.getName());
-        Statement stmt1 = new LocalVariableDeclarationStatement(1, Integer.class.getName());
-        Statement stmt2 = new LocalVariableDeclarationStatement(2, Integer.class.getName());
+        Statement stmt0 = new LocalVariableDeclarationStatement(0, JavaType.INT);
+        Statement stmt1 = new LocalVariableDeclarationStatement(1, JavaType.INT);
+        Statement stmt2 = new LocalVariableDeclarationStatement(2, JavaType.INT);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
@@ -258,9 +256,9 @@ public class BlockStatementTest {
 
     @Test
     public void removeLastStatementTest() {
-        Statement stmt0 = new LocalVariableDeclarationStatement(0, Integer.class.getName());
-        Statement stmt1 = new LocalVariableDeclarationStatement(1, Integer.class.getName());
-        Statement stmt2 = new LocalVariableDeclarationStatement(2, Integer.class.getName());
+        Statement stmt0 = new LocalVariableDeclarationStatement(0, JavaType.INT);
+        Statement stmt1 = new LocalVariableDeclarationStatement(1, JavaType.INT);
+        Statement stmt2 = new LocalVariableDeclarationStatement(2, JavaType.INT);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
@@ -288,7 +286,7 @@ public class BlockStatementTest {
     @Test
     public void addAlreadyUsedStatementTest() {
         BlockStatement otherBlock = new BlockStatement();
-        Statement stmt = new LocalVariableDeclarationStatement(0, Integer.class.getName());
+        Statement stmt = new LocalVariableDeclarationStatement(0, JavaType.INT);
         otherBlock.add(stmt);
         block.add(stmt);
         Assert.assertTrue(otherBlock.isEmpty());
@@ -299,14 +297,14 @@ public class BlockStatementTest {
 
     @Test
     public void replaceMiddleStatementTest() {
-        Statement stmt0 = new LocalVariableDeclarationStatement(0, Integer.class.getName());
-        Statement stmt1 = new LocalVariableDeclarationStatement(1, Integer.class.getName());
-        Statement stmt2 = new LocalVariableDeclarationStatement(2, Integer.class.getName());
+        Statement stmt0 = new LocalVariableDeclarationStatement(0, JavaType.INT);
+        Statement stmt1 = new LocalVariableDeclarationStatement(1, JavaType.INT);
+        Statement stmt2 = new LocalVariableDeclarationStatement(2, JavaType.INT);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
 
-        Statement stmt3 = new LocalVariableDeclarationStatement(3, Integer.class.getName());
+        Statement stmt3 = new LocalVariableDeclarationStatement(3, JavaType.INT);
         block.replace(stmt1, Collections.singletonList(stmt3));
 
         Assert.assertTrue(stmt3.getBlock() == block);
@@ -320,14 +318,14 @@ public class BlockStatementTest {
 
     @Test
     public void replaceFirstStatementTest() {
-        Statement stmt0 = new LocalVariableDeclarationStatement(0, Integer.class.getName());
-        Statement stmt1 = new LocalVariableDeclarationStatement(1, Integer.class.getName());
-        Statement stmt2 = new LocalVariableDeclarationStatement(2, Integer.class.getName());
+        Statement stmt0 = new LocalVariableDeclarationStatement(0, JavaType.INT);
+        Statement stmt1 = new LocalVariableDeclarationStatement(1, JavaType.INT);
+        Statement stmt2 = new LocalVariableDeclarationStatement(2, JavaType.INT);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
 
-        Statement stmt3 = new LocalVariableDeclarationStatement(3, Integer.class.getName());
+        Statement stmt3 = new LocalVariableDeclarationStatement(3, JavaType.INT);
         block.replace(stmt0, Collections.singletonList(stmt3));
 
         Assert.assertTrue(stmt3.getBlock() == block);
@@ -344,14 +342,14 @@ public class BlockStatementTest {
 
     @Test
     public void replaceLastStatementTest() {
-        Statement stmt0 = new LocalVariableDeclarationStatement(0, Integer.class.getName());
-        Statement stmt1 = new LocalVariableDeclarationStatement(1, Integer.class.getName());
-        Statement stmt2 = new LocalVariableDeclarationStatement(2, Integer.class.getName());
+        Statement stmt0 = new LocalVariableDeclarationStatement(0, JavaType.INT);
+        Statement stmt1 = new LocalVariableDeclarationStatement(1, JavaType.INT);
+        Statement stmt2 = new LocalVariableDeclarationStatement(2, JavaType.INT);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
 
-        Statement stmt3 = new LocalVariableDeclarationStatement(3, Integer.class.getName());
+        Statement stmt3 = new LocalVariableDeclarationStatement(3, JavaType.INT);
         block.replace(stmt2, Collections.singletonList(stmt3));
 
         Assert.assertTrue(stmt3.getBlock() == block);
@@ -367,9 +365,9 @@ public class BlockStatementTest {
 
     @Test
     public void testClear() {
-        Statement stmt0 = new LocalVariableDeclarationStatement(0, Integer.class.getName());
-        Statement stmt1 = new LocalVariableDeclarationStatement(1, Integer.class.getName());
-        Statement stmt2 = new LocalVariableDeclarationStatement(2, Integer.class.getName());
+        Statement stmt0 = new LocalVariableDeclarationStatement(0, JavaType.INT);
+        Statement stmt1 = new LocalVariableDeclarationStatement(1, JavaType.INT);
+        Statement stmt2 = new LocalVariableDeclarationStatement(2, JavaType.INT);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);

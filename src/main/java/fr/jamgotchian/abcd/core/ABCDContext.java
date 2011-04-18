@@ -37,6 +37,9 @@ import fr.jamgotchian.abcd.core.analysis.DOTUtil;
 import static fr.jamgotchian.abcd.core.analysis.DOTUtil.BasicBlockWritingMode.*;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.analysis.Refactorer;
+import fr.jamgotchian.abcd.core.ast.type.ClassName;
+import fr.jamgotchian.abcd.core.ast.ImportManager;
+import fr.jamgotchian.abcd.core.ast.type.JavaType;
 import fr.jamgotchian.abcd.core.graph.VertexToString;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.Region;
@@ -116,9 +119,11 @@ public class ABCDContext {
     }
 
     private void decompileFile(File classFile, OutputStream os) throws IOException {
-        Class _class = decompileClass(classFile);
+        ImportManager importManager = new ImportManager();
 
-        CompilationUnit compilUnit = new CompilationUnit(_class.getPackage());
+        Class _class = decompileClass(classFile, importManager);
+
+        CompilationUnit compilUnit = new CompilationUnit(_class.getPackage(), importManager);
         compilUnit.getClasses().add(_class);
 
         File classDir = classFile.getParentFile();
@@ -131,7 +136,7 @@ public class ABCDContext {
             classRootDir = classRootDir.getParentFile();
         }
 
-        decompileInnerClass(_class, classRootDir);
+        decompileInnerClass(_class, classRootDir, importManager);
 
         if (os != null) {
             Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
@@ -143,7 +148,7 @@ public class ABCDContext {
         }
     }
 
-    private Class decompileClass(File classFile) throws IOException {
+    private Class decompileClass(File classFile, ImportManager importManager) throws IOException {
         ClassNode cn = new ClassNode();
         ClassReader cr = new ClassReader(new FileInputStream(classFile));
         cr.accept(cn, 0);
@@ -178,20 +183,26 @@ public class ABCDContext {
 
         for (FieldNode fn : (List<FieldNode>) cn.fields) {
             Type fieldType = Type.getType(fn.desc);
+            JavaType javaFieldType = JavaType.newType(fieldType, importManager);
+
             _class.addField(new Field(ASMUtil.getModifiers(fn.access),
-                                        fn.name,
-                                        fieldType.getClassName()));
+                                      fn.name,
+                                      javaFieldType));
         }
 
         for (MethodNode mn : (List<MethodNode>) cn.methods) {
             String methodSignature = ASMUtil.getMethodSignature(cn, mn);
-            String returnTypeName = ASMUtil.getReturnTypeName(mn);
+            Type returnType = ASMUtil.getReturnType(mn);
+            JavaType javaReturnType = null;
+            if (returnType != null) {
+                javaReturnType = JavaType.newType(returnType, importManager);
+            }
             String methodName = ASMUtil.getMethodName(cn, mn);
             boolean constructor = "<init>".equals(mn.name);
-            List<String> exceptions = new ArrayList<String>();
+            List<ClassName> exceptions = new ArrayList<ClassName>();
             if (mn.exceptions != null) {
                 for (String exception : (List<String>) mn.exceptions) {
-                    exceptions.add(exception.replace('/', '.'));
+                    exceptions.add(importManager.newClassName(exception.replace('/', '.')));
                 }
             }
 
@@ -207,11 +218,12 @@ public class ABCDContext {
                 if (!isMethodStatic) {
                     localVarIndex++;
                 }
-                arguments.add(new LocalVariableDeclaration(localVarIndex, argType.getClassName()));
+                JavaType javaArgType = JavaType.newType(argType, importManager);
+                arguments.add(new LocalVariableDeclaration(localVarIndex, javaArgType));
             }
 
             Method method = new Method(methodName, methodModifiers,
-                                       returnTypeName, arguments, exceptions,
+                                       javaReturnType, arguments, exceptions,
                                        constructor);
             _class.addMethod(method);
 
@@ -227,7 +239,7 @@ public class ABCDContext {
                 graph.analyse();
 
                 logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
-                new ControlFlowGraphStmtAnalysis().analyse(graph);
+                new ControlFlowGraphStmtAnalysis().analyse(graph, importManager);
 
                 logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
                 Set<Region> rootRegions = new StructuralAnalysis(graph).analyse();
@@ -237,7 +249,7 @@ public class ABCDContext {
                 Region rootRegion = rootRegions.iterator().next();
 
                 logger.log(Level.FINE, "////////// Build AST of {0} //////////", methodSignature);
-                new AbstractSyntaxTreeBuilder().build(rootRegion, method.getBody());
+                new AbstractSyntaxTreeBuilder(importManager).build(rootRegion, method.getBody());
 
                 for (Refactorer refactorer : REFACTORERS) {
                     refactorer.refactor(method.getBody());
@@ -253,7 +265,9 @@ public class ABCDContext {
                    .append(OutputUtil.toText(mn.instructions));
 
                 method.getBody().add(new CommentStatement("\n" + msg.toString()));
-                method.getBody().add(Statements.createThrowStmt(InternalError.class, "Decompilation failed"));
+                method.getBody().add(Statements.createThrowStmt(InternalError.class,
+                                                                "Decompilation failed",
+                                                                importManager));
             }
         }
         return _class;
@@ -300,7 +314,8 @@ public class ABCDContext {
         }
     }
 
-    private void decompileInnerClass(Class outerClass, File classRootDir) throws IOException {
+    private void decompileInnerClass(Class outerClass, File classRootDir,
+                                     ImportManager importManager) throws IOException {
         String outerClassName = outerClass.getQualifiedName();
         for (Map.Entry<String, String> entry : innerClasses.entrySet()) {
             String innerClassName = entry.getKey();
@@ -308,10 +323,10 @@ public class ABCDContext {
                 String innerClassFileName = classRootDir.getAbsolutePath() + '/'
                         + innerClassName.replace('.', '/') + ".class";
                 File innerClassFile = new File(innerClassFileName);
-                Class innerClass = decompileClass(innerClassFile);
+                Class innerClass = decompileClass(innerClassFile, importManager);
                 outerClass.addInnerClass(innerClass);
 
-                decompileInnerClass(innerClass, classRootDir);
+                decompileInnerClass(innerClass, classRootDir, importManager);
             }
         }
     }
@@ -362,10 +377,26 @@ public class ABCDContext {
                 logger.log(Level.FINE, "////////// Analyse Control flow of {0} //////////", methodSignature);
                 graph.analyse();
 
-                logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
-                new ControlFlowGraphStmtAnalysis().analyse(graph);
-
                 String baseName = outputDir.getPath() + "/" + methodSignature;
+
+                if (!drawRegions) {
+                    Writer writer = new FileWriter(baseName + "_CFG.dot");
+                    try {
+                        DOTUtil.writeCFG(graph, null, writer, INSTN_RANGE);
+                    } finally {
+                        writer.close();
+                    }
+
+                    writer = new FileWriter(baseName + "_BC.dot");
+                    try {
+                        DOTUtil.writeCFG(graph, null, writer, BYTECODE);
+                    } finally {
+                        writer.close();
+                    }
+                }
+
+                logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
+                new ControlFlowGraphStmtAnalysis().analyse(graph, new ImportManager());
 
                 Set<Region> rootRegions = null;
                 if (drawRegions) {
@@ -384,23 +415,23 @@ public class ABCDContext {
                     } finally {
                         writer.close();
                     }
+
+                    writer = new FileWriter(baseName + "_CFG.dot");
+                    try {
+                        DOTUtil.writeCFG(graph, rootRegions, writer, INSTN_RANGE);
+                    } finally {
+                        writer.close();
+                    }
+
+                    writer = new FileWriter(baseName + "_BC.dot");
+                    try {
+                        DOTUtil.writeCFG(graph, rootRegions, writer, BYTECODE);
+                    } finally {
+                        writer.close();
+                    }
                 }
 
-                Writer writer = new FileWriter(baseName + "_CFG.dot");
-                try {
-                    DOTUtil.writeCFG(graph, rootRegions, writer, INSTN_RANGE);
-                } finally {
-                    writer.close();
-                }
-
-                writer = new FileWriter(baseName + "_BC.dot");
-                try {
-                    DOTUtil.writeCFG(graph, rootRegions, writer, BYTECODE);
-                } finally {
-                    writer.close();
-                }
-
-                writer = new FileWriter(baseName + "_STMT.dot");
+                Writer writer = new FileWriter(baseName + "_STMT.dot");
                 try {
                     DOTUtil.writeCFG(graph, rootRegions, writer, STATEMENTS);
                 } finally {

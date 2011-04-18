@@ -30,7 +30,7 @@ import fr.jamgotchian.abcd.core.ast.expr.ArrayCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignOperator;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryOperator;
-import fr.jamgotchian.abcd.core.ast.expr.ClassExpression;
+import fr.jamgotchian.abcd.core.ast.expr.TypeExpression;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.FieldAccess;
@@ -49,6 +49,9 @@ import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
+import fr.jamgotchian.abcd.core.ast.type.ClassName;
+import fr.jamgotchian.abcd.core.ast.ImportManager;
+import fr.jamgotchian.abcd.core.ast.type.JavaType;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import org.objectweb.asm.Type;
@@ -79,13 +82,28 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
         logger.setLevel(Level.FINEST);
     }
 
-    private static final String[] ATYPES = { null, null, null, null, "bool", "char", "float",
-                                           "double", "byte", "short", "int", "long" };
+    public static final JavaType[] ATYPES = { 
+        null, 
+        null, 
+        null, 
+        null, 
+        JavaType.BOOLEAN, 
+        JavaType.CHAR, 
+        JavaType.FLOAT,                                   
+        JavaType.DOUBLE, 
+        JavaType.BYTE, 
+        JavaType.SHORT, 
+        JavaType.INT, 
+        JavaType.LONG 
+    };
 
     protected final ExpressionStack stack;
 
-    BasicBlockStmtAnalysis(ExpressionStack stack) {
+    protected final ImportManager importManager;
+    
+    BasicBlockStmtAnalysis(ExpressionStack stack, ImportManager importManager) {
         this.stack = stack;
+        this.importManager = importManager;
     }
 
     private void addStmt(BasicBlock block, Expression expr) {
@@ -105,14 +123,18 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
         switch (node.getOpcode()) {
             case GETSTATIC: {
-                ClassExpression clsExpr = Expressions.newClassExpr(node.owner.replace('/', '.'), block);
+                ClassName clsName = importManager.newClassName(node.owner.replace('/', '.'));
+                JavaType type = JavaType.newRefType(clsName);
+                TypeExpression clsExpr = Expressions.newTypeExpr(type, block);
                 FieldAccess fieldExpr = Expressions.newFieldAccesExpr(clsExpr, node.name, block);
                 stack.push(fieldExpr);
                 break;
             }
 
             case PUTSTATIC: {
-                ClassExpression clsExpr = Expressions.newClassExpr(node.owner.replace('/', '.'), block);
+                ClassName clsName = importManager.newClassName(node.owner.replace('/', '.'));
+                JavaType type = JavaType.newRefType(clsName);
+                TypeExpression clsExpr = Expressions.newTypeExpr(type, block);
                 FieldAccess fieldExpr = Expressions.newFieldAccesExpr(clsExpr, node.name, block);
                 AssignExpression assignExpr = Expressions.newAssignExpr(fieldExpr, stack.pop(), AssignOperator.ASSIGN, block);
                 addStmt(block, assignExpr);
@@ -415,63 +437,63 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
             }
 
             case I2L:
-                stack.push(Expressions.newCastExpr("long", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.LONG, stack.pop(), block));
                 break;
 
             case I2F:
-                stack.push(Expressions.newCastExpr("float", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.FLOAT, stack.pop(), block));
                 break;
 
             case I2D:
-                stack.push(Expressions.newCastExpr("double", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.DOUBLE, stack.pop(), block));
                 break;
 
             case L2I:
-                stack.push(Expressions.newCastExpr("int", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.INT, stack.pop(), block));
                 break;
 
             case L2F:
-                stack.push(Expressions.newCastExpr("float", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.FLOAT, stack.pop(), block));
                 break;
 
             case L2D:
-                stack.push(Expressions.newCastExpr("double", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.DOUBLE, stack.pop(), block));
                 break;
 
             case F2I:
-                stack.push(Expressions.newCastExpr("int", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.INT, stack.pop(), block));
                 break;
 
             case F2L:
-                stack.push(Expressions.newCastExpr("long", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.LONG, stack.pop(), block));
                 break;
 
             case F2D:
-                stack.push(Expressions.newCastExpr("double", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.DOUBLE, stack.pop(), block));
                 break;
 
             case D2I:
-                stack.push(Expressions.newCastExpr("int", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.INT, stack.pop(), block));
                 break;
 
             case D2L:
-                stack.push(Expressions.newCastExpr("long", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.LONG, stack.pop(), block));
                 break;
 
             case D2F:
-                stack.push(Expressions.newCastExpr("float", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.FLOAT, stack.pop(), block));
                 break;
 
             case I2B:
-                stack.push(Expressions.newCastExpr("byte", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.BYTE, stack.pop(), block));
                 break;
 
             case I2C:
-                stack.push(Expressions.newCastExpr("char", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.CHAR, stack.pop(), block));
                 break;
 
             case I2S:
-                stack.push(Expressions.newCastExpr("short", stack.pop(), block));
+                stack.push(Expressions.newCastExpr(JavaType.SHORT, stack.pop(), block));
                 break;
 
             case LCMP:
@@ -681,7 +703,8 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
     public void visitLdcInsn(BasicBlock block, int index, LdcInsnNode node) {
         if (node.cst instanceof Type) {
-            stack.push(Expressions.newClsObjExpr(((Type)node.cst).getClassName(), block));
+            ClassName className = importManager.newClassName(((Type)node.cst).getClassName()); 
+            stack.push(Expressions.newClsExpr(className, block));
         } else if (node.cst instanceof Integer) {
             stack.push(Expressions.newIntExpr((Integer) node.cst, block));            
         } else if (node.cst instanceof Long) {
@@ -737,12 +760,15 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                     break;
                 }
 
-                case INVOKESTATIC:
-                    expr = Expressions.newMethodExpr(Expressions.newClassExpr(node.owner.replace('/', '.'), block),
+                case INVOKESTATIC: {
+                    ClassName className = importManager.newClassName(node.owner.replace('/', '.')); 
+                    JavaType type = JavaType.newRefType(className);
+                    expr = Expressions.newMethodExpr(Expressions.newTypeExpr(type, block),
                                                      node.name,
                                                      args,
                                                      block);
                     break;
+                }
             }
 
             if (returnType == Type.VOID_TYPE) {
@@ -754,12 +780,13 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     }
 
     public void visitMultiANewArrayInsn(BasicBlock block, int index, MultiANewArrayInsnNode node) {
-        String typeName = Type.getType(node.desc).getElementType().getClassName();
+        Type type = Type.getType(node.desc).getElementType();
+        JavaType javaType = JavaType.newType(type, importManager);
         List<Expression> arrayLengthExpr = new ArrayList<Expression>(node.dims);
         for (int i = 0; i < node.dims; i++) {
             arrayLengthExpr.add(0, stack.pop());
         }
-        stack.push(Expressions.newArrayCreatExpr(typeName, arrayLengthExpr, block));
+        stack.push(Expressions.newArrayCreatExpr(javaType, arrayLengthExpr, block));
     }
 
     public void visitTableSwitchInsn(BasicBlock block, int index, TableSwitchInsnNode node) {
@@ -772,27 +799,34 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     }
 
     public void visitTypeInsnInsn(BasicBlock block, int index, TypeInsnNode node) {
-        String typeName = Type.getObjectType(node.desc).getClassName();
-
+        ClassName className 
+                = importManager.newClassName(Type.getObjectType(node.desc).getClassName());
+        
         switch (node.getOpcode()) {
             case NEW:
-                stack.push(Expressions.newObjCreatExpr(typeName, block));
+                stack.push(Expressions.newObjCreatExpr(className, block));
                 break;
 
-            case ANEWARRAY:
-                stack.push(Expressions.newArrayCreatExpr(typeName, stack.pop(), block));
+            case ANEWARRAY: {
+                JavaType type = JavaType.newRefType(className);
+                stack.push(Expressions.newArrayCreatExpr(type, stack.pop(), block));
                 break;
+            }
 
-            case CHECKCAST:
-                stack.push(Expressions.newCastExpr(typeName, stack.pop(), block));
+            case CHECKCAST: {
+                JavaType type = JavaType.newRefType(className);
+                stack.push(Expressions.newCastExpr(type, stack.pop(), block));
                 break;
+            }
 
-            case INSTANCEOF:
+            case INSTANCEOF: {
+                JavaType type = JavaType.newRefType(className);
                 stack.push(Expressions.newBinExpr(stack.pop(),
-                                                  Expressions.newClassExpr(typeName, block),
+                                                  Expressions.newTypeExpr(type, block),
                                                   BinaryOperator.INSTANCE_OF,
                                                   block));
                 break;
+            }
         }
     }
 

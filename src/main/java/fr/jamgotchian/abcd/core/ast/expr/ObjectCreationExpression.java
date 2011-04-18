@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.expr;
 
+import fr.jamgotchian.abcd.core.ast.type.ClassName;
 import java.util.List;
 
 /**
@@ -25,11 +26,11 @@ import java.util.List;
  */
 public class ObjectCreationExpression extends AbstractExpression {
 
-    private final String className;
+    private final ClassName className;
 
     private List<Expression> arguments;
 
-    ObjectCreationExpression(String className, List<Expression> arguments) {
+    ObjectCreationExpression(ClassName className, List<Expression> arguments) {
         this.className = className;
         this.arguments = arguments;
         if (arguments != null) {
@@ -39,11 +40,11 @@ public class ObjectCreationExpression extends AbstractExpression {
         }
     }
 
-    ObjectCreationExpression(String className) {
+    ObjectCreationExpression(ClassName className) {
         this(className, null);
     }
 
-    public String getClassName() {
+    public ClassName getClassName() {
         return className;
     }
 

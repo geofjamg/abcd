@@ -121,12 +121,11 @@ public class ASMUtil implements Opcodes {
         return methodSignature.toString();
     }
 
-    public static String getReturnTypeName(MethodNode mn) {
+    public static Type getReturnType(MethodNode mn) {
         if ("<init>".equals(mn.name)) {
             return null;
         } else {
-            Type returnType = Type.getReturnType(mn.desc);
-            return returnType.getClassName();
+            return Type.getReturnType(mn.desc);
         }
     }
 

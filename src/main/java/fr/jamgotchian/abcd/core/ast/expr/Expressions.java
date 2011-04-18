@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.ast.expr;
 
+import fr.jamgotchian.abcd.core.ast.type.ClassName;
+import fr.jamgotchian.abcd.core.ast.type.JavaType;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import java.util.List;
 import java.util.Set;
@@ -29,8 +31,8 @@ public class Expressions {
     private Expressions() {
     }
 
-    public static ClassExpression newClassExpr(String className, BasicBlock block) {
-        ClassExpression expr = new ClassExpression(className);
+    public static TypeExpression newTypeExpr(JavaType type, BasicBlock block) {
+        TypeExpression expr = new TypeExpression(type);
         expr.setBasicBlock(block);
         return expr;
     }
@@ -108,8 +110,8 @@ public class Expressions {
         return expr;
     }
 
-    public static ClassLiteralExpression newClsObjExpr(String value, BasicBlock block) {
-        ClassLiteralExpression expr = new ClassLiteralExpression(value);
+    public static ClassLiteralExpression newClsExpr(ClassName className, BasicBlock block) {
+        ClassLiteralExpression expr = new ClassLiteralExpression(className);
         expr.setBasicBlock(block);
         return expr;
     }
@@ -128,18 +130,18 @@ public class Expressions {
         return expr;
     }
 
-    public static ArrayCreationExpression newArrayCreatExpr(String typeName,
+    public static ArrayCreationExpression newArrayCreatExpr(JavaType type,
                                                             Expression arrayLengthExpr,
                                                             BasicBlock block) {
-        ArrayCreationExpression expr = new ArrayCreationExpression(typeName, arrayLengthExpr);
+        ArrayCreationExpression expr = new ArrayCreationExpression(type, arrayLengthExpr);
         expr.setBasicBlock(block);
         return expr;
     }
 
-    public static ArrayCreationExpression newArrayCreatExpr(String typeName,
+    public static ArrayCreationExpression newArrayCreatExpr(JavaType type,
                                                             List<Expression> arrayLengthExprs,
                                                             BasicBlock block) {
-        ArrayCreationExpression expr = new ArrayCreationExpression(typeName, arrayLengthExprs);
+        ArrayCreationExpression expr = new ArrayCreationExpression(type, arrayLengthExprs);
         expr.setBasicBlock(block);
         return expr;
     }
@@ -150,9 +152,9 @@ public class Expressions {
         return expr;
     }
 
-    public static CastExpression newCastExpr(String className, Expression expr,
+    public static CastExpression newCastExpr(JavaType type, Expression expr,
                                              BasicBlock block) {
-        CastExpression expr2 = new CastExpression(className, expr);
+        CastExpression expr2 = new CastExpression(type, expr);
         expr2.setBasicBlock(block);
         return expr2;
     }
@@ -189,14 +191,14 @@ public class Expressions {
         return expr;
     }
 
-    public static ObjectCreationExpression newObjCreatExpr(String className, List<Expression> arguments,
+    public static ObjectCreationExpression newObjCreatExpr(ClassName className, List<Expression> arguments,
                                                            BasicBlock block) {
         ObjectCreationExpression expr = new ObjectCreationExpression(className, arguments);
         expr.setBasicBlock(block);
         return expr;
     }
 
-    public static ObjectCreationExpression newObjCreatExpr(String className, BasicBlock block) {
+    public static ObjectCreationExpression newObjCreatExpr(ClassName className, BasicBlock block) {
         ObjectCreationExpression expr = new ObjectCreationExpression(className);
         expr.setBasicBlock(block);
         return expr;
