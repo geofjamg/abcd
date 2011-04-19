@@ -24,30 +24,8 @@ import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.ExpressionModifierVisitor;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.BreakStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.CommentStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.DoWhileStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.ForStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.JumpIfStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.MonitorEnterStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.Statement;
-import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
-import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.SynchronizedStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitorAdapter;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
@@ -65,13 +43,10 @@ import java.util.logging.Logger;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ConditionalExpressionRefactorer implements StatementVisitor<Object, Object>, Refactorer {
+public class ConditionalExpressionRefactorer extends StatementVisitorAdapter<Void, Void> 
+                                             implements Refactorer {
 
     private static final Logger logger = Logger.getLogger(ConditionalExpressionRefactorer.class.getName());
-
-    public void refactor(BlockStatement blockStmt) {
-        blockStmt.accept(this, null);
-    }
 
     private static class ChoiceExpressionRemover extends ExpressionModifierVisitor {
 
@@ -147,139 +122,12 @@ public class ConditionalExpressionRefactorer implements StatementVisitor<Object,
             }
         }
     }
-
-    private final ChoiceExpressionRemover choiceExprRemover = new ChoiceExpressionRemover();
-
-    public Object visit(BlockStatement block, Object arg) {
-        for (Statement stmt : block) {
-            stmt.accept(this, arg);
-        }
-        return null;
+    
+    public ConditionalExpressionRefactorer() {
+        super(new ChoiceExpressionRemover());
     }
-
-    public Object visit(ReturnStatement stmt, Object arg) {
-        if (stmt.getExpression() != null) {
-            stmt.getExpression().accept(choiceExprRemover, null);
-        }
-        return null;
+    
+    public void refactor(BlockStatement blockStmt) {
+        blockStmt.accept(this, null);
     }
-
-    public Object visit(LocalVariableDeclarationStatement stmt, Object arg) {
-        return null;
-    }
-
-    public Object visit(ExpressionStatement stmt, Object arg) {
-        if (stmt.getExpression() != null) {
-            stmt.getExpression().accept(choiceExprRemover, null);
-        }
-        return null;
-    }
-
-    public Object visit(CommentStatement stmt, Object arg) {
-        return null;
-    }
-
-    public Object visit(IfStatement stmt, Object arg) {
-        stmt.getCondition().accept(choiceExprRemover, null);
-        stmt.getThen().accept(this, arg);
-        if (stmt.getElse() != null) {
-            stmt.getElse().accept(this, arg);
-        }
-        return null;
-    }
-
-    public Object visit(TryCatchFinallyStatement stmt, Object arg) {
-        stmt.getTry().accept(this, arg);
-        for (CatchStatement _catch : stmt.getCatchs()) {
-            _catch.getBlockStmt().accept(this, arg);
-        }
-        if (stmt.getFinally() != null) {
-            stmt.getFinally().accept(this, arg);
-        }
-        return null;
-    }
-
-    public Object visit(BreakStatement stmt, Object arg) {
-        return null;
-    }
-
-    public Object visit(WhileStatement stmt, Object arg) {
-        stmt.getCondition().accept(choiceExprRemover, null);
-        stmt.getBody().accept(this, arg);
-        return null;
-    }
-
-    public Object visit(DoWhileStatement stmt, Object arg) {
-        stmt.getCondition().accept(choiceExprRemover, null);
-        stmt.getBody().accept(this, arg);
-        return null;
-    }
-
-    public Object visit(ForStatement stmt, Object arg) {
-        if (stmt.getInit() != null) {
-            stmt.getInit().accept(choiceExprRemover, null);
-        }
-        if (stmt.getCondition() != null) {
-            stmt.getCondition().accept(choiceExprRemover, null);
-        }
-        if (stmt.getUpdate() != null) {
-            stmt.getUpdate().accept(choiceExprRemover, null);
-        }
-        stmt.getBody().accept(this, arg);
-        return null;
-    }
-
-    public Object visit(ThrowStatement stmt, Object arg) {
-        stmt.getObjectRef().accept(choiceExprRemover, null);
-        return null;
-    }
-
-    public Object visit(JumpIfStatement stmt, Object arg) {
-        stmt.getCondition().accept(choiceExprRemover, null);
-        return null;
-    }
-
-    public Object visit(GotoStatement stmt, Object arg) {
-        return null;
-    }
-
-    public Object visit(LabelStatement stmt, Object arg) {
-        return null;
-    }
-
-    public Object visit(LookupOrTableSwitchStatement stmt, Object arg) {
-        stmt.getCondition().accept(choiceExprRemover, null);
-        return null;
-    }
-
-    public Object visit(SwitchCaseStatement stmt, Object arg) {
-        stmt.getCondition().accept(choiceExprRemover, null);
-        for (CaseStatement _case : stmt.getCases()) {
-            for (Statement stmt2 : _case.getStmts()) {
-                stmt2.accept(this, arg);
-            }
-        }
-        return null;
-    }
-
-    public Object visit(LabeledStatement stmt, Object arg) {
-        stmt.getStmt().accept(this, arg);
-        return null;
-    }
-
-    public Object visit(MonitorEnterStatement stmt, Object arg) {
-        stmt.getObjectRef().accept(choiceExprRemover, null);
-        return null;
-    }
-
-    public Object visit(MonitorExitStatement stmt, Object arg) {
-        stmt.getObjectRef().accept(choiceExprRemover, null);
-        return null;
-    }
-
-    public Object visit(SynchronizedStatement stmt, Object arg) {
-        stmt.getExpression().accept(choiceExprRemover, null);
-        return null;
-    }
-
 }
