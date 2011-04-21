@@ -17,9 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  *
@@ -29,18 +27,18 @@ public class TryCatchFinallyStatement extends AbstractStatement {
 
     private final BlockStatement _try;
 
-    public static class CatchStatement {
+    public static class CatchClause {
         
         private final BlockStatement blockStmt;
     
         private final LocalVariableDeclaration exceptionVarDecl;
 
-        public CatchStatement(BlockStatement blockStmt, LocalVariableDeclaration exceptionVarDecl) {
+        public CatchClause(BlockStatement blockStmt, LocalVariableDeclaration exceptionVarDecl) {
             if (blockStmt == null) {
-                throw new ABCDException("blockStmt == null");
+                throw new IllegalArgumentException("blockStmt == null");
             }
             if (exceptionVarDecl == null) {
-                throw new ABCDException("exceptionVarDecl == null");
+                throw new IllegalArgumentException("exceptionVarDecl == null");
             }
             this.blockStmt = blockStmt;
             this.exceptionVarDecl = exceptionVarDecl;
@@ -55,19 +53,19 @@ public class TryCatchFinallyStatement extends AbstractStatement {
         }
     }
     
-    private final Collection<CatchStatement> catchs;
+    private final Collection<CatchClause> catchs;
 
     private BlockStatement _finally;
     
-    public TryCatchFinallyStatement(BlockStatement _try, Collection<CatchStatement> catchs) {
+    public TryCatchFinallyStatement(BlockStatement _try, Collection<CatchClause> catchs) {
         if (_try == null) {
-            throw new ABCDException("_try == null");
+            throw new IllegalArgumentException("_try == null");
         }
         if (catchs == null) {
-            throw new ABCDException("catchs == null");
+            throw new IllegalArgumentException("catchs == null");
         }
         if (catchs.isEmpty()) {
-            throw new ABCDException("catchs.isEmpty()");
+            throw new IllegalArgumentException("catchs.isEmpty()");
         }
         this._try = _try;
         this.catchs = catchs;
@@ -76,7 +74,7 @@ public class TryCatchFinallyStatement extends AbstractStatement {
     @Override
     public void setBlock(BlockStatement block) {
         _try.setBlock(block);
-        for (CatchStatement _catch : catchs) {
+        for (CatchClause _catch : catchs) {
             _catch.getBlockStmt().setBlock(block);
         }
         if (_finally != null) {
@@ -89,8 +87,8 @@ public class TryCatchFinallyStatement extends AbstractStatement {
         return _try;
     }
 
-    public Collection<CatchStatement> getCatchs() {
-        return Collections.unmodifiableCollection(catchs);
+    public Collection<CatchClause> getCatchs() {
+        return catchs;
     }
 
     public BlockStatement getFinally() {

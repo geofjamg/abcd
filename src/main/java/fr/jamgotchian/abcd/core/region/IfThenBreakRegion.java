@@ -74,9 +74,21 @@ public class IfThenBreakRegion extends AbstractRegion {
                                      invertCond);
     }
 
-    private IfThenBreakRegion(Region ifRegion, Region breakTargetRegion, Edge elseEdge, Edge thenBreakEdge,
-                      Region beforeThenRegion, Edge beforeThenEdge, Region afterThenRegion, Edge afterThenEdge,
-                      boolean invertCond) {
+    private IfThenBreakRegion(Region ifRegion, Region breakTargetRegion, Edge elseEdge,
+                              Edge thenBreakEdge, Region beforeThenRegion, Edge beforeThenEdge,
+                              Region afterThenRegion, Edge afterThenEdge, boolean invertCond) {
+        if (ifRegion == null) {
+            throw new IllegalArgumentException("ifRegion == null");
+        }
+        if (breakTargetRegion == null) {
+            throw new IllegalArgumentException("breakTargetRegion == null");
+        }
+        if (elseEdge == null) {
+            throw new IllegalArgumentException("elseEdge == null");
+        }
+        if (thenBreakEdge == null) {
+            throw new IllegalArgumentException("thenBreakEdge == null");
+        }
         this.ifRegion = ifRegion;
         this.breakTargetRegion = breakTargetRegion;
         this.elseEdge = elseEdge;

@@ -265,9 +265,9 @@ public class ABCDContext {
                    .append(OutputUtil.toText(mn.instructions));
 
                 method.getBody().add(new CommentStatement("\n" + msg.toString()));
-                method.getBody().add(Statements.createThrowStmt(InternalError.class,
-                                                                "Decompilation failed",
-                                                                importManager));
+                method.getBody().add(Statements.createThrowErrorStmt(InternalError.class,
+                                                                     "Decompilation failed",
+                                                                     importManager));
             }
         }
         return _class;

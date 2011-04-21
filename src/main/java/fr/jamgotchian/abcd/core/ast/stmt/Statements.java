@@ -71,7 +71,7 @@ public class Statements {
     }
     
     public static <E extends Throwable> Statement 
-            createThrowStmt(Class<E> excCls, String msg, ClassNameFactory factory) {
+            createThrowErrorStmt(Class<E> excCls, String msg, ClassNameFactory factory) {
         StringLiteralExpression msgExpr = Expressions.newStringExpr(msg, null);
         ClassName className = factory.newClassName(excCls.getName());
         ObjectCreationExpression objCreatExpr
@@ -87,7 +87,7 @@ public class Statements {
         return ifStmt;
     }
     
-    public static boolean isAnAssignment(Statement stmt) {
+    public static boolean isAssignment(Statement stmt) {
         if (!(stmt instanceof ExpressionStatement)) {
             return false;
         }
@@ -102,7 +102,7 @@ public class Statements {
         return assignExpr.getOperator() == AssignOperator.ASSIGN;
     }
     
-    public static boolean isAnIncrement(Statement stmt) {
+    public static boolean isIncrement(Statement stmt) {
         if (!(stmt instanceof ExpressionStatement)) {
             return false;
         }

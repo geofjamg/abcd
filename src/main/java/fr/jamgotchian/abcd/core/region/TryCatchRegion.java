@@ -17,12 +17,10 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -44,16 +42,16 @@ public class TryCatchRegion extends AbstractRegion {
     TryCatchRegion(Region tryRegion1, Edge tryEdge1, Region tryRegion2, Edge tryEdge2,
                    Collection<CatchRegion> catchRegions) {
         if (tryRegion1 == null) {
-            throw new ABCDException("tryRegion1 == null");
+            throw new IllegalArgumentException("tryRegion1 == null");
         }
         if (tryEdge1 == null) {
-            throw new ABCDException("tryEdge1 == null");
+            throw new IllegalArgumentException("tryEdge1 == null");
         }
         if (catchRegions == null) {
-            throw new ABCDException("catchRegions == null");
+            throw new IllegalArgumentException("catchRegions == null");
         }
         if (catchRegions.isEmpty()) {
-            throw new ABCDException("catchRegions.isEmpty()");
+            throw new IllegalArgumentException("catchRegions.isEmpty()");
         }
         this.tryRegion1 = tryRegion1;
         this.tryEdge1 = tryEdge1;
@@ -79,7 +77,7 @@ public class TryCatchRegion extends AbstractRegion {
     }
 
     public Collection<CatchRegion> getCatchRegions() {
-        return Collections.unmodifiableCollection(catchRegions);
+        return catchRegions;
     }
 
     public RegionType getType() {

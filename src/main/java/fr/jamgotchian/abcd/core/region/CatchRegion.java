@@ -35,6 +35,18 @@ public class CatchRegion {
 
     public CatchRegion(Region region, Edge incomingEdge, Edge outgoingEdge,
                        String exceptionClassName) {
+        if (region == null) {
+            throw new IllegalArgumentException("region == null");
+        }
+        if (incomingEdge == null) {
+            throw new IllegalArgumentException("incomingEdge == null");
+        }
+        if (outgoingEdge == null) {
+            throw new IllegalArgumentException("outgoingEdge == null");
+        }
+        if (exceptionClassName == null) {
+            throw new IllegalArgumentException("exceptionClassName == null");
+        }
         this.region = region;
         this.incomingEdge = incomingEdge;
         this.outgoingEdge = outgoingEdge;

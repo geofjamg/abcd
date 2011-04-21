@@ -28,6 +28,9 @@ public class MonitorEnterStatement extends AbstractStatement {
     private final Expression objectRef;
 
     public MonitorEnterStatement(Expression objectRef) {
+        if (objectRef == null) {
+            throw new IllegalArgumentException("objectRef == null");
+        }
         this.objectRef = objectRef;
     }
 

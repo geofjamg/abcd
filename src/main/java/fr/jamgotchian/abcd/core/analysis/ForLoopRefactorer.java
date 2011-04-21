@@ -41,12 +41,12 @@ public class ForLoopRefactorer extends StatementModifierVisitor implements Refac
     
     @Override
     public Collection<Statement> visit(ExpressionStatement stmt, Void arg) {
-        if (Statements.isAnAssignment(stmt)) {
+        if (Statements.isAssignment(stmt)) {
             AssignExpression initExpr = ((AssignExpression) stmt.getExpression());
             if (!stmt.isLast() && stmt.getNext() instanceof WhileStatement) {
                 WhileStatement whileStmt = (WhileStatement) stmt.getNext();
                 Expression conditionExpr = whileStmt.getCondition();
-                if (!whileStmt.getBody().isEmpty() && Statements.isAnIncrement(whileStmt.getBody().getLast())) {
+                if (!whileStmt.getBody().isEmpty() && Statements.isIncrement(whileStmt.getBody().getLast())) {
                     ExpressionStatement updateStmt = (ExpressionStatement) whileStmt.getBody().getLast();
                     Expression updateExpr = (Expression) updateStmt.getExpression();
                     updateStmt.remove();

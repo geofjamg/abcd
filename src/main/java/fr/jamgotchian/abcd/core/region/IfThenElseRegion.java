@@ -18,7 +18,6 @@
 package fr.jamgotchian.abcd.core.region;
 
 import com.google.common.collect.Sets;
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
@@ -49,25 +48,25 @@ public class IfThenElseRegion extends AbstractRegion {
                      Edge beforeElseEdge, Edge afterElseEdge,
                      Region ifRegion, Region thenRegion, Region elseRegion) {
         if (beforeThenEdge == null) {
-            throw new ABCDException("beforeThenEdge == null");
+            throw new IllegalArgumentException("beforeThenEdge == null");
         }
         if (afterThenEdge == null) {
-            throw new ABCDException("afterThenEdge == null");
+            throw new IllegalArgumentException("afterThenEdge == null");
         }
         if (beforeElseEdge == null) {
-            throw new ABCDException("beforeElseEdge == null");
+            throw new IllegalArgumentException("beforeElseEdge == null");
         }
         if (afterElseEdge == null) {
-            throw new ABCDException("afterElseEdge == null");
+            throw new IllegalArgumentException("afterElseEdge == null");
         }                                
         if (ifRegion == null) {
-            throw new ABCDException("ifRegion == null");
+            throw new IllegalArgumentException("ifRegion == null");
         }
         if (thenRegion == null) {
-            throw new ABCDException("thenRegion == null");
+            throw new IllegalArgumentException("thenRegion == null");
         }
         if (elseRegion == null) {
-            throw new ABCDException("elseRegion == null");
+            throw new IllegalArgumentException("elseRegion == null");
         }
         this.beforeThenEdge = beforeThenEdge;
         this.afterThenEdge = afterThenEdge;

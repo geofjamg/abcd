@@ -17,11 +17,9 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -37,13 +35,13 @@ public class BlockRegion extends AbstractRegion {
     
     BlockRegion(Set<Edge> edges, List<Region> regions) {
         if (edges == null) {
-            throw new ABCDException("edges == null");
+            throw new IllegalArgumentException("edges == null");
         }                           
         if (regions == null) {
-            throw new ABCDException("regions == null");
+            throw new IllegalArgumentException("regions == null");
         }
         if (regions.size() < 2) {
-            throw new ABCDException("regions < 2");
+            throw new IllegalArgumentException("regions < 2");
         }
         this.edges = edges;
         this.regions = regions;
@@ -62,15 +60,15 @@ public class BlockRegion extends AbstractRegion {
     }
 
     public List<Region> getRegions() {
-        return Collections.unmodifiableList(regions);
+        return regions;
     }
 
     public Collection<Region> getChildRegions() {
-        return Collections.unmodifiableList(regions);
+        return regions;
     }
 
     public Collection<Edge> getChildEdges() {
-        return Collections.unmodifiableSet(edges);
+        return edges;
     }
 
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {

@@ -37,7 +37,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.ast.type.ClassName;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
@@ -292,7 +292,7 @@ public class AbstractSyntaxTreeBuilder {
                     buildAST(tryCatchRegion.getTryRegion2(), tryBlockStmt);
                 }
 
-                List<CatchStatement> catchStmts = new ArrayList<CatchStatement>();
+                List<CatchClause> catchs = new ArrayList<CatchClause>();
                 for (CatchRegion catchRegion : tryCatchRegion.getCatchRegions()) {
 
                     BlockStatement catchBlockStmt = new BlockStatement();
@@ -306,10 +306,10 @@ public class AbstractSyntaxTreeBuilder {
                     JavaType exceptionType = JavaType.newRefType(exceptionClassName);
                     LocalVariableDeclaration varDecl
                             = new LocalVariableDeclaration(excVar.getIndex(), exceptionType);
-                    catchStmts.add(new CatchStatement(catchBlockStmt, varDecl));
+                    catchs.add(new CatchClause(catchBlockStmt, varDecl));
                 }
                 TryCatchFinallyStatement tryCatchStmt
-                        = new TryCatchFinallyStatement(tryBlockStmt, catchStmts);
+                        = new TryCatchFinallyStatement(tryBlockStmt, catchs);
                 blockStmt.add(tryCatchStmt);
 
                 break;

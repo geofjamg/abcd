@@ -46,6 +46,27 @@ public class LogicalRegion extends AbstractRegion {
 
     LogicalRegion(LogicalType type, Region regionA, Region regionB,
                   Edge trueEdgeA, Edge falseEdgeA, Edge trueEdgeB, Edge falseEdgeB) {
+        if (type == null)
+            throw new IllegalArgumentException("type == null");
+
+        if (regionA == null) {
+            throw new IllegalArgumentException("regionA == null");
+        }
+        if (regionB == null) {
+            throw new IllegalArgumentException("regionB == null");
+        }
+        if (trueEdgeA == null) {
+            throw new IllegalArgumentException("trueEdgeA == null");
+        }
+        if (falseEdgeA == null) {
+            throw new IllegalArgumentException("falseEdgeA == null");
+        }
+        if (trueEdgeB == null) {
+            throw new IllegalArgumentException("trueEdgeB == null");
+        }
+        if (falseEdgeB == null) {
+            throw new IllegalArgumentException("falseEdgeB == null");
+        }
         this.type = type;
         this.regionA = regionA;
         this.regionB = regionB;
@@ -114,7 +135,7 @@ public class LogicalRegion extends AbstractRegion {
                 falseEdge = new EdgeImpl(Boolean.FALSE, trueEdgeB.isLoopExit() && falseEdgeA.isLoopExit());
                 falseRegion = graph.getEdgeTarget(trueEdgeB);
                 break;
-                
+
             case OR:
                 trueEdge = new EdgeImpl(Boolean.TRUE, trueEdgeB.isLoopExit() && trueEdgeA.isLoopExit());
                 trueRegion = graph.getEdgeTarget(trueEdgeB);
@@ -128,7 +149,7 @@ public class LogicalRegion extends AbstractRegion {
                 falseEdge = falseEdgeB;
                 falseRegion = graph.getEdgeTarget(trueEdgeB);
                 break;
-                
+
             default:
                 throw new AssertionError();
         }

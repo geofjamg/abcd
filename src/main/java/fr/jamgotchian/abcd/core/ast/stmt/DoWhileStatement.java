@@ -33,6 +33,9 @@ public class DoWhileStatement extends BodyStatement {
         if (body == null) {
             throw new IllegalArgumentException("body == null");
         }
+        if (condition == null) {
+            throw new IllegalArgumentException("condition == null");
+        }
         this.condition = condition;
         this.body = body;
     }

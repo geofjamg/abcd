@@ -17,12 +17,10 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,13 +37,13 @@ public class SwitchCaseRegion extends AbstractRegion {
 
     SwitchCaseRegion(Region switchRegion, List<CaseRegion> caseRegions) {
         if (switchRegion == null) {
-            throw new ABCDException("switchRegion == null");
+            throw new IllegalArgumentException("switchRegion == null");
         }
         if (caseRegions == null) {
-            throw new ABCDException("caseRegions == null");
+            throw new IllegalArgumentException("caseRegions == null");
         }
         if (caseRegions.isEmpty()) {
-            throw new ABCDException("caseRegions.isEmpty()");
+            throw new IllegalArgumentException("caseRegions.isEmpty()");
         }
         this.switchRegion = switchRegion;
         this.caseRegions = caseRegions;
@@ -68,7 +66,7 @@ public class SwitchCaseRegion extends AbstractRegion {
     }
 
     public List<CaseRegion> getCaseRegions() {
-        return Collections.unmodifiableList(caseRegions);
+        return caseRegions;
     }
     
     public Collection<Region> getChildRegions() {

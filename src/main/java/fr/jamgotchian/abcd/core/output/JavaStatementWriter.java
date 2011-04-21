@@ -40,7 +40,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.SynchronizedStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.common.Label;
 import fr.jamgotchian.abcd.core.controlflow.CaseValues;
@@ -134,7 +134,7 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
     public Void visit(TryCatchFinallyStatement stmt, Void arg) {
         writer.writeKeyword("try").writeSpace();
         stmt.getTry().accept(this, null);
-        for (CatchStatement _catch : stmt.getCatchs()) {
+        for (CatchClause _catch : stmt.getCatchs()) {
             writer.writeSpace().writeKeyword("catch").writeSpace().write("(")
                   .write(_catch.getExceptionVarDecl().getType())
                   .writeSpace().write(stmt.getBlock().getVariable(_catch.getExceptionVarDecl().getIndex()))

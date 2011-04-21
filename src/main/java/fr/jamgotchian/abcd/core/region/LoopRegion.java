@@ -41,13 +41,13 @@ public class LoopRegion extends AbstractRegion {
 
     public LoopRegion(LoopType loopType, Edge backEdge, Region loopRegion, int loopID) {
         if (loopType == null) {
-            throw new ABCDException("loopType == null");
+            throw new IllegalArgumentException("loopType == null");
         }
         if (backEdge == null) {
-            throw new ABCDException("backEdge == null");
+            throw new IllegalArgumentException("backEdge == null");
         }
         if (loopRegion == null) {
-            throw new ABCDException("loopRegion == null");
+            throw new IllegalArgumentException("loopRegion == null");
         }
         this.loopType = loopType;
         this.backEdge = backEdge;

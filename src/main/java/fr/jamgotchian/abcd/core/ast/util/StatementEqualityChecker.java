@@ -41,7 +41,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.SynchronizedStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -170,16 +170,16 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
             if (Boolean.FALSE.equals(stmt.getTry().accept(this, stmt2.getTry()))) {
                 return Boolean.FALSE;
             }
-            Collection<CatchStatement> catchs1 = stmt.getCatchs();
-            Collection<CatchStatement> catchs2 = stmt2.getCatchs();
+            Collection<CatchClause> catchs1 = stmt.getCatchs();
+            Collection<CatchClause> catchs2 = stmt2.getCatchs();
             if (catchs1.size() != catchs2.size()) {
                 return Boolean.FALSE;
             }
-            Iterator<CatchStatement> it1 = catchs1.iterator();
-            Iterator<CatchStatement> it2 = catchs2.iterator();
+            Iterator<CatchClause> it1 = catchs1.iterator();
+            Iterator<CatchClause> it2 = catchs2.iterator();
             while (it1.hasNext() && it2.hasNext()) {
-                CatchStatement catch1 = it1.next();
-                CatchStatement catch2 = it2.next();
+                CatchClause catch1 = it1.next();
+                CatchClause catch2 = it2.next();
                 if (!catch1.getExceptionVarDecl().equals(catch2.getExceptionVarDecl())) {
                     return Boolean.FALSE;
                 }

@@ -686,6 +686,21 @@ public class Test {
         c();
     }
 
+    public int foo(int i, int j) {
+        while (true) {
+            try { 
+                while (i < j)
+                    i = j++/i;
+            }
+            catch (RuntimeException re) {   
+                i = 10;
+                continue;
+            }
+            break;
+        }
+        return j;
+    }
+
     public void testSwitch(int a) {
         switch (a) {
             case 0:

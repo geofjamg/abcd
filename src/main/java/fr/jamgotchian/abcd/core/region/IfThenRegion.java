@@ -18,7 +18,6 @@
 package fr.jamgotchian.abcd.core.region;
 
 import com.google.common.collect.Sets;
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
@@ -46,19 +45,19 @@ public class IfThenRegion extends AbstractRegion {
     IfThenRegion(Edge beforeThenEdge, Edge afterThenEdge, Edge jumpEdge,
                  Region ifRegion, Region thenRegion, boolean invertCondition) {
         if (beforeThenEdge == null) {
-            throw new ABCDException("beforeThenEdge == null");
+            throw new IllegalArgumentException("beforeThenEdge == null");
         }
         if (afterThenEdge == null) {
-            throw new ABCDException("afterThenEdge == null");
+            throw new IllegalArgumentException("afterThenEdge == null");
         }
         if (jumpEdge == null) {
-            throw new ABCDException("jumpEdge == null");
+            throw new IllegalArgumentException("jumpEdge == null");
         }                            
         if (ifRegion == null) {
-            throw new ABCDException("ifRegion == null");
+            throw new IllegalArgumentException("ifRegion == null");
         }
         if (thenRegion == null) {
-            throw new ABCDException("thenRegion == null");
+            throw new IllegalArgumentException("thenRegion == null");
         }
         this.beforeThenEdge = beforeThenEdge;
         this.afterThenEdge = afterThenEdge;

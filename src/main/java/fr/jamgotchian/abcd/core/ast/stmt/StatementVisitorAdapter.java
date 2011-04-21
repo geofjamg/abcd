@@ -18,7 +18,7 @@ package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.ExpressionVisitor;
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 
 /**
  *
@@ -83,7 +83,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
 
     public R visit(TryCatchFinallyStatement stmt, A arg) {
         stmt.getTry().accept(this, arg);
-        for (CatchStatement _catch : stmt.getCatchs()) {
+        for (CatchClause _catch : stmt.getCatchs()) {
             _catch.getBlockStmt().accept(this, arg);
         }
         if (stmt.getFinally() != null) {

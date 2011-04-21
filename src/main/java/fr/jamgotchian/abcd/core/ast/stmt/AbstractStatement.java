@@ -29,7 +29,7 @@ public abstract class AbstractStatement implements Statement {
 
     private Statement next;
 
-    public AbstractStatement() {
+    AbstractStatement() {
     }
 
     public void setBlock(BlockStatement block) {

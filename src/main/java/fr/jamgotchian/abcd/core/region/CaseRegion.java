@@ -35,6 +35,12 @@ public class CaseRegion {
     private final CaseValues values;
 
     CaseRegion(Region region, Edge incomingEdge, Edge outgoingEdge, CaseValues values) {
+        if (incomingEdge == null) {
+            throw new IllegalArgumentException("incomingEdge == null");
+        }
+        if (values == null) {
+            throw new IllegalArgumentException("values == null");
+        }        
         this.region = region;
         this.incomingEdge = incomingEdge;
         this.outgoingEdge = outgoingEdge;

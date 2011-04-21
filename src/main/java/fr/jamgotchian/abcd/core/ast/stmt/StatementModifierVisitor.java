@@ -18,7 +18,7 @@
 package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.stmt.SwitchCaseStatement.CaseStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -75,7 +75,7 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
 
     public Collection<Statement> visit(TryCatchFinallyStatement stmt, Void arg) {
         stmt.getTry().accept(this, arg);
-        for (CatchStatement _catch : stmt.getCatchs()) {
+        for (CatchClause _catch : stmt.getCatchs()) {
             _catch.getBlockStmt().accept(this, arg);
         }
         if (stmt.getFinally() != null) {

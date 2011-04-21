@@ -24,7 +24,6 @@ import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockAnalysisData;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,7 +39,7 @@ public class BasicBlockAnalysisDataImpl implements BasicBlockAnalysisData {
     private ExpressionStack inputStack;
 
     private int stackConsumption;
-    
+
     private int stackProduction;
 
     public BasicBlockAnalysisDataImpl() {
@@ -52,11 +51,11 @@ public class BasicBlockAnalysisDataImpl implements BasicBlockAnalysisData {
     public int getStatementCount() {
         return getUsefullStatements().size();
     }
-    
+
     public Collection<Statement> getStatements() {
-        return Collections.unmodifiableCollection(statements);
+        return statements;
     }
-    
+
     public Collection<Statement> getUsefullStatements() {
         List<Statement> usefullStmts = new ArrayList<Statement>();
         for (Statement stmt : statements) {
@@ -67,7 +66,7 @@ public class BasicBlockAnalysisDataImpl implements BasicBlockAnalysisData {
         }
         return usefullStmts;
     }
-    
+
     public void addStatement(Statement stmt) {
         statements.add(stmt);
     }

@@ -18,9 +18,7 @@
 package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.CaseValues;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,6 +34,12 @@ public class SwitchCaseStatement extends AbstractStatement {
         private final List<Statement> stmts;
 
         public CaseStatement(CaseValues values, List<Statement> stmts) {
+            if (values == null) {
+                throw new IllegalArgumentException("values == null");
+            }
+            if (stmts == null) {
+                throw new IllegalArgumentException("stmts == null");
+            }
             this.values = values;
             this.stmts = stmts;
         }
@@ -55,13 +59,13 @@ public class SwitchCaseStatement extends AbstractStatement {
 
     public SwitchCaseStatement(Expression condition, List<CaseStatement> cases) {
         if (condition == null) {
-            throw new ABCDException("condition == null");
+            throw new IllegalArgumentException("condition == null");
         }
         if (cases == null) {
-            throw new ABCDException("cases == null");
+            throw new IllegalArgumentException("cases == null");
         }
         if (cases.isEmpty()) {
-            throw new ABCDException("cases.isEmpty()");
+            throw new IllegalArgumentException("cases.isEmpty()");
         }
         this.condition = condition;
         this.cases = cases;
@@ -82,7 +86,7 @@ public class SwitchCaseStatement extends AbstractStatement {
     }
 
     public List<CaseStatement> getCases() {
-        return Collections.unmodifiableList(cases);
+        return cases;
     }
 
     public <R, A> R accept(StatementVisitor<R, A> visitor, A arg) {

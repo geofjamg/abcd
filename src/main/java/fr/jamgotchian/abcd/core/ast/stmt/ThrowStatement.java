@@ -28,6 +28,9 @@ public class ThrowStatement extends AbstractStatement {
     private final Expression objectRef;
 
     public ThrowStatement(Expression objectRef) {
+        if (objectRef == null){
+            throw new IllegalArgumentException("objectRef == null");
+        }
         this.objectRef = objectRef;
     }
 

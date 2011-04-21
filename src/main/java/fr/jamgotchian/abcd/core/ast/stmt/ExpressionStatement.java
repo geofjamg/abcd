@@ -28,6 +28,9 @@ public class ExpressionStatement extends AbstractStatement {
     private final Expression expression;
 
     public ExpressionStatement(Expression expression) {
+        if (expression == null) {
+            throw new IllegalArgumentException("expression == null");
+        }
         this.expression = expression;
     }
 

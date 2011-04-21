@@ -34,7 +34,7 @@ public class BasicBlockRegion extends AbstractRegion {
 
     BasicBlockRegion(BasicBlock block) {
         if (block == null) {
-            throw new ABCDException("block == null");
+            throw new IllegalArgumentException("block == null");
         }
         this.block = block;
     }
