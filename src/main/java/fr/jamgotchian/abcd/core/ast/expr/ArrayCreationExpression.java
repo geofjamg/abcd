@@ -17,7 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.expr;
 
-import fr.jamgotchian.abcd.core.ast.type.JavaType;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

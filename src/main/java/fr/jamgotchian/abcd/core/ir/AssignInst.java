@@ -14,37 +14,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.ast;
-
-import fr.jamgotchian.abcd.core.type.ClassName;
-import fr.jamgotchian.abcd.core.type.ClassNameFactory;
-import java.util.Collections;
-import java.util.Set;
+package fr.jamgotchian.abcd.core.ir;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ImportManager implements ClassNameFactory {
+public class AssignInst implements IRInst {
+ 
+    private final Variable result;
+     
+    private final Operand value;
 
-    public ImportManager() {
+    public AssignInst(Variable result, Operand value) {
+        this.result = result;
+        this.value = value;
     }
 
-    public ClassName newClassName(String className) {
-        return new ClassNameImpl(className, this);
+    public Operand getValue() {
+        return value;
     }
 
-    public boolean isImported(ClassName className) {
-        String packageName = className.getPackageName();
-        return packageName != null
-                && packageName.startsWith("java.lang");
+    public Variable getResult() {
+        return result;
     }
-
-    public Set<String> getImports() {
-        return Collections.emptySet();
-    }
-
-    public <R, A> R accept(CompilationUnitVisitor<R, A> visitor, A arg) {
-      return visitor.visit(this, arg);
+        
+    public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
+        return visitor.visit(this, arg);
     }
 }

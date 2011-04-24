@@ -18,7 +18,7 @@
 package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
-import fr.jamgotchian.abcd.core.ast.type.JavaType;
+import fr.jamgotchian.abcd.core.type.JavaType;
 
 /**
  *

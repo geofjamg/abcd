@@ -14,37 +14,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.ast;
+package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.type.ClassName;
-import fr.jamgotchian.abcd.core.type.ClassNameFactory;
-import java.util.Collections;
-import java.util.Set;
+import fr.jamgotchian.abcd.core.type.JavaType;
+import java.util.List;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ImportManager implements ClassNameFactory {
+public class NewArrayInst implements IRInst {
 
-    public ImportManager() {
+    private final Variable result;
+    
+    private final JavaType type;
+
+    private final List<Variable> dimensions;
+
+    public NewArrayInst(Variable result, JavaType type, List<Variable> dimensions) {
+        this.result = result;
+        this.type = type;
+        this.dimensions = dimensions;
     }
 
-    public ClassName newClassName(String className) {
-        return new ClassNameImpl(className, this);
+    public Variable getResult() {
+        return result;
     }
 
-    public boolean isImported(ClassName className) {
-        String packageName = className.getPackageName();
-        return packageName != null
-                && packageName.startsWith("java.lang");
+    public JavaType getType() {
+        return type;
     }
 
-    public Set<String> getImports() {
-        return Collections.emptySet();
+    public List<Variable> getDimensions() {
+        return dimensions;
     }
-
-    public <R, A> R accept(CompilationUnitVisitor<R, A> visitor, A arg) {
-      return visitor.visit(this, arg);
+    
+    public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
+        return visitor.visit(this, arg);
     }
 }

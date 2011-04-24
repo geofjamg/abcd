@@ -17,7 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast;
 
-import fr.jamgotchian.abcd.core.ast.type.JavaType;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 

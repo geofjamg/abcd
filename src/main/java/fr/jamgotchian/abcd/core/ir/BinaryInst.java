@@ -14,37 +14,46 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.ast;
-
-import fr.jamgotchian.abcd.core.type.ClassName;
-import fr.jamgotchian.abcd.core.type.ClassNameFactory;
-import java.util.Collections;
-import java.util.Set;
+package fr.jamgotchian.abcd.core.ir;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ImportManager implements ClassNameFactory {
+public class BinaryInst implements IRInst {
 
-    public ImportManager() {
+    private final Variable result;
+
+    private final BinaryOp operator;
+
+    private final Variable var1;
+
+    private final Variable var2;
+
+    public BinaryInst(Variable result, BinaryOp operator, Variable var1, Variable var2) {
+        this.result = result;
+        this.operator = operator;
+        this.var1 = var1;
+        this.var2 = var2;
     }
 
-    public ClassName newClassName(String className) {
-        return new ClassNameImpl(className, this);
+    public Variable getResult() {
+        return result;
     }
 
-    public boolean isImported(ClassName className) {
-        String packageName = className.getPackageName();
-        return packageName != null
-                && packageName.startsWith("java.lang");
+    public BinaryOp getOperator() {
+        return operator;
     }
 
-    public Set<String> getImports() {
-        return Collections.emptySet();
+    public Variable getVar1() {
+        return var1;
     }
 
-    public <R, A> R accept(CompilationUnitVisitor<R, A> visitor, A arg) {
-      return visitor.visit(this, arg);
+    public Variable getVar2() {
+        return var2;
+    }
+        
+    public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
+        return visitor.visit(this, arg);
     }
 }

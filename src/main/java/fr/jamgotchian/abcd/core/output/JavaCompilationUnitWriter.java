@@ -21,7 +21,7 @@ import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.CompilationUnitVisitor;
 import fr.jamgotchian.abcd.core.ast.Package;
-import fr.jamgotchian.abcd.core.ast.type.ClassName;
+import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 
 /**

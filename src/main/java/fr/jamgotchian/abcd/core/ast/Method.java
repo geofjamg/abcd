@@ -19,8 +19,8 @@ package fr.jamgotchian.abcd.core.ast;
 
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
-import fr.jamgotchian.abcd.core.ast.type.ClassName;
-import fr.jamgotchian.abcd.core.ast.type.JavaType;
+import fr.jamgotchian.abcd.core.type.ClassName;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;

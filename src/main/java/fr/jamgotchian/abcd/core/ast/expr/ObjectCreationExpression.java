@@ -17,7 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.expr;
 
-import fr.jamgotchian.abcd.core.ast.type.ClassName;
+import fr.jamgotchian.abcd.core.type.ClassName;
 import java.util.List;
 
 /**

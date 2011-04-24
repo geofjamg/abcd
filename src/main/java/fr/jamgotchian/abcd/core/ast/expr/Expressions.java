@@ -16,8 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.ast.expr;
 
-import fr.jamgotchian.abcd.core.ast.type.ClassName;
-import fr.jamgotchian.abcd.core.ast.type.JavaType;
+import fr.jamgotchian.abcd.core.type.ClassName;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import java.util.List;
 import java.util.Set;
