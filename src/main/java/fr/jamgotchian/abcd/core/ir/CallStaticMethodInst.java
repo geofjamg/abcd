@@ -25,23 +25,23 @@ import java.util.List;
  */
 public class CallStaticMethodInst implements IRInst {
     
-    private final Variable result;
+    private final TemporaryVariable result;
 
     private final ClassName scope;
     
     private final String methodName;
     
-    private final List<Variable> args;
+    private final List<TemporaryVariable> args;
 
-    public CallStaticMethodInst(Variable result, ClassName scope, String methodName, 
-                                List<Variable> args) {
+    public CallStaticMethodInst(TemporaryVariable result, ClassName scope, String methodName, 
+                                List<TemporaryVariable> args) {
         this.result = result;
         this.scope = scope;
         this.methodName = methodName;
         this.args = args;
     }
 
-    public Variable getResult() {
+    public TemporaryVariable getResult() {
         return result;
     }
 
@@ -53,7 +53,7 @@ public class CallStaticMethodInst implements IRInst {
         return methodName;
     }
 
-    public List<Variable> getArgs() {
+    public List<TemporaryVariable> getArgs() {
         return args;
     }
     

@@ -22,23 +22,23 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public class GetFieldInst implements IRInst {
 
-    private final Variable result;
+    private final TemporaryVariable result;
 
-    private final Variable object;
+    private final TemporaryVariable object;
 
     private final String fieldName;
 
-    public GetFieldInst(Variable result, Variable object, String fieldName) {
+    public GetFieldInst(TemporaryVariable result, TemporaryVariable object, String fieldName) {
         this.result = result;
         this.object = object;
         this.fieldName = fieldName;
     }
 
-    public Variable getResult() {
+    public TemporaryVariable getResult() {
         return result;
     }
 
-    public Variable getObject() {
+    public TemporaryVariable getObject() {
         return object;
     }
 

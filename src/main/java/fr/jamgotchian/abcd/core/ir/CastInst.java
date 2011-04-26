@@ -24,23 +24,23 @@ import fr.jamgotchian.abcd.core.type.JavaType;
  */
 public class CastInst implements IRInst {
 
-    private final Variable result;
+    private final TemporaryVariable result;
 
-    private final Variable var;
+    private final TemporaryVariable var;
 
     private final JavaType type;
 
-    public CastInst(Variable result, Variable var, JavaType type) {
+    public CastInst(TemporaryVariable result, TemporaryVariable var, JavaType type) {
         this.result = result;
         this.var = var;
         this.type = type;
     }
 
-    public Variable getResult() {
+    public TemporaryVariable getResult() {
         return result;
     }
 
-    public Variable getVar() {
+    public TemporaryVariable getVar() {
         return var;
     }
 

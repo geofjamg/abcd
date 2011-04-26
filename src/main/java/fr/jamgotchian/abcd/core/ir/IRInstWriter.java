@@ -208,7 +208,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         writer.writeSpace().write("=").writeSpace().writeKeyword("call").writeSpace();
         inst.getObject().accept(this, arg);
         writer.writeSpace().write(inst.getMethodName()).writeSpace();
-        for (Iterator<Variable> it = inst.getArgs().iterator(); it.hasNext();) {
+        for (Iterator<TemporaryVariable> it = inst.getArgs().iterator(); it.hasNext();) {
             Variable argVar = it.next();
             argVar.accept(this, arg);
             if (it.hasNext()) {
@@ -223,7 +223,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         writer.writeSpace().write("=").writeSpace().writeKeyword("callstatic")
                 .writeSpace().write(inst.getScope()).writeSpace().write(inst.getMethodName())
                 .writeSpace();
-        for (Iterator<Variable> it = inst.getArgs().iterator(); it.hasNext();) {
+        for (Iterator<TemporaryVariable> it = inst.getArgs().iterator(); it.hasNext();) {
             Variable argVar = it.next();
             argVar.accept(this, arg);
             if (it.hasNext()) {

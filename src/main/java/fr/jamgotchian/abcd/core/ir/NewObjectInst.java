@@ -26,19 +26,19 @@ import java.util.List;
  */
 public class NewObjectInst implements IRInst {
     
-    private final Variable result;
+    private final TemporaryVariable result;
     
     private final ClassName className;
     
     private List<Variable> args;
 
-    public NewObjectInst(Variable result, ClassName className) {
+    public NewObjectInst(TemporaryVariable result, ClassName className) {
         this.result = result;
         this.className = className;
         this.args = Collections.emptyList();
     }
 
-    public Variable getResult() {
+    public TemporaryVariable getResult() {
         return result;
     }
 

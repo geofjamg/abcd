@@ -22,19 +22,19 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public class SetFieldInst implements IRInst {
 
-    private final Variable object;
+    private final TemporaryVariable object;
 
     private final String fieldName;
 
-    private final Variable value;
+    private final TemporaryVariable value;
 
-    public SetFieldInst(Variable object, String fieldName, Variable value) {
+    public SetFieldInst(TemporaryVariable object, String fieldName, TemporaryVariable value) {
         this.object = object;
         this.fieldName = fieldName;
         this.value = value;
     }
 
-    public Variable getObject() {
+    public TemporaryVariable getObject() {
         return object;
     }
 
@@ -42,7 +42,7 @@ public class SetFieldInst implements IRInst {
         return fieldName;
     }
 
-    public Variable getValue() {
+    public TemporaryVariable getValue() {
         return value;
     }
 

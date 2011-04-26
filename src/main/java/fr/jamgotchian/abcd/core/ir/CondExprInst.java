@@ -22,42 +22,44 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public class CondExprInst {
 
-    private final Variable result;
+    private final TemporaryVariable result;
 
-    private Variable cond;
+    private TemporaryVariable cond;
     
-    private final Variable then;
+    private final TemporaryVariable then;
     
-    private final Variable _else;
+    private final TemporaryVariable _else;
 
-    public CondExprInst(Variable result, Variable cond, Variable then, Variable _else) {
+    public CondExprInst(TemporaryVariable result, TemporaryVariable cond, 
+                        TemporaryVariable then, TemporaryVariable _else) {
         this.result = result;
         this.cond = cond;
         this.then = then;
         this._else = _else;
     }
     
-    public CondExprInst(Variable result, Variable then, Variable _else) {
+    public CondExprInst(TemporaryVariable result, TemporaryVariable then, 
+                        TemporaryVariable _else) {
         this(result, null, then, _else);
     }
 
-    public Variable getResult() {
+    public TemporaryVariable getResult() {
         return result;
     }
     
-    public Variable getCond() {
+    public TemporaryVariable getCond() {
         return cond;
     }
 
-    public void setCond(Variable cond) {
+    public void setCond(TemporaryVariable cond) {
         this.cond = cond;
     }
 
-    public Variable getThen() {
+    public TemporaryVariable getThen() {
         return then;
     }
 
-    public Variable getElse() {
+    public TemporaryVariable getElse() {
         return _else;
     }
     

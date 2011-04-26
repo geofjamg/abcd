@@ -21,7 +21,7 @@ package fr.jamgotchian.abcd.core.ir;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class TemporaryVariable implements Variable {
-    
+
     private final int num;
 
     public TemporaryVariable(int num) {
@@ -35,7 +35,7 @@ public class TemporaryVariable implements Variable {
     public boolean isTemporary() {
         return true;
     }
-    
+
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

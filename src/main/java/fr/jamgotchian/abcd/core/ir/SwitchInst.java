@@ -25,16 +25,16 @@ import java.util.List;
  */
 public class SwitchInst implements IRInst {
     
-    private final Variable cond;
+    private final TemporaryVariable cond;
     
     private final List<Label> labels;
 
-    public SwitchInst(Variable cond, List<Label> labels) {
+    public SwitchInst(TemporaryVariable cond, List<Label> labels) {
         this.cond = cond;
         this.labels = labels;
     }
     
-    public Variable getCond() {
+    public TemporaryVariable getCond() {
         return cond;
     }
 

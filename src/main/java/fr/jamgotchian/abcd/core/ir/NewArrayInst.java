@@ -25,19 +25,20 @@ import java.util.List;
  */
 public class NewArrayInst implements IRInst {
 
-    private final Variable result;
+    private final TemporaryVariable result;
     
     private final JavaType type;
 
-    private final List<Variable> dimensions;
+    private final List<TemporaryVariable> dimensions;
 
-    public NewArrayInst(Variable result, JavaType type, List<Variable> dimensions) {
+    public NewArrayInst(TemporaryVariable result, JavaType type, 
+                        List<TemporaryVariable> dimensions) {
         this.result = result;
         this.type = type;
         this.dimensions = dimensions;
     }
 
-    public Variable getResult() {
+    public TemporaryVariable getResult() {
         return result;
     }
 
@@ -45,7 +46,7 @@ public class NewArrayInst implements IRInst {
         return type;
     }
 
-    public List<Variable> getDimensions() {
+    public List<TemporaryVariable> getDimensions() {
         return dimensions;
     }
     

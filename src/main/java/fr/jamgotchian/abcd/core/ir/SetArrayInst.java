@@ -22,27 +22,28 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public class SetArrayInst implements IRInst {
 
-    private final Variable array;
+    private final TemporaryVariable array;
 
-    private final Variable index;
+    private final TemporaryVariable index;
 
-    private final Variable value;
+    private final TemporaryVariable value;
 
-    public SetArrayInst(Variable array, Variable index, Variable value) {
+    public SetArrayInst(TemporaryVariable array, TemporaryVariable index, 
+                        TemporaryVariable value) {
         this.array = array;
         this.index = index;
         this.value = value;
     }
 
-    public Variable getArray() {
+    public TemporaryVariable getArray() {
         return array;
     }
 
-    public Variable getIndex() {
+    public TemporaryVariable getIndex() {
         return index;
     }
 
-    public Variable getValue() {
+    public TemporaryVariable getValue() {
         return value;
     }
 

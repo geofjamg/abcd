@@ -22,13 +22,13 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public class ThrowInst implements IRInst {
     
-    private Variable var;
+    private final TemporaryVariable var;
 
-    public ThrowInst(Variable var) {
+    public ThrowInst(TemporaryVariable var) {
         this.var = var;
     }
 
-    public Variable getVar() {
+    public TemporaryVariable getVar() {
         return var;
     }
     

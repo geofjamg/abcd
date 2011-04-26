@@ -16,17 +16,19 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.type.ClassName;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class StaticField implements Variable {
 
-    private final String scope;
+    private final ClassName scope;
 
     private final String fieldName;
 
-    public StaticField(String scope, String fieldName) {
+    public StaticField(ClassName scope, String fieldName) {
         this.scope = scope;
         this.fieldName = fieldName;
     }
@@ -35,7 +37,7 @@ public class StaticField implements Variable {
         this(null, fieldName);
     }
     
-    public String getScope() {
+    public ClassName getScope() {
         return scope;
     }
 

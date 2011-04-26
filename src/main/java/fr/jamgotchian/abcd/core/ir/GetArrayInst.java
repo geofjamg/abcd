@@ -22,19 +22,19 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public class GetArrayInst implements IRInst {
      
-    private final Variable result;
+    private final TemporaryVariable result;
 
     private final Variable array;
   
     private final Variable index;
 
-    public GetArrayInst(Variable result, Variable array, Variable index) {
+    public GetArrayInst(TemporaryVariable result, Variable array, Variable index) {
         this.result = result;
         this.array = array;
         this.index = index;
     }
 
-    public Variable getResult() {
+    public TemporaryVariable getResult() {
         return result;
     }
 

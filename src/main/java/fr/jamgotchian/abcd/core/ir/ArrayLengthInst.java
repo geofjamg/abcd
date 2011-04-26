@@ -22,20 +22,20 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public class ArrayLengthInst implements IRInst {
 
-    private final Variable result;
+    private final TemporaryVariable result;
 
-    private final Variable array;
+    private final TemporaryVariable array;
 
-    public ArrayLengthInst(Variable result, Variable array) {
+    public ArrayLengthInst(TemporaryVariable result, TemporaryVariable array) {
         this.result = result;
         this.array = array;
     }
 
-    public Variable getResult() {
+    public TemporaryVariable getResult() {
         return result;
     }
 
-    public Variable getArray() {
+    public TemporaryVariable getArray() {
         return array;
     }
 

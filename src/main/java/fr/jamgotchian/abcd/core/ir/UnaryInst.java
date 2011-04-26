@@ -22,19 +22,19 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public class UnaryInst implements IRInst {
     
-    private final Variable result;
+    private final TemporaryVariable result;
     
     private final UnaryOp operator;
     
-    private final Variable var;
+    private final TemporaryVariable var;
 
-    public UnaryInst(Variable result, UnaryOp operator, Variable var) {
+    public UnaryInst(TemporaryVariable result, UnaryOp operator, TemporaryVariable var) {
         this.result = result;
         this.operator = operator;
         this.var = var;
     }
 
-    public Variable getResult() {
+    public TemporaryVariable getResult() {
         return result;
     }
 
@@ -42,7 +42,7 @@ public class UnaryInst implements IRInst {
         return operator;
     }
 
-    public Variable getVar() {
+    public TemporaryVariable getVar() {
         return var;
     }
     

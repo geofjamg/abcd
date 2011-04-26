@@ -24,23 +24,23 @@ import fr.jamgotchian.abcd.core.type.ClassName;
  */
 public class InstanceOfInst implements IRInst {
     
-    private final Variable result;
+    private final TemporaryVariable result;
     
-    private final Variable var;
+    private final TemporaryVariable var;
 
     private final ClassName className;
 
-    public InstanceOfInst(Variable result, Variable var, ClassName className) {
+    public InstanceOfInst(TemporaryVariable result, TemporaryVariable var, ClassName className) {
         this.result = result;
         this.var = var;
         this.className = className;
     }
     
-    public Variable getResult() {
+    public TemporaryVariable getResult() {
         return result;
     }
 
-    public Variable getVar() {
+    public TemporaryVariable getVar() {
         return var;
     }
 

@@ -24,26 +24,27 @@ import java.util.List;
  */
 public class CallMethodInst implements IRInst {
 
-    private final Variable result;
+    private final TemporaryVariable result;
     
-    private final Variable object;
+    private final TemporaryVariable object;
     
     private final String methodName;
     
-    private final List<Variable> args;
+    private final List<TemporaryVariable> args;
 
-    public CallMethodInst(Variable result, Variable object, String methodName, List<Variable> args) {
+    public CallMethodInst(TemporaryVariable result, TemporaryVariable object, 
+                          String methodName, List<TemporaryVariable> args) {
         this.result = result;
         this.object = object;
         this.methodName = methodName;
         this.args = args;
     }
 
-    public Variable getResult() {
+    public TemporaryVariable getResult() {
         return result;
     }
 
-    public Variable getObject() {
+    public TemporaryVariable getObject() {
         return object;
     }
 
@@ -51,7 +52,7 @@ public class CallMethodInst implements IRInst {
         return methodName;
     }
 
-    public List<Variable> getArgs() {
+    public List<TemporaryVariable> getArgs() {
         return args;
     }
     

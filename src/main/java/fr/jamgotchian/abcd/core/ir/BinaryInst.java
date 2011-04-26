@@ -22,22 +22,23 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public class BinaryInst implements IRInst {
 
-    private final Variable result;
+    private final TemporaryVariable result;
 
     private final BinaryOp operator;
 
-    private final Variable var1;
+    private final TemporaryVariable var1;
 
-    private final Variable var2;
+    private final TemporaryVariable var2;
 
-    public BinaryInst(Variable result, BinaryOp operator, Variable var1, Variable var2) {
+    public BinaryInst(TemporaryVariable result, BinaryOp operator, 
+                      TemporaryVariable var1, TemporaryVariable var2) {
         this.result = result;
         this.operator = operator;
         this.var1 = var1;
         this.var2 = var2;
     }
 
-    public Variable getResult() {
+    public TemporaryVariable getResult() {
         return result;
     }
 
@@ -45,11 +46,11 @@ public class BinaryInst implements IRInst {
         return operator;
     }
 
-    public Variable getVar1() {
+    public TemporaryVariable getVar1() {
         return var1;
     }
 
-    public Variable getVar2() {
+    public TemporaryVariable getVar2() {
         return var2;
     }
         

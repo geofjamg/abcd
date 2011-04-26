@@ -65,6 +65,7 @@ import fr.jamgotchian.abcd.core.ir.SetFieldInst;
 import fr.jamgotchian.abcd.core.ir.ShortConst;
 import fr.jamgotchian.abcd.core.ir.StringConst;
 import fr.jamgotchian.abcd.core.ir.SwitchInst;
+import fr.jamgotchian.abcd.core.ir.TemporaryVariable;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.ir.ThrowInst;
 import fr.jamgotchian.abcd.core.ir.UnaryInst;
@@ -96,9 +97,9 @@ import org.objectweb.asm.tree.VarInsnNode;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class IntermediateRepresentationBuilder implements BasicBlockVisitor {
+class BasicBlockIRBuilder implements BasicBlockVisitor {
 
-    private static final Logger logger = Logger.getLogger(IntermediateRepresentationBuilder.class.getName());
+    private static final Logger logger = Logger.getLogger(BasicBlockIRBuilder.class.getName());
 
     static {
         logger.setLevel(Level.FINEST);
@@ -121,17 +122,18 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
 
     protected final ClassNameFactory classNameFactory;
 
-    protected final Deque<Variable> stack;
+    protected final Deque<TemporaryVariable> stack;
 
     protected final List<IRInst> insts;
 
     protected final TemporaryVariableFactory tmpVarFactory;
 
-    public IntermediateRepresentationBuilder(ClassNameFactory classNameFactory) {
+    public BasicBlockIRBuilder(ClassNameFactory classNameFactory,
+                               TemporaryVariableFactory tmpVarFactory) {
         this.classNameFactory = classNameFactory;
-        stack = new ArrayDeque<Variable>();
+        this.tmpVarFactory = tmpVarFactory;
+        stack = new ArrayDeque<TemporaryVariable>();
         insts = new ArrayList<IRInst>();
-        tmpVarFactory = new TemporaryVariableFactory();
     }
 
     protected void addInst(IRInst inst) {
@@ -148,8 +150,15 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
         }
         logger.log(Level.FINER, "Add inst : {0}", writer.toString());
 
-  //      ((BasicBlockAnalysisDataImpl) block.getData()).addStatement(stmt);
         insts.add(inst);
+    }
+
+    protected void pushVar(TemporaryVariable var) {
+        stack.push(var);
+    }
+
+    protected TemporaryVariable popVar() {
+        return stack.pop();
     }
 
     public void before(BasicBlock block) {
@@ -159,36 +168,36 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
 
         switch (node.getOpcode()) {
             case GETSTATIC: {
-                String className = node.owner.replace('/', '.');
+                ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
                 String varName = node.name;
                 Variable field = new StaticField(className, varName);
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, field));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case PUTSTATIC: {
-                String className = node.owner.replace('/', '.');
+                ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
                 String varName = node.name;
                 Variable field = new StaticField(className, varName);
-                Variable tmpVar = stack.pop();
+                Variable tmpVar = popVar();
                 addInst(new AssignInst(field, tmpVar));
                 break;
             }
 
             case GETFIELD: {
-                Variable resultVar = tmpVarFactory.create();
-                Variable objVar = stack.pop();
+                TemporaryVariable resultVar = tmpVarFactory.create();
+                TemporaryVariable objVar = popVar();
                 String fieldName = node.name;
                 addInst(new GetFieldInst(resultVar, objVar, fieldName));
-                stack.push(resultVar);
+                pushVar(resultVar);
                 break;
             }
 
             case PUTFIELD: {
-                Variable valueVar = stack.pop();
-                Variable objVar = stack.pop();
+                TemporaryVariable valueVar = popVar();
+                TemporaryVariable objVar = popVar();
                 String fieldName = node.name;
                 addInst(new SetFieldInst(objVar, fieldName, valueVar));
                 break;
@@ -199,11 +208,13 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
     public void visitIincInsn(BasicBlock block, int index, IincInsnNode node) {
         Operand value = new IntConst(Math.abs(node.incr));
         Variable var = new LocalVariable(node.var);
-        Variable tmpValue = tmpVarFactory.create();
+        TemporaryVariable tmpVar = tmpVarFactory.create();
+        addInst(new AssignInst(tmpVar, value));
+        TemporaryVariable tmpValue = tmpVarFactory.create();
         addInst(new AssignInst(tmpValue, value));
-        Variable tmpResult = tmpVarFactory.create();
+        TemporaryVariable tmpResult = tmpVarFactory.create();
         addInst(new BinaryInst(tmpResult, node.incr > 0 ? BinaryOp.PLUS : BinaryOp.MINUS,
-                                 var, tmpValue));
+                               tmpVar, tmpValue));
         addInst(new AssignInst(var, tmpResult));
     }
 
@@ -213,107 +224,107 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
                 break;
 
             case ACONST_NULL: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new NullConst()));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case ICONST_M1: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new IntConst(1)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case ICONST_0: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new IntConst(0)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case ICONST_1: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new IntConst(1)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case ICONST_2: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new IntConst(2)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case ICONST_3: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new IntConst(3)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case ICONST_4: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new IntConst(4)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case ICONST_5: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new IntConst(5)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case LCONST_0: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new LongConst(0)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case LCONST_1: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new LongConst(1)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case FCONST_0: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new FloatConst(0f)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case FCONST_1: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new FloatConst(1f)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case FCONST_2: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new FloatConst(2f)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case DCONST_0: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new DoubleConst(0d)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
             case DCONST_1: {
-                Variable tmpVar = tmpVarFactory.create();
+                TemporaryVariable tmpVar = tmpVarFactory.create();
                 addInst(new AssignInst(tmpVar, new DoubleConst(1d)));
-                stack.push(tmpVar);
+                pushVar(tmpVar);
                 break;
             }
 
@@ -325,11 +336,11 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             case BALOAD:
             case CALOAD:
             case SALOAD: {
-                Variable arrayIndex = stack.pop();
-                Variable arrayVar = stack.pop();
-                Variable tmpResultVar = tmpVarFactory.create();
+                Variable arrayIndex = popVar();
+                Variable arrayVar = popVar();
+                TemporaryVariable tmpResultVar = tmpVarFactory.create();
                 addInst(new GetArrayInst(tmpResultVar, arrayVar, arrayIndex));
-                stack.push(tmpResultVar);
+                pushVar(tmpResultVar);
                 break;
             }
 
@@ -341,31 +352,34 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             case BASTORE:
             case CASTORE:
             case SASTORE: {
-                Variable valueVar = stack.pop();
-                Variable indexVar = stack.pop();
-                Variable arrayVar = stack.pop();
+                TemporaryVariable valueVar = popVar();
+                TemporaryVariable indexVar = popVar();
+                TemporaryVariable arrayVar = popVar();
                 addInst(new SetArrayInst(arrayVar, indexVar, valueVar));
                 break;
             }
 
             case POP: {
-                stack.pop();
+                popVar();
                 break;
             }
 
             case POP2:
                 throw new ABCDException("TODO");
 
-            case DUP:
-                stack.push(stack.peek());
+            case DUP: {
+                TemporaryVariable var = popVar();
+                pushVar(var);
+                pushVar(var);
                 break;
+            }
 
             case DUP_X1: {
-                Variable var1 = stack.pop();
-                Variable var2 = stack.pop();
-                stack.push(var1);
-                stack.push(var2);
-                stack.push(var1);
+                TemporaryVariable var1 = popVar();
+                TemporaryVariable var2 = popVar();
+                pushVar(var1);
+                pushVar(var2);
+                pushVar(var1);
                 break;
             }
 
@@ -375,10 +389,10 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
                 throw new ABCDException("TODO");
 
             case SWAP: {
-                Variable var1 = stack.pop();
-                Variable var2 = stack.pop();
-                stack.push(var1);
-                stack.push(var2);
+                TemporaryVariable var1 = popVar();
+                TemporaryVariable var2 = popVar();
+                pushVar(var1);
+                pushVar(var2);
                 break;
             }
 
@@ -386,11 +400,11 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             case LADD:
             case FADD:
             case DADD: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.PLUS, left, right));
-                stack.add(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
@@ -398,11 +412,11 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             case LSUB:
             case FSUB:
             case DSUB: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.MINUS, left, right));
-                stack.add(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
@@ -410,11 +424,11 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             case LMUL:
             case FMUL:
             case DMUL: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.MUL, left, right));
-                stack.add(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
@@ -422,11 +436,11 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             case LDIV:
             case FDIV:
             case DDIV: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.DIV, left, right));
-                stack.add(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
@@ -434,11 +448,11 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             case LREM:
             case FREM:
             case DREM: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.REMAINDER, left, right));
-                stack.add(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
@@ -446,188 +460,188 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             case LNEG:
             case FNEG:
             case DNEG: {
-                Variable tmpResult = tmpVarFactory.create();
-                addInst(new UnaryInst(tmpResult, UnaryOp.MINUS, stack.pop()));
-                stack.add(tmpResult);
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                addInst(new UnaryInst(tmpResult, UnaryOp.MINUS, popVar()));
+                pushVar(tmpResult);
                 break;
             }
 
             case ISHL:
             case LSHL: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.SHIFT_LEFT, left, right));
-                stack.add(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case ISHR:
             case LSHR: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.SHIFT_RIGHT, left, right));
-                stack.add(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case IUSHR:
             case LUSHR: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.LOGICAL_SHIFT_RIGHT, left, right));
-                stack.add(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case IAND:
             case LAND: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.AND, left, right));
-                stack.add(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case IOR:
             case LOR: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.OR, left, right));
-                stack.add(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case IXOR:
             case LXOR: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.XOR, left, right));
-                stack.add(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case I2L: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.LONG));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case I2F: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.FLOAT));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case I2D: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.DOUBLE));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case L2I: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.INT));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case L2F: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.FLOAT));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case L2D: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.DOUBLE));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case F2I: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.INT));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case F2L: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.LONG));
                 break;
             }
 
             case F2D: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.DOUBLE));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case D2I: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.INT));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case D2L: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.LONG));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case D2F: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.FLOAT));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case I2B: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.BYTE));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case I2C: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.CHAR));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case I2S: {
-                Variable tmpResult = tmpVarFactory.create();
-                Variable var = stack.pop();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                TemporaryVariable var = popVar();
                 addInst(new CastInst(tmpResult, var, JavaType.SHORT));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
@@ -636,11 +650,11 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             case FCMPG:
             case DCMPL:
             case DCMPG: {
-                Variable value2 = stack.pop();
-                Variable value1 = stack.pop();
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable value2 = popVar();
+                TemporaryVariable value1 = popVar();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.MINUS, value1, value2));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
@@ -649,7 +663,7 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             case FRETURN:
             case DRETURN:
             case ARETURN:
-                addInst(new ReturnInst(stack.pop()));
+                addInst(new ReturnInst(popVar()));
                 break;
 
             case RETURN:
@@ -657,28 +671,28 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
                 break;
 
             case ARRAYLENGTH: {
-                Variable tmpVar = tmpVarFactory.create();
-                Variable var = stack.pop();
-                addInst(new ArrayLengthInst(tmpVar, var));
+                TemporaryVariable tmpVar = tmpVarFactory.create();
+                TemporaryVariable arrayVar = popVar();
+                addInst(new ArrayLengthInst(tmpVar, arrayVar));
                 break;
             }
 
             case ATHROW:
-                addInst(new ThrowInst(stack.pop()));
+                addInst(new ThrowInst(popVar()));
                 break;
 
             case MONITORENTER:
-                addInst(new MonitorEnterInst(stack.pop()));
+                addInst(new MonitorEnterInst(popVar()));
                 break;
 
             case MONITOREXIT:
-                addInst(new MonitorExitInst(stack.pop()));
+                addInst(new MonitorExitInst(popVar()));
                 break;
         }
     }
 
     public void visitIntInsn(BasicBlock block, int index, IntInsnNode node) {
-        Variable tmpVar = tmpVarFactory.create();
+        TemporaryVariable tmpVar = tmpVarFactory.create();
         switch (node.getOpcode()) {
             case BIPUSH:
                 addInst(new AssignInst(tmpVar, new ByteConst((byte) node.operand)));
@@ -690,130 +704,130 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
 
             case NEWARRAY:
                 addInst(new NewArrayInst(tmpVar, ATYPES[node.operand],
-                                             Collections.singletonList(stack.pop())));
+                                         Collections.singletonList(popVar())));
                 break;
         }
-        stack.push(tmpVar);
+        pushVar(tmpVar);
     }
 
     public void visitJumpInsn(BasicBlock block, int index, JumpInsnNode node) {
 
-        Variable tmpResult = null;
+        TemporaryVariable tmpResult = null;
 
         switch(node.getOpcode()) {
             case IFEQ: {
-                Variable tmpZero = tmpVarFactory.create();
+                TemporaryVariable tmpZero = tmpVarFactory.create();
                 addInst(new AssignInst(tmpZero, new IntConst(0)));
-                stack.push(tmpZero);
+                pushVar(tmpZero);
                 tmpResult = tmpVarFactory.create();
-                addInst(new BinaryInst(tmpResult, BinaryOp.EQ, stack.pop(), tmpZero));
+                addInst(new BinaryInst(tmpResult, BinaryOp.EQ, popVar(), tmpZero));
                 break;
             }
 
             case IFNE: {
-                Variable tmpZero = tmpVarFactory.create();
+                TemporaryVariable tmpZero = tmpVarFactory.create();
                 addInst(new AssignInst(tmpZero, new IntConst(0)));
-                stack.push(tmpZero);
+                pushVar(tmpZero);
                 tmpResult = tmpVarFactory.create();
-                addInst(new BinaryInst(tmpResult, BinaryOp.NE, stack.pop(), tmpZero));
+                addInst(new BinaryInst(tmpResult, BinaryOp.NE, popVar(), tmpZero));
                 break;
             }
 
             case IFLT: {
-                Variable tmpZero = tmpVarFactory.create();
+                TemporaryVariable tmpZero = tmpVarFactory.create();
                 addInst(new AssignInst(tmpZero, new IntConst(0)));
-                stack.push(tmpZero);
+                pushVar(tmpZero);
                 tmpResult = tmpVarFactory.create();
-                addInst(new BinaryInst(tmpResult, BinaryOp.LT, stack.pop(), tmpZero));
+                addInst(new BinaryInst(tmpResult, BinaryOp.LT, popVar(), tmpZero));
                 break;
             }
 
             case IFGE: {
-                Variable tmpZero = tmpVarFactory.create();
+                TemporaryVariable tmpZero = tmpVarFactory.create();
                 addInst(new AssignInst(tmpZero, new IntConst(0)));
-                stack.push(tmpZero);
+                pushVar(tmpZero);
                 tmpResult = tmpVarFactory.create();
-                addInst(new BinaryInst(tmpResult, BinaryOp.GE, stack.pop(), tmpZero));
+                addInst(new BinaryInst(tmpResult, BinaryOp.GE, popVar(), tmpZero));
                 break;
             }
 
             case IFGT: {
-                Variable tmpZero = tmpVarFactory.create();
+                TemporaryVariable tmpZero = tmpVarFactory.create();
                 addInst(new AssignInst(tmpZero, new IntConst(0)));
-                stack.push(tmpZero);
+                pushVar(tmpZero);
                 tmpResult = tmpVarFactory.create();
-                addInst(new BinaryInst(tmpResult, BinaryOp.GT, stack.pop(), tmpZero));
+                addInst(new BinaryInst(tmpResult, BinaryOp.GT, popVar(), tmpZero));
                 break;
             }
 
             case IFLE: {
-                Variable tmpZero = tmpVarFactory.create();
+                TemporaryVariable tmpZero = tmpVarFactory.create();
                 addInst(new AssignInst(tmpZero, new IntConst(0)));
-                stack.push(tmpZero);
+                pushVar(tmpZero);
                 tmpResult = tmpVarFactory.create();
-                addInst(new BinaryInst(tmpResult, BinaryOp.LE, stack.pop(), tmpZero));
+                addInst(new BinaryInst(tmpResult, BinaryOp.LE, popVar(), tmpZero));
                 break;
             }
 
             case IF_ICMPEQ: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
                 tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.EQ, left, right));
                 break;
             }
 
             case IF_ICMPNE: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
                 tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.NE, left, right));
                 break;
             }
 
             case IF_ICMPLT: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
                 tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.LT, left, right));
                 break;
             }
 
             case IF_ICMPGE: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
                 tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.GE, left, right));
                 break;
             }
 
             case IF_ICMPGT: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
                 tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.GT, left, right));
                 break;
             }
 
             case IF_ICMPLE: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
                 tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.LE, left, right));
                 break;
             }
 
             case IF_ACMPEQ: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
                 tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.EQ, left, right));
                 break;
             }
 
             case IF_ACMPNE: {
-                Variable right = stack.pop();
-                Variable left = stack.pop();
+                TemporaryVariable right = popVar();
+                TemporaryVariable left = popVar();
                 tmpResult = tmpVarFactory.create();
                 addInst(new BinaryInst(tmpResult, BinaryOp.NE, left, right));
                 break;
@@ -826,20 +840,20 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
                 throw new ABCDException("TODO : support JSR instruction");
 
             case IFNULL: {
-                Variable tmpNull = tmpVarFactory.create();
+                TemporaryVariable tmpNull = tmpVarFactory.create();
                 addInst(new AssignInst(tmpNull, new NullConst()));
-                stack.push(tmpNull);
+                pushVar(tmpNull);
                 tmpResult = tmpVarFactory.create();
-                addInst(new BinaryInst(tmpResult, BinaryOp.EQ, stack.pop(), tmpNull));
+                addInst(new BinaryInst(tmpResult, BinaryOp.EQ, popVar(), tmpNull));
                 break;
             }
 
             case IFNONNULL: {
-                Variable tmpNull = tmpVarFactory.create();
+                TemporaryVariable tmpNull = tmpVarFactory.create();
                 addInst(new AssignInst(tmpNull, new NullConst()));
-                stack.push(tmpNull);
+                pushVar(tmpNull);
                 tmpResult = tmpVarFactory.create();
-                addInst(new BinaryInst(tmpResult, BinaryOp.NE, stack.pop(), tmpNull));
+                addInst(new BinaryInst(tmpResult, BinaryOp.NE, popVar(), tmpNull));
                 break;
             }
         }
@@ -848,7 +862,7 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
 
         if (tmpResult != null) {
             addInst(new JumpIfInst(tmpResult, label));
-            stack.push(tmpResult);
+            pushVar(tmpResult);
         } else {
             addInst(new GotoInst(label));
         }
@@ -860,9 +874,9 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
     }
 
     public void visitLdcInsn(BasicBlock block, int index, LdcInsnNode node) {
-        Variable tmpVar = tmpVarFactory.create();
+        TemporaryVariable tmpVar = tmpVarFactory.create();
         if (node.cst instanceof Type) {
-            String className = ((Type)node.cst).getClassName();
+            ClassName className = classNameFactory.newClassName(((Type)node.cst).getClassName());
             addInst(new AssignInst(tmpVar, new ClassConst(className)));
         } else if (node.cst instanceof Integer) {
             addInst(new AssignInst(tmpVar, new IntConst((Integer) node.cst)));
@@ -875,7 +889,7 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
         } else if (node.cst instanceof String) {
             addInst(new AssignInst(tmpVar, new StringConst(node.cst.toString())));
         }
-        stack.push(tmpVar);
+        pushVar(tmpVar);
     }
 
     public void visitLookupSwitchInsn(BasicBlock block, int index, LookupSwitchInsnNode node) {
@@ -884,24 +898,24 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             labels.add(block.getGraph().getLabelManager().getLabel(labelNode));
         }
         labels.add(block.getGraph().getLabelManager().getLabel(node.dflt));
-        addInst(new SwitchInst(stack.pop(), labels));
+        addInst(new SwitchInst(popVar(), labels));
     }
 
     public void visitMethodInsn(BasicBlock block, int index, MethodInsnNode node) {
         int argCount = Type.getArgumentTypes(node.desc).length;
-        List<Variable> args = new ArrayList<Variable>(argCount);
+        List<TemporaryVariable> args = new ArrayList<TemporaryVariable>(argCount);
         for (int i = 0; i < argCount; i++) {
-            args.add(0, stack.pop());
+            args.add(0, popVar());
         }
 
         String methodName = node.name;
-        Variable resultVar = tmpVarFactory.create();
+        TemporaryVariable resultVar = tmpVarFactory.create();
         switch (node.getOpcode()) {
             case INVOKEVIRTUAL:
             case INVOKESPECIAL:
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC: {
-                Variable objVar = stack.pop();
+                TemporaryVariable objVar = popVar();
                 addInst(new CallMethodInst(resultVar, objVar, methodName, args));
                 break;
             }
@@ -914,20 +928,20 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
         }
         Type returnType = Type.getReturnType(node.desc);
         if (returnType != Type.VOID_TYPE) {
-            stack.push(resultVar);
+            pushVar(resultVar);
         }
     }
 
     public void visitMultiANewArrayInsn(BasicBlock block, int index, MultiANewArrayInsnNode node) {
         Type type = Type.getType(node.desc).getElementType();
         JavaType javaType = JavaType.newType(type, classNameFactory);
-        List<Variable> dimensions = new ArrayList<Variable>(node.dims);
+        List<TemporaryVariable> dimensions = new ArrayList<TemporaryVariable>(node.dims);
         for (int i = 0; i < node.dims; i++) {
-            dimensions.add(0, stack.pop());
+            dimensions.add(0, popVar());
         }
-        Variable tmpResult = tmpVarFactory.create();
+        TemporaryVariable tmpResult = tmpVarFactory.create();
         addInst(new NewArrayInst(tmpResult, javaType, dimensions));
-        stack.push(tmpResult);
+        pushVar(tmpResult);
     }
 
     public void visitTableSwitchInsn(BasicBlock block, int index, TableSwitchInsnNode node) {
@@ -936,7 +950,7 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             labels.add(block.getGraph().getLabelManager().getLabel(labelNode));
         }
         labels.add(block.getGraph().getLabelManager().getLabel(node.dflt));
-        addInst(new SwitchInst(stack.pop(), labels));
+        addInst(new SwitchInst(popVar(), labels));
     }
 
     public void visitTypeInsnInsn(BasicBlock block, int index, TypeInsnNode node) {
@@ -945,18 +959,18 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
 
         switch (node.getOpcode()) {
             case NEW: {
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new NewObjectInst(tmpResult, className));
-                stack.push(tmpResult);
+                pushVar(tmpResult);
                 break;
             }
 
             case ANEWARRAY: {
                 JavaType type = JavaType.newRefType(className);
-                Variable tmpResult = tmpVarFactory.create();
+                TemporaryVariable tmpResult = tmpVarFactory.create();
                 addInst(new NewArrayInst(tmpResult, type,
-                                           Collections.singletonList(stack.pop())));
-                stack.push(tmpResult);
+                                         Collections.singletonList(popVar())));
+                pushVar(tmpResult);
                 break;
             }
 
@@ -964,9 +978,9 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
                 throw new ABCDException("TODO");
 
             case INSTANCEOF: {
-                Variable tmpResult = tmpVarFactory.create();
-                addInst(new InstanceOfInst(tmpResult, stack.pop(), className));
-                stack.push(tmpResult);
+                TemporaryVariable tmpResult = tmpVarFactory.create();
+                addInst(new InstanceOfInst(tmpResult, popVar(), className));
+                pushVar(tmpResult);
                 break;
             }
         }
@@ -979,8 +993,8 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             case FLOAD:
             case DLOAD:
             case ALOAD: {
-                Variable tmpVar = tmpVarFactory.create();
-                stack.add(tmpVar);
+                TemporaryVariable tmpVar = tmpVarFactory.create();
+                pushVar(tmpVar);
                 addInst(new AssignInst(tmpVar, new LocalVariable(index)));
                 break;
             }
@@ -990,7 +1004,7 @@ class IntermediateRepresentationBuilder implements BasicBlockVisitor {
             case FSTORE:
             case DSTORE:
             case ASTORE: {
-                Variable var = stack.pop();
+                Variable var = popVar();
                 addInst(new AssignInst(new LocalVariable(index), var));
                 break;
             }

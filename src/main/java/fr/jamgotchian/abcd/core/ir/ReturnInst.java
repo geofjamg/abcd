@@ -22,17 +22,17 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public class ReturnInst implements IRInst {
     
-    private final Variable var;
+    private final TemporaryVariable var;
 
     public ReturnInst() {
         this(null);
     }
 
-    public ReturnInst(Variable var) {
+    public ReturnInst(TemporaryVariable var) {
         this.var = var;
     }
 
-    public Variable getVar() {
+    public TemporaryVariable getVar() {
         return var;
     }
     

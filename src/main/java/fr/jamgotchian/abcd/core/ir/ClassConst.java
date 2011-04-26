@@ -16,19 +16,21 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.type.ClassName;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class ClassConst implements Operand {
     
-    private final String className;
+    private final ClassName className;
 
-    public ClassConst(String className) {
+    public ClassConst(ClassName className) {
         this.className = className;
     }
 
-    public String getClassName() {
+    public ClassName getClassName() {
         return className;
     }
     
