@@ -100,7 +100,7 @@ public class AbstractSyntaxTreeBuilder {
         switch (region.getType()) {
             case BASIC_BLOCK: {
                 BasicBlockRegion basicBlockRegion = (BasicBlockRegion) region;
-                BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) basicBlockRegion.getBasicBlock().getData();
+                AnalysisData data = (AnalysisData) basicBlockRegion.getBasicBlock().getData();
                 for (Statement stmt : data.getUsefullStatements()) {
                     blockStmt.add(stmt);
                 }

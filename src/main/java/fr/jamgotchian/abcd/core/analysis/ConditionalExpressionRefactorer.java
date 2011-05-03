@@ -43,7 +43,7 @@ import java.util.logging.Logger;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ConditionalExpressionRefactorer extends StatementVisitorAdapter<Void, Void> 
+public class ConditionalExpressionRefactorer extends StatementVisitorAdapter<Void, Void>
                                              implements Refactorer {
 
     private static final Logger logger = Logger.getLogger(ConditionalExpressionRefactorer.class.getName());
@@ -92,7 +92,7 @@ public class ConditionalExpressionRefactorer extends StatementVisitorAdapter<Voi
                             elseExpr = expr1;
                         }
                         if (thenExpr != null && elseExpr != null) {
-                            BasicBlockAnalysisDataImpl forkData = (BasicBlockAnalysisDataImpl) forkBlock.getData();
+                            AnalysisData forkData = (AnalysisData) forkBlock.getData();
                             JumpIfStatement jumpIfStmt = (JumpIfStatement) forkData.getLastStatement();
                             Expression condition = ExpressionInverter.invert(jumpIfStmt.getCondition());
                             Expression condExpr
@@ -122,11 +122,11 @@ public class ConditionalExpressionRefactorer extends StatementVisitorAdapter<Voi
             }
         }
     }
-    
+
     public ConditionalExpressionRefactorer() {
         super(new ChoiceExpressionRemover());
     }
-    
+
     public void refactor(BlockStatement blockStmt) {
         blockStmt.accept(this, null);
     }

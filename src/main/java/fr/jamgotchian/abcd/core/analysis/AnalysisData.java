@@ -22,8 +22,8 @@ import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockAnalysisData;
-import fr.jamgotchian.abcd.core.ir.IRInst;
-import fr.jamgotchian.abcd.core.ir.TemporaryVariable;
+import fr.jamgotchian.abcd.core.tac.TACInst;
+import fr.jamgotchian.abcd.core.tac.TemporaryVariable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BasicBlockAnalysisDataImpl implements BasicBlockAnalysisData {
+public class AnalysisData implements BasicBlockAnalysisData {
 
     private final List<Statement> statements;
 
@@ -49,13 +49,13 @@ public class BasicBlockAnalysisDataImpl implements BasicBlockAnalysisData {
 
     private ArrayDeque<TemporaryVariable> outputStack2;
 
-    private List<IRInst> instructions;
+    private List<TACInst> instructions;
 
-    public BasicBlockAnalysisDataImpl() {
+    public AnalysisData() {
         this.statements = new ArrayList<Statement>();
         stackConsumption = 0;
         stackProduction = 0;
-        instructions = new ArrayList<IRInst>();
+        instructions = new ArrayList<TACInst>();
     }
 
     public int getStatementCount() {
@@ -121,7 +121,7 @@ public class BasicBlockAnalysisDataImpl implements BasicBlockAnalysisData {
         this.stackProduction = stackProduction;
     }
 
-    public List<IRInst> getInstructions() {
+    public List<TACInst> getInstructions() {
         return instructions;
     }
 

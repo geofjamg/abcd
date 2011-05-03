@@ -36,7 +36,7 @@ import fr.jamgotchian.abcd.core.analysis.ConditionalExpressionRefactorer;
 import fr.jamgotchian.abcd.core.analysis.DOTUtil;
 import static fr.jamgotchian.abcd.core.analysis.DOTUtil.BasicBlockWritingMode.*;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactorer;
-import fr.jamgotchian.abcd.core.analysis.GraphIRBuilder;
+import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
 import fr.jamgotchian.abcd.core.analysis.Refactorer;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
@@ -401,8 +401,8 @@ public class ABCDContext {
                 logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
                 new ControlFlowGraphStmtAnalysis().analyse(graph, new ImportManager());
 
-                logger.log(Level.FINE, "////////// Build IR Instructions of {0} //////////", methodSignature);
-                new GraphIRBuilder().analyse(graph, new ImportManager());
+                logger.log(Level.FINE, "////////// Build 3AC instructions of {0} //////////", methodSignature);
+                new TreeAddressCodeBuilder().build(graph, new ImportManager());
 
                 Set<Region> rootRegions = null;
                 if (drawRegions) {

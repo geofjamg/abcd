@@ -28,46 +28,46 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlockVisitor;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.ir.SetArrayInst;
-import fr.jamgotchian.abcd.core.ir.NewArrayInst;
-import fr.jamgotchian.abcd.core.ir.ArrayLengthInst;
-import fr.jamgotchian.abcd.core.ir.AssignInst;
-import fr.jamgotchian.abcd.core.ir.BinaryInst;
-import fr.jamgotchian.abcd.core.ir.BinaryOp;
-import fr.jamgotchian.abcd.core.ir.ByteConst;
-import fr.jamgotchian.abcd.core.ir.CallMethodInst;
-import fr.jamgotchian.abcd.core.ir.CallStaticMethodInst;
-import fr.jamgotchian.abcd.core.ir.CastInst;
-import fr.jamgotchian.abcd.core.ir.ClassConst;
-import fr.jamgotchian.abcd.core.ir.DoubleConst;
-import fr.jamgotchian.abcd.core.ir.FloatConst;
-import fr.jamgotchian.abcd.core.ir.GetArrayInst;
-import fr.jamgotchian.abcd.core.ir.GetFieldInst;
-import fr.jamgotchian.abcd.core.ir.GotoInst;
-import fr.jamgotchian.abcd.core.ir.InstanceOfInst;
-import fr.jamgotchian.abcd.core.ir.StaticField;
-import fr.jamgotchian.abcd.core.ir.IRInst;
-import fr.jamgotchian.abcd.core.ir.IntConst;
-import fr.jamgotchian.abcd.core.ir.JumpIfInst;
-import fr.jamgotchian.abcd.core.ir.LabelInst;
-import fr.jamgotchian.abcd.core.ir.LocalVariable;
-import fr.jamgotchian.abcd.core.ir.LongConst;
-import fr.jamgotchian.abcd.core.ir.MonitorEnterInst;
-import fr.jamgotchian.abcd.core.ir.MonitorExitInst;
-import fr.jamgotchian.abcd.core.ir.NullConst;
-import fr.jamgotchian.abcd.core.ir.NewObjectInst;
-import fr.jamgotchian.abcd.core.ir.Operand;
-import fr.jamgotchian.abcd.core.ir.ReturnInst;
-import fr.jamgotchian.abcd.core.ir.SetFieldInst;
-import fr.jamgotchian.abcd.core.ir.ShortConst;
-import fr.jamgotchian.abcd.core.ir.StringConst;
-import fr.jamgotchian.abcd.core.ir.SwitchInst;
-import fr.jamgotchian.abcd.core.ir.TemporaryVariable;
-import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
-import fr.jamgotchian.abcd.core.ir.ThrowInst;
-import fr.jamgotchian.abcd.core.ir.UnaryInst;
-import fr.jamgotchian.abcd.core.ir.UnaryOp;
-import fr.jamgotchian.abcd.core.ir.Variable;
+import fr.jamgotchian.abcd.core.tac.SetArrayInst;
+import fr.jamgotchian.abcd.core.tac.NewArrayInst;
+import fr.jamgotchian.abcd.core.tac.ArrayLengthInst;
+import fr.jamgotchian.abcd.core.tac.AssignInst;
+import fr.jamgotchian.abcd.core.tac.BinaryInst;
+import fr.jamgotchian.abcd.core.tac.BinaryOp;
+import fr.jamgotchian.abcd.core.tac.ByteConst;
+import fr.jamgotchian.abcd.core.tac.CallMethodInst;
+import fr.jamgotchian.abcd.core.tac.CallStaticMethodInst;
+import fr.jamgotchian.abcd.core.tac.CastInst;
+import fr.jamgotchian.abcd.core.tac.ClassConst;
+import fr.jamgotchian.abcd.core.tac.DoubleConst;
+import fr.jamgotchian.abcd.core.tac.FloatConst;
+import fr.jamgotchian.abcd.core.tac.GetArrayInst;
+import fr.jamgotchian.abcd.core.tac.GetFieldInst;
+import fr.jamgotchian.abcd.core.tac.GotoInst;
+import fr.jamgotchian.abcd.core.tac.InstanceOfInst;
+import fr.jamgotchian.abcd.core.tac.StaticField;
+import fr.jamgotchian.abcd.core.tac.TACInst;
+import fr.jamgotchian.abcd.core.tac.IntConst;
+import fr.jamgotchian.abcd.core.tac.JumpIfInst;
+import fr.jamgotchian.abcd.core.tac.LabelInst;
+import fr.jamgotchian.abcd.core.tac.LocalVariable;
+import fr.jamgotchian.abcd.core.tac.LongConst;
+import fr.jamgotchian.abcd.core.tac.MonitorEnterInst;
+import fr.jamgotchian.abcd.core.tac.MonitorExitInst;
+import fr.jamgotchian.abcd.core.tac.NullConst;
+import fr.jamgotchian.abcd.core.tac.NewObjectInst;
+import fr.jamgotchian.abcd.core.tac.Operand;
+import fr.jamgotchian.abcd.core.tac.ReturnInst;
+import fr.jamgotchian.abcd.core.tac.SetFieldInst;
+import fr.jamgotchian.abcd.core.tac.ShortConst;
+import fr.jamgotchian.abcd.core.tac.StringConst;
+import fr.jamgotchian.abcd.core.tac.SwitchInst;
+import fr.jamgotchian.abcd.core.tac.TemporaryVariable;
+import fr.jamgotchian.abcd.core.tac.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.tac.ThrowInst;
+import fr.jamgotchian.abcd.core.tac.UnaryInst;
+import fr.jamgotchian.abcd.core.tac.UnaryOp;
+import fr.jamgotchian.abcd.core.tac.Variable;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import java.util.ArrayDeque;
 import java.util.Collections;
@@ -91,9 +91,9 @@ import org.objectweb.asm.tree.VarInsnNode;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class BasicBlockIRBuilder implements BasicBlockVisitor {
+class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
-    private static final Logger logger = Logger.getLogger(BasicBlockIRBuilder.class.getName());
+    private static final Logger logger = Logger.getLogger(BasicBlock3ACBuilder.class.getName());
 
     static {
         logger.setLevel(Level.FINEST);
@@ -120,7 +120,7 @@ class BasicBlockIRBuilder implements BasicBlockVisitor {
 
     protected final TemporaryVariableFactory tmpVarFactory;
 
-    BasicBlockIRBuilder(ClassNameFactory classNameFactory,
+    BasicBlock3ACBuilder(ClassNameFactory classNameFactory,
                         TemporaryVariableFactory tmpVarFactory,
                         ArrayDeque<TemporaryVariable> stack) {
         this.classNameFactory = classNameFactory;
@@ -128,10 +128,10 @@ class BasicBlockIRBuilder implements BasicBlockVisitor {
         this.stack = stack;
     }
 
-    static void addInst(BasicBlock block, IRInst inst) {
+    static void addInst(BasicBlock block, TACInst inst) {
         logger.log(Level.FINER, "Add inst : {0}", OutputUtil.toText(inst));
 
-        ((BasicBlockAnalysisDataImpl) block.getData()).getInstructions().add(inst);
+        ((AnalysisData) block.getData()).getInstructions().add(inst);
     }
 
     protected void pushVar(TemporaryVariable var) {

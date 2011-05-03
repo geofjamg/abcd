@@ -82,25 +82,25 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
         logger.setLevel(Level.FINEST);
     }
 
-    public static final JavaType[] ATYPES = { 
-        null, 
-        null, 
-        null, 
-        null, 
-        JavaType.BOOLEAN, 
-        JavaType.CHAR, 
-        JavaType.FLOAT,                                   
-        JavaType.DOUBLE, 
-        JavaType.BYTE, 
-        JavaType.SHORT, 
-        JavaType.INT, 
-        JavaType.LONG 
+    public static final JavaType[] ATYPES = {
+        null,
+        null,
+        null,
+        null,
+        JavaType.BOOLEAN,
+        JavaType.CHAR,
+        JavaType.FLOAT,
+        JavaType.DOUBLE,
+        JavaType.BYTE,
+        JavaType.SHORT,
+        JavaType.INT,
+        JavaType.LONG
     };
 
     protected final ExpressionStack stack;
 
     protected final ImportManager importManager;
-    
+
     BasicBlockStmtAnalysis(ExpressionStack stack, ImportManager importManager) {
         this.stack = stack;
         this.importManager = importManager;
@@ -113,7 +113,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     protected void addStmt(BasicBlock block, Statement stmt) {
         logger.log(Level.FINER, "Add stmt : {0}", OutputUtil.toText(stmt));
 
-        ((BasicBlockAnalysisDataImpl) block.getData()).addStatement(stmt);
+        ((AnalysisData) block.getData()).addStatement(stmt);
     }
 
     public void before(BasicBlock block) {
@@ -703,10 +703,10 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
 
     public void visitLdcInsn(BasicBlock block, int index, LdcInsnNode node) {
         if (node.cst instanceof Type) {
-            ClassName className = importManager.newClassName(((Type)node.cst).getClassName()); 
+            ClassName className = importManager.newClassName(((Type)node.cst).getClassName());
             stack.push(Expressions.newClsExpr(className, block));
         } else if (node.cst instanceof Integer) {
-            stack.push(Expressions.newIntExpr((Integer) node.cst, block));            
+            stack.push(Expressions.newIntExpr((Integer) node.cst, block));
         } else if (node.cst instanceof Long) {
             stack.push(Expressions.newLongExpr((Long) node.cst, block));
         } else if (node.cst instanceof Float) {
@@ -761,7 +761,7 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
                 }
 
                 case INVOKESTATIC: {
-                    ClassName className = importManager.newClassName(node.owner.replace('/', '.')); 
+                    ClassName className = importManager.newClassName(node.owner.replace('/', '.'));
                     JavaType type = JavaType.newRefType(className);
                     expr = Expressions.newMethodExpr(Expressions.newTypeExpr(type, block),
                                                      node.name,
@@ -799,9 +799,9 @@ class BasicBlockStmtAnalysis implements BasicBlockVisitor {
     }
 
     public void visitTypeInsnInsn(BasicBlock block, int index, TypeInsnNode node) {
-        ClassName className 
+        ClassName className
                 = importManager.newClassName(Type.getObjectType(node.desc).getClassName());
-        
+
         switch (node.getOpcode()) {
             case NEW:
                 stack.push(Expressions.newObjCreatExpr(className, block));

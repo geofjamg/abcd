@@ -120,7 +120,7 @@ public class ControlFlowGraphStmtAnalysis {
             DummyExpressionStack dummyStack = (DummyExpressionStack) stack;
             logger.log(Level.FINEST, "Stack effect of {0}: +{1} / -{2}",
                     new Object[] {block, dummyStack.getProduction() , dummyStack.getConsumption()});
-            BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) block.getData();
+            AnalysisData data = (AnalysisData) block.getData();
             data.setStackConsumption((dummyStack).getConsumption());
             data.setStackProduction((dummyStack).getProduction());
         }
@@ -139,7 +139,7 @@ public class ControlFlowGraphStmtAnalysis {
 
         logger.log(Level.FINER, "------ Process block {0} ------", block);
 
-        BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) block.getData();
+        AnalysisData data = (AnalysisData) block.getData();
 
         data.setInputStack(inputStack.clone());
 
@@ -170,7 +170,7 @@ public class ControlFlowGraphStmtAnalysis {
         this.importManager = importManager;
 
         for (BasicBlock block : graph.getBasicBlocks()) {
-            block.setData(new BasicBlockAnalysisDataImpl());
+            block.setData(new AnalysisData());
             block.visit(new StackEffectAnalyser());
         }
 
@@ -201,7 +201,7 @@ public class ControlFlowGraphStmtAnalysis {
                         continue;
                     }
                     BasicBlock pred = graph.getEdgeSource(incomingEdge);
-                    BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) pred.getData();
+                    AnalysisData data = (AnalysisData) pred.getData();
                     stacks.add(data.getOutputStack().clone());
                 }
 

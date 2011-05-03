@@ -21,11 +21,11 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.ir.AssignInst;
-import fr.jamgotchian.abcd.core.ir.ChoiceInst;
-import fr.jamgotchian.abcd.core.ir.StringConst;
-import fr.jamgotchian.abcd.core.ir.TemporaryVariable;
-import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.tac.AssignInst;
+import fr.jamgotchian.abcd.core.tac.ChoiceInst;
+import fr.jamgotchian.abcd.core.tac.StringConst;
+import fr.jamgotchian.abcd.core.tac.TemporaryVariable;
+import fr.jamgotchian.abcd.core.tac.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -40,9 +40,9 @@ import java.util.logging.Logger;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class GraphIRBuilder {
+public class TreeAddressCodeBuilder {
 
-    private static final Logger logger = Logger.getLogger(GraphIRBuilder.class.getName());
+    private static final Logger logger = Logger.getLogger(TreeAddressCodeBuilder.class.getName());
 
     private ControlFlowGraph graph;
 
@@ -54,7 +54,7 @@ public class GraphIRBuilder {
 
         logger.log(Level.FINER, "------ Process block {0} ------", block);
 
-        BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) block.getData();
+        AnalysisData data = (AnalysisData) block.getData();
 
         data.setInputStack2(inputStack.clone());
 
@@ -62,7 +62,7 @@ public class GraphIRBuilder {
         Iterator<Edge> itE = graph.getIncomingEdgesOf(block).iterator();
         if (itE.hasNext() && itE.next().isExceptional()) {
             TemporaryVariable tmpVar = tmpVarFactory.create(block);
-            BasicBlockIRBuilder.addInst(block, new AssignInst(tmpVar, new StringConst("EXCEPTION")));
+            BasicBlock3ACBuilder.addInst(block, new AssignInst(tmpVar, new StringConst("EXCEPTION")));
             outputStack.push(tmpVar);
         }
 
@@ -71,7 +71,7 @@ public class GraphIRBuilder {
                     OutputUtil.toText2(data.getInputStack2()));
         }
 
-        BasicBlockIRBuilder builder = new BasicBlockIRBuilder(importManager, tmpVarFactory, outputStack);
+        BasicBlock3ACBuilder builder = new BasicBlock3ACBuilder(importManager, tmpVarFactory, outputStack);
         block.visit(builder);
         data.setOutputStack2(outputStack);
 
@@ -81,7 +81,7 @@ public class GraphIRBuilder {
         }
     }
 
-    public void analyse(ControlFlowGraph graph, ImportManager importManager) {
+    public void build(ControlFlowGraph graph, ImportManager importManager) {
 
         this.graph = graph;
         this.importManager = importManager;
@@ -118,7 +118,7 @@ public class GraphIRBuilder {
                         continue;
                     }
                     BasicBlock pred = graph.getEdgeSource(incomingEdge);
-                    BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) pred.getData();
+                    AnalysisData data = (AnalysisData) pred.getData();
                     stacks.add(data.getOutputStack2().clone());
                 }
 
@@ -170,7 +170,7 @@ public class GraphIRBuilder {
                 stacksMerge.push(vars.iterator().next());
             } else {
                 TemporaryVariable result = tmpVarFactory.create(block);
-                BasicBlockIRBuilder.addInst(block, new ChoiceInst(result, vars));
+                BasicBlock3ACBuilder.addInst(block, new ChoiceInst(result, vars));
                 stacksMerge.push(result);
             }
         }

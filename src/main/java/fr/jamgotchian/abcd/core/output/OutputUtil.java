@@ -25,9 +25,9 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphImpl;
-import fr.jamgotchian.abcd.core.ir.IRInst;
-import fr.jamgotchian.abcd.core.ir.IRInstWriter;
-import fr.jamgotchian.abcd.core.ir.TemporaryVariable;
+import fr.jamgotchian.abcd.core.tac.TACInst;
+import fr.jamgotchian.abcd.core.tac.TACInstWriter;
+import fr.jamgotchian.abcd.core.tac.TemporaryVariable;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -213,10 +213,10 @@ public class OutputUtil {
         return toString(stmts, inputStack, outputStack, new DOTHTMLLikeCodeWriterFactory());
     }
 
-    public static String toString(IRInst inst, CodeWriterFactory factory) {
+    public static String toString(TACInst inst, CodeWriterFactory factory) {
         Writer writer = new StringWriter();
         try {
-            inst.accept(new IRInstWriter(factory.create(writer)), null);
+            inst.accept(new TACInstWriter(factory.create(writer)), null);
         } finally {
             try {
                 writer.close();
@@ -227,11 +227,11 @@ public class OutputUtil {
         return writer.toString();
     }
 
-    public static String toText(IRInst inst) {
+    public static String toText(TACInst inst) {
         return toString(inst, new TextCodeWriterFactory());
     }
 
-    public static String toHTML(IRInst inst) {
+    public static String toHTML(TACInst inst) {
         return toString(inst, new HTMLCodeWriterFactory());
     }
 
@@ -242,7 +242,7 @@ public class OutputUtil {
             TemporaryVariable var = it.next();
             Writer writer = new StringWriter();
             try {
-                var.accept(new IRInstWriter(factory.create(writer)), null);
+                var.accept(new TACInstWriter(factory.create(writer)), null);
             } finally {
                 try {
                     writer.close();

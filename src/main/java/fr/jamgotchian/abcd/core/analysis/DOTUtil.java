@@ -111,7 +111,7 @@ public class DOTUtil {
     }
 
     private static void writeBasicBlockStatements(BasicBlock block, Writer writer) throws IOException {
-        BasicBlockAnalysisDataImpl data = (BasicBlockAnalysisDataImpl) block.getData();
+        AnalysisData data = (AnalysisData) block.getData();
         writer.append("\"").append(block.toString())
               .append("\" [shape=box, color=black, label=< ");
         if (block.getType() == BasicBlockType.ENTRY
@@ -120,7 +120,7 @@ public class DOTUtil {
                   .append("</font>");
         } else {
             writer.append(OutputUtil.toDOTHTMLLike(data.getStatements(),
-                                                   data.getInputStack(),                               
+                                                   data.getInputStack(),
                                                    data.getOutputStack()));
         }
         writer.append(" >];\n");
