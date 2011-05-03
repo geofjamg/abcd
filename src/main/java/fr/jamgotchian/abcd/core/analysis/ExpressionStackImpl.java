@@ -58,7 +58,7 @@ class ExpressionStackImpl implements ExpressionStack {
         }
         stack.push(expr);
         logger.log(Level.FINEST, "Push {0} -> {1}",
-                new Object[] {OutputUtil.toText(expr), OutputUtil.toText2(stack)});
+                new Object[] {OutputUtil.toText(expr), OutputUtil.toText(stack)});
     }
 
     public Expression pop() {
@@ -67,7 +67,7 @@ class ExpressionStackImpl implements ExpressionStack {
         }
         Expression expr = stack.pop();
         logger.log(Level.FINEST, "Pop {0} -> {1}",
-                new Object[] {OutputUtil.toText(expr), OutputUtil.toText2(stack)});
+                new Object[] {OutputUtil.toText(expr), OutputUtil.toText(stack)});
         return expr;
     }
 

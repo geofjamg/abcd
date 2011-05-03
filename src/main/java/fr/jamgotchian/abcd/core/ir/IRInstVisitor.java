@@ -23,76 +23,78 @@ import java.util.List;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public interface IRInstVisitor<R, A> {
-    
+
     R visit(List<IRInst> insts, A arg);
-    
+
     R visit(LocalVariable inst, A arg);
-    
+
     R visit(StaticField inst, A arg);
-    
+
     R visit(TemporaryVariable inst, A arg);
-    
+
     R visit(IntConst inst, A arg);
-    
+
     R visit(LongConst inst, A arg);
-        
+
     R visit(ByteConst inst, A arg);
-    
+
     R visit(ShortConst inst, A arg);
 
     R visit(FloatConst inst, A arg);
-    
+
     R visit(DoubleConst inst, A arg);
-    
+
     R visit(StringConst inst, A arg);
 
     R visit(NullConst inst, A arg);
-    
+
     R visit(ClassConst inst, A arg);
-    
+
     R visit(ArrayLengthInst inst, A arg);
-    
+
     R visit(AssignInst inst, A arg);
-    
+
     R visit(BinaryInst inst, A arg);
-    
+
     R visit(CallMethodInst inst, A arg);
-    
+
     R visit(CallStaticMethodInst inst, A arg);
-    
+
     R visit(CastInst inst, A arg);
-    
+
     R visit(CondExprInst inst, A arg);
-    
+
     R visit(GetArrayInst inst, A arg);
-    
+
     R visit(SetArrayInst inst, A arg);
-    
+
     R visit(GetFieldInst inst, A arg);
-    
+
     R visit(SetFieldInst inst, A arg);
-    
+
     R visit(GotoInst inst, A arg);
-    
+
     R visit(JumpIfInst inst, A arg);
-    
+
     R visit(LabelInst inst, A arg);
-    
+
     R visit(InstanceOfInst inst, A arg);
-    
+
     R visit(MonitorEnterInst inst, A arg);
-    
+
     R visit(MonitorExitInst inst, A arg);
-    
+
     R visit(NewArrayInst inst, A arg);
-    
+
     R visit(NewObjectInst inst, A arg);
-    
+
     R visit(ReturnInst inst, A arg);
-    
+
     R visit(SwitchInst inst, A arg);
-    
+
     R visit(ThrowInst inst, A arg);
-    
-    R visit(UnaryInst inst, A arg);    
+
+    R visit(UnaryInst inst, A arg);
+
+    R visit(ChoiceInst inst, A arg);
 }

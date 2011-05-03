@@ -151,7 +151,7 @@ public class ControlFlowGraphStmtAnalysis {
 
         if (data.getInputStack().size() > 0) {
             logger.log(Level.FINEST, ">>> Input stack : {0}",
-                    OutputUtil.toText2(data.getInputStack().toIterable()));
+                    OutputUtil.toText(data.getInputStack().toIterable()));
         }
 
         BasicBlockStmtAnalysis stmtsBuilder = new BasicBlockStmtAnalysis(outputStack, importManager);
@@ -160,7 +160,7 @@ public class ControlFlowGraphStmtAnalysis {
 
         if (data.getOutputStack().size() > 0) {
             logger.log(Level.FINEST, "<<< Output stack : {0}",
-                    OutputUtil.toText2(data.getOutputStack().toIterable()));
+                    OutputUtil.toText(data.getOutputStack().toIterable()));
         }
     }
 

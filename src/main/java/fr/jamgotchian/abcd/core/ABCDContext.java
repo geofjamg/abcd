@@ -36,6 +36,7 @@ import fr.jamgotchian.abcd.core.analysis.ConditionalExpressionRefactorer;
 import fr.jamgotchian.abcd.core.analysis.DOTUtil;
 import static fr.jamgotchian.abcd.core.analysis.DOTUtil.BasicBlockWritingMode.*;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactorer;
+import fr.jamgotchian.abcd.core.analysis.GraphIRBuilder;
 import fr.jamgotchian.abcd.core.analysis.Refactorer;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
@@ -332,11 +333,13 @@ public class ABCDContext {
     }
 
     private void analyseFile(File classFile, File outputDir, boolean drawRegions) throws IOException {
-        if (!outputDir.exists())
+        if (!outputDir.exists()) {
             throw new ABCDException(outputDir + " does not exist");
+        }
 
-        if (!outputDir.isDirectory())
+        if (!outputDir.isDirectory()) {
             throw new ABCDException(outputDir + " is not a directory");
+        }
 
         ClassNode cn = new ClassNode();
         ClassReader cr = new ClassReader(new FileInputStream(classFile));
@@ -397,6 +400,9 @@ public class ABCDContext {
 
                 logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
                 new ControlFlowGraphStmtAnalysis().analyse(graph, new ImportManager());
+
+                logger.log(Level.FINE, "////////// Build IR Instructions of {0} //////////", methodSignature);
+                new GraphIRBuilder().analyse(graph, new ImportManager());
 
                 Set<Region> rootRegions = null;
                 if (drawRegions) {

@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -24,12 +26,19 @@ public class TemporaryVariable implements Variable {
 
     private final int num;
 
-    public TemporaryVariable(int num) {
+    private final BasicBlock block;
+
+    public TemporaryVariable(int num, BasicBlock block) {
         this.num = num;
+        this.block = block;
     }
 
     public int getNum() {
         return num;
+    }
+
+    public BasicBlock getBasicBlock() {
+        return block;
     }
 
     public boolean isTemporary() {

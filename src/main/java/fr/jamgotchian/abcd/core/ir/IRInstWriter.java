@@ -285,7 +285,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
     }
 
     public Void visit(SetFieldInst inst, Void arg) {
-        writer.writeKeyword("setfield").writeSpace();        
+        writer.writeKeyword("setfield").writeSpace();
         inst.getObject().accept(this, arg);
         writer.writeSpace().write(inst.getFieldName()).writeSpace();
         inst.getValue().accept(this, arg);
@@ -392,12 +392,26 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
             case MINUS:
                 writer.write("-");
                 break;
-                
+
             default:
                 throw new AssertionError();
         }
         writer.writeSpace();
         inst.getVar().accept(this, arg);
+        return null;
+    }
+
+    public Void visit(ChoiceInst inst, Void arg) {
+        inst.getResult().accept(this, arg);
+        writer.writeSpace().write("=").writeSpace();
+        writer.writeKeyword("choice").writeSpace();
+        for (Iterator<TemporaryVariable> it = inst.getVariables().iterator(); it.hasNext();) {
+            TemporaryVariable var = it.next();
+            var.accept(this, arg);
+            if (it.hasNext()) {
+                writer.writeSpace();
+            }
+        }
         return null;
     }
 }

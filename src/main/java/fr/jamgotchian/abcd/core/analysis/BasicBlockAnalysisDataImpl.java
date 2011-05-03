@@ -22,6 +22,9 @@ import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockAnalysisData;
+import fr.jamgotchian.abcd.core.ir.IRInst;
+import fr.jamgotchian.abcd.core.ir.TemporaryVariable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -42,10 +45,17 @@ public class BasicBlockAnalysisDataImpl implements BasicBlockAnalysisData {
 
     private int stackProduction;
 
+    private ArrayDeque<TemporaryVariable> inputStack2;
+
+    private ArrayDeque<TemporaryVariable> outputStack2;
+
+    private List<IRInst> instructions;
+
     public BasicBlockAnalysisDataImpl() {
         this.statements = new ArrayList<Statement>();
         stackConsumption = 0;
         stackProduction = 0;
+        instructions = new ArrayList<IRInst>();
     }
 
     public int getStatementCount() {
@@ -109,5 +119,25 @@ public class BasicBlockAnalysisDataImpl implements BasicBlockAnalysisData {
 
     public void setStackProduction(int stackProduction) {
         this.stackProduction = stackProduction;
+    }
+
+    public List<IRInst> getInstructions() {
+        return instructions;
+    }
+
+    public ArrayDeque<TemporaryVariable> getInputStack2() {
+        return inputStack2;
+    }
+
+    public void setInputStack2(ArrayDeque<TemporaryVariable> inputStack2) {
+        this.inputStack2 = inputStack2;
+    }
+
+    public ArrayDeque<TemporaryVariable> getOutputStack2() {
+        return outputStack2;
+    }
+
+    public void setOutputStack2(ArrayDeque<TemporaryVariable> outputStack2) {
+        this.outputStack2 = outputStack2;
     }
 }

@@ -25,8 +25,12 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphImpl;
+import fr.jamgotchian.abcd.core.ir.IRInst;
+import fr.jamgotchian.abcd.core.ir.IRInstWriter;
+import fr.jamgotchian.abcd.core.ir.TemporaryVariable;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -130,11 +134,11 @@ public class OutputUtil {
         return builder.toString();
     }
 
-    public static String toText2(Iterable<Expression> exprs) {
+    public static String toText(Iterable<Expression> exprs) {
         return toString(exprs, new TextCodeWriterFactory());
     }
 
-    public static String toHTML2(Iterable<Expression> exprs) {
+    public static String toHTML(Iterable<Expression> exprs) {
         return toString(exprs, new HTMLCodeWriterFactory());
     }
 
@@ -207,5 +211,59 @@ public class OutputUtil {
                                        ExpressionStack inputStack,
                                        ExpressionStack outputStack) {
         return toString(stmts, inputStack, outputStack, new DOTHTMLLikeCodeWriterFactory());
+    }
+
+    public static String toString(IRInst inst, CodeWriterFactory factory) {
+        Writer writer = new StringWriter();
+        try {
+            inst.accept(new IRInstWriter(factory.create(writer)), null);
+        } finally {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, e.toString(), e);
+            }
+        }
+        return writer.toString();
+    }
+
+    public static String toText(IRInst inst) {
+        return toString(inst, new TextCodeWriterFactory());
+    }
+
+    public static String toHTML(IRInst inst) {
+        return toString(inst, new HTMLCodeWriterFactory());
+    }
+
+    public static String toString2(Iterable<TemporaryVariable> vars, CodeWriterFactory factory) {
+        StringBuilder builder = new StringBuilder("[");
+        Iterator<TemporaryVariable> it =  vars.iterator();
+        while (it.hasNext()) {
+            TemporaryVariable var = it.next();
+            Writer writer = new StringWriter();
+            try {
+                var.accept(new IRInstWriter(factory.create(writer)), null);
+            } finally {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, e.toString(), e);
+                }
+            }
+            builder.append(writer.toString());
+            if (it.hasNext()) {
+                builder.append(", ");
+            }
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+
+    public static String toText2(Iterable<TemporaryVariable> exprs) {
+        return toString2(exprs, new TextCodeWriterFactory());
+    }
+
+    public static String toHTML2(Iterable<TemporaryVariable> exprs) {
+        return toString2(exprs, new HTMLCodeWriterFactory());
     }
 }

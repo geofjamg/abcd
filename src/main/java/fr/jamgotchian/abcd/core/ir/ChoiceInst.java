@@ -16,24 +16,29 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import java.util.Set;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LocalVariable implements Variable {
+public class ChoiceInst implements IRInst {
 
-    private final int index;
+    private final TemporaryVariable result;
 
-    public LocalVariable(int index) {
-        this.index = index;
+    private final Set<TemporaryVariable> variables;
+
+    public ChoiceInst(TemporaryVariable result, Set<TemporaryVariable> variables) {
+        this.result = result;
+        this.variables = variables;
     }
 
-    public int getIndex() {
-        return index;
+    public TemporaryVariable getResult() {
+        return result;
     }
 
-    public boolean isTemporary() {
-        return false;
+    public Set<TemporaryVariable> getVariables() {
+        return variables;
     }
 
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {

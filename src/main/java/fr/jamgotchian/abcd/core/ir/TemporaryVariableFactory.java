@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -23,8 +25,8 @@ package fr.jamgotchian.abcd.core.ir;
 public class TemporaryVariableFactory {
 
     private int count;
-    
-    public TemporaryVariable create() {
-        return new TemporaryVariable(count++);
+
+    public TemporaryVariable create(BasicBlock block) {
+        return new TemporaryVariable(count++, block);
     }
 }
