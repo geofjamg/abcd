@@ -21,12 +21,12 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.tac.AssignInst;
-import fr.jamgotchian.abcd.core.tac.ChoiceInst;
-import fr.jamgotchian.abcd.core.tac.StringConst;
-import fr.jamgotchian.abcd.core.tac.TemporaryVariable;
-import fr.jamgotchian.abcd.core.tac.TemporaryVariableFactory;
-import fr.jamgotchian.abcd.core.output.OutputUtil;
+import fr.jamgotchian.abcd.core.tac.model.AssignInst;
+import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
+import fr.jamgotchian.abcd.core.tac.model.StringConst;
+import fr.jamgotchian.abcd.core.tac.model.TemporaryVariable;
+import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -68,7 +68,7 @@ public class TreeAddressCodeBuilder {
 
         if (data.getInputStack2().size() > 0) {
             logger.log(Level.FINEST, ">>> Input stack : {0}",
-                    OutputUtil.toText2(data.getInputStack2()));
+                    TACInstWriter.toText2(data.getInputStack2()));
         }
 
         BasicBlock3ACBuilder builder = new BasicBlock3ACBuilder(importManager, tmpVarFactory, outputStack);
@@ -77,7 +77,7 @@ public class TreeAddressCodeBuilder {
 
         if (data.getOutputStack().size() > 0) {
             logger.log(Level.FINEST, "<<< Output stack : {0}",
-                    OutputUtil.toText2(data.getOutputStack2()));
+                    TACInstWriter.toText2(data.getOutputStack2()));
         }
     }
 
