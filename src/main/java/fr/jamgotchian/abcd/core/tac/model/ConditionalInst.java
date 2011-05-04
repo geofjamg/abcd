@@ -20,7 +20,7 @@ package fr.jamgotchian.abcd.core.tac.model;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CondExprInst {
+public class ConditionalInst implements TACInst {
 
     private final TemporaryVariable result;
 
@@ -30,17 +30,12 @@ public class CondExprInst {
 
     private final TemporaryVariable _else;
 
-    public CondExprInst(TemporaryVariable result, TemporaryVariable cond,
+    public ConditionalInst(TemporaryVariable result, TemporaryVariable cond,
                         TemporaryVariable then, TemporaryVariable _else) {
         this.result = result;
         this.cond = cond;
         this.then = then;
         this._else = _else;
-    }
-
-    public CondExprInst(TemporaryVariable result, TemporaryVariable then,
-                        TemporaryVariable _else) {
-        this(result, null, then, _else);
     }
 
     public TemporaryVariable getResult() {
@@ -49,10 +44,6 @@ public class CondExprInst {
 
     public TemporaryVariable getCond() {
         return cond;
-    }
-
-    public void setCond(TemporaryVariable cond) {
-        this.cond = cond;
     }
 
     public TemporaryVariable getThen() {

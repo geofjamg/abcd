@@ -125,6 +125,10 @@ public class AnalysisData implements BasicBlockAnalysisData {
         return instructions;
     }
 
+    public TACInst getLastInst() {
+        return instructions.isEmpty() ? null : instructions.get(instructions.size()-1);
+    }
+
     public ArrayDeque<TemporaryVariable> getInputStack2() {
         return inputStack2;
     }

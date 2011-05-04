@@ -62,7 +62,7 @@ public interface TACInstVisitor<R, A> {
 
     R visit(CastInst inst, A arg);
 
-    R visit(CondExprInst inst, A arg);
+    R visit(ConditionalInst inst, A arg);
 
     R visit(GetArrayInst inst, A arg);
 

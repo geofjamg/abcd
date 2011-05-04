@@ -16,22 +16,31 @@
  */
 package fr.jamgotchian.abcd.core.analysis;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
+import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.tac.model.AssignInst;
 import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
+import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
+import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
 import fr.jamgotchian.abcd.core.tac.model.StringConst;
+import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariable;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,11 +59,20 @@ public class TreeAddressCodeBuilder {
 
     private TemporaryVariableFactory tmpVarFactory;
 
-    private void processBlock(BasicBlock block, ArrayDeque<TemporaryVariable> inputStack) {
+    private void processBlock(BasicBlock block, List<ArrayDeque<TemporaryVariable>> inputStacks) {
 
         logger.log(Level.FINER, "------ Process block {0} ------", block);
 
         AnalysisData data = (AnalysisData) block.getData();
+
+        ArrayDeque<TemporaryVariable> inputStack = null;
+        if (inputStacks.isEmpty()) {
+            inputStack = new ArrayDeque<TemporaryVariable>();
+        } else if (inputStacks.size() == 1) {
+            inputStack = inputStacks.get(0).clone();
+        } else {
+            inputStack = mergeStacks(inputStacks, block);
+        }
 
         data.setInputStack2(inputStack.clone());
 
@@ -86,7 +104,7 @@ public class TreeAddressCodeBuilder {
         this.graph = graph;
         this.importManager = importManager;
 //        for (BasicBlock block : graph.getBasicBlocks()) {
-//            block.setData(new BasicBlockAnalysisDataImpl());
+//            block.setData(new AnalysisData());
 //        }
 
         tmpVarFactory = new TemporaryVariableFactory();
@@ -112,29 +130,23 @@ public class TreeAddressCodeBuilder {
                     break;
                 }
 
-                List<ArrayDeque<TemporaryVariable>> stacks = new ArrayList<ArrayDeque<TemporaryVariable>>();
+                List<ArrayDeque<TemporaryVariable>> inputStacks
+                        = new ArrayList<ArrayDeque<TemporaryVariable>>();
                 for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
                     if (incomingEdge.isLoopBack()) {
                         continue;
                     }
                     BasicBlock pred = graph.getEdgeSource(incomingEdge);
                     AnalysisData data = (AnalysisData) pred.getData();
-                    stacks.add(data.getOutputStack2().clone());
+                    inputStacks.add(data.getOutputStack2().clone());
                 }
 
-                ArrayDeque<TemporaryVariable> inputStack = null;
-                if (stacks.isEmpty()) {
-                    inputStack = new ArrayDeque<TemporaryVariable>();
-                } else if (stacks.size() == 1) {
-                    inputStack = stacks.get(0).clone();
-                } else {
-                    inputStack = mergeStacks(stacks, block);
-                }
-
-                processBlock(block, inputStack);
+                processBlock(block, inputStacks);
                 it.remove();
             }
         }
+
+        buildCondInst();
     }
 
     private ArrayDeque<TemporaryVariable> mergeStacks
@@ -176,5 +188,92 @@ public class TreeAddressCodeBuilder {
         }
 
         return stacksMerge;
+    }
+
+    private void buildCondInst() {
+        for (BasicBlock joinBlock : graph.getDFST()) {
+            List<TACInst> joinInsts = ((AnalysisData) joinBlock.getData()).getInstructions();
+
+            for (int i = 0; i < joinInsts.size(); i++) {
+                TACInst inst = joinInsts.get(i);
+                if (!(inst instanceof ChoiceInst)) {
+                    continue;
+                }
+                ChoiceInst choiceInst = (ChoiceInst) inst;
+
+                boolean change = true;
+                while (change) {
+                    change = false;
+
+                    Multimap<BasicBlock, TemporaryVariable> forkBlocks
+                            = HashMultimap.create();
+                    for (TemporaryVariable var : choiceInst.getVariables()) {
+                        BasicBlock block = var.getBasicBlock();
+                        DominatorInfo<BasicBlock, Edge> dominatorInfo
+                                = block.getGraph().getDominatorInfo();
+                        BasicBlock forkBlock = dominatorInfo.getDominatorsTree().getParent(block);
+                        forkBlocks.put(forkBlock, var);
+                    }
+
+                    for (Map.Entry<BasicBlock, Collection<TemporaryVariable>> entry
+                            : forkBlocks.asMap().entrySet()) {
+                        BasicBlock forkBlock = entry.getKey();
+                        Collection<TemporaryVariable> vars = entry.getValue();
+                        if (forkBlock.getType() == BasicBlockType.JUMP_IF
+                                && vars.size() == 2) {
+                            Iterator<TemporaryVariable> it = vars.iterator();
+                            TemporaryVariable var1 = it.next();
+                            TemporaryVariable var2 = it.next();
+
+                            BasicBlock block1 = var1.getBasicBlock();
+                            BasicBlock block2 = var2.getBasicBlock();
+                            DominatorInfo<BasicBlock, Edge> dominatorInfo = forkBlock.getGraph().getDominatorInfo();
+                            Edge forkEdge1 = dominatorInfo.getPostDominanceFrontierOf(block1).iterator().next();
+                            Edge forkEdge2 = dominatorInfo.getPostDominanceFrontierOf(block2).iterator().next();
+                            TemporaryVariable thenVar = null;
+                            TemporaryVariable elseVar = null;
+                            if (Boolean.TRUE.equals(forkEdge1.getValue())
+                                    && Boolean.FALSE.equals(forkEdge2.getValue())) {
+                                thenVar = var1;
+                                elseVar = var2;
+                            } else if (Boolean.FALSE.equals(forkEdge1.getValue())
+                                    && Boolean.TRUE.equals(forkEdge2.getValue())) {
+                                thenVar = var2;
+                                elseVar = var1;
+                            }
+                            if (thenVar != null && elseVar != null) {
+                                AnalysisData forkData = (AnalysisData) forkBlock.getData();
+                                JumpIfInst jumpIfInst = (JumpIfInst) forkData.getLastInst();
+                                choiceInst.getVariables().remove(thenVar);
+                                choiceInst.getVariables().remove(elseVar);
+                                if (choiceInst.getVariables().isEmpty()) {
+                                    TemporaryVariable resultVar = choiceInst.getResult();
+                                    ConditionalInst condInst
+                                            = new ConditionalInst(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
+                                    logger.log(Level.FINER, "Replace inst at {0} of {1} : {2}",
+                                            new Object[]{i, joinBlock, TACInstWriter.toText(condInst)});
+                                    joinInsts.set(i, condInst);
+                                } else {
+                                    TemporaryVariable resultVar = tmpVarFactory.create(forkBlock);
+                                    ConditionalInst condInst
+                                            = new ConditionalInst(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
+                                    logger.log(Level.FINER, "Insert inst at {0} of {1} : {2}",
+                                            new Object[]{i, joinBlock, TACInstWriter.toText(condInst)});
+                                    joinInsts.add(i, condInst);
+                                    choiceInst.getVariables().add(resultVar);
+                                }
+
+                                change = true;
+                            } else {
+                                throw new ABCDException("Conditional instruction building error");
+                            }
+                        } else if (forkBlock.getType() == BasicBlockType.SWITCH
+                                && vars.size() > 2) {
+                            throw new ABCDException("TODO");
+                        }
+                    }
+                }
+            }
+        }
     }
 }

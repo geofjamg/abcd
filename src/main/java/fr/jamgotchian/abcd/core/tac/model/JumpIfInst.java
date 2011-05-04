@@ -24,16 +24,16 @@ import fr.jamgotchian.abcd.core.common.Label;
  */
 public class JumpIfInst implements TACInst {
 
-    private final Variable cond;
+    private final TemporaryVariable cond;
 
     private final Label label;
 
-    public JumpIfInst(Variable cond, Label label) {
+    public JumpIfInst(TemporaryVariable cond, Label label) {
         this.cond = cond;
         this.label = label;
     }
 
-    public Variable getCond() {
+    public TemporaryVariable getCond() {
         return cond;
     }
 

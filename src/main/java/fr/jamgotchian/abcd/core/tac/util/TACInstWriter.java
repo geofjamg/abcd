@@ -17,7 +17,7 @@
 package fr.jamgotchian.abcd.core.tac.util;
 
 import fr.jamgotchian.abcd.core.tac.model.StringConst;
-import fr.jamgotchian.abcd.core.tac.model.CondExprInst;
+import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
 import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.CastInst;
@@ -344,14 +344,10 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return null;
     }
 
-    public Void visit(CondExprInst inst, Void arg) {
+    public Void visit(ConditionalInst inst, Void arg) {
         inst.getResult().accept(this, arg);
         writer.writeSpace().write("=").writeSpace();
-        if (inst.getCond() != null) {
-            inst.getCond().accept(this, arg);
-        } else {
-            writer.write("UNKNOWN");
-        }
+        inst.getCond().accept(this, arg);
         writer.writeSpace().write("?").writeSpace();
         inst.getThen().accept(this, arg);
         writer.writeSpace().write(":").writeSpace();

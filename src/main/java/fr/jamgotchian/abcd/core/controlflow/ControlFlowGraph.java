@@ -57,7 +57,7 @@ public interface ControlFlowGraph {
 
     Tree<BasicBlock, Edge> getDFST();
 
-    DominatorInfo getDominatorInfo();
+    DominatorInfo<BasicBlock, Edge> getDominatorInfo();
 
     Edge getEdge(BasicBlock source, BasicBlock target);
 
