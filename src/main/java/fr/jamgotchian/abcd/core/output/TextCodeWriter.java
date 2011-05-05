@@ -30,7 +30,7 @@ public class TextCodeWriter extends CodeWriter {
     public TextCodeWriter(Writer writer) {
         super(writer);
     }
-    
+
     public TextCodeWriter(Writer writer, int indentSpace) {
         super(writer, indentSpace);
     }
@@ -49,29 +49,31 @@ public class TextCodeWriter extends CodeWriter {
         }
         return this;
     }
-    
-    public void writeLt() {
+
+    public CodeWriter writeLt() {
         try {
             writer.append("<");
         } catch(IOException exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
-
+        return this;
     }
 
-    public void writeGt() {
+    public CodeWriter writeGt() {
         try {
             writer.append(">");
         } catch(IOException exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
+        return this;
     }
 
-    public void writeAmpersand() {
+    public CodeWriter writeAmpersand() {
         try {
             writer.append("&");
         } catch(IOException exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
-    }    
+        return this;
+    }
 }

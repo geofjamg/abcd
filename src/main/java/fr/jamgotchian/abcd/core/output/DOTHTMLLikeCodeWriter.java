@@ -16,7 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.output;
 
-import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.logging.Level;

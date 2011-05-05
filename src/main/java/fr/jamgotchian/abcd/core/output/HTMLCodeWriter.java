@@ -33,7 +33,7 @@ public class HTMLCodeWriter extends CodeWriter {
     public HTMLCodeWriter(Writer writer) {
         super(writer);
     }
-    
+
     public HTMLCodeWriter(Writer writer, int indentSpace) {
         super(writer, indentSpace);
     }
@@ -102,28 +102,31 @@ public class HTMLCodeWriter extends CodeWriter {
         }
         return this;
     }
-       
-    public void writeLt() {
+
+    public CodeWriter writeLt() {
         try {
             writer.append("&lt;");
         } catch(IOException exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
+        return this;
     }
 
-    public void writeGt() {
+    public CodeWriter writeGt() {
         try {
             writer.append("&gt;");
         } catch(IOException exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
+        return this;
     }
-    
-    public void writeAmpersand() {
+
+    public CodeWriter writeAmpersand() {
         try {
             writer.append("&amp;");
         } catch(IOException exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
+        return this;
     }
 }

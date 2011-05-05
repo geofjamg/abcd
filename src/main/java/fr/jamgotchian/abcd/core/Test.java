@@ -29,7 +29,7 @@ public class Test {
     float ee;
 
     private Runnable run;
-    
+
     public Test(int zz, float ee) {
         this.zz = zz;
         this.ee = ee;
@@ -49,12 +49,12 @@ public class Test {
     void driiing2() {
         System.out.println("driing2");
     }
-    
+
     public class InnerTestClass {
         void hello() {
             a();
         }
-        
+
         void hello2() {
             int a = driiing(3);
             driiing2();
@@ -62,23 +62,23 @@ public class Test {
     }
 
     public class InnerTestClass2 {
-        
+
         class InnerInnerTestClass {
             void aaa() {
                 System.out.println("aaa");
             }
         }
-        
+
         void hello() {
             a();
         }
-        
+
         void hello2() {
             int a = driiing(3);
             driiing2();
         }
     }
-    
+
     public void testInnerClass() {
         new InnerTestClass().hello();
     }
@@ -112,12 +112,12 @@ public class Test {
     private int[] testMethodArrayReturn() {
         return new int[4];
     }
-    
-    protected final java.lang.String methodWithException() 
+
+    protected final java.lang.String methodWithException()
             throws IOException, XMLStreamException, NullPointerException {
         return null;
     }
-    
+
     private void a() {
         System.out.println("a");
     }
@@ -133,35 +133,35 @@ public class Test {
     private void d() {
         System.out.println("d");
     }
-    
+
     public void testIf(int a) {
         if (a > 1) {
             a();
         }
         b();
     }
-        
+
    public void testIfEt(int a) {
         if (a > 1 && a <= 3) {
             System.out.println("a");
         }
         System.out.println("b");
     }
-    
+
     public void testIfOu(int a) {
         if (a > 1 || a <= 3) {
             System.out.println("a");
         }
         System.out.println("b");
     }
-     
+
     public void testIfEtOu(int a, int b) {
         if (a > 1 || (a <= 3 && b != 67)) {
             System.out.println("a");
         }
         System.out.println("b");
     }
-    
+
     void testOrWithAssign(int a, int b) {
         int c = -1;
         if (a == 1 || (c = a) == 2) {
@@ -169,11 +169,11 @@ public class Test {
         }
         System.out.println(c);
     }
-    
+
     public boolean testNot(boolean a) {
         return !a;
     }
-    
+
     public void testIfElse(int a) {
         if (a > 1) {
             a();
@@ -212,7 +212,7 @@ public class Test {
         }
         c();
     }
-      
+
     public void testNestedIfElseReturn(int a, int e) {
         if (a > 1) {
             a();
@@ -254,7 +254,7 @@ public class Test {
     int testSerialTernaryOperators(int a, int b) {
         return (a > 1 ? 2 : 3) + (b == 4 ? 67 : 334);
     }
-    
+
     public void testIfElseWithTryCatch(int z) {
         if (z == 1) {
             System.out.println("a");
@@ -274,7 +274,7 @@ public class Test {
             System.out.println("b");
         }
     }
-    
+
     public void testComplexeFinally(int a) {
         try {
             System.out.println("a");
@@ -286,7 +286,7 @@ public class Test {
             }
         }
     }
-    
+
     public void testNestedFinally() {
         try {
             try {
@@ -359,7 +359,7 @@ public class Test {
         }
 
     }
-   
+
     public void testNestedIfWithBreak(int a, int b) {
         for (int i = 0; i < 10; i++) {
             if (a == 1) {
@@ -374,7 +374,7 @@ public class Test {
             System.out.println("d");
         }
     }
-   
+
     public void testCatch() {
         try {
             a();
@@ -393,7 +393,7 @@ public class Test {
             c();
         }
     }
-    
+
     public void testNestedCatch() {
         try {
             System.out.println("a");
@@ -419,14 +419,14 @@ public class Test {
             System.out.println("c");
         }
     }
-    
+
     public void testDoWhile() {
         int a = 2;
         do {
             a();
         } while(a > 3);
     }
-      
+
     public void testDoWhileBreak() {
         int a = 2;
         do {
@@ -441,14 +441,14 @@ public class Test {
         } while(a > 3);
         c();
     }
-      
+
     public void testWhileWithCond() {
         int a  = 0;
         while(a > 3) {
             a();
         }
     }
-    
+
     public void testInfiniteLoop() {
         while(true) {
             a();
@@ -528,7 +528,7 @@ public class Test {
             }
         }
     }
-    
+
     public void testForIfReturn() {
         for (int i = 0; i < 3; i++) {
             if (i == 1) {
@@ -572,7 +572,7 @@ public class Test {
         }
         System.out.println("e");
     }
-    
+
     public void testBreak1() {
         for (int i = 0; i < 3; i++) {
             b();
@@ -688,11 +688,11 @@ public class Test {
 
     public int foo(int i, int j) {
         while (true) {
-            try { 
+            try {
                 while (i < j)
                     i = j++/i;
             }
-            catch (RuntimeException re) {   
+            catch (RuntimeException re) {
                 i = 10;
                 continue;
             }
@@ -810,7 +810,7 @@ public class Test {
         switch (a) {
             case 0:
                 throw new IllegalArgumentException();
-                
+
             case 1:
                 System.out.println("b");
                 break;
@@ -821,7 +821,7 @@ public class Test {
         switch (a) {
             case 0:
                 while(true);
-                
+
             case 1:
                 System.out.println("b");
                 break;
@@ -837,7 +837,7 @@ public class Test {
         }
         System.out.println("c");
     }
-    
+
     public void testSwitchWithEmptyCase(int a) {
         System.out.println("a");
         switch (a) {
@@ -849,7 +849,7 @@ public class Test {
         }
         System.out.println("c");
     }
-   
+
     public void testFallthroughSwitchEmptyBlock(int a) {
         switch (a) {
             case 0:
@@ -884,7 +884,7 @@ public class Test {
                 break;
         }
     }
-    
+
     public void testSwitchTryCatch(int a) {
         try {
             switch (a) {
@@ -907,7 +907,7 @@ public class Test {
             System.out.println("d");
         }
     }
-   
+
     public void testIntArrayAlloc() {
         int[] a = new int[3];
     }
@@ -924,12 +924,12 @@ public class Test {
     public void testObjectArrayAlloc() {
         String[] a = new String[3];
     }
- 
+
     public void testIntArrayLength() {
         int[] a = new int[3];
         int b = a.length;
     }
- 
+
     public void testVarDelcIfElse() {
         int a = 2;
         if (a > 1) {
@@ -960,7 +960,7 @@ public class Test {
     public void testPutStaticField() {
         TOTO.a = 3;
     }
-    
+
     public void testGetField() {
         TOTO t = new TOTO();
         float u = t.b;
@@ -969,7 +969,7 @@ public class Test {
     public void testGetFieldFromThis() {
         float u = ee;
     }
-    
+
     public void testPutField() {
         TOTO t = new TOTO();
         t.b = 3.4f;
@@ -978,13 +978,13 @@ public class Test {
     public void testThrow() {
         throw new IllegalArgumentException("hello");
     }
-    
+
     public void testThrow2() {
         IllegalStateException exc = new IllegalStateException("hello");
         int a = 1;
         throw exc;
     }
-    
+
     public void testThrow3(int a) {
         System.out.println("a");
         try {
@@ -1013,17 +1013,17 @@ public class Test {
             System.out.println("yes");
         }
     }
-    
+
     public void testAssertStmt() {
         int a = 1;
         assert a == 1;
     }
-    
+
     public void testIntToString() {
         int a = 1;
         System.out.println("hello " + a);
     }
-    
+
     public void testCast() {
         Object s = new java.lang.String("aaa");
         System.out.println(((java.lang.String)s).charAt(0));
@@ -1054,15 +1054,15 @@ public class Test {
         h[0] = 4;
         int zz = a[2];
     }
-    
+
     void testArrayInitializer() {
         java.lang.String[] a = { "a" , "b" };
     }
-    
+
     int testMinusOp(int a) {
         return 3 * -(a + 1) + 5;
     }
-    
+
     void testInc() {
         int a = 0;
         a++;
@@ -1075,17 +1075,17 @@ public class Test {
         a--;
         a -= 17;
     }
-    
+
     void testPostInc() {
        int a = 0;
        int b = a++;
     }
-    
+
     void testPreInc() {
        int a = 0;
        int b = ++a;
     }
-    
+
     void testIterator() {
         List<Integer> v = new ArrayList<Integer>(3);
         v.add(0);
@@ -1098,7 +1098,7 @@ public class Test {
             System.out.println(i);
         }
     }
-    
+
     void testLongFloatDoubleComparison() {
         for (long j = 0; j < 3; j++) {
             System.out.println(j);
@@ -1114,7 +1114,7 @@ public class Test {
             System.out.println("ss");
         }
     }
-    
+
     void testSynchronized() {
         final Object lock = new Object();
         System.out.println("a");
@@ -1123,7 +1123,7 @@ public class Test {
         }
         System.out.println("c");
     }
-    
+
     void testPrimitiveTypeCast() {
         float f = 3.45577f;
         int i = (int)f;
@@ -1133,15 +1133,15 @@ public class Test {
         f = (float) d;
         System.out.println(i);
     }
-    
+
     int testRemainder(int i) {
         return i % 3;
     }
-    
+
     boolean testXor(boolean a, boolean b) {
         return a ^ b;
     }
-    
+
     int testShiftLeft(int a) {
         return a << 3;
     }
@@ -1153,7 +1153,7 @@ public class Test {
     int testLogicalShiftRight(int a) {
         return a >>> 3;
     }
-    
+
     void testMultiArray(int size) {
         int[][][] a = new int[4][4][4 * size + 1];
         java.lang.String[][] s = new java.lang.String[34][6];
@@ -1162,21 +1162,21 @@ public class Test {
     void testMultiArrayInitializer() {
         int[][] a = { {2, 2}, {2, 2} };
     }
- 
+
     int function(float e) {
         return (int)e +1;
     }
-    
+
     void testVoidMethodCall(float e) {
         System.out.println("a");
         function(e);
         System.out.println("b");
     }
-        
+
     void testMethodCall() {
         System.out.println(function(1.334f));
     }
-    
+
     Class<?> testClassType() {
         return String.class;
     }
@@ -1192,20 +1192,37 @@ public class Test {
     String[][] testReturnDoubleString() {
         return null;
     }
-    
-    class String {
-        
+
+    void testTypeInference() {
+        StringBuilder builder = new StringBuilder(4);
+        char c = 'e';
+        char d = c;
+        builder.append(c);
+        System.out.println(d);
     }
-    
+
+    void testSSA() {
+        for (int i = 0; i < 3; i++) {
+            System.out.println(i);
+        }
+        for (float f = 0; f < 3; f++) {
+            System.out.println(f);
+        }
+    }
+
+    class String {
+
+    }
+
     protected final void testImport() {
         fr.jamgotchian.abcd.core.Test.String a = new fr.jamgotchian.abcd.core.Test.String();
         java.lang.String b = new java.lang.String();
-    } 
-    
+    }
+
 //    public static void main(String[] args) {
 //        new Test().testBreakLabel2();
 //    }
-    
+
 }
 
 class TOTO {

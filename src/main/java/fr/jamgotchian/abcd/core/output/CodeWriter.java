@@ -95,11 +95,11 @@ public abstract class CodeWriter {
         return write(keyword);
     }
 
-    public abstract void writeLt();
+    public abstract CodeWriter writeLt();
 
-    public abstract void writeGt();
+    public abstract CodeWriter writeGt();
 
-    public abstract void writeAmpersand();
+    public abstract CodeWriter writeAmpersand();
 
     public CodeWriter writeQuotedString(String str) {
         write("\"");

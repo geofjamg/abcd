@@ -179,11 +179,11 @@ public class TreeAddressCodeBuilder {
                 vars.add(toList.get(j).get(i));
             }
             if (vars.size() == 1) {
-                stacksMerge.push(vars.iterator().next());
+                stacksMerge.add(vars.iterator().next());
             } else {
                 TemporaryVariable result = tmpVarFactory.create(block);
                 BasicBlock3ACBuilder.addInst(block, new ChoiceInst(result, vars));
-                stacksMerge.push(result);
+                stacksMerge.add(result);
             }
         }
 

@@ -349,7 +349,13 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         inst.getResult().accept(this, arg);
         writer.writeSpace().write("=").writeSpace().writeKeyword("call").writeSpace();
         inst.getObject().accept(this, arg);
-        writer.writeSpace().write(inst.getMethodName()).writeSpace();
+        writer.writeSpace();
+        if ("<init>".equals(inst.getMethodName())) {
+            writer.writeLt().write("init").writeGt();
+        } else {
+            writer.write(inst.getMethodName());
+        }
+        writer.writeSpace();
         for (Iterator<TemporaryVariable> it = inst.getArgs().iterator(); it.hasNext();) {
             Variable argVar = it.next();
             argVar.accept(this, arg);
