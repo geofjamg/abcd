@@ -190,7 +190,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         Operand value = new IntConst(Math.abs(node.incr));
         Variable var = new LocalVariable(node.var);
         TemporaryVariable tmpVar = tmpVarFactory.create(block);
-        addInst(block, new AssignInst(tmpVar, value));
+        addInst(block, new AssignInst(tmpVar, var));
         TemporaryVariable tmpValue = tmpVarFactory.create(block);
         addInst(block, new AssignInst(tmpValue, value));
         TemporaryVariable tmpResult = tmpVarFactory.create(block);
