@@ -86,7 +86,7 @@ public class TreeAddressCodeBuilder {
 
         if (data.getInputStack2().size() > 0) {
             logger.log(Level.FINEST, ">>> Input stack : {0}",
-                    TACInstWriter.toText2(data.getInputStack2()));
+                    TACInstWriter.toText(data.getInputStack2()));
         }
 
         BasicBlock3ACBuilder builder = new BasicBlock3ACBuilder(importManager, tmpVarFactory, outputStack);
@@ -95,7 +95,7 @@ public class TreeAddressCodeBuilder {
 
         if (data.getOutputStack().size() > 0) {
             logger.log(Level.FINEST, "<<< Output stack : {0}",
-                    TACInstWriter.toText2(data.getOutputStack2()));
+                    TACInstWriter.toText(data.getOutputStack2()));
         }
     }
 
@@ -201,6 +201,8 @@ public class TreeAddressCodeBuilder {
                 }
                 ChoiceInst choiceInst = (ChoiceInst) inst;
 
+                List<TACInst> replacement = new ArrayList<TACInst>();
+
                 boolean change = true;
                 while (change) {
                     change = false;
@@ -252,14 +254,14 @@ public class TreeAddressCodeBuilder {
                                             = new ConditionalInst(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
                                     logger.log(Level.FINER, "Replace inst at {0} of {1} : {2}",
                                             new Object[]{i, joinBlock, TACInstWriter.toText(condInst)});
-                                    joinInsts.set(i, condInst);
+                                    replacement.add(condInst);
                                 } else {
                                     TemporaryVariable resultVar = tmpVarFactory.create(forkBlock);
                                     ConditionalInst condInst
                                             = new ConditionalInst(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
                                     logger.log(Level.FINER, "Insert inst at {0} of {1} : {2}",
                                             new Object[]{i, joinBlock, TACInstWriter.toText(condInst)});
-                                    joinInsts.add(i, condInst);
+                                    replacement.add(condInst);
                                     choiceInst.getVariables().add(resultVar);
                                 }
 
@@ -272,6 +274,11 @@ public class TreeAddressCodeBuilder {
                             throw new ABCDException("TODO");
                         }
                     }
+                }
+
+                if (replacement.size() > 0) {
+                    joinInsts.remove(i);
+                    joinInsts.addAll(i, replacement);
                 }
             }
         }

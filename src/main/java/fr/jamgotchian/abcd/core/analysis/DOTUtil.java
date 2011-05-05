@@ -27,6 +27,8 @@ import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.RegionType;
+import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
+import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Set;
@@ -49,7 +51,8 @@ public class DOTUtil {
     public enum BasicBlockWritingMode {
         INSTN_RANGE,
         BYTECODE,
-        STATEMENTS
+        STATEMENTS,
+        TAC
     }
 
     private static void writeBasicBlock(BasicBlock block, Writer writer,
@@ -65,6 +68,10 @@ public class DOTUtil {
 
             case STATEMENTS:
                 writeBasicBlockStatements(block, writer);
+                break;
+
+            case TAC:
+                writeBasicBlockTACInsts(block, writer);
                 break;
 
             default:
@@ -122,6 +129,22 @@ public class DOTUtil {
             writer.append(OutputUtil.toDOTHTMLLike(data.getStatements(),
                                                    data.getInputStack(),
                                                    data.getOutputStack()));
+        }
+        writer.append(" >];\n");
+    }
+
+    private static void writeBasicBlockTACInsts(BasicBlock block, Writer writer) throws IOException {
+        AnalysisData data = (AnalysisData) block.getData();
+        writer.append("\"").append(block.toString())
+              .append("\" [shape=box, color=black, label=< ");
+        if (block.getType() == BasicBlockType.ENTRY
+                || block.getType() == BasicBlockType.EXIT) {
+            writer.append("<font color=\"black\">").append(block.getType().toString())
+                  .append("</font>");
+        } else {
+            writer.append(TACInstWriter.toDOTHTMLLike(new TACInstSeq(data.getInstructions()),
+                                                                     data.getInputStack2(),
+                                                                     data.getOutputStack2()));
         }
         writer.append(" >];\n");
     }

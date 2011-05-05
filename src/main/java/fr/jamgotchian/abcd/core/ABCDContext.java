@@ -444,6 +444,13 @@ public class ABCDContext {
                     writer.close();
                 }
 
+                writer = new FileWriter(baseName + "_TAC.dot");
+                try {
+                    DOTUtil.writeCFG(graph, rootRegions, writer, TAC);
+                } finally {
+                    writer.close();
+                }
+
                 writer = new FileWriter(baseName + "_DT.dot");
                 try {
                     graph.getDominatorInfo().getDominatorsTree().writeDOT("DT", writer);

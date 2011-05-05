@@ -16,15 +16,13 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import java.util.List;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public interface TACInstVisitor<R, A> {
 
-    R visit(List<TACInst> insts, A arg);
+    R visit(TACInstSeq seq, A arg);
 
     R visit(LocalVariable inst, A arg);
 

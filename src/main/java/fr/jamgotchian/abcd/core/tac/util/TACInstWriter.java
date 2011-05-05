@@ -58,13 +58,15 @@ import fr.jamgotchian.abcd.core.tac.model.CallMethodInst;
 import fr.jamgotchian.abcd.core.common.Label;
 import fr.jamgotchian.abcd.core.output.CodeWriter;
 import fr.jamgotchian.abcd.core.output.CodeWriterFactory;
+import fr.jamgotchian.abcd.core.output.DOTHTMLLikeCodeWriterFactory;
 import fr.jamgotchian.abcd.core.output.HTMLCodeWriterFactory;
 import fr.jamgotchian.abcd.core.output.TextCodeWriterFactory;
+import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayDeque;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -98,7 +100,41 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return toString(inst, new HTMLCodeWriterFactory());
     }
 
-    public static String toString2(Iterable<TemporaryVariable> vars, CodeWriterFactory factory) {
+    public static String toString(TACInstSeq seq,
+                                  ArrayDeque<TemporaryVariable> inputStack,
+                                  ArrayDeque<TemporaryVariable> outputStack,
+                                  CodeWriterFactory factory) {
+        Writer writer = new StringWriter();
+        try {
+            CodeWriter codeWriter = factory.create(writer);
+            String infoBefore = null;
+            if (inputStack != null && inputStack.size() > 0) {
+                infoBefore = toString(inputStack, factory);
+            }
+            codeWriter.before(infoBefore);
+            seq.accept(new TACInstWriter(codeWriter), null);
+            String infoAfter = null;
+            if (outputStack != null && outputStack.size() > 0) {
+                infoAfter = toString(outputStack, factory);
+            }
+            codeWriter.after(infoAfter);
+        } finally {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, e.toString(), e);
+            }
+        }
+        return writer.toString();
+    }
+
+    public static String toDOTHTMLLike(TACInstSeq seq,
+                                       ArrayDeque<TemporaryVariable> inputStack,
+                                       ArrayDeque<TemporaryVariable> outputStack) {
+        return toString(seq, inputStack, outputStack, new DOTHTMLLikeCodeWriterFactory());
+    }
+
+    public static String toString(Iterable<TemporaryVariable> vars, CodeWriterFactory factory) {
         StringBuilder builder = new StringBuilder("[");
         Iterator<TemporaryVariable> it =  vars.iterator();
         while (it.hasNext()) {
@@ -122,12 +158,12 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return builder.toString();
     }
 
-    public static String toText2(Iterable<TemporaryVariable> exprs) {
-        return toString2(exprs, new TextCodeWriterFactory());
+    public static String toText(Iterable<TemporaryVariable> exprs) {
+        return toString(exprs, new TextCodeWriterFactory());
     }
 
-    public static String toHTML2(Iterable<TemporaryVariable> exprs) {
-        return toString2(exprs, new HTMLCodeWriterFactory());
+    public static String toHTML(Iterable<TemporaryVariable> exprs) {
+        return toString(exprs, new HTMLCodeWriterFactory());
     }
 
     private final CodeWriter writer;
@@ -136,10 +172,13 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         this.writer = writer;
     }
 
-    public Void visit(List<TACInst> insts, Void arg) {
-        for (TACInst inst : insts) {
+    public Void visit(TACInstSeq insts, Void arg) {
+        for (Iterator<TACInst> it = insts.getInsts().iterator(); it.hasNext();) {
+            TACInst inst = it.next();
             inst.accept(this, arg);
-            writer.newLine();
+            if (it.hasNext()) {
+                writer.newLine();
+            }
         }
         return null;
     }
