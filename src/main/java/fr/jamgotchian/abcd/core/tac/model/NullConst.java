@@ -16,13 +16,23 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.JavaType;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class NullConst implements Operand {
 
-    public NullConst() {
+    private final ClassNameFactory factory;
+
+    public NullConst(ClassNameFactory factory) {
+        this.factory = factory;
+    }
+
+    public JavaType getType() {
+        return JavaType.newRefType(factory.newClassName(Object.class.getName()));
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

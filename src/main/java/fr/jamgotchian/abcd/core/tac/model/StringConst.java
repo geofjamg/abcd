@@ -16,6 +16,9 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.JavaType;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -24,12 +27,19 @@ public class StringConst implements Operand {
 
     private final String value;
 
-    public StringConst(String value) {
+    private final ClassNameFactory factory;
+
+    public StringConst(String value, ClassNameFactory factory) {
         this.value = value;
+        this.factory = factory;
     }
 
     public String getValue() {
         return value;
+    }
+
+    public JavaType getType() {
+        return JavaType.newRefType(factory.newClassName(String.class.getName()));
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

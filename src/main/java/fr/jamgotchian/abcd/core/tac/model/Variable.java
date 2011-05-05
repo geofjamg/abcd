@@ -16,11 +16,23 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import fr.jamgotchian.abcd.core.type.JavaType;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Variable extends Operand {
+public abstract class Variable implements Operand {
 
-    boolean isTemporary();
+    private JavaType type;
+
+    public abstract boolean isTemporary();
+
+    public JavaType getType() {
+        return type;
+    }
+
+    public void setType(JavaType type) {
+        this.type = type;
+    }
 }

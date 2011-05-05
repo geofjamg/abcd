@@ -22,7 +22,7 @@ import fr.jamgotchian.abcd.core.type.ClassName;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StaticField implements Variable {
+public class StaticField extends Variable {
 
     private final ClassName scope;
 

@@ -18,7 +18,6 @@ package fr.jamgotchian.abcd.core.analysis;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
@@ -34,6 +33,7 @@ import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariable;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
+import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,7 +55,7 @@ public class TreeAddressCodeBuilder {
 
     private ControlFlowGraph graph;
 
-    private ImportManager importManager;
+    private ClassNameFactory classNameFactory;
 
     private TemporaryVariableFactory tmpVarFactory;
 
@@ -80,7 +80,7 @@ public class TreeAddressCodeBuilder {
         Iterator<Edge> itE = graph.getIncomingEdgesOf(block).iterator();
         if (itE.hasNext() && itE.next().isExceptional()) {
             TemporaryVariable tmpVar = tmpVarFactory.create(block);
-            BasicBlock3ACBuilder.addInst(block, new AssignInst(tmpVar, new StringConst("EXCEPTION")));
+            BasicBlock3ACBuilder.addInst(block, new AssignInst(tmpVar, new StringConst("EXCEPTION", classNameFactory)));
             outputStack.push(tmpVar);
         }
 
@@ -89,7 +89,7 @@ public class TreeAddressCodeBuilder {
                     TACInstWriter.toText(data.getInputStack2()));
         }
 
-        BasicBlock3ACBuilder builder = new BasicBlock3ACBuilder(importManager, tmpVarFactory, outputStack);
+        BasicBlock3ACBuilder builder = new BasicBlock3ACBuilder(classNameFactory, tmpVarFactory, outputStack);
         block.visit(builder);
         data.setOutputStack2(outputStack);
 
@@ -99,10 +99,10 @@ public class TreeAddressCodeBuilder {
         }
     }
 
-    public void build(ControlFlowGraph graph, ImportManager importManager) {
+    public void build(ControlFlowGraph graph, ClassNameFactory classNameFactory) {
 
         this.graph = graph;
-        this.importManager = importManager;
+        this.classNameFactory = classNameFactory;
 //        for (BasicBlock block : graph.getBasicBlocks()) {
 //            block.setData(new AnalysisData());
 //        }

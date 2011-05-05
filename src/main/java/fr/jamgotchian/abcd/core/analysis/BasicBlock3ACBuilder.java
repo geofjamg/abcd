@@ -206,7 +206,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
             case ACONST_NULL: {
                 TemporaryVariable tmpVar = tmpVarFactory.create(block);
-                addInst(block, new AssignInst(tmpVar, new NullConst()));
+                addInst(block, new AssignInst(tmpVar, new NullConst(classNameFactory)));
                 pushVar(tmpVar);
                 break;
             }
@@ -817,7 +817,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
             case IFNULL: {
                 TemporaryVariable tmpNull = tmpVarFactory.create(block);
-                addInst(block, new AssignInst(tmpNull, new NullConst()));
+                addInst(block, new AssignInst(tmpNull, new NullConst(classNameFactory)));
                 pushVar(tmpNull);
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.EQ, popVar(), tmpNull));
@@ -826,7 +826,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
             case IFNONNULL: {
                 TemporaryVariable tmpNull = tmpVarFactory.create(block);
-                addInst(block, new AssignInst(tmpNull, new NullConst()));
+                addInst(block, new AssignInst(tmpNull, new NullConst(classNameFactory)));
                 pushVar(tmpNull);
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.NE, popVar(), tmpNull));
@@ -852,7 +852,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         TemporaryVariable tmpVar = tmpVarFactory.create(block);
         if (node.cst instanceof Type) {
             ClassName className = classNameFactory.newClassName(((Type)node.cst).getClassName());
-            addInst(block, new AssignInst(tmpVar, new ClassConst(className)));
+            addInst(block, new AssignInst(tmpVar, new ClassConst(className, classNameFactory)));
         } else if (node.cst instanceof Integer) {
             addInst(block, new AssignInst(tmpVar, new IntConst((Integer) node.cst)));
         } else if (node.cst instanceof Long) {
@@ -862,7 +862,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         } else if (node.cst instanceof Double) {
             addInst(block, new AssignInst(tmpVar, new DoubleConst((Double) node.cst)));
         } else if (node.cst instanceof String) {
-            addInst(block, new AssignInst(tmpVar, new StringConst(node.cst.toString())));
+            addInst(block, new AssignInst(tmpVar, new StringConst(node.cst.toString(), classNameFactory)));
         }
         pushVar(tmpVar);
     }

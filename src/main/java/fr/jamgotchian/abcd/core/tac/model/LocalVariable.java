@@ -20,7 +20,7 @@ package fr.jamgotchian.abcd.core.tac.model;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LocalVariable implements Variable {
+public class LocalVariable extends Variable {
 
     private final int index;
 

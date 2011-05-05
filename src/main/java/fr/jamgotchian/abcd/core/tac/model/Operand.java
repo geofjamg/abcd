@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import fr.jamgotchian.abcd.core.type.JavaType;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -23,4 +25,6 @@ package fr.jamgotchian.abcd.core.tac.model;
 public interface Operand {
 
     <R, A> R accept(TACInstVisitor<R, A> visitor, A arg);
+
+    JavaType getType();
 }

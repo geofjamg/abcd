@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import fr.jamgotchian.abcd.core.type.JavaType;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -30,6 +32,10 @@ public class ShortConst implements Operand {
 
     public short getValue() {
         return value;
+    }
+
+    public JavaType getType() {
+        return JavaType.SHORT;
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

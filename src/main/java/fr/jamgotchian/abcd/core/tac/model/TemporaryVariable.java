@@ -22,7 +22,7 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TemporaryVariable implements Variable {
+public class TemporaryVariable extends Variable {
 
     private final int num;
 
