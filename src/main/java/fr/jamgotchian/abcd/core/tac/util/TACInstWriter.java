@@ -59,15 +59,20 @@ import fr.jamgotchian.abcd.core.tac.model.CallMethodInst;
 import fr.jamgotchian.abcd.core.common.Label;
 import fr.jamgotchian.abcd.core.output.CodeWriter;
 import fr.jamgotchian.abcd.core.output.CodeWriterFactory;
+import fr.jamgotchian.abcd.core.output.ColoredString;
 import fr.jamgotchian.abcd.core.output.DOTHTMLLikeCodeWriterFactory;
 import fr.jamgotchian.abcd.core.output.HTMLCodeWriterFactory;
 import fr.jamgotchian.abcd.core.output.TextCodeWriterFactory;
 import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
+import fr.jamgotchian.abcd.core.util.Range;
+import java.awt.Color;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -101,24 +106,28 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return toString(inst, new HTMLCodeWriterFactory());
     }
 
-    public static String toString(TACInstSeq seq,
+    public static String toString(Range range,
+                                  TACInstSeq seq,
                                   ArrayDeque<TemporaryVariable> inputStack,
                                   ArrayDeque<TemporaryVariable> outputStack,
                                   CodeWriterFactory factory) {
         Writer writer = new StringWriter();
         try {
             CodeWriter codeWriter = factory.create(writer);
-            String infoBefore = null;
+            List<ColoredString> infosBefore = new ArrayList<ColoredString>(2);
+            infosBefore.add(new ColoredString(range.toString(), Color.LIGHT_GRAY));
             if (inputStack != null && inputStack.size() > 0) {
-                infoBefore = toString(inputStack, factory);
+                infosBefore.add(new ColoredString("Input stack : " + toString(inputStack, factory),
+                                                  Color.ORANGE));
             }
-            codeWriter.before(infoBefore);
+            codeWriter.before(infosBefore);
             seq.accept(new TACInstWriter(codeWriter), null);
-            String infoAfter = null;
+            List<ColoredString> infosAfter = new ArrayList<ColoredString>(1);
             if (outputStack != null && outputStack.size() > 0) {
-                infoAfter = toString(outputStack, factory);
+                infosAfter.add(new ColoredString("Output stack : " + toString(outputStack, factory),
+                                                 Color.ORANGE));
             }
-            codeWriter.after(infoAfter);
+            codeWriter.after(infosAfter);
         } finally {
             try {
                 writer.close();
@@ -129,10 +138,11 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return writer.toString();
     }
 
-    public static String toDOTHTMLLike(TACInstSeq seq,
+    public static String toDOTHTMLLike(Range range,
+                                       TACInstSeq seq,
                                        ArrayDeque<TemporaryVariable> inputStack,
                                        ArrayDeque<TemporaryVariable> outputStack) {
-        return toString(seq, inputStack, outputStack, new DOTHTMLLikeCodeWriterFactory());
+        return toString(range, seq, inputStack, outputStack, new DOTHTMLLikeCodeWriterFactory());
     }
 
     public static String toString(Variable var, CodeWriterFactory factory) {
@@ -158,17 +168,21 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         Iterator<V> it =  vars.iterator();
         while (it.hasNext()) {
             V var = it.next();
-            Writer writer = new StringWriter();
-            try {
-                var.accept(new TACInstWriter(factory.create(writer)), null);
-            } finally {
+            if (var != null) {
+                Writer writer = new StringWriter();
                 try {
-                    writer.close();
-                } catch (IOException e) {
-                    logger.log(Level.SEVERE, e.toString(), e);
+                    var.accept(new TACInstWriter(factory.create(writer)), null);
+                } finally {
+                    try {
+                        writer.close();
+                    } catch (IOException e) {
+                        logger.log(Level.SEVERE, e.toString(), e);
+                    }
                 }
+                builder.append(writer.toString());
+            } else {
+                builder.append("null");
             }
-            builder.append(writer.toString());
             if (it.hasNext()) {
                 builder.append(", ");
             }

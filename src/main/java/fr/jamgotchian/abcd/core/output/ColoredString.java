@@ -14,44 +14,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.tac.model;
+package fr.jamgotchian.abcd.core.output;
 
-import java.util.Collections;
-import java.util.Set;
+import java.awt.Color;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ReturnInst implements TACInst {
+public class ColoredString {
 
-    private final TemporaryVariable var;
+    private final String value;
 
-    public ReturnInst() {
-        this(null);
+    private final Color color;
+
+    public ColoredString(String value, Color color) {
+        this.value = value;
+        this.color = color;
     }
 
-    public ReturnInst(TemporaryVariable var) {
-        this.var = var;
+    public String getValue() {
+        return value;
     }
 
-    public TemporaryVariable getVar() {
-        return var;
+    public Color getColor() {
+        return color;
     }
 
-    public Variable getDef() {
-        return null;
-    }
-
-    public Set<Variable> getUses() {
-        if (var == null) {
-            return Collections.emptySet();
-        } else {
-            return Collections.<Variable>singleton(var);
-        }
-    }
-
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
-        return visitor.visit(this, arg);
+    @Override
+    public String toString() {
+        return value;
     }
 }

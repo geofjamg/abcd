@@ -25,9 +25,12 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphImpl;
+import java.awt.Color;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.objectweb.asm.tree.InsnList;
@@ -169,18 +172,18 @@ public class OutputUtil {
         try {
             CodeWriter codeWriter = factory.create(writer);
             JavaStatementWriter stmtWriter = new JavaStatementWriter(codeWriter);
-            String infoBefore = null;
+            List<ColoredString> infosBefore = new ArrayList<ColoredString>(1);
             if (inputStack != null && inputStack.size() > 0) {
-                infoBefore = toString(inputStack.toIterable(), factory);
+                infosBefore.add(new ColoredString(toString(inputStack.toIterable(), factory), Color.ORANGE));
             }
-            codeWriter.before(infoBefore);
+            codeWriter.before(infosBefore);
             BlockStatement blockStmt = new BlockStatement(stmts);
             blockStmt.accept(stmtWriter, null);
-            String infoAfter = null;
+            List<ColoredString> infosAfter = new ArrayList<ColoredString>(1);
             if (outputStack != null && outputStack.size() > 0) {
-                infoAfter = toString(outputStack.toIterable(), factory);
+                infosAfter.add(new ColoredString(toString(outputStack.toIterable(), factory), Color.ORANGE));
             }
-            codeWriter.after(infoAfter);
+            codeWriter.after(infosAfter);
         } finally {
             try {
                 writer.close();

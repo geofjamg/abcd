@@ -17,7 +17,7 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlockAnalysisData;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlockData;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.Iterator;
@@ -29,13 +29,13 @@ import java.util.Iterator;
 class LoopRecognizer implements RegionRecognizer {
 
     private int currentLoopID = 0;
-    
+
     public Region recognize(DirectedGraph<Region, Edge> graph, Region loopRegion) {
         if (Regions.getPredecessorCountOf(graph, loopRegion, false) == 2) {
             Iterator<Edge> it = Regions.getIncomingEdgesOf(graph, loopRegion, false).iterator();
             Edge incomingEdge1 = it.next();
             Edge incomingEdge2 = it.next();
-            
+
             //
             // check for a loop region
             //
@@ -58,7 +58,7 @@ class LoopRecognizer implements RegionRecognizer {
                     } else if (loopHeadRegion != null && loopHeadRegion.getType() == RegionType.IF_THEN_BREAK) {
                         BasicBlock loopHeadBlock = Regions.getDeepExitBasicBlock(graph, loopHeadRegion);
                         if (loopHeadBlock != null) {
-                            BasicBlockAnalysisData data = (BasicBlockAnalysisData) loopHeadBlock.getData();
+                            BasicBlockData data = loopHeadBlock.getData();
                             if (data.getStatementCount() == 1) {
                                 type = LoopType.WHILE;
                             }

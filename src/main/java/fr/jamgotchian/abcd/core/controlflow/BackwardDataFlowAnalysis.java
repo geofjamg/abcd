@@ -18,20 +18,65 @@
 package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class BackwardDataFlowAnalysis<N, E, V> extends DataFlowAnalysis<N, E, V> {
+public abstract class BackwardDataFlowAnalysis<N, E, V> {
+
+    private final DirectedGraph<N, E> graph;
+
+    private final N exitNode;
 
     public BackwardDataFlowAnalysis(DirectedGraph<N, E> graph, N exitNode) {
-        super(graph, exitNode);
+        this.graph = graph;
+        this.exitNode = exitNode;
     }
 
-    final protected Collection<N> getPredecessorsOf(N node) {
-        return getGraph().getSuccessorsOf(node);
+    public DirectedGraph<N, E> getGraph() {
+        return graph;
     }
 
+    public Map<N, V> analyse() {
+        Map<N, V> values = new HashMap<N, V>();
+
+        for (N node : graph.getVertices()) {
+           values.put(node, getInitValue(node, node.equals(exitNode)));
+        }
+
+        boolean change = true;
+        while (change) {
+            change = false;
+            for (N n : graph.getVertices()) {
+                if (!n.equals(exitNode)) {
+                    V inBefore = values.get(n);
+                    V out = null;
+                    for (N s : graph.getSuccessorsOf(n)) {
+                        if (out == null) {
+                            out = values.get(s);
+                        } else {
+                            out = combineValues(out, values.get(s));
+                        }
+                    }
+                    V in = applyTranferFunction(n, out);
+                    if (!valuesEqual(inBefore, in)) {
+                        values.put(n, in);
+                        change = true;
+                    }
+                }
+            }
+        }
+        return values;
+    }
+
+    protected abstract V getInitValue(N node, boolean isExitNode);
+
+    protected abstract V combineValues(V value1, V value2);
+
+    protected abstract V applyTranferFunction(N node, V outValue);
+
+    protected abstract boolean valuesEqual(V value1, V value2);
 }

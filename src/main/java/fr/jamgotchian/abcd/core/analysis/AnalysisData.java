@@ -21,7 +21,7 @@ import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlockAnalysisData;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlockData;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariable;
 import java.util.ArrayDeque;
@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class AnalysisData implements BasicBlockAnalysisData {
+public class AnalysisData implements BasicBlockData {
 
     private final List<Statement> statements;
 

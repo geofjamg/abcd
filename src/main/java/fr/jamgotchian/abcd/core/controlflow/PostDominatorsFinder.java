@@ -26,16 +26,16 @@ import java.util.Set;
  */
 class PostDominatorsFinder<N ,E> extends BackwardDataFlowAnalysis<N, E, Set<N>>  {
 
-    private final DominatorsFinder dominatorsFinder;  
-    
+    private final DominatorsFinder<N, E> dominatorsFinder;
+
     PostDominatorsFinder(DirectedGraph<N, E> graph, N exitNode) {
         super(graph, exitNode);
-        dominatorsFinder = new DominatorsFinder(graph, exitNode);
+        dominatorsFinder = new DominatorsFinder<N, E>(graph, exitNode);
     }
 
     @Override
-    public Set<N> getInitValue(N node, boolean isStartNode) {
-        return dominatorsFinder.getInitValue(node, isStartNode);
+    public Set<N> getInitValue(N node, boolean isExitNode) {
+        return dominatorsFinder.getInitValue(node, isExitNode);
     }
 
     @Override
@@ -44,8 +44,8 @@ class PostDominatorsFinder<N ,E> extends BackwardDataFlowAnalysis<N, E, Set<N>> 
     }
 
     @Override
-    public Set<N> applyTranferFunction(N node, Set<N> inValue) {
-        return dominatorsFinder.applyTranferFunction(node, inValue);
+    public Set<N> applyTranferFunction(N node, Set<N> outValue) {
+        return dominatorsFinder.applyTranferFunction(node, outValue);
     }
 
     @Override

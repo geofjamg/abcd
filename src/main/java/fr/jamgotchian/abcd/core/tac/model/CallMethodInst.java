@@ -16,7 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import com.google.common.collect.Sets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

@@ -29,6 +29,7 @@ import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,6 +97,13 @@ public class SSAFormConverter {
     }
 
     public void convert(ControlFlowGraph graph) {
+        logger.log(Level.FINER, "Liveness analysis :");
+        Map<BasicBlock, Set<Variable>> result
+                = new LiveVariablesAnalysis(graph).analyse();
+        for (Map.Entry<BasicBlock, Set<Variable>> entry : result.entrySet()) {
+            logger.log(Level.FINER, "  {0} : {1}",
+                    new Object[] {entry.getKey(), TACInstWriter.toText(entry.getValue())});
+        }
         insertPhiFunctions(graph);
     }
 }

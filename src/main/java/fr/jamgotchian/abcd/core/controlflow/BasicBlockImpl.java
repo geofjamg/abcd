@@ -55,8 +55,8 @@ class BasicBlockImpl implements BasicBlock {
 
     private ControlFlowGraph graph;
 
-    private BasicBlockAnalysisData data;
-    
+    private BasicBlockData data;
+
     BasicBlockImpl(Range range, BasicBlockType type) {
         this.range = range;
         this.type = type;
@@ -75,7 +75,7 @@ class BasicBlockImpl implements BasicBlock {
     BasicBlockImpl() {
         this(null, null);
     }
-    
+
     public Range getRange() {
         return range;
     }
@@ -112,14 +112,14 @@ class BasicBlockImpl implements BasicBlock {
         this.loopLevel = loopLevel;
     }
 
-    public BasicBlockAnalysisData getData() {
+    public BasicBlockData getData() {
         return data;
     }
 
-    public void setData(BasicBlockAnalysisData data) {
+    public void setData(BasicBlockData data) {
         this.data = data;
     }
-    
+
     public void visit(BasicBlockVisitor visitor) {
 
         visitor.before(this);

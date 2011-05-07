@@ -142,9 +142,10 @@ public class DOTUtil {
             writer.append("<font color=\"black\">").append(block.getType().toString())
                   .append("</font>");
         } else {
-            writer.append(TACInstWriter.toDOTHTMLLike(new TACInstSeq(data.getInstructions()),
-                                                                     data.getInputStack2(),
-                                                                     data.getOutputStack2()));
+            writer.append(TACInstWriter.toDOTHTMLLike(block.getRange(),
+                                                      new TACInstSeq(data.getInstructions()),
+                                                      data.getInputStack2(),
+                                                      data.getOutputStack2()));
         }
         writer.append(" >];\n");
     }

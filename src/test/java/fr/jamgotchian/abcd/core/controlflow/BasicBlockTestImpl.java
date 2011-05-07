@@ -27,13 +27,13 @@ import fr.jamgotchian.abcd.core.util.Range;
 public class BasicBlockTestImpl extends Vertex implements BasicBlock {
 
     private int order;
-    
+
     private int loopLevel;
-    
+
     public BasicBlockTestImpl(int id) {
         this(null, id);
     }
-    
+
     public BasicBlockTestImpl(String prefix, int id) {
         super(prefix, id);
         order = -1;
@@ -77,10 +77,10 @@ public class BasicBlockTestImpl extends Vertex implements BasicBlock {
     public void visit(BasicBlockVisitor visitor) {
     }
 
-    public BasicBlockAnalysisData getData() {
+    public BasicBlockData getData() {
         return null;
     }
 
-    public void setData(BasicBlockAnalysisData data) {
+    public void setData(BasicBlockData data) {
     }
 }

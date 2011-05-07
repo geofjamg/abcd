@@ -21,7 +21,7 @@ package fr.jamgotchian.abcd.core.controlflow;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface BasicBlockAnalysisData {
+public interface BasicBlockData {
 
     int getStatementCount();
 }

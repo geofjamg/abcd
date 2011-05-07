@@ -20,7 +20,6 @@ package fr.jamgotchian.abcd.core.controlflow;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import fr.jamgotchian.abcd.core.util.Sets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,9 +35,9 @@ class DominatorsFinder<N, E> extends ForwardDataFlowAnalysis<N, E, Set<N>>  {
     }
 
     @Override
-    public Set<N> getInitValue(N node, boolean isStartNode) {
-        if (isStartNode) {
-            return new HashSet<N>(Arrays.asList(node));
+    public Set<N> getInitValue(N node, boolean isEntryNode) {
+        if (isEntryNode) {
+            return com.google.common.collect.Sets.newHashSet(node);
         } else {
             return new HashSet<N>(getGraph().getVertices());
         }

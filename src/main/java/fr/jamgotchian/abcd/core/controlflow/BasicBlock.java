@@ -26,7 +26,7 @@ import fr.jamgotchian.abcd.core.util.Range;
 public interface BasicBlock {
 
     Range getRange();
-    
+
     BasicBlockType getType();
 
     void setType(BasicBlockType type);
@@ -44,8 +44,8 @@ public interface BasicBlock {
     int getOrder();
 
     void setOrder(int order);
-    
-    BasicBlockAnalysisData getData();
-    
-    void setData(BasicBlockAnalysisData data);
+
+    BasicBlockData getData();
+
+    void setData(BasicBlockData data);
 }

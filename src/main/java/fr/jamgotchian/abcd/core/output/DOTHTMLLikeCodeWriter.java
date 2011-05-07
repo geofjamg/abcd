@@ -16,8 +16,10 @@
  */
 package fr.jamgotchian.abcd.core.output;
 
+import fr.jamgotchian.abcd.core.util.Colors;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -31,12 +33,14 @@ public class DOTHTMLLikeCodeWriter extends HTMLCodeWriter {
     }
 
     @Override
-    public void before(String info) {
+    public void before(List<ColoredString> infos) {
         try {
             writer.write("<table border=\"0\">");
-            if (info != null && info.length() > 0) {
-                writer.write("<tr><td align=\"left\" balign=\"left\" bgcolor=\"orange\">");
-                writer.write(info);
+            for (ColoredString info : infos) {
+                writer.write("<tr><td align=\"left\" balign=\"left\" bgcolor=\"");
+                writer.write(Colors.toString(info.getColor()));
+                writer.write("\">");
+                writer.write(info.getValue());
                 writer.write("</td></tr>");
             }
             writer.write("<tr><td align=\"left\" balign=\"left\">");
@@ -46,12 +50,14 @@ public class DOTHTMLLikeCodeWriter extends HTMLCodeWriter {
     }
 
     @Override
-    public void after(String info) {
+    public void after(List<ColoredString> infos) {
         try {
             writer.write("</td></tr>");
-            if (info != null && info.length() > 0) {
-                writer.write("<tr><td align=\"left\" balign=\"left\" bgcolor=\"orange\">");
-                writer.write(info);
+            for (ColoredString info : infos) {
+                writer.write("<tr><td align=\"left\" balign=\"left\" bgcolor=\"");
+                writer.write(Colors.toString(info.getColor()));
+                writer.write("\">");
+                writer.write(info.getValue());
                 writer.write("</td></tr>");
             }
             writer.write("</table>");

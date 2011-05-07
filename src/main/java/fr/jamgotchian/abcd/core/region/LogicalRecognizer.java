@@ -18,7 +18,7 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlockAnalysisData;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlockData;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.Iterator;
@@ -28,7 +28,7 @@ import java.util.Iterator;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class LogicalRecognizer implements RegionRecognizer {
-    
+
     private Region recognizeAnd(DirectedGraph<Region, Edge> graph, Region regionA,
                                 Edge trueEdgeA, Edge falseEdgeA) {
         //
@@ -47,7 +47,7 @@ public class LogicalRecognizer implements RegionRecognizer {
         if (exitBlockB == null) {
             return null;
         }
-        BasicBlockAnalysisData dataB = (BasicBlockAnalysisData) exitBlockB.getData();
+        BasicBlockData dataB = exitBlockB.getData();
         if (dataB.getStatementCount() != 1) {
             return null;
         }
@@ -73,11 +73,11 @@ public class LogicalRecognizer implements RegionRecognizer {
             return null;
         }
         if (graph.getEdgeTarget(falseEdgeB).equals(graph.getEdgeTarget(falseEdgeA))) {
-            return new LogicalRegion(LogicalType.AND, regionA, regionB, 
+            return new LogicalRegion(LogicalType.AND, regionA, regionB,
                                      trueEdgeA, falseEdgeA, trueEdgeB, falseEdgeB);
         } else if (graph.getEdgeTarget(trueEdgeB).equals(graph.getEdgeTarget(falseEdgeA))) {
-            return new LogicalRegion(LogicalType.AND_INVERT_B, regionA, regionB, 
-                                     trueEdgeA, falseEdgeA, trueEdgeB, falseEdgeB);            
+            return new LogicalRegion(LogicalType.AND_INVERT_B, regionA, regionB,
+                                     trueEdgeA, falseEdgeA, trueEdgeB, falseEdgeB);
         }
         return null;
     }
@@ -100,7 +100,7 @@ public class LogicalRecognizer implements RegionRecognizer {
         if (exitBlockB == null) {
             return null;
         }
-        BasicBlockAnalysisData dataB = (BasicBlockAnalysisData) exitBlockB.getData();
+        BasicBlockData dataB = exitBlockB.getData();
         if (dataB.getStatementCount() != 1) {
             return null;
         }
@@ -126,15 +126,15 @@ public class LogicalRecognizer implements RegionRecognizer {
             return null;
         }
         if (graph.getEdgeTarget(trueEdgeB).equals(graph.getEdgeTarget(trueEdgeA))) {
-            return new LogicalRegion(LogicalType.OR, regionA, regionB, 
+            return new LogicalRegion(LogicalType.OR, regionA, regionB,
                                      trueEdgeA, falseEdgeA, trueEdgeB, falseEdgeB);
         } else if (graph.getEdgeTarget(falseEdgeB).equals(graph.getEdgeTarget(trueEdgeA))) {
-            return new LogicalRegion(LogicalType.OR_INVERT_B, regionA, regionB, 
-                                     trueEdgeA, falseEdgeA, trueEdgeB, falseEdgeB);            
+            return new LogicalRegion(LogicalType.OR_INVERT_B, regionA, regionB,
+                                     trueEdgeA, falseEdgeA, trueEdgeB, falseEdgeB);
         }
         return null;
     }
-    
+
     public Region recognize(DirectedGraph<Region, Edge> graph, Region regionA) {
         if (Regions.getSuccessorCountOf(graph, regionA, false) != 2) {
             return null;
@@ -157,12 +157,12 @@ public class LogicalRecognizer implements RegionRecognizer {
         if (trueEdgeA == null || falseEdgeA == null) {
             return null;
         }
-        
+
         Region structuredRegion = recognizeAnd(graph, regionA, trueEdgeA, falseEdgeA);
         if (structuredRegion == null) {
             structuredRegion = recognizeOr(graph, regionA, trueEdgeA, falseEdgeA);
         }
-        
+
         return structuredRegion;
-    }    
+    }
 }
