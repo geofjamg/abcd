@@ -1201,6 +1201,27 @@ public class Test {
         System.out.println(d);
     }
 
+    void testPhiFunc(int c) {
+        int a = 0;
+        if (c == 3) {
+            a = 3;
+            System.out.println("then");
+        } else {
+            System.out.println("else");
+        }
+        System.out.println(a);
+    }
+
+    void testPhiFunc2(int c) {
+        int a = 0;
+        if (c == 3) {
+            a = 3;
+            System.out.println("then");
+        } else {
+            System.out.println("else");
+        }
+    }
+
     void testSSA() {
         for (int i = 0; i < 3; i++) {
             System.out.println(i);

@@ -23,16 +23,21 @@ import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
+import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LiveVariablesAnalysis
-    extends BackwardDataFlowAnalysis<BasicBlock, Edge, Set<Variable>> {
+public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, Edge, Set<Variable>> {
+
+    private static final Logger logger = Logger.getLogger(LiveVariablesAnalysis.class.getName());
 
     public LiveVariablesAnalysis(ControlFlowGraph CFG) {
         super(CFG.getGraph(), CFG.getExitBlock());
@@ -54,6 +59,17 @@ public class LiveVariablesAnalysis
             uses.addAll(inst.getUses());
         }
         return uses;
+    }
+
+    @Override
+    public Map<BasicBlock, Set<Variable>> analyse() {
+        logger.log(Level.FINER, "Live variables analysis :");
+        Map<BasicBlock, Set<Variable>> liveVariables = super.analyse();
+        for (Map.Entry<BasicBlock, Set<Variable>> entry : liveVariables.entrySet()) {
+            logger.log(Level.FINER, "  {0} : {1}",
+                    new Object[] {entry.getKey(), TACInstWriter.toText(entry.getValue())});
+        }
+        return liveVariables;
     }
 
     @Override

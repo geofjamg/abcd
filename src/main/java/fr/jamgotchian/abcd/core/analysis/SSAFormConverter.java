@@ -42,6 +42,14 @@ public class SSAFormConverter {
 
     private static final Logger logger = Logger.getLogger(SSAFormConverter.class.getName());
 
+    private final ControlFlowGraph graph;
+
+    private Map<BasicBlock, Set<Variable>> liveVariables;
+
+    public SSAFormConverter(ControlFlowGraph graph) {
+        this.graph = graph;
+    }
+
     private boolean containsDef(BasicBlock block, Variable def) {
         for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
             if (def.equals(inst.getDef())) {
@@ -51,14 +59,13 @@ public class SSAFormConverter {
         return false;
     }
 
-    private void insertPhiFunctions(ControlFlowGraph graph) {
+    private void insertPhiFunctions() {
         Set<Variable> defs = new HashSet<Variable>();
         Multimap<Variable, BasicBlock> defSites = HashMultimap.create();
         for (BasicBlock block : graph.getBasicBlocks()) {
             for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
                 Variable def = inst.getDef();
-                // temporary variable are already in SSA form
-                if (def != null && !def.isTemporary()) {
+                if (def != null) {
                     defs.add(def);
                     defSites.put(def, block);
                 }
@@ -82,10 +89,13 @@ public class SSAFormConverter {
                         for (int i = 0; i < graph.getPredecessorCountOf(y); i++) {
                             args.add(def);
                         }
-                        ((AnalysisData) y.getData()).getInstructions()
-                                .add(0, new PhiFunctionInst(def, args));
-                        logger.log(Level.FINEST, "Add Phi function to {0} for def {1}",
-                                new Object[] {y, TACInstWriter.toText(def)});
+                        // is definition alive in basic block y ?
+                        if (liveVariables.get(y).contains(def)) {
+                            ((AnalysisData) y.getData()).getInstructions()
+                                    .add(0, new PhiFunctionInst(def, args));
+                            logger.log(Level.FINEST, "Add Phi function to {0} for def {1}",
+                                    new Object[] {y, TACInstWriter.toText(def)});
+                        }
                         phi.put(def, y);
                         if (!contains) {
                             w.add(y);
@@ -96,14 +106,9 @@ public class SSAFormConverter {
         }
     }
 
-    public void convert(ControlFlowGraph graph) {
-        logger.log(Level.FINER, "Liveness analysis :");
-        Map<BasicBlock, Set<Variable>> result
-                = new LiveVariablesAnalysis(graph).analyse();
-        for (Map.Entry<BasicBlock, Set<Variable>> entry : result.entrySet()) {
-            logger.log(Level.FINER, "  {0} : {1}",
-                    new Object[] {entry.getKey(), TACInstWriter.toText(entry.getValue())});
-        }
-        insertPhiFunctions(graph);
+    public void convert() {
+        liveVariables = new LiveVariablesAnalysis(graph).analyse();
+
+        insertPhiFunctions();
     }
 }

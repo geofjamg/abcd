@@ -405,7 +405,7 @@ public class ABCDContext {
                 logger.log(Level.FINE, "////////// Build 3AC instructions of {0} //////////", methodSignature);
                 new TreeAddressCodeBuilder().build(graph, new ImportManager());
 
-                new SSAFormConverter().convert(graph);
+                new SSAFormConverter(graph).convert();
 
                 Set<Region> rootRegions = null;
                 if (drawRegions) {
