@@ -139,7 +139,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
     }
 
     protected TemporaryVariable popVar() {
-        return stack.pop();
+        return stack.pop().clone();
     }
 
     public void before(BasicBlock block) {

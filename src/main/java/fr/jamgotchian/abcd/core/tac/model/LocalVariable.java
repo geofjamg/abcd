@@ -52,4 +52,9 @@ public class LocalVariable extends Variable {
     public int hashCode() {
         return index;
     }
+
+    @Override
+    public LocalVariable clone() {
+        return new LocalVariable(index);
+    }
 }

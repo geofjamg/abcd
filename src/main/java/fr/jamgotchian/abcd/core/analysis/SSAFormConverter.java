@@ -26,11 +26,14 @@ import fr.jamgotchian.abcd.core.tac.model.PhiFunctionInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,11 +49,15 @@ public class SSAFormConverter {
 
     private Map<BasicBlock, Set<Variable>> liveVariables;
 
+    private Set<Variable> defs;
+
+    private Multimap<Variable, BasicBlock> defSites;
+
     public SSAFormConverter(ControlFlowGraph graph) {
         this.graph = graph;
     }
 
-    private boolean containsDef(BasicBlock block, Variable def) {
+    private static boolean containsDef(BasicBlock block, Variable def) {
         for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
             if (def.equals(inst.getDef())) {
                 return true;
@@ -60,18 +67,6 @@ public class SSAFormConverter {
     }
 
     private void insertPhiFunctions() {
-        Set<Variable> defs = new HashSet<Variable>();
-        Multimap<Variable, BasicBlock> defSites = HashMultimap.create();
-        for (BasicBlock block : graph.getBasicBlocks()) {
-            for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
-                Variable def = inst.getDef();
-                if (def != null) {
-                    defs.add(def);
-                    defSites.put(def, block);
-                }
-            }
-        }
-
         DominatorInfo<BasicBlock, Edge> dominatorInfo = graph.getDominatorInfo();
 
         Multimap<Variable, BasicBlock> phi = HashMultimap.create();
@@ -87,12 +82,12 @@ public class SSAFormConverter {
                         boolean contains = containsDef(y, def);
                         List<Variable> args = new ArrayList<Variable>();
                         for (int i = 0; i < graph.getPredecessorCountOf(y); i++) {
-                            args.add(def);
+                            args.add(def.clone());
                         }
                         // is definition alive in basic block y ?
                         if (liveVariables.get(y).contains(def)) {
                             ((AnalysisData) y.getData()).getInstructions()
-                                    .add(0, new PhiFunctionInst(def, args));
+                                    .add(0, new PhiFunctionInst(def.clone(), args));
                             logger.log(Level.FINEST, "Add Phi function to {0} for def {1}",
                                     new Object[] {y, TACInstWriter.toText(def)});
                         }
@@ -106,9 +101,81 @@ public class SSAFormConverter {
         }
     }
 
+    private void renameVariables() {
+        for (Variable v : defs) {
+            AtomicInteger versionCount = new AtomicInteger(0); // used as a mutable integer
+            Deque<Integer> versionStack = new ArrayDeque<Integer>();
+            versionStack.push(0);
+            renameVariables(v, graph.getEntryBlock(), versionStack, versionCount);
+        }
+    }
+
+    private void renameVariables(Variable v, BasicBlock n, Deque<Integer> versionStack,
+                                 AtomicInteger versionCount) {
+        logger.log(Level.FINEST, "  Rename variables of {0}", n);
+
+        for (TACInst inst : ((AnalysisData) n.getData()).getInstructions()) {
+            if (!(inst instanceof PhiFunctionInst)) {
+                for (Variable use : inst.getUses()) {
+                    if (use.equals(v)) {
+                        int version = versionStack.peek();
+                        use.setVersion(version);
+                    }
+                }
+            }
+                Variable def = inst.getDef();
+                if (def != null && def.equals(v)) {
+                    int nextVersion = versionCount.incrementAndGet();
+                    versionStack.push(nextVersion);
+                    def.setVersion(nextVersion);
+                }
+        }
+
+        for (BasicBlock y : graph.getSuccessorsOf(n)) {
+            for (TACInst inst : ((AnalysisData) y.getData()).getInstructions()) {
+                if (inst instanceof PhiFunctionInst) {
+                    int j = new ArrayList<BasicBlock>(graph.getPredecessorsOf(y)).indexOf(n);
+                    int version = versionStack.peek();
+                    Variable phi = ((PhiFunctionInst) inst).getArgs().get(j);
+                    if (phi.equals(v)) {
+                        phi.setVersion(version);
+                    }
+                }
+            }
+        }
+
+        DominatorInfo<BasicBlock, Edge> dominatorInfo = graph.getDominatorInfo();
+        for (BasicBlock x : dominatorInfo.getDominatorsTree().getChildren(n)) {
+            renameVariables(v, x, versionStack, versionCount);
+        }
+
+        for (TACInst inst : ((AnalysisData) n.getData()).getInstructions()) {
+            if (!(inst instanceof PhiFunctionInst)) {
+                Variable def = inst.getDef();
+                if (def != null && def.equals(v)) {
+                    versionStack.pop();
+                }
+            }
+        }
+    }
+
     public void convert() {
         liveVariables = new LiveVariablesAnalysis(graph).analyse();
 
+        defs = new HashSet<Variable>();
+        defSites = HashMultimap.create();
+        for (BasicBlock block : graph.getBasicBlocks()) {
+            for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
+                Variable def = inst.getDef();
+                if (def != null) {
+                    defs.add(def);
+                    defSites.put(def, block);
+                }
+            }
+        }
+
         insertPhiFunctions();
+
+        renameVariables();
     }
 }

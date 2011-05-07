@@ -61,4 +61,9 @@ public class TemporaryVariable extends Variable {
     public int hashCode() {
         return num;
     }
+
+    @Override
+    public TemporaryVariable clone() {
+        return new TemporaryVariable(num, null);
+    }
 }

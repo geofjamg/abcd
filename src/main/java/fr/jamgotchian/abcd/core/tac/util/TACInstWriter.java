@@ -218,6 +218,9 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
 
     public Void visit(LocalVariable inst, Void arg) {
         writer.write("v").write(inst.getIndex());
+        if (inst.getVersion() != LocalVariable.UNDEFINED_VERSION) {
+            writer.write(".").write(inst.getVersion());
+        }
         return null;
     }
 
@@ -228,6 +231,9 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
 
     public Void visit(TemporaryVariable inst, Void arg) {
         writer.write("_t").write(inst.getNum());
+        if (inst.getVersion() != LocalVariable.UNDEFINED_VERSION) {
+            writer.write(".").write(inst.getVersion());
+        }
         return null;
     }
 

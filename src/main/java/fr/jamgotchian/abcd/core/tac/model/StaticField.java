@@ -52,4 +52,9 @@ public class StaticField extends Variable {
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
+
+    @Override
+    public StaticField clone() {
+        return new StaticField(scope, fieldName);
+    }
 }
