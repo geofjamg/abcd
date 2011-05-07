@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.tac.util;
 
+import fr.jamgotchian.abcd.core.tac.model.PhiFunctionInst;
 import fr.jamgotchian.abcd.core.tac.model.StringConst;
 import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
 import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
@@ -134,11 +135,29 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return toString(seq, inputStack, outputStack, new DOTHTMLLikeCodeWriterFactory());
     }
 
-    public static String toString(Iterable<TemporaryVariable> vars, CodeWriterFactory factory) {
+    public static String toString(Variable var, CodeWriterFactory factory) {
+        Writer writer = new StringWriter();
+        try {
+            var.accept(new TACInstWriter(factory.create(writer)), null);
+        } finally {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, e.toString(), e);
+            }
+        }
+        return writer.toString();
+    }
+
+    public static String toText(Variable var) {
+        return toString(var, new TextCodeWriterFactory());
+    }
+
+    public static <V extends Variable> String toString(Iterable<V> vars, CodeWriterFactory factory) {
         StringBuilder builder = new StringBuilder("[");
-        Iterator<TemporaryVariable> it =  vars.iterator();
+        Iterator<V> it =  vars.iterator();
         while (it.hasNext()) {
-            TemporaryVariable var = it.next();
+            V var = it.next();
             Writer writer = new StringWriter();
             try {
                 var.accept(new TACInstWriter(factory.create(writer)), null);
@@ -158,12 +177,12 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return builder.toString();
     }
 
-    public static String toText(Iterable<TemporaryVariable> exprs) {
-        return toString(exprs, new TextCodeWriterFactory());
+    public static <V extends Variable> String toText(Iterable<V> vars) {
+        return toString(vars, new TextCodeWriterFactory());
     }
 
-    public static String toHTML(Iterable<TemporaryVariable> exprs) {
-        return toString(exprs, new HTMLCodeWriterFactory());
+    public static <V extends Variable> String toHTML(Iterable<V> vars) {
+        return toString(vars, new HTMLCodeWriterFactory());
     }
 
     private final CodeWriter writer;
@@ -229,7 +248,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
     }
 
     public Void visit(StringConst inst, Void arg) {
-        writer.write("\"").write(inst.getValue()).write("\"");
+        writer.writeQuotedString(inst.getValue());
         return null;
     }
 
@@ -549,8 +568,22 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         inst.getResult().accept(this, arg);
         writer.writeSpace().write("=").writeSpace();
         writer.writeKeyword("choice").writeSpace();
-        for (Iterator<TemporaryVariable> it = inst.getVariables().iterator(); it.hasNext();) {
+        for (Iterator<TemporaryVariable> it = inst.getChoices().iterator(); it.hasNext();) {
             TemporaryVariable var = it.next();
+            var.accept(this, arg);
+            if (it.hasNext()) {
+                writer.writeSpace();
+            }
+        }
+        return null;
+    }
+
+    public Void visit(PhiFunctionInst inst, Void arg) {
+        inst.getResult().accept(this, arg);
+        writer.writeSpace().write("=").writeSpace();
+        writer.writeKeyword("phi ").writeSpace();
+        for (Iterator<Variable> it = inst.getArgs().iterator(); it.hasNext();) {
+            Variable var = it.next();
             var.accept(this, arg);
             if (it.hasNext()) {
                 writer.writeSpace();

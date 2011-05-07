@@ -16,6 +16,9 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -31,12 +34,24 @@ public class AssignInst implements TACInst {
         this.value = value;
     }
 
+    public Variable getResult() {
+        return result;
+    }
+
     public Operand getValue() {
         return value;
     }
 
-    public Variable getResult() {
+    public Variable getDef() {
         return result;
+    }
+
+    public Set<Variable> getUses() {
+        if (value instanceof Variable) {
+            return Collections.<Variable>singleton((Variable) value);
+        } else {
+            return Collections.emptySet();
+        }
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

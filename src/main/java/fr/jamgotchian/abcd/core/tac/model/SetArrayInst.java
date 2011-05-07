@@ -16,6 +16,9 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import com.google.common.collect.Sets;
+import java.util.Set;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -45,6 +48,14 @@ public class SetArrayInst implements TACInst {
 
     public TemporaryVariable getValue() {
         return value;
+    }
+
+    public Variable getDef() {
+        return null;
+    }
+
+    public Set<Variable> getUses() {
+        return Sets.<Variable>newHashSet(array, index, value);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

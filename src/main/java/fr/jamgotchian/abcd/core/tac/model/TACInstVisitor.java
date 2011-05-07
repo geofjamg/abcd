@@ -95,4 +95,6 @@ public interface TACInstVisitor<R, A> {
     R visit(UnaryInst inst, A arg);
 
     R visit(ChoiceInst inst, A arg);
+
+    R visit(PhiFunctionInst inst, A arg);
 }

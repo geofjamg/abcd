@@ -18,7 +18,9 @@ package fr.jamgotchian.abcd.core.tac.model;
 
 import fr.jamgotchian.abcd.core.type.ClassName;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -50,8 +52,16 @@ public class NewObjectInst implements TACInst {
         return args;
     }
 
-    public void setParams(List<Variable> params) {
-        this.args = params;
+    public void setArgs(List<Variable> args) {
+        this.args = args;
+    }
+
+    public Variable getDef() {
+        return result;
+    }
+
+    public Set<Variable> getUses() {
+        return new HashSet<Variable>(args);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

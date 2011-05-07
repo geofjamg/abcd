@@ -17,6 +17,8 @@
 package fr.jamgotchian.abcd.core.tac.model;
 
 import fr.jamgotchian.abcd.core.common.Label;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  *
@@ -39,6 +41,14 @@ public class JumpIfInst implements TACInst {
 
     public Label getLabel() {
         return label;
+    }
+
+    public Variable getDef() {
+        return null;
+    }
+
+    public Set<Variable> getUses() {
+        return Collections.<Variable>singleton(cond);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

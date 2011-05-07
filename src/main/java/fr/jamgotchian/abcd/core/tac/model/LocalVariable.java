@@ -39,4 +39,17 @@ public class LocalVariable extends Variable {
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof LocalVariable)) {
+            return false;
+        }
+        return ((LocalVariable) obj).index == index;
+    }
+
+    @Override
+    public int hashCode() {
+        return index;
+    }
 }

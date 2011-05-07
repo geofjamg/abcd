@@ -16,7 +16,10 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import com.google.common.collect.Sets;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -54,6 +57,17 @@ public class CallMethodInst implements TACInst {
 
     public List<TemporaryVariable> getArgs() {
         return args;
+    }
+
+    public Variable getDef() {
+        return result;
+    }
+
+    public Set<Variable> getUses() {
+        Set<Variable> uses = new HashSet<Variable>(args.size()+1);
+        uses.add(object);
+        uses.addAll(args);
+        return uses;
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

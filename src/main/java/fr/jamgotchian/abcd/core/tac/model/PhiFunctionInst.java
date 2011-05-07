@@ -16,38 +16,31 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import fr.jamgotchian.abcd.core.type.ClassName;
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class InstanceOfInst implements TACInst {
+public class PhiFunctionInst implements TACInst {
 
-    private final TemporaryVariable result;
+    private final Variable result;
 
-    private final TemporaryVariable var;
+    private final List<Variable> args;
 
-    private final ClassName className;
-
-    public InstanceOfInst(TemporaryVariable result, TemporaryVariable var, ClassName className) {
+    public PhiFunctionInst(Variable result, List<Variable> args) {
         this.result = result;
-        this.var = var;
-        this.className = className;
+        this.args = args;
     }
 
-    public TemporaryVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
-    public TemporaryVariable getVar() {
-        return var;
-    }
-
-    public ClassName getClassName() {
-        return className;
+    public List<Variable> getArgs() {
+        return args;
     }
 
     public Variable getDef() {
@@ -55,7 +48,9 @@ public class InstanceOfInst implements TACInst {
     }
 
     public Set<Variable> getUses() {
-        return Collections.<Variable>singleton(var);
+        Set<Variable> uses = new HashSet<Variable>(args.size());
+        uses.addAll(args);
+        return uses;
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

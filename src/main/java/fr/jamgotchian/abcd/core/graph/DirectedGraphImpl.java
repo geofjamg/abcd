@@ -43,7 +43,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
         private final V target;
 
-        public Connection(V source, V target) {
+        private Connection(V source, V target) {
             this.source = source;
             this.target = target;
         }
@@ -63,7 +63,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
         private final Map<V, E> successors;
 
-        public Neighbors() {
+        private Neighbors() {
             predecessors = new LinkedHashMap<V, E>();
             successors = new LinkedHashMap<V, E>();
         }
@@ -388,7 +388,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         builder.append("]");
         return builder.toString();
     }
-    
+
     public void writeDOT(String name, Writer writer) throws IOException {
         writer.append("digraph ").append(name).append(" {\n");
         for (E edge : getEdges()) {

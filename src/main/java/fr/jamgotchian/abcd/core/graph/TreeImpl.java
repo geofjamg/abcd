@@ -30,14 +30,14 @@ import java.util.Set;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 class TreeImpl<N, E> implements MutableTree<N, E> {
- 
+
     private static class Connection<N> {
-        
+
         private final N source;
-        
+
         private final N target;
 
-        public Connection(N source, N target) {
+        private Connection(N source, N target) {
             this.source = source;
             this.target = target;
         }
@@ -50,26 +50,26 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             return target;
         }
     }
-    
+
     private static class Neighbors<N, E> {
-        
+
         private N parentNode;
-        
+
         private E incomingEdge;
-        
+
         private final Map<N, E> children;
 
-        public Neighbors(N parentNode, E incomingEdge, Map<N, E> children) {
+        private Neighbors(N parentNode, E incomingEdge, Map<N, E> children) {
             this.parentNode = parentNode;
             this.incomingEdge = incomingEdge;
             this.children = children;
         }
 
-        public Neighbors(N parentNode, E incomingEdge) {
+        private Neighbors(N parentNode, E incomingEdge) {
             this(parentNode, incomingEdge, new LinkedHashMap<N, E>());
         }
 
-        public Neighbors() {
+        private Neighbors() {
             this(null, null);
         }
 
@@ -93,7 +93,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             this.incomingEdge = incomingEdge;
         }
     }
-    
+
     private final N root;
 
     private final Map<E, Connection<N>> edges = new LinkedHashMap<E, Connection<N>>();
@@ -116,11 +116,11 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     public int getNodeCount() {
         return nodes.size();
     }
-    
+
     public Set<E> getEdges() {
         return edges.keySet();
     }
-     
+
     public void addNode(N parent, N node, E edge) {
         if (nodes.containsKey(node)) {
             throw new ABCDException("Node " + node + " already present");
@@ -140,7 +140,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     public boolean containsNode(N node) {
         return nodes.containsKey(node);
     }
-    
+
     public N getParent(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
@@ -177,7 +177,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         neighbors.setParentNode(newParent);
         edges.put(edge, new Connection<N>(newParent, node));
     }
-    
+
     public Set<N> getChildren(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
@@ -185,7 +185,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         }
         return neighbors.getChildren().keySet();
     }
-    
+
     public N getEdgeSource(E edge) {
         if (edge == null) {
             throw new ABCDException("edge == null");
@@ -219,30 +219,30 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         }
         return depth;
     }
-    
+
     public Tree<N, E> getSubTree(N node) {
         MutableTree<N, E> subTree = new TreeImpl<N, E>(node);
         buildSubTree(node, subTree);
         return subTree;
     }
-    
+
     private void buildSubTree(N node, MutableTree<N, E> subTree) {
         for (N child : getChildren(node)) {
             subTree.addNode(node, child, getIncomingEdge(child));
         }
         for (N child : getChildren(node)) {
             buildSubTree(child, subTree);
-        }        
+        }
     }
 
     public Iterator<N> iterator(N node) {
-        return getSubTree(root).getNodes().iterator();         
+        return getSubTree(root).getNodes().iterator();
     }
 
     public Iterator<N> iterator() {
         return iterator(root);
     }
-    
+
     public void writeDOT(String name, Writer writer) throws IOException {
         writer.append("digraph ").append(name).append(" {\n");
         for (E edge : getEdges()) {

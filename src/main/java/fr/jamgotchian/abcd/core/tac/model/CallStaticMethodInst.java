@@ -17,7 +17,9 @@
 package fr.jamgotchian.abcd.core.tac.model;
 
 import fr.jamgotchian.abcd.core.type.ClassName;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -55,6 +57,14 @@ public class CallStaticMethodInst implements TACInst {
 
     public List<TemporaryVariable> getArgs() {
         return args;
+    }
+
+    public Variable getDef() {
+        return result;
+    }
+
+    public Set<Variable> getUses() {
+        return new HashSet<Variable>(args);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

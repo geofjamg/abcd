@@ -16,6 +16,9 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -44,6 +47,14 @@ public class UnaryInst implements TACInst {
 
     public TemporaryVariable getVar() {
         return var;
+    }
+
+    public Variable getDef() {
+        return result;
+    }
+
+    public Set<Variable> getUses() {
+        return Collections.<Variable>singleton(var);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

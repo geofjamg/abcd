@@ -48,4 +48,17 @@ public class TemporaryVariable extends Variable {
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof TemporaryVariable)) {
+            return false;
+        }
+        return ((TemporaryVariable) obj).num == num;
+    }
+
+    @Override
+    public int hashCode() {
+        return num;
+    }
 }

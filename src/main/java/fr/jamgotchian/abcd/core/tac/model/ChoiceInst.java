@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -26,19 +27,29 @@ public class ChoiceInst implements TACInst {
 
     private final TemporaryVariable result;
 
-    private final Set<TemporaryVariable> variables;
+    private final Set<TemporaryVariable> choices;
 
-    public ChoiceInst(TemporaryVariable result, Set<TemporaryVariable> variables) {
+    public ChoiceInst(TemporaryVariable result, Set<TemporaryVariable> choices) {
         this.result = result;
-        this.variables = variables;
+        this.choices = choices;
     }
 
     public TemporaryVariable getResult() {
         return result;
     }
 
-    public Set<TemporaryVariable> getVariables() {
-        return variables;
+    public Set<TemporaryVariable> getChoices() {
+        return choices;
+    }
+
+    public Variable getDef() {
+        return result;
+    }
+
+    public Set<Variable> getUses() {
+        Set<Variable> uses = new HashSet<Variable>(choices.size());
+        uses.addAll(choices);
+        return uses;
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

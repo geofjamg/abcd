@@ -40,15 +40,15 @@ public class DominatorInfo<N, E> {
     static {
         logger.setLevel(Level.FINE);
     }
-    
+
     private final DirectedGraph<N, E> graph;
 
     private final N entryNode;
-    
+
     private final N exitNode;
-    
+
     private final EdgeFactory<E> factory;
-    
+
     private Map<N, Set<N>> dominatorsOf;
 
     private MutableTree<N, E> dominatorsTree;
@@ -61,9 +61,9 @@ public class DominatorInfo<N, E> {
 
     private Map<N, Set<E>> postDominanceFrontierOf;
 
-    public static <N, E> DominatorInfo<N, E> create(DirectedGraph<N, E> graph, N entryNode, 
+    public static <N, E> DominatorInfo<N, E> create(DirectedGraph<N, E> graph, N entryNode,
                                                     N exitNode, EdgeFactory<E> factory) {
-        DominatorInfo domInfo = new DominatorInfo(graph, entryNode, exitNode, factory);
+        DominatorInfo<N, E> domInfo = new DominatorInfo<N, E>(graph, entryNode, exitNode, factory);
         domInfo.update();
         return domInfo;
     }
@@ -78,7 +78,7 @@ public class DominatorInfo<N, E> {
     public Set<N> getDominatorsOf(N n) {
         return dominatorsOf.get(n);
     }
-    
+
     public boolean dominate(N x, N y) {
         return dominatorsOf.get(y).contains(x);
     }
@@ -86,7 +86,7 @@ public class DominatorInfo<N, E> {
     public boolean strictlyDominate(N x, N y) {
         return !x.equals(y) && dominate(x, y);
     }
-    
+
     public N getImmediateDominatorOf(N n) {
         return dominatorsTree.getParent(n);
     }
@@ -118,7 +118,7 @@ public class DominatorInfo<N, E> {
     public boolean strictlyPostDominate(N x, N y) {
         return !x.equals(y) && postDominate(x, y);
     }
-    
+
     public N getImmediatePostDominatorOf(N n) {
         return postDominatorsTree.getParent(n);
     }
@@ -145,22 +145,23 @@ public class DominatorInfo<N, E> {
     public void computeDominanceFrontier() {
         dominanceFrontierOf = new HashMap<N, Set<E>>();
 
+        // x dominate a predecessor of z (y) but do not strictly dominate z
         for (N x : graph.getVertices()) {
             dominanceFrontierOf.put(x, new HashSet<E>());
             for (N y : dominatorsTree.getSubTree(x).getNodes()) {
                 for (N z : graph.getSuccessorsOf(y)) {
-                    if (!strictlyDominate(x, z)) { 
+                    if (!strictlyDominate(x, z)) {
                         E yz = graph.getEdge(y, z);
                         dominanceFrontierOf.get(x).add(yz);
                     }
                 }
             }
-            
+
             logger.log(Level.FINEST, "Dominance frontier of {0} : {1}",
                     new Object[] {x, graph.toString(dominanceFrontierOf.get(x))});
        }
     }
-    
+
     public void computePostDominanceFrontier() {
         postDominanceFrontierOf = new HashMap<N, Set<E>>();
 
@@ -168,21 +169,21 @@ public class DominatorInfo<N, E> {
             postDominanceFrontierOf.put(x, new HashSet<E>());
             for (N y : postDominatorsTree.getSubTree(x).getNodes()) {
                 for (N z : graph.getPredecessorsOf(y)) {
-                    if (!strictlyPostDominate(x, z)) { 
+                    if (!strictlyPostDominate(x, z)) {
                         E zy = graph.getEdge(z, y);
                         postDominanceFrontierOf.get(x).add(zy);
                     }
                 }
             }
-            
+
             logger.log(Level.FINEST, "Post dominance frontier of {0} : {1}",
                     new Object[] {x, graph.toString(postDominanceFrontierOf.get(x))});
        }
     }
-    
+
     public void update() {
         logger.log(Level.FINER, "Update dominator info");
-            
+
         // find dominators
         dominatorsOf = new DominatorsFinder(graph, entryNode).analyse();
         for (Map.Entry<N, Set<N>> entry : dominatorsOf.entrySet()) {
@@ -194,7 +195,7 @@ public class DominatorInfo<N, E> {
         dominatorsTree = Trees.newTree(entryNode);
         buildTree(dominatorsOf, entryNode, dominatorsTree);
         logger.log(Level.FINEST, "Dominators tree :\n{0}", Trees.toString(dominatorsTree));
-        
+
         // compute dominance frontier
         computeDominanceFrontier();
 
@@ -209,7 +210,7 @@ public class DominatorInfo<N, E> {
         postDominatorsTree = Trees.newTree(exitNode);
         buildTree(postDominatorsOf, exitNode, postDominatorsTree);
         logger.log(Level.FINEST, "Post dominators tree :\n{0}", Trees.toString(postDominatorsTree));
-        
+
         // compute post dominance frontier
         computePostDominanceFrontier();
     }

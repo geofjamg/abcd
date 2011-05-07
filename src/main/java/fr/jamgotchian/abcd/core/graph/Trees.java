@@ -35,7 +35,7 @@ public class Trees {
 
         private final Tree<N, E> delegate;
 
-        public UnmodifiableTree(Tree<N, E> delegate) {
+        private UnmodifiableTree(Tree<N, E> delegate) {
             this.delegate = delegate;
         }
 

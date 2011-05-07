@@ -209,7 +209,7 @@ public class TreeAddressCodeBuilder {
 
                     Multimap<BasicBlock, TemporaryVariable> forkBlocks
                             = HashMultimap.create();
-                    for (TemporaryVariable var : choiceInst.getVariables()) {
+                    for (TemporaryVariable var : choiceInst.getChoices()) {
                         BasicBlock block = var.getBasicBlock();
                         DominatorInfo<BasicBlock, Edge> dominatorInfo
                                 = block.getGraph().getDominatorInfo();
@@ -246,9 +246,9 @@ public class TreeAddressCodeBuilder {
                             if (thenVar != null && elseVar != null) {
                                 AnalysisData forkData = (AnalysisData) forkBlock.getData();
                                 JumpIfInst jumpIfInst = (JumpIfInst) forkData.getLastInst();
-                                choiceInst.getVariables().remove(thenVar);
-                                choiceInst.getVariables().remove(elseVar);
-                                if (choiceInst.getVariables().isEmpty()) {
+                                choiceInst.getChoices().remove(thenVar);
+                                choiceInst.getChoices().remove(elseVar);
+                                if (choiceInst.getChoices().isEmpty()) {
                                     TemporaryVariable resultVar = choiceInst.getResult();
                                     ConditionalInst condInst
                                             = new ConditionalInst(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
@@ -262,7 +262,7 @@ public class TreeAddressCodeBuilder {
                                     logger.log(Level.FINER, "Insert inst at {0} of {1} : {2}",
                                             new Object[]{i, joinBlock, TACInstWriter.toText(condInst)});
                                     replacement.add(condInst);
-                                    choiceInst.getVariables().add(resultVar);
+                                    choiceInst.getChoices().add(resultVar);
                                 }
 
                                 change = true;

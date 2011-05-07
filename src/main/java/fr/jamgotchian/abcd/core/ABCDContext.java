@@ -38,6 +38,7 @@ import static fr.jamgotchian.abcd.core.analysis.DOTUtil.BasicBlockWritingMode.*;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
 import fr.jamgotchian.abcd.core.analysis.Refactorer;
+import fr.jamgotchian.abcd.core.analysis.SSAFormConverter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -403,6 +404,8 @@ public class ABCDContext {
 
                 logger.log(Level.FINE, "////////// Build 3AC instructions of {0} //////////", methodSignature);
                 new TreeAddressCodeBuilder().build(graph, new ImportManager());
+
+                new SSAFormConverter().convert(graph);
 
                 Set<Region> rootRegions = null;
                 if (drawRegions) {

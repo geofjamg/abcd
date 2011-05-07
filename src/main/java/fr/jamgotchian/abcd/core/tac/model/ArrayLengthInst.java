@@ -16,6 +16,9 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import java.util.Collections;
+import java.util.Set;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -37,6 +40,14 @@ public class ArrayLengthInst implements TACInst {
 
     public TemporaryVariable getArray() {
         return array;
+    }
+
+    public Variable getDef() {
+        return result;
+    }
+
+    public Set<Variable> getUses() {
+        return Collections.<Variable>singleton(array);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
