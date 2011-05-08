@@ -83,7 +83,7 @@ public class LocalVariable extends Variable {
 
     @Override
     public LocalVariable clone() {
-        return new LocalVariable(index, block);
+        return new LocalVariable(index, version, block);
     }
 
     @Override

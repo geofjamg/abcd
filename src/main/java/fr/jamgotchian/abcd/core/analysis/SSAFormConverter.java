@@ -23,6 +23,9 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.tac.model.AssignInst;
+import fr.jamgotchian.abcd.core.tac.model.GotoInst;
+import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
 import fr.jamgotchian.abcd.core.tac.model.LocalVariable;
 import fr.jamgotchian.abcd.core.tac.model.PhiFunctionInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
@@ -30,6 +33,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -161,6 +165,41 @@ public class SSAFormConverter {
         }
     }
 
+    private static void addInst(BasicBlock b, TACInst inst) {
+        List<TACInst> insts = ((AnalysisData) b.getData()).getInstructions();
+        if (insts.isEmpty()) {
+            insts.add(inst);
+        } else {
+            TACInst lastInst = insts.get(insts.size()-1);
+            if (lastInst instanceof GotoInst || lastInst instanceof JumpIfInst) {
+                insts.add(insts.size()-1, inst);
+            } else {
+                insts.add(inst);
+            }
+        }
+    }
+
+    private void removePhiFunctions() {
+        for (BasicBlock b : graph.getBasicBlocks()) {
+            List<BasicBlock> predecessors
+                    = new ArrayList<BasicBlock>(graph.getPredecessorsOf(b));
+            List<TACInst> insts = ((AnalysisData) b.getData()).getInstructions();
+            for (Iterator<TACInst> it = insts.iterator(); it.hasNext();) {
+                TACInst inst = it.next();
+                if (inst instanceof PhiFunctionInst) {
+                    PhiFunctionInst phiInst = (PhiFunctionInst) inst;
+                    for (int i = 0; i < phiInst.getArgs().size(); i++) {
+                        LocalVariable v = phiInst.getArgs().get(i);
+                        BasicBlock p = predecessors.get(i);
+                        addInst(p, new AssignInst(phiInst.getResult().clone(),
+                                                  v /* no need to clone */));
+                    }
+                    it.remove();
+                }
+            }
+        }
+    }
+
     public void convert() {
         liveVariables = HashMultimap.create();
         for (Map.Entry<BasicBlock, Set<LocalVariable>> entry :
@@ -189,5 +228,7 @@ public class SSAFormConverter {
         insertPhiFunctions();
 
         renameVariables();
+
+        removePhiFunctions();
     }
 }
