@@ -23,6 +23,7 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -134,8 +135,13 @@ public class DirectedGraphs {
             return delegate.containsEdge(source, target);
         }
 
-        public void writeDOT(String name, Writer writer) throws IOException {
-            delegate.writeDOT(name, writer);
+        public void writeDOT(Writer writer, String name) throws IOException {
+            delegate.writeDOT(writer, name);
+        }
+
+        public void writeDOT(Writer writer, String name, AttributeProvider<V> vertexAttrs,
+                AttributeProvider<E> edgeAttrs) throws IOException {
+            delegate.writeDOT(writer, name, vertexAttrs, edgeAttrs);
         }
     }
 
@@ -146,7 +152,7 @@ public class DirectedGraphs {
     public static <V, E> DirectedGraph<V, E> unmodifiableDirectedGraph(DirectedGraph<V, E> graph) {
         return new UnmodifiableDirectedGraph<V, E>(graph);
     }
-    
+
     public static <V, E> String toString(DirectedGraph<V, E> graph, V v) {
         StringBuilder builder = new StringBuilder();
         builder.append("Vertices :\n");
@@ -166,5 +172,49 @@ public class DirectedGraphs {
             }
         }
         return builder.toString();
+    }
+
+    public static <V, E> void writeEdgeDOT(Writer writer, E edge, V source, V target,
+                                           AttributeProvider<E> edgeAttrs) throws IOException {
+        int sourceHashCode = System.identityHashCode(source);
+        int targetHashCode = System.identityHashCode(target);
+        writer.append("  ")
+                .append(Integer.toString(sourceHashCode))
+                .append(" -> ")
+                .append(Integer.toString(targetHashCode))
+                .append(" [");
+        for (Iterator<Map.Entry<String, String>>
+                it = edgeAttrs.getAttributes(edge).entrySet().iterator();
+             it.hasNext();) {
+            Map.Entry<String, String> entry = it.next();
+            String propName = entry.getKey();
+            String propValue = entry.getValue();
+            writer.append(propName).append("=").append(propValue);
+            if (it.hasNext()) {
+                writer.append(", ");
+            }
+        }
+        writer.append("]")
+              .append("\n");
+    }
+
+    public static <V, E> void writeVertexDOT(Writer writer, V vertex,
+                                             AttributeProvider<V> vertexAttrs) throws IOException {
+        int hashCode = System.identityHashCode(vertex);
+        writer.append("  ")
+                .append(Integer.toString(hashCode))
+                .append(" [");
+        for (Iterator<Map.Entry<String, String>> it
+                = vertexAttrs.getAttributes(vertex).entrySet().iterator();
+             it.hasNext();) {
+            Map.Entry<String, String> entry = it.next();
+            String propName = entry.getKey();
+            String propValue = entry.getValue();
+            writer.append(propName).append("=").append(propValue);
+            if (it.hasNext()) {
+                writer.append(", ");
+            }
+        }
+        writer.append("]\n");
     }
 }

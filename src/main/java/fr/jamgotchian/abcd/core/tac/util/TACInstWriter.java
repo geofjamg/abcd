@@ -115,7 +115,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         try {
             CodeWriter codeWriter = factory.create(writer);
             List<ColoredString> infosBefore = new ArrayList<ColoredString>(2);
-            infosBefore.add(new ColoredString(range.toString(), Color.LIGHT_GRAY));
+            infosBefore.add(new ColoredString(range != null ? range.toString() : "", Color.LIGHT_GRAY));
             if (inputStack != null && inputStack.size() > 0) {
                 infosBefore.add(new ColoredString("Input stack : " + toString(inputStack, factory),
                                                   Color.ORANGE));

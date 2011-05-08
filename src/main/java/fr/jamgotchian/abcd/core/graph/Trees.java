@@ -95,8 +95,13 @@ public class Trees {
             return delegate.iterator();
         }
 
-        public void writeDOT(String name, Writer writer) throws IOException {
-            delegate.writeDOT(name, writer);
+        public void writeDOT(Writer writer, String name) throws IOException {
+            delegate.writeDOT(writer, name);
+        }
+
+        public void writeDOT(Writer writer, String name, AttributeProvider<N> vertexAttrs,
+                AttributeProvider<E> edgeAttrs) throws IOException {
+            delegate.writeDOT(writer, name, vertexAttrs, edgeAttrs);
         }
     }
 

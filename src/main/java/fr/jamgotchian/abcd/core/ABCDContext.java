@@ -34,7 +34,7 @@ import fr.jamgotchian.abcd.core.analysis.ControlFlowGraphStmtAnalysis;
 import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
 import fr.jamgotchian.abcd.core.analysis.ConditionalExpressionRefactorer;
 import fr.jamgotchian.abcd.core.analysis.DOTUtil;
-import static fr.jamgotchian.abcd.core.analysis.DOTUtil.BasicBlockWritingMode.*;
+import static fr.jamgotchian.abcd.core.analysis.DOTUtil.DisplayMode.*;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
 import fr.jamgotchian.abcd.core.analysis.Refactorer;
@@ -42,7 +42,6 @@ import fr.jamgotchian.abcd.core.analysis.SSAFormConverter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.graph.VertexToString;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
@@ -386,7 +385,7 @@ public class ABCDContext {
                 if (!drawRegions) {
                     Writer writer = new FileWriter(baseName + "_CFG.dot");
                     try {
-                        DOTUtil.writeCFG(graph, null, writer, INSTN_RANGE);
+                        DOTUtil.writeCFG(graph, null, writer, RANGE);
                     } finally {
                         writer.close();
                     }
@@ -415,19 +414,16 @@ public class ABCDContext {
 
                     Writer writer = new FileWriter(baseName + "_RG.dot");
                     try {
-                        DOTUtil.writeGraph(analysis.getRegionGraph(), "RG", writer, new VertexToString<Region>() {
-
-                            public String toString(Region region) {
-                                return region + " (" + region.getTypeName() + ")";
-                            }
-                        });
+                        analysis.getRegionGraph().writeDOT(writer, "RG",
+                                DOTUtil.REGION_ATTRIBUTE_PROVIDER,
+                                DOTUtil.EDGE_ATTRIBUTE_PROVIDER);
                     } finally {
                         writer.close();
                     }
 
                     writer = new FileWriter(baseName + "_CFG.dot");
                     try {
-                        DOTUtil.writeCFG(graph, rootRegions, writer, INSTN_RANGE);
+                        DOTUtil.writeCFG(graph, rootRegions, writer, RANGE);
                     } finally {
                         writer.close();
                     }
@@ -456,14 +452,18 @@ public class ABCDContext {
 
                 writer = new FileWriter(baseName + "_DT.dot");
                 try {
-                    graph.getDominatorInfo().getDominatorsTree().writeDOT("DT", writer);
+                    graph.getDominatorInfo().getDominatorsTree()
+                            .writeDOT(writer, "DT", DOTUtil.RANGE_ATTRIBUTE_PROVIDER,
+                                                    DOTUtil.EDGE_ATTRIBUTE_PROVIDER);
                 } finally {
                     writer.close();
                 }
 
                 writer = new FileWriter(baseName + "_PDT.dot");
                 try {
-                    graph.getDominatorInfo().getPostDominatorsTree().writeDOT("PDT", writer);
+                    graph.getDominatorInfo().getPostDominatorsTree()
+                            .writeDOT(writer, "PDT", DOTUtil.RANGE_ATTRIBUTE_PROVIDER,
+                                                     DOTUtil.EDGE_ATTRIBUTE_PROVIDER);
                 } finally {
                     writer.close();
                 }

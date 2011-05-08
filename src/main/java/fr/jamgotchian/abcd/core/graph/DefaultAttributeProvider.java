@@ -14,14 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package fr.jamgotchian.abcd.core.graph;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface VertexToString<V> {
-    
-    String toString(V vertex);
+public class DefaultAttributeProvider<O> implements AttributeProvider<O> {
+
+    public Map<String, String> getAttributes(O object) {
+        Map<String, String> attrs = new HashMap<String, String>();
+        attrs.put("color", "black");
+        attrs.put("label", "\"" + object == null ? "" : object.toString() + "\"");
+        return attrs;
+    }
 }

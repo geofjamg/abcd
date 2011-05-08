@@ -40,21 +40,21 @@ public interface DirectedGraph<V, E> {
     Set<E> getEdges();
 
     int getEdgeCount();
-    
+
     Collection<E> getIncomingEdgesOf(V vertex);
-    
+
     E getFirstIncomingEdgeOf(V vertex);
 
     Collection<E> getOutgoingEdgesOf(V vertex);
-    
+
     E getFirstOutgoingEdgeOf(V vertex);
 
     Set<V> getPredecessorsOf(V vertex);
-    
+
     V getFirstPredecessorOf(V vertex);
 
     Set<V> getSuccessorsOf(V vertex);
-    
+
     V getFirstSuccessorOf(V vertex);
 
     Set<V> getVertices();
@@ -64,15 +64,18 @@ public interface DirectedGraph<V, E> {
     int getPredecessorCountOf(V vertex);
 
     int getSuccessorCountOf(V vertex);
-    
+
     void reversePostOrderDFS(V v, List<V> vertices, List<E> edges, boolean invert);
 
     void reversePostOrderDFS(V v, Set<V> visited, List<V> vertices, List<E> edges, boolean invert);
 
     Tree<V, E> getReversePostOrderDFST(V root, boolean invert);
-   
-    void writeDOT(String name, Writer writer) throws IOException;
-   
+
+    void writeDOT(Writer writer, String name) throws IOException;
+
+    void writeDOT(Writer writer, String name, AttributeProvider<V> vertexAttrs,
+            AttributeProvider<E> edgeAttrs) throws IOException;
+
     String toString(Collection<E> edges);
 
     String toString(E edge);

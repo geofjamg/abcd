@@ -243,13 +243,21 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         return iterator(root);
     }
 
-    public void writeDOT(String name, Writer writer) throws IOException {
+    public void writeDOT(Writer writer, String name) throws IOException {
+        writeDOT(writer, name, new DefaultAttributeProvider<N>(),
+                 new DefaultAttributeProvider<E>());
+    }
+
+     public void writeDOT(Writer writer, String name, AttributeProvider<N> nodeAttrs,
+                          AttributeProvider<E> edgeAttrs) throws IOException {
         writer.append("digraph ").append(name).append(" {\n");
         for (E edge : getEdges()) {
             N source = getEdgeSource(edge);
             N target = getEdgeTarget(edge);
-            writer.append("  \"").append(source.toString()).append("\" -> \"")
-                    .append(target.toString()).append("\"\n");
+            DirectedGraphs.writeEdgeDOT(writer, edge, source, target, edgeAttrs);
+        }
+        for (N node : getNodes()) {
+            DirectedGraphs.writeVertexDOT(writer, node, nodeAttrs);
         }
         writer.append("}");
     }

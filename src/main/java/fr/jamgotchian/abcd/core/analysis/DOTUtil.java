@@ -21,8 +21,8 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-import fr.jamgotchian.abcd.core.graph.VertexToString;
+import fr.jamgotchian.abcd.core.graph.AttributeProvider;
+import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
 import fr.jamgotchian.abcd.core.region.Region;
@@ -31,6 +31,10 @@ import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -42,134 +46,181 @@ public class DOTUtil {
     private DOTUtil() {
     }
 
-    private static class DefaultVertexToString<V> implements VertexToString<V> {
-        public String toString(V vertex) {
-            return vertex.toString();
+    private static class RegionAttributeProvider implements AttributeProvider<Region> {
+
+        public Map<String, String> getAttributes(Region region) {
+            Map<String, String> attrs = new HashMap<String, String>(1);
+            attrs.put("label", "\"" + region + " (" + region.getTypeName()+ ")\"");
+            return attrs;
         }
     }
 
-    public enum BasicBlockWritingMode {
-        INSTN_RANGE,
+    private static class RangeAttributeProvider implements AttributeProvider<BasicBlock> {
+
+        public Map<String, String> getAttributes(BasicBlock block) {
+            Map<String, String> attrs = new HashMap<String, String>(4);
+            attrs.put("shape", "box");
+            attrs.put("color", "black");
+            if (block.getType() != null) {
+                switch (block.getType()) {
+                    case ENTRY:
+                    case EXIT:
+                        attrs.put("shape", "ellipse");
+                        attrs.put("color", "lightgrey");
+                        attrs.put("style", "filled");
+                        break;
+
+                    case JUMP_IF:
+                        attrs.put("shape", "diamond");
+                        attrs.put("color", "cornflowerblue");
+                        attrs.put("style", "filled");
+                        break;
+
+                    case SWITCH:
+                        attrs.put("shape", "hexagon");
+                        attrs.put("color", "chocolate");
+                        attrs.put("style", "filled");
+                        break;
+
+                    case RETURN:
+                        attrs.put("shape", "invhouse");
+                        attrs.put("color", "orange");
+                        attrs.put("style", "filled");
+                        break;
+                }
+            }
+            attrs.put("label", "\"" + block +"\"");
+            return attrs;
+        }
+    }
+
+    private static class BytecodeAttributeProvider implements AttributeProvider<BasicBlock> {
+
+        public Map<String, String> getAttributes(BasicBlock block) {
+            Map<String, String> attrs = new HashMap<String, String>(3);
+            attrs.put("shape", "box");
+            attrs.put("color", "black");
+            attrs.put("label", "< " + OutputUtil.toDOTHTMLLike(block) + " >");
+            return attrs;
+        }
+    }
+
+    private static class StmtAttributeProvider implements AttributeProvider<BasicBlock> {
+
+        public Map<String, String> getAttributes(BasicBlock block) {
+            Map<String, String> attrs = new HashMap<String, String>(3);
+            attrs.put("shape", "box");
+            attrs.put("color", "black");
+            StringBuilder builder = new StringBuilder();
+            builder.append("< ");
+            if (block.getType() == BasicBlockType.ENTRY
+                    || block.getType() == BasicBlockType.EXIT) {
+                builder.append("<font color=\"black\">").append(block.getType())
+                      .append("</font>");
+            } else {
+                AnalysisData data = (AnalysisData) block.getData();
+                builder.append(OutputUtil.toDOTHTMLLike(data.getStatements(),
+                                                        data.getInputStack(),
+                                                        data.getOutputStack()));
+            }
+            builder.append(" >");
+            attrs.put("label", builder.toString());
+            return attrs;
+        }
+    }
+
+    private static class TACAttributeProvider implements AttributeProvider<BasicBlock> {
+
+        public Map<String, String> getAttributes(BasicBlock block) {
+            Map<String, String> attrs = new HashMap<String, String>(3);
+            attrs.put("shape", "box");
+            attrs.put("color", "black");
+            StringBuilder builder = new StringBuilder();
+            builder.append("< ");
+            if (block.getType() == BasicBlockType.ENTRY
+                    || block.getType() == BasicBlockType.EXIT) {
+                builder.append("<font color=\"black\">").append(block.getType())
+                      .append("</font>");
+            } else {
+                AnalysisData data = (AnalysisData) block.getData();
+                builder.append(TACInstWriter.toDOTHTMLLike(block.getRange(),
+                                                           new TACInstSeq(data.getInstructions()),
+                                                           data.getInputStack2(),
+                                                           data.getOutputStack2()));
+            }
+            builder.append(" >");
+            attrs.put("label", builder.toString());
+            return attrs;
+        }
+    }
+
+    private static class EdgeAttributeProvider implements AttributeProvider<Edge> {
+
+        public Map<String, String> getAttributes(Edge edge) {
+            Map<String, String> attrs = new HashMap<String, String>(3);
+            if (edge.isLoopBack()) {
+                attrs.put("color", "red");
+            } else if (edge.isLoopExit()) {
+                attrs.put("color", "green");
+            } else {
+                attrs.put("color", "black");
+            }
+            if (edge.isExceptional()) {
+                attrs.put("style", "dotted");
+            }
+            if (edge.getValue() != null) {
+                attrs.put("label", "\"" + edge.getValue() + "\"");
+            }
+            return attrs;
+        }
+    }
+
+    public enum DisplayMode {
+        RANGE,
         BYTECODE,
         STATEMENTS,
         TAC
     }
 
-    private static void writeBasicBlock(BasicBlock block, Writer writer,
-                                        BasicBlockWritingMode mode) throws IOException {
-        switch (mode) {
-            case INSTN_RANGE:
-                writeBasicBlockInstnRange(block, writer);
-                break;
+    private static final Map<DisplayMode, AttributeProvider<BasicBlock>>
+            BASIC_BLOCK_ATTRIBUTE_PROVIDERS;
 
-            case BYTECODE:
-                writeBasicBlockBytecode(block, writer);
-                break;
+    public static final AttributeProvider<Edge> EDGE_ATTRIBUTE_PROVIDER
+            = new EdgeAttributeProvider();
 
-            case STATEMENTS:
-                writeBasicBlockStatements(block, writer);
-                break;
+    public static final AttributeProvider<Region> REGION_ATTRIBUTE_PROVIDER
+            = new RegionAttributeProvider();
 
-            case TAC:
-                writeBasicBlockTACInsts(block, writer);
-                break;
+    public static final AttributeProvider<BasicBlock> RANGE_ATTRIBUTE_PROVIDER
+            = new RangeAttributeProvider();
 
-            default:
-                throw new InternalError();
-        }
+    public static final AttributeProvider<BasicBlock> BYTECODE_ATTRIBUTE_PROVIDER
+            = new BytecodeAttributeProvider();
+
+    public static final AttributeProvider<BasicBlock> STMT_ATTRIBUTE_PROVIDER
+            = new StmtAttributeProvider();
+
+    public static final AttributeProvider<BasicBlock> TAC_ATTRIBUTE_PROVIDER
+            = new TACAttributeProvider();
+
+    static {
+        Map<DisplayMode, AttributeProvider<BasicBlock>> providers
+                = new EnumMap<DisplayMode, AttributeProvider<BasicBlock>>(DisplayMode.class);
+        providers.put(DisplayMode.RANGE, RANGE_ATTRIBUTE_PROVIDER);
+        providers.put(DisplayMode.BYTECODE, BYTECODE_ATTRIBUTE_PROVIDER);
+        providers.put(DisplayMode.STATEMENTS, STMT_ATTRIBUTE_PROVIDER);
+        providers.put(DisplayMode.TAC, TAC_ATTRIBUTE_PROVIDER);
+        BASIC_BLOCK_ATTRIBUTE_PROVIDERS = Collections.unmodifiableMap(providers);
     }
 
-    private static void writeBasicBlockInstnRange(BasicBlock block, Writer writer) throws IOException {
-        writer.append("\"").append(block.toString()).append("\" [");
-        if (block.getType() != null) {
-            switch (block.getType()) {
-                case ENTRY:
-                case EXIT:
-                    writer.append("shape=ellipse, style=filled, color=lightgrey");
-                    break;
-
-                case JUMP_IF:
-                    writer.append("shape=diamond, style=filled, color=cornflowerblue");
-                    break;
-
-                case SWITCH:
-                    writer.append("shape=hexagon, style=filled, color=chocolate");
-                    break;
-
-                case RETURN:
-                    writer.append("shape=invhouse, style=filled, color=orange");
-                    break;
-
-                default:
-                    writer.append("shape=box, color=black");
-                    break;
-            }
-        } else {
-            writer.append("shape=box, color=black");
-        }
-        writer.append("];\n");
+    private static void writeBasicBlock(Writer writer, BasicBlock block,
+                                        DisplayMode mode) throws IOException {
+        DirectedGraphs.writeVertexDOT(writer, block, BASIC_BLOCK_ATTRIBUTE_PROVIDERS.get(mode));
     }
 
-    private static void writeBasicBlockBytecode(BasicBlock block, Writer writer) throws IOException {
-        writer.append("\"").append(block.toString())
-              .append("\" [shape=box, color=black, label=< ")
-              .append(OutputUtil.toDOTHTMLLike(block))
-              .append(" >];\n");
-    }
-
-    private static void writeBasicBlockStatements(BasicBlock block, Writer writer) throws IOException {
-        AnalysisData data = (AnalysisData) block.getData();
-        writer.append("\"").append(block.toString())
-              .append("\" [shape=box, color=black, label=< ");
-        if (block.getType() == BasicBlockType.ENTRY
-                || block.getType() == BasicBlockType.EXIT) {
-            writer.append("<font color=\"black\">").append(block.getType().toString())
-                  .append("</font>");
-        } else {
-            writer.append(OutputUtil.toDOTHTMLLike(data.getStatements(),
-                                                   data.getInputStack(),
-                                                   data.getOutputStack()));
-        }
-        writer.append(" >];\n");
-    }
-
-    private static void writeBasicBlockTACInsts(BasicBlock block, Writer writer) throws IOException {
-        AnalysisData data = (AnalysisData) block.getData();
-        writer.append("\"").append(block.toString())
-              .append("\" [shape=box, color=black, label=< ");
-        if (block.getType() == BasicBlockType.ENTRY
-                || block.getType() == BasicBlockType.EXIT) {
-            writer.append("<font color=\"black\">").append(block.getType().toString())
-                  .append("</font>");
-        } else {
-            writer.append(TACInstWriter.toDOTHTMLLike(block.getRange(),
-                                                      new TACInstSeq(data.getInstructions()),
-                                                      data.getInputStack2(),
-                                                      data.getOutputStack2()));
-        }
-        writer.append(" >];\n");
-    }
-
-    private static <V, E> void writeEdge(DirectedGraph<V, Edge> graph, Edge edge,
-            Writer writer, VertexToString<V> toStr) throws IOException {
-        V source = graph.getEdgeSource(edge);
-        V target = graph.getEdgeTarget(edge);
-        writer.append("  \"").append(toStr.toString(source)).append("\" -> \"")
-                .append(toStr.toString(target)).append("\" [");
-        if (edge.isLoopBack()) {
-            writer.append("color=red");
-        } else if (edge.isLoopExit()) {
-            writer.append("color=green");
-        } else {
-            writer.append("color=black");
-        }
-        if (edge.isExceptional()) {
-            writer.append(", style=dotted");
-        }
-        if (edge.getValue() != null) {
-            writer.append(", label=\"").append(edge.getValue().toString()).append("\"");
-        }
-        writer.append("];\n");
+    private static void writeEdge(Writer writer, Edge edge, BasicBlock source,
+                                  BasicBlock target) throws IOException {
+        DirectedGraphs.writeEdgeDOT(writer, edge, source, target, EDGE_ATTRIBUTE_PROVIDER);
     }
 
     private static void writeIndent(Writer writer, int indent) throws IOException {
@@ -178,11 +229,11 @@ public class DOTUtil {
         }
     }
 
-    private static void writeRegion(Region region, Writer writer, BasicBlockWritingMode mode,
+    private static void writeRegion(Region region, Writer writer, DisplayMode mode,
                                     int indent) throws IOException {
         if (region.getType() == RegionType.BASIC_BLOCK) {
             writeIndent(writer, indent);
-            writeBasicBlock(((BasicBlockRegion) region).getBasicBlock(), writer, mode);
+            writeBasicBlock(writer, ((BasicBlockRegion) region).getBasicBlock(), mode);
         } else {
             writeIndent(writer, indent);
             writer.append("subgraph \"cluster_").append(region.getName().toString()).append("\" {\n");
@@ -204,30 +255,21 @@ public class DOTUtil {
     }
 
     public static void writeCFG(ControlFlowGraph graph, Set<Region> rootRegions,
-                                Writer writer, BasicBlockWritingMode mode) throws IOException {
+                                Writer writer, DisplayMode mode) throws IOException {
         writer.append("digraph CFG {\n");
-        VertexToString<BasicBlock> toStr = new DefaultVertexToString<BasicBlock>();
         for (Edge edge : graph.getEdges()) {
-            writeEdge(graph.getGraph(), edge, writer, toStr);
+            BasicBlock source = graph.getEdgeSource(edge);
+            BasicBlock target = graph.getEdgeTarget(edge);
+            writeEdge(writer, edge, source, target);
         }
         if (rootRegions == null) {
             for (BasicBlock block : graph.getBasicBlocks()) {
-                writeBasicBlock(block, writer, mode);
+                writeBasicBlock(writer, block, mode);
             }
         } else {
             for (Region rootRegion : rootRegions) {
                 writeRegion(rootRegion, writer, mode, 1);
             }
-        }
-        writer.append("}");
-    }
-
-    public static <V> void writeGraph(DirectedGraph<V, Edge> graph, String name,
-                                      Writer writer, VertexToString<V> toStr)
-            throws IOException {
-        writer.append("digraph ").append(name).append(" {\n");
-        for (Edge edge : graph.getEdges()) {
-            writeEdge(graph, edge, writer, toStr);
         }
         writer.append("}");
     }
