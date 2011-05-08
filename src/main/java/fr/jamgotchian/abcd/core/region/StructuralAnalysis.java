@@ -69,7 +69,7 @@ public class StructuralAnalysis {
                                                                  new LoopRecognizer(),
                                                                  /* try catch regions */
                                                                  new TryCatchRecognizer()));
-        
+
         recognizers2 = Collections.<RegionRecognizer>unmodifiableList(Arrays.asList(new BlockRecognizer(false)));
     }
 
@@ -94,7 +94,7 @@ public class StructuralAnalysis {
                 break;
             case LOOP: {
                 logger.log(Level.FINER, "  Loop type : {0}", ((LoopRegion) structuredRegion).getLoopType());
-                logger.log(Level.FINER, "  Natural exit : {0}", 
+                logger.log(Level.FINER, "  Natural exit : {0}",
                         regionGraph.getFirstSuccessorOf(structuredRegion));
                 break;
             }
@@ -133,9 +133,8 @@ public class StructuralAnalysis {
         }
         return failed;
     }
-    
-    public Set<Region> analyse() {
-        // build initial region graph
+
+    private void buildRegionGraph() {
         Map<BasicBlock, Region> block2region = new HashMap<BasicBlock, Region>();
         regionGraph = DirectedGraphs.newDirectedGraph();
         for (BasicBlock block : graph.getBasicBlocks()) {
@@ -150,8 +149,9 @@ public class StructuralAnalysis {
         }
         entryRegion = block2region.get(graph.getEntryBlock());
         exitRegion = block2region.get(graph.getExitBlock());
+    }
 
-        // reduce the region graph
+    private void reduceRegionGraph() {
         boolean failed = false;
         while (regionGraph.getVertexCount() > 1 && !failed) {
             Tree<Region, Edge> dfst = regionGraph.getReversePostOrderDFST(entryRegion, false);
@@ -164,6 +164,14 @@ public class StructuralAnalysis {
 //            logger.log(Level.FINEST, "Region graph :\n{0}",
 //                    DirectedGraphs.toString(regionGraph, entryRegion));
         }
+    }
+
+    public Set<Region> analyse() {
+        // build initial region graph
+        buildRegionGraph();
+
+        // reduce the region graph
+        reduceRegionGraph();
 
         Set<Region> rootRegions = regionGraph.getVertices();
         if (rootRegions.size() == 1) {
