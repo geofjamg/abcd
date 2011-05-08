@@ -28,9 +28,9 @@ import fr.jamgotchian.abcd.core.tac.model.AssignInst;
 import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
 import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
+import fr.jamgotchian.abcd.core.tac.model.LocalVariable;
 import fr.jamgotchian.abcd.core.tac.model.StringConst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
-import fr.jamgotchian.abcd.core.tac.model.TemporaryVariable;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
@@ -59,15 +59,15 @@ public class TreeAddressCodeBuilder {
 
     private TemporaryVariableFactory tmpVarFactory;
 
-    private void processBlock(BasicBlock block, List<ArrayDeque<TemporaryVariable>> inputStacks) {
+    private void processBlock(BasicBlock block, List<ArrayDeque<LocalVariable>> inputStacks) {
 
         logger.log(Level.FINER, "------ Process block {0} ------", block);
 
         AnalysisData data = (AnalysisData) block.getData();
 
-        ArrayDeque<TemporaryVariable> inputStack = null;
+        ArrayDeque<LocalVariable> inputStack = null;
         if (inputStacks.isEmpty()) {
-            inputStack = new ArrayDeque<TemporaryVariable>();
+            inputStack = new ArrayDeque<LocalVariable>();
         } else if (inputStacks.size() == 1) {
             inputStack = inputStacks.get(0).clone();
         } else {
@@ -76,17 +76,16 @@ public class TreeAddressCodeBuilder {
 
         data.setInputStack2(inputStack.clone());
 
-        ArrayDeque<TemporaryVariable> outputStack = inputStack.clone();
+        ArrayDeque<LocalVariable> outputStack = inputStack.clone();
         Iterator<Edge> itE = graph.getIncomingEdgesOf(block).iterator();
         if (itE.hasNext() && itE.next().isExceptional()) {
-            TemporaryVariable tmpVar = tmpVarFactory.create(block);
+            LocalVariable tmpVar = tmpVarFactory.create(block);
             BasicBlock3ACBuilder.addInst(block, new AssignInst(tmpVar, new StringConst("EXCEPTION", classNameFactory)));
             outputStack.push(tmpVar);
         }
 
         if (data.getInputStack2().size() > 0) {
-            logger.log(Level.FINEST, ">>> Input stack : {0}",
-                    TACInstWriter.toText(data.getInputStack2()));
+            logger.log(Level.FINEST, ">>> Input stack : {0}", data.getInputStack2());
         }
 
         BasicBlock3ACBuilder builder = new BasicBlock3ACBuilder(classNameFactory, tmpVarFactory, outputStack);
@@ -94,8 +93,7 @@ public class TreeAddressCodeBuilder {
         data.setOutputStack2(outputStack);
 
         if (data.getOutputStack().size() > 0) {
-            logger.log(Level.FINEST, "<<< Output stack : {0}",
-                    TACInstWriter.toText(data.getOutputStack2()));
+            logger.log(Level.FINEST, "<<< Output stack : {0}", data.getOutputStack2());
         }
     }
 
@@ -130,8 +128,8 @@ public class TreeAddressCodeBuilder {
                     break;
                 }
 
-                List<ArrayDeque<TemporaryVariable>> inputStacks
-                        = new ArrayList<ArrayDeque<TemporaryVariable>>();
+                List<ArrayDeque<LocalVariable>> inputStacks
+                        = new ArrayList<ArrayDeque<LocalVariable>>();
                 for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
                     if (incomingEdge.isLoopBack()) {
                         continue;
@@ -149,8 +147,8 @@ public class TreeAddressCodeBuilder {
         buildCondInst();
     }
 
-    private ArrayDeque<TemporaryVariable> mergeStacks
-            (List<ArrayDeque<TemporaryVariable>> stacks, BasicBlock block) {
+    private ArrayDeque<LocalVariable> mergeStacks
+            (List<ArrayDeque<LocalVariable>> stacks, BasicBlock block) {
         if (stacks.size() <= 1) {
             throw new ABCDException("stacks.size() <= 1");
         }
@@ -165,23 +163,23 @@ public class TreeAddressCodeBuilder {
             }
         }
 
-        ArrayDeque<TemporaryVariable> stacksMerge
-                = new ArrayDeque<TemporaryVariable>(stacks.get(0).size());
+        ArrayDeque<LocalVariable> stacksMerge
+                = new ArrayDeque<LocalVariable>(stacks.get(0).size());
 
-        List<List<TemporaryVariable>> toList
-                = new ArrayList<List<TemporaryVariable>>(stacks.size());
+        List<List<LocalVariable>> toList
+                = new ArrayList<List<LocalVariable>>(stacks.size());
         for (int i = 0; i < stacks.size(); i++) {
-            toList.add(new ArrayList<TemporaryVariable>(stacks.get(i)));
+            toList.add(new ArrayList<LocalVariable>(stacks.get(i)));
         }
         for (int i = 0; i < stacks.get(0).size(); i++) {
-            Set<TemporaryVariable> vars = new HashSet<TemporaryVariable>(stacks.size());
+            Set<LocalVariable> vars = new HashSet<LocalVariable>(stacks.size());
             for (int j = 0; j < stacks.size(); j++) {
                 vars.add(toList.get(j).get(i));
             }
             if (vars.size() == 1) {
                 stacksMerge.add(vars.iterator().next());
             } else {
-                TemporaryVariable result = tmpVarFactory.create(block);
+                LocalVariable result = tmpVarFactory.create(block);
                 BasicBlock3ACBuilder.addInst(block, new ChoiceInst(result, vars));
                 stacksMerge.add(result);
             }
@@ -207,9 +205,9 @@ public class TreeAddressCodeBuilder {
                 while (change) {
                     change = false;
 
-                    Multimap<BasicBlock, TemporaryVariable> forkBlocks
+                    Multimap<BasicBlock, LocalVariable> forkBlocks
                             = HashMultimap.create();
-                    for (TemporaryVariable var : choiceInst.getChoices()) {
+                    for (LocalVariable var : choiceInst.getChoices()) {
                         BasicBlock block = var.getBasicBlock();
                         DominatorInfo<BasicBlock, Edge> dominatorInfo
                                 = block.getGraph().getDominatorInfo();
@@ -217,23 +215,23 @@ public class TreeAddressCodeBuilder {
                         forkBlocks.put(forkBlock, var);
                     }
 
-                    for (Map.Entry<BasicBlock, Collection<TemporaryVariable>> entry
+                    for (Map.Entry<BasicBlock, Collection<LocalVariable>> entry
                             : forkBlocks.asMap().entrySet()) {
                         BasicBlock forkBlock = entry.getKey();
-                        Collection<TemporaryVariable> vars = entry.getValue();
+                        Collection<LocalVariable> vars = entry.getValue();
                         if (forkBlock.getType() == BasicBlockType.JUMP_IF
                                 && vars.size() == 2) {
-                            Iterator<TemporaryVariable> it = vars.iterator();
-                            TemporaryVariable var1 = it.next();
-                            TemporaryVariable var2 = it.next();
+                            Iterator<LocalVariable> it = vars.iterator();
+                            LocalVariable var1 = it.next();
+                            LocalVariable var2 = it.next();
 
                             BasicBlock block1 = var1.getBasicBlock();
                             BasicBlock block2 = var2.getBasicBlock();
                             DominatorInfo<BasicBlock, Edge> dominatorInfo = forkBlock.getGraph().getDominatorInfo();
                             Edge forkEdge1 = dominatorInfo.getPostDominanceFrontierOf(block1).iterator().next();
                             Edge forkEdge2 = dominatorInfo.getPostDominanceFrontierOf(block2).iterator().next();
-                            TemporaryVariable thenVar = null;
-                            TemporaryVariable elseVar = null;
+                            LocalVariable thenVar = null;
+                            LocalVariable elseVar = null;
                             if (Boolean.TRUE.equals(forkEdge1.getValue())
                                     && Boolean.FALSE.equals(forkEdge2.getValue())) {
                                 thenVar = var1;
@@ -249,14 +247,14 @@ public class TreeAddressCodeBuilder {
                                 choiceInst.getChoices().remove(thenVar);
                                 choiceInst.getChoices().remove(elseVar);
                                 if (choiceInst.getChoices().isEmpty()) {
-                                    TemporaryVariable resultVar = choiceInst.getResult();
+                                    LocalVariable resultVar = choiceInst.getResult();
                                     ConditionalInst condInst
                                             = new ConditionalInst(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
                                     logger.log(Level.FINER, "Replace inst at {0} of {1} : {2}",
                                             new Object[]{i, joinBlock, TACInstWriter.toText(condInst)});
                                     replacement.add(condInst);
                                 } else {
-                                    TemporaryVariable resultVar = tmpVarFactory.create(forkBlock);
+                                    LocalVariable resultVar = tmpVarFactory.create(forkBlock);
                                     ConditionalInst condInst
                                             = new ConditionalInst(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
                                     logger.log(Level.FINER, "Insert inst at {0} of {1} : {2}",

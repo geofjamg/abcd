@@ -25,29 +25,29 @@ import java.util.Set;
  */
 public class ArrayLengthInst implements TACInst {
 
-    private final TemporaryVariable result;
+    private final LocalVariable result;
 
-    private final TemporaryVariable array;
+    private final LocalVariable array;
 
-    public ArrayLengthInst(TemporaryVariable result, TemporaryVariable array) {
+    public ArrayLengthInst(LocalVariable result, LocalVariable array) {
         this.result = result;
         this.array = array;
     }
 
-    public TemporaryVariable getResult() {
+    public LocalVariable getResult() {
         return result;
     }
 
-    public TemporaryVariable getArray() {
+    public LocalVariable getArray() {
         return array;
     }
 
-    public Variable getDef() {
+    public LocalVariable getDef() {
         return result;
     }
 
-    public Set<Variable> getUses() {
-        return Collections.<Variable>singleton(array);
+    public Set<LocalVariable> getUses() {
+        return Collections.singleton(array);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

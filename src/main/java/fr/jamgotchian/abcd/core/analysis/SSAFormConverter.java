@@ -18,14 +18,14 @@ package fr.jamgotchian.abcd.core.analysis;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.tac.model.LocalVariable;
 import fr.jamgotchian.abcd.core.tac.model.PhiFunctionInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
-import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -47,19 +47,20 @@ public class SSAFormConverter {
 
     private final ControlFlowGraph graph;
 
-    private Map<BasicBlock, Set<Variable>> liveVariables;
+    private Multimap<BasicBlock, Integer> liveVariables;
 
-    private Set<Variable> defs;
+    private Set<Integer> defs;
 
-    private Multimap<Variable, BasicBlock> defSites;
+    private Multimap<Integer, BasicBlock> defSites;
 
     public SSAFormConverter(ControlFlowGraph graph) {
         this.graph = graph;
     }
 
-    private static boolean containsDef(BasicBlock block, Variable def) {
+    private static boolean containsDef(BasicBlock block, int defIndex) {
         for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
-            if (def.equals(inst.getDef())) {
+            LocalVariable def = inst.getDef();
+            if (def != null && def.getIndex() == defIndex) {
                 return true;
             }
         }
@@ -69,29 +70,29 @@ public class SSAFormConverter {
     private void insertPhiFunctions() {
         DominatorInfo<BasicBlock, Edge> dominatorInfo = graph.getDominatorInfo();
 
-        Multimap<Variable, BasicBlock> phi = HashMultimap.create();
-        for (Variable def : defs) {
-            Set<BasicBlock> w = new HashSet<BasicBlock>(defSites.get(def));
+        Multimap<Integer, BasicBlock> phi = HashMultimap.create();
+        for (int defIndex : defs) {
+            Set<BasicBlock> w = new HashSet<BasicBlock>(defSites.get(defIndex));
             while (w.size() > 0) {
                 BasicBlock n = w.iterator().next();
                 w.remove(n);
                 Set<Edge> frontier = dominatorInfo.getDominanceFrontierOf(n);
                 for (Edge e : frontier) {
                     BasicBlock y = graph.getEdgeTarget(e);
-                    if (!phi.get(def).contains(y)) {
-                        boolean contains = containsDef(y, def);
-                        List<Variable> args = new ArrayList<Variable>();
+                    if (!phi.get(defIndex).contains(y)) {
+                        boolean contains = containsDef(y, defIndex);
+                        List<LocalVariable> args = new ArrayList<LocalVariable>();
                         for (int i = 0; i < graph.getPredecessorCountOf(y); i++) {
-                            args.add(def.clone());
+                            args.add(new LocalVariable(defIndex, y));
                         }
                         // is definition alive in basic block y ?
-                        if (liveVariables.get(y).contains(def)) {
+                        if (liveVariables.get(y).contains(defIndex)) {
                             ((AnalysisData) y.getData()).getInstructions()
-                                    .add(0, new PhiFunctionInst(def.clone(), args));
+                                    .add(0, new PhiFunctionInst(new LocalVariable(defIndex, y), args));
                             logger.log(Level.FINEST, "Add Phi function to {0} for def {1}",
-                                    new Object[] {y, TACInstWriter.toText(def)});
+                                    new Object[] {y, defIndex});
                         }
-                        phi.put(def, y);
+                        phi.put(defIndex, y);
                         if (!contains) {
                             w.add(y);
                         }
@@ -102,29 +103,30 @@ public class SSAFormConverter {
     }
 
     private void renameVariables() {
-        for (Variable v : defs) {
+        for (int defIndex : defs) {
             AtomicInteger versionCount = new AtomicInteger(0); // used as a mutable integer
             Deque<Integer> versionStack = new ArrayDeque<Integer>();
             versionStack.push(0);
-            renameVariables(v, graph.getEntryBlock(), versionStack, versionCount);
+            renameVariables(defIndex, graph.getEntryBlock(), versionStack, versionCount);
         }
     }
 
-    private void renameVariables(Variable v, BasicBlock n, Deque<Integer> versionStack,
+    private void renameVariables(int varIndex, BasicBlock n, Deque<Integer> versionStack,
                                  AtomicInteger versionCount) {
-        logger.log(Level.FINEST, "  Rename variables of {0}", n);
+        logger.log(Level.FINEST, "  Rename variables {0} of {1}",
+                new Object[] {varIndex, n});
 
         for (TACInst inst : ((AnalysisData) n.getData()).getInstructions()) {
             if (!(inst instanceof PhiFunctionInst)) {
-                for (Variable use : inst.getUses()) {
-                    if (use.equals(v)) {
+                for (LocalVariable use : inst.getUses()) {
+                    if (use.getIndex() == varIndex) {
                         int version = versionStack.peek();
                         use.setVersion(version);
                     }
                 }
             }
-                Variable def = inst.getDef();
-                if (def != null && def.equals(v)) {
+                LocalVariable def = inst.getDef();
+                if (def != null && def.getIndex() == varIndex) {
                     int nextVersion = versionCount.incrementAndGet();
                     versionStack.push(nextVersion);
                     def.setVersion(nextVersion);
@@ -136,8 +138,8 @@ public class SSAFormConverter {
                 if (inst instanceof PhiFunctionInst) {
                     int j = new ArrayList<BasicBlock>(graph.getPredecessorsOf(y)).indexOf(n);
                     int version = versionStack.peek();
-                    Variable phi = ((PhiFunctionInst) inst).getArgs().get(j);
-                    if (phi.equals(v)) {
+                    LocalVariable phi = ((PhiFunctionInst) inst).getArgs().get(j);
+                    if (phi.getIndex() == varIndex) {
                         phi.setVersion(version);
                     }
                 }
@@ -146,13 +148,13 @@ public class SSAFormConverter {
 
         DominatorInfo<BasicBlock, Edge> dominatorInfo = graph.getDominatorInfo();
         for (BasicBlock x : dominatorInfo.getDominatorsTree().getChildren(n)) {
-            renameVariables(v, x, versionStack, versionCount);
+            renameVariables(varIndex, x, versionStack, versionCount);
         }
 
         for (TACInst inst : ((AnalysisData) n.getData()).getInstructions()) {
             if (!(inst instanceof PhiFunctionInst)) {
-                Variable def = inst.getDef();
-                if (def != null && def.equals(v)) {
+                LocalVariable def = inst.getDef();
+                if (def != null && def.getIndex() == varIndex) {
                     versionStack.pop();
                 }
             }
@@ -160,16 +162,26 @@ public class SSAFormConverter {
     }
 
     public void convert() {
-        liveVariables = new LiveVariablesAnalysis(graph).analyse();
+        liveVariables = HashMultimap.create();
+        for (Map.Entry<BasicBlock, Set<LocalVariable>> entry :
+                new LiveVariablesAnalysis(graph).analyse().entrySet()) {
+            BasicBlock block = entry.getKey();
+            for (LocalVariable var : entry.getValue()) {
+                if (var.getVersion() != LocalVariable.UNDEFINED_VERSION) {
+                    throw new ABCDException("var.getVersion() != LocalVariable.UNDEFINED_VERSION");
+                }
+                liveVariables.put(block, var.getIndex());
+            }
+        }
 
-        defs = new HashSet<Variable>();
+        defs = new HashSet<Integer>();
         defSites = HashMultimap.create();
         for (BasicBlock block : graph.getBasicBlocks()) {
             for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
-                Variable def = inst.getDef();
+                LocalVariable def = inst.getDef();
                 if (def != null) {
-                    defs.add(def);
-                    defSites.put(def, block);
+                    defs.add(def.getIndex());
+                    defSites.put(def.getIndex(), block);
                 }
             }
         }

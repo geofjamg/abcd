@@ -47,7 +47,6 @@ import fr.jamgotchian.abcd.core.tac.model.LabelInst;
 import fr.jamgotchian.abcd.core.tac.model.CallStaticMethodInst;
 import fr.jamgotchian.abcd.core.tac.model.LocalVariable;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
-import fr.jamgotchian.abcd.core.tac.model.TemporaryVariable;
 import fr.jamgotchian.abcd.core.tac.model.NewArrayInst;
 import fr.jamgotchian.abcd.core.tac.model.BinaryInst;
 import fr.jamgotchian.abcd.core.tac.model.MonitorExitInst;
@@ -108,8 +107,8 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
 
     public static String toString(Range range,
                                   TACInstSeq seq,
-                                  ArrayDeque<TemporaryVariable> inputStack,
-                                  ArrayDeque<TemporaryVariable> outputStack,
+                                  ArrayDeque<LocalVariable> inputStack,
+                                  ArrayDeque<LocalVariable> outputStack,
                                   CodeWriterFactory factory) {
         Writer writer = new StringWriter();
         try {
@@ -117,14 +116,14 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
             List<ColoredString> infosBefore = new ArrayList<ColoredString>(2);
             infosBefore.add(new ColoredString(range != null ? range.toString() : "", Color.LIGHT_GRAY));
             if (inputStack != null && inputStack.size() > 0) {
-                infosBefore.add(new ColoredString("Input stack : " + toString(inputStack, factory),
+                infosBefore.add(new ColoredString("Input stack : " + inputStack,
                                                   Color.ORANGE));
             }
             codeWriter.before(infosBefore);
             seq.accept(new TACInstWriter(codeWriter), null);
             List<ColoredString> infosAfter = new ArrayList<ColoredString>(1);
             if (outputStack != null && outputStack.size() > 0) {
-                infosAfter.add(new ColoredString("Output stack : " + toString(outputStack, factory),
+                infosAfter.add(new ColoredString("Output stack : " + outputStack,
                                                  Color.ORANGE));
             }
             codeWriter.after(infosAfter);
@@ -140,63 +139,9 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
 
     public static String toDOTHTMLLike(Range range,
                                        TACInstSeq seq,
-                                       ArrayDeque<TemporaryVariable> inputStack,
-                                       ArrayDeque<TemporaryVariable> outputStack) {
+                                       ArrayDeque<LocalVariable> inputStack,
+                                       ArrayDeque<LocalVariable> outputStack) {
         return toString(range, seq, inputStack, outputStack, new DOTHTMLLikeCodeWriterFactory());
-    }
-
-    public static String toString(Variable var, CodeWriterFactory factory) {
-        Writer writer = new StringWriter();
-        try {
-            var.accept(new TACInstWriter(factory.create(writer)), null);
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, e.toString(), e);
-            }
-        }
-        return writer.toString();
-    }
-
-    public static String toText(Variable var) {
-        return toString(var, new TextCodeWriterFactory());
-    }
-
-    public static <V extends Variable> String toString(Iterable<V> vars, CodeWriterFactory factory) {
-        StringBuilder builder = new StringBuilder("[");
-        Iterator<V> it =  vars.iterator();
-        while (it.hasNext()) {
-            V var = it.next();
-            if (var != null) {
-                Writer writer = new StringWriter();
-                try {
-                    var.accept(new TACInstWriter(factory.create(writer)), null);
-                } finally {
-                    try {
-                        writer.close();
-                    } catch (IOException e) {
-                        logger.log(Level.SEVERE, e.toString(), e);
-                    }
-                }
-                builder.append(writer.toString());
-            } else {
-                builder.append("null");
-            }
-            if (it.hasNext()) {
-                builder.append(", ");
-            }
-        }
-        builder.append("]");
-        return builder.toString();
-    }
-
-    public static <V extends Variable> String toText(Iterable<V> vars) {
-        return toString(vars, new TextCodeWriterFactory());
-    }
-
-    public static <V extends Variable> String toHTML(Iterable<V> vars) {
-        return toString(vars, new HTMLCodeWriterFactory());
     }
 
     private final CodeWriter writer;
@@ -217,23 +162,12 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
     }
 
     public Void visit(LocalVariable inst, Void arg) {
-        writer.write("v").write(inst.getIndex());
-        if (inst.getVersion() != LocalVariable.UNDEFINED_VERSION) {
-            writer.write(".").write(inst.getVersion());
-        }
+        writer.write(inst.toString());
         return null;
     }
 
     public Void visit(StaticField inst, Void arg) {
         writer.write(inst.getScope()).write(".").write(inst.getFieldName());
-        return null;
-    }
-
-    public Void visit(TemporaryVariable inst, Void arg) {
-        writer.write("_t").write(inst.getNum());
-        if (inst.getVersion() != LocalVariable.UNDEFINED_VERSION) {
-            writer.write(".").write(inst.getVersion());
-        }
         return null;
     }
 
@@ -395,7 +329,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
             writer.write(inst.getMethodName());
         }
         writer.writeSpace();
-        for (Iterator<TemporaryVariable> it = inst.getArgs().iterator(); it.hasNext();) {
+        for (Iterator<LocalVariable> it = inst.getArgs().iterator(); it.hasNext();) {
             Variable argVar = it.next();
             argVar.accept(this, arg);
             if (it.hasNext()) {
@@ -410,7 +344,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         writer.writeSpace().write("=").writeSpace().writeKeyword("callstatic")
                 .writeSpace().write(inst.getScope()).writeSpace().write(inst.getMethodName())
                 .writeSpace();
-        for (Iterator<TemporaryVariable> it = inst.getArgs().iterator(); it.hasNext();) {
+        for (Iterator<LocalVariable> it = inst.getArgs().iterator(); it.hasNext();) {
             Variable argVar = it.next();
             argVar.accept(this, arg);
             if (it.hasNext()) {
@@ -529,7 +463,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         inst.getResult().accept(this, arg);
         writer.writeSpace().write("=").writeSpace().writeKeyword("new")
                 .writeSpace().write(inst.getClassName()).write("(");
-        for (Iterator<Variable> it = inst.getArgs().iterator(); it.hasNext();) {
+        for (Iterator<LocalVariable> it = inst.getArgs().iterator(); it.hasNext();) {
             Variable argVar = it.next();
             argVar.accept(this, arg);
             if (it.hasNext()) {
@@ -588,8 +522,8 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         inst.getResult().accept(this, arg);
         writer.writeSpace().write("=").writeSpace();
         writer.writeKeyword("choice").writeSpace();
-        for (Iterator<TemporaryVariable> it = inst.getChoices().iterator(); it.hasNext();) {
-            TemporaryVariable var = it.next();
+        for (Iterator<LocalVariable> it = inst.getChoices().iterator(); it.hasNext();) {
+            LocalVariable var = it.next();
             var.accept(this, arg);
             if (it.hasNext()) {
                 writer.writeSpace();
@@ -602,7 +536,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         inst.getResult().accept(this, arg);
         writer.writeSpace().write("=").writeSpace();
         writer.writeKeyword("phi ").writeSpace();
-        for (Iterator<Variable> it = inst.getArgs().iterator(); it.hasNext();) {
+        for (Iterator<LocalVariable> it = inst.getArgs().iterator(); it.hasNext();) {
             Variable var = it.next();
             var.accept(this, arg);
             if (it.hasNext()) {

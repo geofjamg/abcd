@@ -25,29 +25,29 @@ import java.util.Set;
  */
 public class ReturnInst implements TACInst {
 
-    private final TemporaryVariable var;
+    private final LocalVariable var;
 
     public ReturnInst() {
         this(null);
     }
 
-    public ReturnInst(TemporaryVariable var) {
+    public ReturnInst(LocalVariable var) {
         this.var = var;
     }
 
-    public TemporaryVariable getVar() {
+    public LocalVariable getVar() {
         return var;
     }
 
-    public Variable getDef() {
+    public LocalVariable getDef() {
         return null;
     }
 
-    public Set<Variable> getUses() {
+    public Set<LocalVariable> getUses() {
         if (var == null) {
             return Collections.emptySet();
         } else {
-            return Collections.<Variable>singleton(var);
+            return Collections.singleton(var);
         }
     }
 

@@ -25,44 +25,44 @@ import java.util.Set;
  */
 public class ConditionalInst implements TACInst {
 
-    private final TemporaryVariable result;
+    private final LocalVariable result;
 
-    private TemporaryVariable cond;
+    private LocalVariable cond;
 
-    private final TemporaryVariable then;
+    private final LocalVariable then;
 
-    private final TemporaryVariable _else;
+    private final LocalVariable _else;
 
-    public ConditionalInst(TemporaryVariable result, TemporaryVariable cond,
-                        TemporaryVariable then, TemporaryVariable _else) {
+    public ConditionalInst(LocalVariable result, LocalVariable cond,
+                        LocalVariable then, LocalVariable _else) {
         this.result = result;
         this.cond = cond;
         this.then = then;
         this._else = _else;
     }
 
-    public TemporaryVariable getResult() {
+    public LocalVariable getResult() {
         return result;
     }
 
-    public TemporaryVariable getCond() {
+    public LocalVariable getCond() {
         return cond;
     }
 
-    public TemporaryVariable getThen() {
+    public LocalVariable getThen() {
         return then;
     }
 
-    public TemporaryVariable getElse() {
+    public LocalVariable getElse() {
         return _else;
     }
 
-    public Variable getDef() {
+    public LocalVariable getDef() {
         return result;
     }
 
-    public Set<Variable> getUses() {
-        return Sets.<Variable>newHashSet(cond, then, _else);
+    public Set<LocalVariable> getUses() {
+        return Sets.newHashSet(cond, then, _else);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

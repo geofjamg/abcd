@@ -25,23 +25,23 @@ import java.util.Set;
  */
 public class GetFieldInst implements TACInst {
 
-    private final TemporaryVariable result;
+    private final LocalVariable result;
 
-    private final TemporaryVariable object;
+    private final LocalVariable object;
 
     private final String fieldName;
 
-    public GetFieldInst(TemporaryVariable result, TemporaryVariable object, String fieldName) {
+    public GetFieldInst(LocalVariable result, LocalVariable object, String fieldName) {
         this.result = result;
         this.object = object;
         this.fieldName = fieldName;
     }
 
-    public TemporaryVariable getResult() {
+    public LocalVariable getResult() {
         return result;
     }
 
-    public TemporaryVariable getObject() {
+    public LocalVariable getObject() {
         return object;
     }
 
@@ -49,12 +49,12 @@ public class GetFieldInst implements TACInst {
         return fieldName;
     }
 
-    public Variable getDef() {
+    public LocalVariable getDef() {
         return result;
     }
 
-    public Set<Variable> getUses() {
-        return Collections.<Variable>singleton(object);
+    public Set<LocalVariable> getUses() {
+        return Collections.singleton(object);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

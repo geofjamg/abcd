@@ -26,16 +26,16 @@ import java.util.Set;
  */
 public class JumpIfInst implements TACInst {
 
-    private final TemporaryVariable cond;
+    private final LocalVariable cond;
 
     private final Label label;
 
-    public JumpIfInst(TemporaryVariable cond, Label label) {
+    public JumpIfInst(LocalVariable cond, Label label) {
         this.cond = cond;
         this.label = label;
     }
 
-    public TemporaryVariable getCond() {
+    public LocalVariable getCond() {
         return cond;
     }
 
@@ -43,12 +43,12 @@ public class JumpIfInst implements TACInst {
         return label;
     }
 
-    public Variable getDef() {
+    public LocalVariable getDef() {
         return null;
     }
 
-    public Set<Variable> getUses() {
-        return Collections.<Variable>singleton(cond);
+    public Set<LocalVariable> getUses() {
+        return Collections.singleton(cond);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

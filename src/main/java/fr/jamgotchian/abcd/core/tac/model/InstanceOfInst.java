@@ -26,23 +26,23 @@ import java.util.Set;
  */
 public class InstanceOfInst implements TACInst {
 
-    private final TemporaryVariable result;
+    private final LocalVariable result;
 
-    private final TemporaryVariable var;
+    private final LocalVariable var;
 
     private final ClassName className;
 
-    public InstanceOfInst(TemporaryVariable result, TemporaryVariable var, ClassName className) {
+    public InstanceOfInst(LocalVariable result, LocalVariable var, ClassName className) {
         this.result = result;
         this.var = var;
         this.className = className;
     }
 
-    public TemporaryVariable getResult() {
+    public LocalVariable getResult() {
         return result;
     }
 
-    public TemporaryVariable getVar() {
+    public LocalVariable getVar() {
         return var;
     }
 
@@ -50,12 +50,12 @@ public class InstanceOfInst implements TACInst {
         return className;
     }
 
-    public Variable getDef() {
+    public LocalVariable getDef() {
         return result;
     }
 
-    public Set<Variable> getUses() {
-        return Collections.<Variable>singleton(var);
+    public Set<LocalVariable> getUses() {
+        return Collections.singleton(var);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

@@ -25,22 +25,22 @@ import java.util.Set;
  */
 public class ThrowInst implements TACInst {
 
-    private final TemporaryVariable var;
+    private final LocalVariable var;
 
-    public ThrowInst(TemporaryVariable var) {
+    public ThrowInst(LocalVariable var) {
         this.var = var;
     }
 
-    public TemporaryVariable getVar() {
+    public LocalVariable getVar() {
         return var;
     }
 
-    public Variable getDef() {
+    public LocalVariable getDef() {
         return null;
     }
 
-    public Set<Variable> getUses() {
-        return Collections.<Variable>singleton(var);
+    public Set<LocalVariable> getUses() {
+        return Collections.singleton(var);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

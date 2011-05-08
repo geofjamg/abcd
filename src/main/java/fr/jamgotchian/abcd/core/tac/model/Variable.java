@@ -24,14 +24,9 @@ import fr.jamgotchian.abcd.core.type.JavaType;
  */
 public abstract class Variable implements Operand {
 
-    public static final int UNDEFINED_VERSION = -1;
-
-    private int version;
-
     private JavaType type;
 
     public Variable() {
-        version = UNDEFINED_VERSION;
     }
 
     public abstract boolean isTemporary();
@@ -42,14 +37,6 @@ public abstract class Variable implements Operand {
 
     public void setType(JavaType type) {
         this.type = type;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
     }
 
     @Override

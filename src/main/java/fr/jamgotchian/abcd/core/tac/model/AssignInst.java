@@ -42,13 +42,17 @@ public class AssignInst implements TACInst {
         return value;
     }
 
-    public Variable getDef() {
-        return result;
+    public LocalVariable getDef() {
+        if (result instanceof LocalVariable) {
+            return (LocalVariable) result;
+        } else {
+            return null;
+        }
     }
 
-    public Set<Variable> getUses() {
-        if (value instanceof Variable) {
-            return Collections.<Variable>singleton((Variable) value);
+    public Set<LocalVariable> getUses() {
+        if (value instanceof LocalVariable) {
+            return Collections.singleton((LocalVariable) value);
         } else {
             return Collections.emptySet();
         }

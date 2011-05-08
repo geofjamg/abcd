@@ -25,29 +25,29 @@ import java.util.Set;
  */
 public class ChoiceInst implements TACInst {
 
-    private final TemporaryVariable result;
+    private final LocalVariable result;
 
-    private final Set<TemporaryVariable> choices;
+    private final Set<LocalVariable> choices;
 
-    public ChoiceInst(TemporaryVariable result, Set<TemporaryVariable> choices) {
+    public ChoiceInst(LocalVariable result, Set<LocalVariable> choices) {
         this.result = result;
         this.choices = choices;
     }
 
-    public TemporaryVariable getResult() {
+    public LocalVariable getResult() {
         return result;
     }
 
-    public Set<TemporaryVariable> getChoices() {
+    public Set<LocalVariable> getChoices() {
         return choices;
     }
 
-    public Variable getDef() {
+    public LocalVariable getDef() {
         return result;
     }
 
-    public Set<Variable> getUses() {
-        Set<Variable> uses = new HashSet<Variable>(choices.size());
+    public Set<LocalVariable> getUses() {
+        Set<LocalVariable> uses = new HashSet<LocalVariable>(choices.size());
         uses.addAll(choices);
         return uses;
     }

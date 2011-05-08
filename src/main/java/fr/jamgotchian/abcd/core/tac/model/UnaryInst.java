@@ -25,19 +25,19 @@ import java.util.Set;
  */
 public class UnaryInst implements TACInst {
 
-    private final TemporaryVariable result;
+    private final LocalVariable result;
 
     private final UnaryOp operator;
 
-    private final TemporaryVariable var;
+    private final LocalVariable var;
 
-    public UnaryInst(TemporaryVariable result, UnaryOp operator, TemporaryVariable var) {
+    public UnaryInst(LocalVariable result, UnaryOp operator, LocalVariable var) {
         this.result = result;
         this.operator = operator;
         this.var = var;
     }
 
-    public TemporaryVariable getResult() {
+    public LocalVariable getResult() {
         return result;
     }
 
@@ -45,16 +45,16 @@ public class UnaryInst implements TACInst {
         return operator;
     }
 
-    public TemporaryVariable getVar() {
+    public LocalVariable getVar() {
         return var;
     }
 
-    public Variable getDef() {
+    public LocalVariable getDef() {
         return result;
     }
 
-    public Set<Variable> getUses() {
-        return Collections.<Variable>singleton(var);
+    public Set<LocalVariable> getUses() {
+        return Collections.singleton(var);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

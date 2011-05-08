@@ -28,8 +28,6 @@ public interface TACInstVisitor<R, A> {
 
     R visit(StaticField inst, A arg);
 
-    R visit(TemporaryVariable inst, A arg);
-
     R visit(IntConst inst, A arg);
 
     R visit(LongConst inst, A arg);

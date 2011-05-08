@@ -36,11 +36,11 @@ public class LabelInst implements TACInst {
         return label;
     }
 
-    public Variable getDef() {
+    public LocalVariable getDef() {
         return null;
     }
 
-    public Set<Variable> getUses() {
+    public Set<LocalVariable> getUses() {
         return Collections.emptySet();
     }
 

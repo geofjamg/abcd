@@ -25,23 +25,23 @@ import java.util.Set;
  */
 public class BinaryInst implements TACInst {
 
-    private final TemporaryVariable result;
+    private final LocalVariable result;
 
     private final BinaryOp operator;
 
-    private final TemporaryVariable var1;
+    private final LocalVariable var1;
 
-    private final TemporaryVariable var2;
+    private final LocalVariable var2;
 
-    public BinaryInst(TemporaryVariable result, BinaryOp operator,
-                      TemporaryVariable var1, TemporaryVariable var2) {
+    public BinaryInst(LocalVariable result, BinaryOp operator,
+                      LocalVariable var1, LocalVariable var2) {
         this.result = result;
         this.operator = operator;
         this.var1 = var1;
         this.var2 = var2;
     }
 
-    public TemporaryVariable getResult() {
+    public LocalVariable getResult() {
         return result;
     }
 
@@ -49,22 +49,22 @@ public class BinaryInst implements TACInst {
         return operator;
     }
 
-    public TemporaryVariable getVar1() {
+    public LocalVariable getVar1() {
         return var1;
     }
 
-    public TemporaryVariable getVar2() {
+    public LocalVariable getVar2() {
         return var2;
     }
 
-    public Variable getDef() {
+    public LocalVariable getDef() {
         return result;
     }
 
-    public Set<Variable> getUses() {
-        return Sets.<Variable>newHashSet(var1, var2);
+    public Set<LocalVariable> getUses() {
+        return Sets.newHashSet(var1, var2);
     }
-    
+
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

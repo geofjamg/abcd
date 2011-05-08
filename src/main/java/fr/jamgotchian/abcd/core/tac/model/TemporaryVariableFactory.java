@@ -24,9 +24,9 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
  */
 public class TemporaryVariableFactory {
 
-    private int count;
+    private int count = -1;
 
-    public TemporaryVariable create(BasicBlock block) {
-        return new TemporaryVariable(count++, block);
+    public LocalVariable create(BasicBlock block) {
+        return new LocalVariable(count--, block);
     }
 }
