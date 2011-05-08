@@ -88,8 +88,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         public Edge createEdge() {
             return new EdgeImpl();
         }
-    } 
-    
+    }
+
     public ControlFlowGraphImpl(String name, InsnList instructions) {
         this(name, new BasicBlockImpl(Integer.MIN_VALUE, -1, BasicBlockType.ENTRY));
         if (instructions == null) {
@@ -138,7 +138,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     public DirectedGraph<BasicBlock, Edge> getGraph() {
         return DirectedGraphs.unmodifiableDirectedGraph(graph);
     }
-    
+
     public BasicBlock getEntryBlock() {
         return entryBlock;
     }
@@ -348,6 +348,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     public void analyse() {
         removeUnreachableBlock();
         removeUnnecessaryBlock();
+//        removeCriticalEdges();
         dominatorInfo = DominatorInfo.create(graph, entryBlock, exitBlock, new EdgeFactoryImpl());
         performDepthFirstSearch();
         analyseForkJoin();
@@ -371,8 +372,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private void removeUnreachableBlock() {
         for (BasicBlock block : new HashSet<BasicBlock>(graph.getVertices())) {
-            if (!block.equals(entryBlock) && !block.equals(exitBlock) 
-                    && graph.getIncomingEdgesOf(block).isEmpty() 
+            if (!block.equals(entryBlock) && !block.equals(exitBlock)
+                    && graph.getIncomingEdgesOf(block).isEmpty()
                     && graph.getOutgoingEdgesOf(block).isEmpty()) {
                 graph.removeVertex(block);
 
@@ -420,6 +421,42 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             graph.addEdge(predecessor, successor, incomingEdge);
 
             logger.log(Level.FINER, "Remove unnecessary block {0}", block);
+        }
+    }
+
+    /**
+     * Remove critical edges. A critical edge is an edge which is neither the
+     * only edge leaving its source block, nor the only edge entering its
+     * destination block.
+     * Those edges must be split (a new block must be created in the middle of
+     * the edge) in order to insert computations on the edge without affecting
+     * any other edges.
+     */
+    private void removeCriticalEdges() {
+        List<Edge> criticalEdges = new ArrayList<Edge>();
+
+        // find critical edges
+        for (Edge e : graph.getEdges()) {
+            BasicBlock source = graph.getEdgeSource(e);
+            BasicBlock target = graph.getEdgeTarget(e);
+            if (graph.getSuccessorCountOf(source) > 1
+                    && graph.getPredecessorCountOf(target) > 1) {
+                criticalEdges.add(e);
+            }
+        }
+
+        // remove critical edges
+        for (Edge criticalEdge : criticalEdges) {
+            logger.log(Level.FINER, "Remove critical edge {0}",
+                    graph.toString(criticalEdge));
+            BasicBlock source = graph.getEdgeSource(criticalEdge);
+            BasicBlock target = graph.getEdgeTarget(criticalEdge);
+            graph.removeEdge(criticalEdge);
+            BasicBlock fakeBlock = new BasicBlockImpl(BasicBlockType.FAKE);
+            fakeBlock.setGraph(this);
+            graph.addVertex(fakeBlock);
+            graph.addEdge(source, fakeBlock, new EdgeImpl());
+            graph.addEdge(fakeBlock, target, criticalEdge);
         }
     }
 
@@ -500,7 +537,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             } else {
                 e.setCategory(EdgeCategory.CROSS);
             }
-            
+
             // self loop
             if (source.equals(target)) {
                 e.setSelfLoop(true);
@@ -548,7 +585,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 }
             }
         }
-            
+
         // self loop
         for (Edge edge : graph.getEdges()) {
             if (edge.isSelfLoop()) {
