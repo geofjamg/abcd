@@ -22,7 +22,7 @@ import fr.jamgotchian.abcd.core.type.JavaType;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ShortConst implements Operand {
+public class ShortConst implements Const {
 
     private final short value;
 

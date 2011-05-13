@@ -22,7 +22,7 @@ import fr.jamgotchian.abcd.core.type.JavaType;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class IntConst implements Operand {
+public class IntConst implements Const {
 
     private final int value;
 
@@ -40,5 +40,10 @@ public class IntConst implements Operand {
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
+    }
+
+    @Override
+    public String toString() {
+        return Integer.toString(value);
     }
 }

@@ -402,9 +402,7 @@ public class ABCDContext {
                 new ControlFlowGraphStmtAnalysis().analyse(graph, new ImportManager());
 
                 logger.log(Level.FINE, "////////// Build 3AC instructions of {0} //////////", methodSignature);
-                new TreeAddressCodeBuilder().build(graph, new ImportManager());
-
-                new SSAFormConverter(graph).convert();
+                new TreeAddressCodeBuilder(graph, new ImportManager()).build();
 
                 Set<Region> rootRegions = null;
                 if (drawRegions) {

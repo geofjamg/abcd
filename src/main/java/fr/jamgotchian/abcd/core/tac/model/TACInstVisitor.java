@@ -26,8 +26,6 @@ public interface TACInstVisitor<R, A> {
 
     R visit(LocalVariable inst, A arg);
 
-    R visit(StaticField inst, A arg);
-
     R visit(IntConst inst, A arg);
 
     R visit(LongConst inst, A arg);
@@ -48,7 +46,9 @@ public interface TACInstVisitor<R, A> {
 
     R visit(ArrayLengthInst inst, A arg);
 
-    R visit(AssignInst inst, A arg);
+    R visit(AssignConstInst inst, A arg);
+
+    R visit(AssignVarInst inst, A arg);
 
     R visit(BinaryInst inst, A arg);
 
@@ -94,5 +94,9 @@ public interface TACInstVisitor<R, A> {
 
     R visit(ChoiceInst inst, A arg);
 
-    R visit(PhiFunctionInst inst, A arg);
+    R visit(PhiInst inst, A arg);
+
+    R visit(GetStaticFieldInst inst, A arg);
+
+    R visit(SetStaticFieldInst inst, A arg);
 }

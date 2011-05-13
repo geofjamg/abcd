@@ -22,7 +22,7 @@ import fr.jamgotchian.abcd.core.type.JavaType;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class FloatConst implements Operand {
+public class FloatConst implements Const {
 
     private final float value;
 
@@ -40,5 +40,10 @@ public class FloatConst implements Operand {
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
+    }
+
+   @Override
+    public String toString() {
+        return Float.toString(value);
     }
 }

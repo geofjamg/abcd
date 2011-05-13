@@ -22,7 +22,7 @@ import fr.jamgotchian.abcd.core.type.JavaType;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LongConst implements Operand {
+public class LongConst implements Const {
 
     private final long value;
 
@@ -40,5 +40,10 @@ public class LongConst implements Operand {
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
+    }
+
+    @Override
+    public String toString() {
+        return Long.toString(value);
     }
 }

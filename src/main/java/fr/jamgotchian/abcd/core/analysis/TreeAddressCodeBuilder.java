@@ -24,7 +24,7 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.tac.model.AssignInst;
+import fr.jamgotchian.abcd.core.tac.model.AssignConstInst;
 import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
 import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
@@ -53,11 +53,16 @@ public class TreeAddressCodeBuilder {
 
     private static final Logger logger = Logger.getLogger(TreeAddressCodeBuilder.class.getName());
 
-    private ControlFlowGraph graph;
+    private final ControlFlowGraph graph;
 
-    private ClassNameFactory classNameFactory;
+    private final ClassNameFactory classNameFactory;
 
     private TemporaryVariableFactory tmpVarFactory;
+
+    public TreeAddressCodeBuilder(ControlFlowGraph graph, ClassNameFactory classNameFactory) {
+        this.graph = graph;
+        this.classNameFactory = classNameFactory;
+    }
 
     private void processBlock(BasicBlock block, List<ArrayDeque<LocalVariable>> inputStacks) {
 
@@ -80,7 +85,7 @@ public class TreeAddressCodeBuilder {
         Iterator<Edge> itE = graph.getIncomingEdgesOf(block).iterator();
         if (itE.hasNext() && itE.next().isExceptional()) {
             LocalVariable tmpVar = tmpVarFactory.create(block);
-            BasicBlock3ACBuilder.addInst(block, new AssignInst(tmpVar, new StringConst("EXCEPTION", classNameFactory)));
+            BasicBlock3ACBuilder.addInst(block, new AssignConstInst(tmpVar, new StringConst("EXCEPTION", classNameFactory)));
             outputStack.push(tmpVar);
         }
 
@@ -95,56 +100,6 @@ public class TreeAddressCodeBuilder {
         if (data.getOutputStack().size() > 0) {
             logger.log(Level.FINEST, "<<< Output stack : {0}", data.getOutputStack2());
         }
-    }
-
-    public void build(ControlFlowGraph graph, ClassNameFactory classNameFactory) {
-
-        this.graph = graph;
-        this.classNameFactory = classNameFactory;
-//        for (BasicBlock block : graph.getBasicBlocks()) {
-//            block.setData(new AnalysisData());
-//        }
-
-        tmpVarFactory = new TemporaryVariableFactory();
-
-        List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(graph.getDFST().getNodes());
-        while (blocksToProcess.size() > 0) {
-            for (Iterator<BasicBlock> it = blocksToProcess.iterator(); it.hasNext();) {
-                BasicBlock block = it.next();
-
-                boolean processable = true;
-                for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
-                    if (incomingEdge.isLoopBack()) {
-                        continue;
-                    }
-                    BasicBlock pred = graph.getEdgeSource(incomingEdge);
-                    if (blocksToProcess.contains(pred)) {
-                        processable = false;
-                        break;
-                    }
-                }
-
-                if (!processable) {
-                    break;
-                }
-
-                List<ArrayDeque<LocalVariable>> inputStacks
-                        = new ArrayList<ArrayDeque<LocalVariable>>();
-                for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
-                    if (incomingEdge.isLoopBack()) {
-                        continue;
-                    }
-                    BasicBlock pred = graph.getEdgeSource(incomingEdge);
-                    AnalysisData data = (AnalysisData) pred.getData();
-                    inputStacks.add(data.getOutputStack2().clone());
-                }
-
-                processBlock(block, inputStacks);
-                it.remove();
-            }
-        }
-
-        buildCondInst();
     }
 
     private ArrayDeque<LocalVariable> mergeStacks
@@ -188,7 +143,7 @@ public class TreeAddressCodeBuilder {
         return stacksMerge;
     }
 
-    private void buildCondInst() {
+    private void removeChoiceInst() {
         for (BasicBlock joinBlock : graph.getDFST()) {
             List<TACInst> joinInsts = ((AnalysisData) joinBlock.getData()).getInstructions();
 
@@ -280,5 +235,60 @@ public class TreeAddressCodeBuilder {
                 }
             }
         }
+    }
+
+
+    public void build() {
+//        for (BasicBlock block : graph.getBasicBlocks()) {
+//            block.setData(new AnalysisData());
+//        }
+
+        tmpVarFactory = new TemporaryVariableFactory();
+
+        List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(graph.getDFST().getNodes());
+        while (blocksToProcess.size() > 0) {
+            for (Iterator<BasicBlock> it = blocksToProcess.iterator(); it.hasNext();) {
+                BasicBlock block = it.next();
+
+                boolean processable = true;
+                for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
+                    if (incomingEdge.isLoopBack()) {
+                        continue;
+                    }
+                    BasicBlock pred = graph.getEdgeSource(incomingEdge);
+                    if (blocksToProcess.contains(pred)) {
+                        processable = false;
+                        break;
+                    }
+                }
+
+                if (!processable) {
+                    break;
+                }
+
+                List<ArrayDeque<LocalVariable>> inputStacks
+                        = new ArrayList<ArrayDeque<LocalVariable>>();
+                for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
+                    if (incomingEdge.isLoopBack()) {
+                        continue;
+                    }
+                    BasicBlock pred = graph.getEdgeSource(incomingEdge);
+                    AnalysisData data = (AnalysisData) pred.getData();
+                    inputStacks.add(data.getOutputStack2().clone());
+                }
+
+                processBlock(block, inputStacks);
+                it.remove();
+            }
+        }
+
+        // replace choice instructions by conditional instructions (ternary operator)
+        removeChoiceInst();
+
+        // convert to SSA form
+        new SSAFormConverter(graph).convert();
+
+        // analyse local variables types
+        new LocalVariableTypeAnalyser(graph, classNameFactory).analyse();
     }
 }

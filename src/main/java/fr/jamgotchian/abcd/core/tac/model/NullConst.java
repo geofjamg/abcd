@@ -23,7 +23,7 @@ import fr.jamgotchian.abcd.core.type.JavaType;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class NullConst implements Operand {
+public class NullConst implements Const {
 
     private final ClassNameFactory factory;
 
@@ -37,5 +37,10 @@ public class NullConst implements Operand {
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
+    }
+
+    @Override
+    public String toString() {
+        return "null";
     }
 }

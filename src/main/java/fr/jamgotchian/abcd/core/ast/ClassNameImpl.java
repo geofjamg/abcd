@@ -50,6 +50,10 @@ class ClassNameImpl implements ClassName {
         return name;
     }
 
+    public String getQualifiedName() {
+        return packageName + '.' + name;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof ClassNameImpl)) {
@@ -68,7 +72,7 @@ class ClassNameImpl implements ClassName {
         if (packageName == null || importManager.isImported(this)) {
             return name;
         } else {
-            return packageName + '.' + name;
+            return getQualifiedName();
         }
     }
 }

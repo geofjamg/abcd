@@ -16,45 +16,10 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import fr.jamgotchian.abcd.core.type.ClassName;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StaticField extends Variable {
+public interface Const extends Operand {
 
-    private final ClassName scope;
-
-    private final String fieldName;
-
-    public StaticField(ClassName scope, String fieldName) {
-        this.scope = scope;
-        this.fieldName = fieldName;
-    }
-
-    public StaticField(String fieldName) {
-        this(null, fieldName);
-    }
-
-    public ClassName getScope() {
-        return scope;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public boolean isTemporary() {
-        return false;
-    }
-
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
-        return visitor.visit(this, arg);
-    }
-
-    @Override
-    public StaticField clone() {
-        return new StaticField(scope, fieldName);
-    }
 }

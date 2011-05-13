@@ -16,29 +16,41 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import fr.jamgotchian.abcd.core.type.JavaType;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class Variable implements Operand {
+public class AssignVarInst implements TACInst {
 
-    private JavaType type;
+    private final LocalVariable result;
 
-    public Variable() {
+    private final LocalVariable value;
+
+    public AssignVarInst(LocalVariable result, LocalVariable value) {
+        this.result = result;
+        this.value = value;
     }
 
-    public abstract boolean isTemporary();
-
-    public JavaType getType() {
-        return type;
+    public LocalVariable getResult() {
+        return result;
     }
 
-    public void setType(JavaType type) {
-        this.type = type;
+    public LocalVariable getValue() {
+        return value;
     }
 
-    @Override
-    public abstract Variable clone();
+    public LocalVariable getDef() {
+        return result;
+    }
+
+    public Set<LocalVariable> getUses() {
+        return Collections.singleton(value);
+    }
+
+    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
+        return visitor.visit(this, arg);
+    }
 }

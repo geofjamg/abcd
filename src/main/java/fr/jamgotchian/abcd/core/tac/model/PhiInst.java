@@ -16,46 +16,41 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class AssignInst implements TACInst {
+public class PhiInst implements TACInst {
 
-    private final Variable result;
+    private final LocalVariable result;
 
-    private final Operand value;
+    private final List<LocalVariable> args;
 
-    public AssignInst(Variable result, Operand value) {
+    public PhiInst(LocalVariable result, List<LocalVariable> args) {
         this.result = result;
-        this.value = value;
+        this.args = args;
     }
 
-    public Variable getResult() {
+    public LocalVariable getResult() {
         return result;
     }
 
-    public Operand getValue() {
-        return value;
+    public List<LocalVariable> getArgs() {
+        return args;
     }
 
     public LocalVariable getDef() {
-        if (result instanceof LocalVariable) {
-            return (LocalVariable) result;
-        } else {
-            return null;
-        }
+        return result;
     }
 
     public Set<LocalVariable> getUses() {
-        if (value instanceof LocalVariable) {
-            return Collections.singleton((LocalVariable) value);
-        } else {
-            return Collections.emptySet();
-        }
+        Set<LocalVariable> uses = new HashSet<LocalVariable>(args.size());
+        uses.addAll(args);
+        return uses;
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

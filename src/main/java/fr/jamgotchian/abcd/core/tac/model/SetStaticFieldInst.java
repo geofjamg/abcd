@@ -16,41 +16,46 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import java.util.HashSet;
-import java.util.List;
+import com.google.common.collect.Sets;
+import fr.jamgotchian.abcd.core.type.ClassName;
 import java.util.Set;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class PhiFunctionInst implements TACInst {
+public class SetStaticFieldInst implements TACInst {
 
-    private final LocalVariable result;
+    private final ClassName scope;
 
-    private final List<LocalVariable> args;
+    private final String fieldName;
 
-    public PhiFunctionInst(LocalVariable result, List<LocalVariable> args) {
-        this.result = result;
-        this.args = args;
+    private final LocalVariable value;
+
+    public SetStaticFieldInst(ClassName scope, String fieldName, LocalVariable value) {
+        this.scope = scope;
+        this.fieldName = fieldName;
+        this.value = value;
     }
 
-    public Variable getResult() {
-        return result;
+    public ClassName getScope() {
+        return scope;
     }
 
-    public List<LocalVariable> getArgs() {
-        return args;
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public LocalVariable getValue() {
+        return value;
     }
 
     public LocalVariable getDef() {
-        return result;
+        return null;
     }
 
     public Set<LocalVariable> getUses() {
-        Set<LocalVariable> uses = new HashSet<LocalVariable>(args.size());
-        uses.addAll(args);
-        return uses;
+        return Sets.newHashSet(value);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

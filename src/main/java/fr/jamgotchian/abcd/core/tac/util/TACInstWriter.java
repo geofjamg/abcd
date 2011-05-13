@@ -16,20 +16,20 @@
  */
 package fr.jamgotchian.abcd.core.tac.util;
 
-import fr.jamgotchian.abcd.core.tac.model.PhiFunctionInst;
+import fr.jamgotchian.abcd.core.tac.model.GetStaticFieldInst;
+import fr.jamgotchian.abcd.core.tac.model.PhiInst;
+import fr.jamgotchian.abcd.core.tac.model.SetStaticFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.StringConst;
 import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
 import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.CastInst;
 import fr.jamgotchian.abcd.core.tac.model.UnaryInst;
-import fr.jamgotchian.abcd.core.tac.model.AssignInst;
+import fr.jamgotchian.abcd.core.tac.model.AssignVarInst;
 import fr.jamgotchian.abcd.core.tac.model.ClassConst;
 import fr.jamgotchian.abcd.core.tac.model.ArrayLengthInst;
 import fr.jamgotchian.abcd.core.tac.model.ByteConst;
 import fr.jamgotchian.abcd.core.tac.model.DoubleConst;
 import fr.jamgotchian.abcd.core.tac.model.NullConst;
-import fr.jamgotchian.abcd.core.tac.model.StaticField;
 import fr.jamgotchian.abcd.core.tac.model.GotoInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.ReturnInst;
@@ -62,6 +62,7 @@ import fr.jamgotchian.abcd.core.output.ColoredString;
 import fr.jamgotchian.abcd.core.output.DOTHTMLLikeCodeWriterFactory;
 import fr.jamgotchian.abcd.core.output.HTMLCodeWriterFactory;
 import fr.jamgotchian.abcd.core.output.TextCodeWriterFactory;
+import fr.jamgotchian.abcd.core.tac.model.AssignConstInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.util.Range;
 import java.awt.Color;
@@ -166,11 +167,6 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return null;
     }
 
-    public Void visit(StaticField inst, Void arg) {
-        writer.write(inst.getScope()).write(".").write(inst.getFieldName());
-        return null;
-    }
-
     public Void visit(IntConst inst, Void arg) {
         writer.write(inst.getValue());
         return null;
@@ -223,7 +219,14 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return null;
     }
 
-    public Void visit(AssignInst inst, Void arg) {
+    public Void visit(AssignVarInst inst, Void arg) {
+        inst.getResult().accept(this, arg);
+        writer.writeSpace().write("=").writeSpace();
+        inst.getValue().accept(this, arg);
+        return null;
+    }
+
+    public Void visit(AssignConstInst inst, Void arg) {
         inst.getResult().accept(this, arg);
         writer.writeSpace().write("=").writeSpace();
         inst.getValue().accept(this, arg);
@@ -330,7 +333,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         }
         writer.writeSpace();
         for (Iterator<LocalVariable> it = inst.getArgs().iterator(); it.hasNext();) {
-            Variable argVar = it.next();
+            LocalVariable argVar = it.next();
             argVar.accept(this, arg);
             if (it.hasNext()) {
                 writer.writeSpace();
@@ -345,7 +348,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
                 .writeSpace().write(inst.getScope()).writeSpace().write(inst.getMethodName())
                 .writeSpace();
         for (Iterator<LocalVariable> it = inst.getArgs().iterator(); it.hasNext();) {
-            Variable argVar = it.next();
+            LocalVariable argVar = it.next();
             argVar.accept(this, arg);
             if (it.hasNext()) {
                 writer.writeSpace();
@@ -409,6 +412,20 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return null;
     }
 
+    public Void visit(GetStaticFieldInst inst, Void arg) {
+        writer.writeKeyword("getstaticfield").writeSpace();
+        inst.getResult().accept(this, arg);
+        writer.writeSpace().write(inst.getScope()).write(".").write(inst.getFieldName());
+        return null;
+    }
+
+    public Void visit(SetStaticFieldInst inst, Void arg) {
+        writer.writeKeyword("setstaticfield").writeSpace();
+        writer.write(inst.getScope()).write(".").write(inst.getFieldName()).writeSpace();
+        inst.getValue().accept(this, arg);
+        return null;
+    }
+
     public Void visit(GotoInst inst, Void arg) {
         writer.writeKeyword("goto").writeSpace().writeLabel(inst.getLabel());
         return null;
@@ -451,7 +468,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         inst.getResult().accept(this, arg);
         writer.writeSpace().write("=").writeSpace().writeKeyword("new")
                 .writeSpace().write(inst.getType());
-        for (Variable dimVar : inst.getDimensions()) {
+        for (LocalVariable dimVar : inst.getDimensions()) {
             writer.write("[");
             dimVar.accept(this, arg);
             writer.write("]");
@@ -464,7 +481,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         writer.writeSpace().write("=").writeSpace().writeKeyword("new")
                 .writeSpace().write(inst.getClassName()).write("(");
         for (Iterator<LocalVariable> it = inst.getArgs().iterator(); it.hasNext();) {
-            Variable argVar = it.next();
+            LocalVariable argVar = it.next();
             argVar.accept(this, arg);
             if (it.hasNext()) {
                 writer.write(",").writeSpace();
@@ -532,12 +549,12 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return null;
     }
 
-    public Void visit(PhiFunctionInst inst, Void arg) {
+    public Void visit(PhiInst inst, Void arg) {
         inst.getResult().accept(this, arg);
         writer.writeSpace().write("=").writeSpace();
         writer.writeKeyword("phi ").writeSpace();
         for (Iterator<LocalVariable> it = inst.getArgs().iterator(); it.hasNext();) {
-            Variable var = it.next();
+            LocalVariable var = it.next();
             var.accept(this, arg);
             if (it.hasNext()) {
                 writer.writeSpace();

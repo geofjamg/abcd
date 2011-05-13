@@ -449,20 +449,20 @@ public class Test {
         }
     }
 
-    public void testInfiniteLoop() {
-        while(true) {
-            a();
-        }
-    }
-
-    public void testInfiniteLoop2() {
-        while(true) {
-            a();
-            while(true) {
-                b();
-            }
-        }
-    }
+//    public void testInfiniteLoop() {
+//        while(true) {
+//            a();
+//        }
+//    }
+//
+//    public void testInfiniteLoop2() {
+//        while(true) {
+//            a();
+//            while(true) {
+//                b();
+//            }
+//        }
+//    }
 
 //    public void testInfiniteLoop3(int a) {
 //        for (int i = 0; i < a; i++) {
@@ -817,16 +817,16 @@ public class Test {
         }
     }
 
-    public void testSwitchInfiniteLoop(int a) {
-        switch (a) {
-            case 0:
-                while(true);
-
-            case 1:
-                System.out.println("b");
-                break;
-        }
-    }
+//    public void testSwitchInfiniteLoop(int a) {
+//        switch (a) {
+//            case 0:
+//                while(true);
+//
+//            case 1:
+//                System.out.println("b");
+//                break;
+//        }
+//    }
 
     public void testSwitchWithEmptyDefaultCase(int a) {
         System.out.println("a");
@@ -1241,6 +1241,50 @@ public class Test {
         for (float f = 0; f < 3; f++) {
             System.out.println(f);
         }
+    }
+
+    void testType() {
+        int a = 3;
+        float b = a;
+        int c = a + 2;
+        System.out.println((double)b);
+    }
+
+    void testType2() {
+        int a = 3;
+        int b = a + 2;
+    }
+
+    private static class A {
+    }
+
+    private static class B {
+    }
+
+    private static class C extends A {
+    }
+
+    private static class D extends A {
+    }
+
+    void testType3(int x) {
+        Object c = null;
+        if (x == 1) {
+            c = new A();
+        } else {
+            c = new B();
+        }
+        System.out.println(c);
+    }
+
+    void testType4(int x) {
+        A a = null;
+        if (x == 1) {
+            a = new C();
+        } else {
+            a = new D();
+        }
+        System.out.println(a);
     }
 
     class String {

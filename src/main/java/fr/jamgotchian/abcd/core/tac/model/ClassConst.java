@@ -24,7 +24,7 @@ import fr.jamgotchian.abcd.core.type.JavaType;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ClassConst implements Operand {
+public class ClassConst implements Const {
 
     private final ClassName className;
 
@@ -45,5 +45,10 @@ public class ClassConst implements Operand {
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
+    }
+
+    @Override
+    public String toString() {
+        return className.getQualifiedName() + ".class";
     }
 }

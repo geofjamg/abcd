@@ -16,34 +16,45 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import fr.jamgotchian.abcd.core.type.JavaType;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DoubleConst implements Const {
+public class AssignConstInst implements TACInst {
 
-    private final double value;
+    private final LocalVariable result;
 
-    public DoubleConst(double value) {
+    private final Const value;
+
+    public AssignConstInst(LocalVariable result, Const value) {
+        this.result = result;
         this.value = value;
     }
 
-    public double getValue() {
+    public LocalVariable getResult() {
+        return result;
+    }
+
+    public Const getValue() {
         return value;
     }
 
-    public JavaType getType() {
-        return JavaType.DOUBLE;
+    public LocalVariable getDef() {
+        return result;
+    }
+
+    public Set<LocalVariable> getUses() {
+        if (value instanceof LocalVariable) {
+            return Collections.singleton((LocalVariable) value);
+        } else {
+            return Collections.emptySet();
+        }
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
-    }
-
-    @Override
-    public String toString() {
-        return Double.toString(value);
     }
 }

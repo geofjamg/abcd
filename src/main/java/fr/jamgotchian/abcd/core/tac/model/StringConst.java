@@ -23,7 +23,7 @@ import fr.jamgotchian.abcd.core.type.JavaType;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class StringConst implements Operand {
+public class StringConst implements Const {
 
     private final String value;
 

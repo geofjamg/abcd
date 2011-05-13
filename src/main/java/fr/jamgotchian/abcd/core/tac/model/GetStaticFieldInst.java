@@ -16,34 +16,49 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import fr.jamgotchian.abcd.core.type.JavaType;
+import fr.jamgotchian.abcd.core.type.ClassName;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DoubleConst implements Const {
+public class GetStaticFieldInst implements TACInst {
 
-    private final double value;
+    private final LocalVariable result;
 
-    public DoubleConst(double value) {
-        this.value = value;
+    private final ClassName scope;
+
+    private final String fieldName;
+
+    public GetStaticFieldInst(LocalVariable result, ClassName scope, String fieldName) {
+        this.result = result;
+        this.scope = scope;
+        this.fieldName = fieldName;
     }
 
-    public double getValue() {
-        return value;
+    public LocalVariable getResult() {
+        return result;
     }
 
-    public JavaType getType() {
-        return JavaType.DOUBLE;
+    public ClassName getScope() {
+        return scope;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public LocalVariable getDef() {
+        return result;
+    }
+
+    public Set<LocalVariable> getUses() {
+        return Collections.emptySet();
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
-    }
-
-    @Override
-    public String toString() {
-        return Double.toString(value);
     }
 }

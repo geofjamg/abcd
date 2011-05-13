@@ -65,7 +65,7 @@ public class JavaType {
     public static JavaType newArrayType(JavaType arrayElementType, int arrayDimension) {
         return new JavaType(null, null, arrayElementType, arrayDimension);
     }
-    
+
     /**
      * Convert from ASM type to ABCD type
      * @param type ASM type
@@ -102,7 +102,7 @@ public class JavaType {
                 throw new InternalError();
         }
     }
-    
+
     private final PrimitiveType primitiveType;
 
     private final ClassName className;
@@ -110,8 +110,8 @@ public class JavaType {
     private final JavaType arrayElementType;
 
     private final int arrayDimension;
-    
-    private JavaType(PrimitiveType primitiveType, ClassName className, 
+
+    private JavaType(PrimitiveType primitiveType, ClassName className,
                      JavaType arrayElementType, int arrayDimension) {
         this.primitiveType = primitiveType;
         this.className = className;
@@ -130,7 +130,7 @@ public class JavaType {
     public boolean isArray() {
         return arrayElementType != null;
     }
-    
+
     public PrimitiveType getPrimitiveType() {
         return primitiveType;
     }
@@ -165,10 +165,9 @@ public class JavaType {
         return Objects.hashCode(className, primitiveType, arrayElementType, arrayDimension);
     }
 
-    @Override
-    public String toString() {
+    public String getName(boolean qualifiedName) {
         if (isArray()) {
-            StringBuilder builder = new StringBuilder(arrayElementType.toString());
+            StringBuilder builder = new StringBuilder(arrayElementType.getName(qualifiedName));
             for (int i = 0; i < arrayDimension; i++) {
                 builder.append("[]");
             }
@@ -177,8 +176,17 @@ public class JavaType {
             if (isPrimitive()) {
                 return primitiveType.toString();
             } else { // reference
-                return className.toString();
+                return className.getQualifiedName();
             }
         }
+    }
+
+    public String getQualifiedName() {
+        return getName(true);
+    }
+
+    @Override
+    public String toString() {
+        return getName(false);
     }
 }

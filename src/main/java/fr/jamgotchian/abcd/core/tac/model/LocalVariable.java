@@ -17,41 +17,43 @@
 package fr.jamgotchian.abcd.core.tac.model;
 
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.type.JavaType;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LocalVariable extends Variable {
+public class LocalVariable implements Operand {
 
-    public static final int UNDEFINED_VERSION = -1;
-
-    private final int index;
-
-    private int version;
+    private final LocalVariableID ID;
 
     private final BasicBlock block;
 
-    public LocalVariable(int index, int version, BasicBlock block) {
-        this.index = index;
-        this.version = version;
+    private JavaType type;
+
+    public LocalVariable(LocalVariableID ID, BasicBlock block) {
+        this.ID = ID;
         this.block = block;
     }
 
     public LocalVariable(int index, BasicBlock block) {
-        this(index, UNDEFINED_VERSION, block);
+        this(new LocalVariableID(index), block);
+    }
+
+    public LocalVariableID getID() {
+        return ID;
     }
 
     public int getIndex() {
-        return index;
+        return ID.getIndex();
     }
 
     public int getVersion() {
-        return version;
+        return ID.getVersion();
     }
 
     public void setVersion(int version) {
-        this.version = version;
+        ID.setVersion(version);
     }
 
     public BasicBlock getBasicBlock() {
@@ -59,7 +61,15 @@ public class LocalVariable extends Variable {
     }
 
     public boolean isTemporary() {
-        return index < 0;
+        return ID.getIndex() < 0;
+    }
+
+    public JavaType getType() {
+        return type;
+    }
+
+    public void setType(JavaType type) {
+        this.type = type;
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
@@ -72,31 +82,21 @@ public class LocalVariable extends Variable {
             return false;
         }
         LocalVariable var = (LocalVariable) obj;
-        return var.index == index
-                && var.version == version;
+        return var.getID().equals(ID);
     }
 
     @Override
     public int hashCode() {
-        return index + version;
+        return ID.hashCode();
     }
 
     @Override
     public LocalVariable clone() {
-        return new LocalVariable(index, version, block);
+        return new LocalVariable(ID.clone(), block);
     }
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        if (index < 0) {
-            builder.append("_t").append(-index);
-        } else {
-            builder.append("v").append(index);
-        }
-        if (version != UNDEFINED_VERSION) {
-            builder.append(".").append(version);
-        }
-        return builder.toString();
+        return ID.toString();
     }
 }
