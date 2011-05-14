@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.tac.model;
 
 import fr.jamgotchian.abcd.core.type.ClassName;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,13 +34,20 @@ public class CallStaticMethodInst implements TACInst {
 
     private final String methodName;
 
+    private final JavaType returnType;
+
+    private final List<JavaType> argTypes;
+
     private final List<LocalVariable> args;
 
     public CallStaticMethodInst(LocalVariable result, ClassName scope, String methodName,
+                                JavaType returnType, List<JavaType> argTypes,
                                 List<LocalVariable> args) {
         this.result = result;
         this.scope = scope;
         this.methodName = methodName;
+        this.returnType = returnType;
+        this.argTypes = argTypes;
         this.args = args;
     }
 
@@ -53,6 +61,14 @@ public class CallStaticMethodInst implements TACInst {
 
     public String getMethodName() {
         return methodName;
+    }
+
+    public JavaType getReturnType() {
+        return returnType;
+    }
+
+    public List<JavaType> getArgTypes() {
+        return argTypes;
     }
 
     public List<LocalVariable> getArgs() {

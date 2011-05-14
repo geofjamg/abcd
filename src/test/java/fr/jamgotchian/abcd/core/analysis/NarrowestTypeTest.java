@@ -54,21 +54,21 @@ public class NarrowestTypeTest {
     public void testNarrow() {
         instance.narrow(JavaType.INT, classNameFactory);
         instance.narrow(JavaType.INT, classNameFactory);
-        assertTrue(instance.getType().equals(JavaType.INT));
+        assertTrue(instance.get().equals(JavaType.INT));
     }
 
     @Test
     public void testNarrow2() {
         instance.narrow(JavaType.INT, classNameFactory);
         instance.narrow(JavaType.FLOAT, classNameFactory);
-        assertTrue(instance.getType().equals(JavaType.FLOAT));
+        assertTrue(instance.get().equals(JavaType.FLOAT));
     }
 
     @Test
     public void testNarrow3() {
         instance.narrow(JavaType.BYTE, classNameFactory);
         instance.narrow(JavaType.CHAR, classNameFactory);
-        assertTrue(instance.getType().equals(JavaType.INT));
+        assertTrue(instance.get().equals(JavaType.CHAR));
     }
 
     private static class A {
@@ -87,13 +87,13 @@ public class NarrowestTypeTest {
     public void testNarrow4() {
         instance.narrow(JavaType.newRefType(classNameFactory.newClassName(A.class.getName())), classNameFactory);
         instance.narrow(JavaType.newRefType(classNameFactory.newClassName(B.class.getName())), classNameFactory);
-        assertTrue(instance.getType().equals(JavaType.newRefType(classNameFactory.newClassName(Object.class.getName()))));
+        assertTrue(instance.get().equals(JavaType.newRefType(classNameFactory.newClassName(Object.class.getName()))));
     }
 
     @Test
     public void testNarrow5() {
         instance.narrow(JavaType.newRefType(classNameFactory.newClassName(C.class.getName())), classNameFactory);
         instance.narrow(JavaType.newRefType(classNameFactory.newClassName(D.class.getName())), classNameFactory);
-        assertTrue(instance.getType().equals(JavaType.newRefType(classNameFactory.newClassName(A.class.getName()))));
+        assertTrue(instance.get().equals(JavaType.newRefType(classNameFactory.newClassName(A.class.getName()))));
     }
 }

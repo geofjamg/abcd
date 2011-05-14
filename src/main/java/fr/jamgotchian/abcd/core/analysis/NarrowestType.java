@@ -40,7 +40,7 @@ public class NarrowestType {
     static {
         Map<JavaType, List<JavaType>> conversion = new HashMap<JavaType, List<JavaType>>();
         conversion.put(JavaType.BYTE,
-                Collections.unmodifiableList(Arrays.asList(JavaType.BYTE, JavaType.SHORT,
+                Collections.unmodifiableList(Arrays.asList(JavaType.CHAR, JavaType.BYTE, JavaType.SHORT,
                                                            JavaType.INT, JavaType.LONG,
                                                            JavaType.FLOAT, JavaType.DOUBLE)));
         conversion.put(JavaType.SHORT,
@@ -151,7 +151,7 @@ public class NarrowestType {
     }
 
 
-    public JavaType getType() {
+    public JavaType get() {
         return type;
     }
 }

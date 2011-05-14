@@ -38,7 +38,6 @@ import static fr.jamgotchian.abcd.core.analysis.DOTUtil.DisplayMode.*;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
 import fr.jamgotchian.abcd.core.analysis.Refactorer;
-import fr.jamgotchian.abcd.core.analysis.SSAFormConverter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -149,39 +148,43 @@ public class ABCDContext {
         }
     }
 
-    private Class decompileClass(File classFile, ImportManager importManager) throws IOException {
-        ClassNode cn = new ClassNode();
-        ClassReader cr = new ClassReader(new FileInputStream(classFile));
-        cr.accept(cn, 0);
+    private Class createClass(ClassNode cn, ImportManager importManager) {
+        // package
+        String packageName = "";
+        int lastDotIndex = cn.name.lastIndexOf('/');
+        if (lastDotIndex != -1) {
+            packageName = cn.name.substring(0, lastDotIndex).replace('/', '.');
+        }
+        Package _package = new Package(packageName);
 
-        Package _package = new Package(ASMUtil.getPackageName(cn));
-
+        // class name
         String className = cn.name.replace('/', '.');
-
-        logger.fine("");
-        logger.log(Level.FINE, "########## Decompile class {0} ##########", className);
-        logger.fine("");
-
         String simpleClassName = null;
-        int lastDotIndex = className.lastIndexOf('.');
+        lastDotIndex = className.lastIndexOf('.');
         if (lastDotIndex != -1) {
             simpleClassName = className.substring(lastDotIndex+1);
-        } else {
+        } else { // class is in default package
             simpleClassName = className;
         }
+
+        // super class name
         String superClassName = null;
         if (cn.superName != null) {
             superClassName = cn.superName.replace('/', '.');
         }
+
+        // class modifiers
         Set<Modifier> classModifiers = ASMUtil.getModifiers(cn.access);
         classModifiers.remove(Modifier.SYNCHRONIZED); // ???
 
         Class _class = new Class(_package, simpleClassName, superClassName, classModifiers);
 
+        // implemented interfaces
         for (String _interface : (List<String>) cn.interfaces) {
             _class.addInterface(_interface.replace('/', '.'));
         }
 
+        // fields
         for (FieldNode fn : (List<FieldNode>) cn.fields) {
             Type fieldType = Type.getType(fn.desc);
             JavaType javaFieldType = JavaType.newType(fieldType, importManager);
@@ -190,43 +193,82 @@ public class ABCDContext {
                                       fn.name,
                                       javaFieldType));
         }
+        return _class;
+    }
+
+    private Method createMethod(ClassNode cn, MethodNode mn, ImportManager importManager) {
+        // return type
+        JavaType javaReturnType = null;
+        if (!"<init>".equals(mn.name)) {
+            Type returnType = Type.getReturnType(mn.desc);
+            javaReturnType = JavaType.newType(returnType, importManager);
+        }
+
+        // method name
+        String methodName;
+        if ("<init>".equals(mn.name)) {
+            String className = cn.name.replace('/', '.');
+            int lastDotIndex = className.lastIndexOf('.');
+            if (lastDotIndex != -1) {
+                methodName = className.substring(lastDotIndex+1);
+            } else {
+                methodName = className;
+            }
+        } else {
+            methodName = mn.name;
+        }
+
+        // contructor or method ?
+        boolean constructor = "<init>".equals(mn.name);
+
+        // throwable exceptions
+        List<ClassName> exceptions = new ArrayList<ClassName>();
+        if (mn.exceptions != null) {
+            for (String exception : (List<String>) mn.exceptions) {
+                exceptions.add(importManager.newClassName(exception.replace('/', '.')));
+            }
+        }
+
+        // method modifiers
+        Set<Modifier> methodModifiers = ASMUtil.getModifiers(mn.access);
+
+        // parameters
+        boolean isMethodStatic = methodModifiers.contains(Modifier.STATIC);
+        Type[] argTypes = Type.getArgumentTypes(mn.desc);
+        List<LocalVariableDeclaration> arguments = new ArrayList<LocalVariableDeclaration>(argTypes.length);
+        for(int index = 0; index < argTypes.length; index++) {
+            Type argType = argTypes[index];
+            int localVarIndex = index;
+            // index 0 of local variable table contains this for non static method
+            if (!isMethodStatic) {
+                localVarIndex++;
+            }
+            JavaType javaArgType = JavaType.newType(argType, importManager);
+            arguments.add(new LocalVariableDeclaration(localVarIndex, javaArgType));
+        }
+
+        Method method = new Method(methodName, methodModifiers,
+                                   javaReturnType, arguments, exceptions,
+                                   constructor);
+        return method;
+    }
+
+    private Class decompileClass(File classFile, ImportManager importManager) throws IOException {
+        ClassNode cn = new ClassNode();
+        ClassReader cr = new ClassReader(new FileInputStream(classFile));
+        cr.accept(cn, 0);
+
+        Class _class = createClass(cn, importManager);
+
+        logger.fine("");
+        logger.log(Level.FINE, "########## Decompile class {0} ##########", _class.getQualifiedName());
+        logger.fine("");
 
         for (MethodNode mn : (List<MethodNode>) cn.methods) {
-            String methodSignature = ASMUtil.getMethodSignature(cn, mn);
-            Type returnType = ASMUtil.getReturnType(mn);
-            JavaType javaReturnType = null;
-            if (returnType != null) {
-                javaReturnType = JavaType.newType(returnType, importManager);
-            }
-            String methodName = ASMUtil.getMethodName(cn, mn);
-            boolean constructor = "<init>".equals(mn.name);
-            List<ClassName> exceptions = new ArrayList<ClassName>();
-            if (mn.exceptions != null) {
-                for (String exception : (List<String>) mn.exceptions) {
-                    exceptions.add(importManager.newClassName(exception.replace('/', '.')));
-                }
-            }
-
-            Set<Modifier> methodModifiers = ASMUtil.getModifiers(mn.access);
-            boolean isMethodStatic = methodModifiers.contains(Modifier.STATIC);
-
-            Type[] argTypes = Type.getArgumentTypes(mn.desc);
-            List<LocalVariableDeclaration> arguments = new ArrayList<LocalVariableDeclaration>(argTypes.length);
-            for(int index = 0; index < argTypes.length; index++) {
-                Type argType = argTypes[index];
-                int localVarIndex = index;
-                // index 0 of local variable table contains this for non static method
-                if (!isMethodStatic) {
-                    localVarIndex++;
-                }
-                JavaType javaArgType = JavaType.newType(argType, importManager);
-                arguments.add(new LocalVariableDeclaration(localVarIndex, javaArgType));
-            }
-
-            Method method = new Method(methodName, methodModifiers,
-                                       javaReturnType, arguments, exceptions,
-                                       constructor);
+            Method method = createMethod(cn, mn, importManager);
             _class.addMethod(method);
+
+            String methodSignature = method.getSignature();
 
             try {
                 logger.log(Level.FINE, "");
@@ -252,6 +294,7 @@ public class ABCDContext {
                 logger.log(Level.FINE, "////////// Build AST of {0} //////////", methodSignature);
                 new AbstractSyntaxTreeBuilder(importManager).build(rootRegion, method.getBody());
 
+                // refactor AST
                 for (Refactorer refactorer : REFACTORERS) {
                     refactorer.refactor(method.getBody());
                 }
@@ -345,6 +388,9 @@ public class ABCDContext {
         ClassReader cr = new ClassReader(new FileInputStream(classFile));
         cr.accept(cn, 0);
 
+        ImportManager importManager = new ImportManager();
+        Class _class = createClass(cn, importManager);
+
         logger.fine("");
         logger.log(Level.FINE, "########## Analyse class {0} ##########", cn.name.replace('/', '.'));
         logger.fine("");
@@ -359,7 +405,11 @@ public class ABCDContext {
         List<String> errorMsgs = new ArrayList<String>();
 
         for (MethodNode mn : (List<MethodNode>) cn.methods) {
-            String methodSignature = ASMUtil.getMethodSignature(cn, mn);
+
+            Method method = createMethod(cn, mn, importManager);
+            _class.addMethod(method);
+
+            String methodSignature = method.getSignature();
 
             try {
                 logger.log(Level.FINE, "********** Analyse method {0} **********", methodSignature);
@@ -399,10 +449,10 @@ public class ABCDContext {
                 }
 
                 logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
-                new ControlFlowGraphStmtAnalysis().analyse(graph, new ImportManager());
+                new ControlFlowGraphStmtAnalysis().analyse(graph, importManager);
 
                 logger.log(Level.FINE, "////////// Build 3AC instructions of {0} //////////", methodSignature);
-                new TreeAddressCodeBuilder(graph, new ImportManager()).build();
+                new TreeAddressCodeBuilder(graph, method, new ImportManager()).build();
 
                 Set<Region> rootRegions = null;
                 if (drawRegions) {

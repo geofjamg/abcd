@@ -25,9 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LocalVariableNode;
@@ -78,55 +76,6 @@ public class ASMUtil implements Opcodes {
             modifiers.add(Modifier.VOLATILE);
         }
         return modifiers;
-    }
-
-    public static String getPackageName(ClassNode cn) {
-        String packageName = "";
-        int lastDotIndex = cn.name.lastIndexOf('/');
-        if (lastDotIndex != -1) {
-            packageName = cn.name.substring(0, lastDotIndex);
-        }
-        return packageName.replace('/', '.');
-    }
-
-    public static String getMethodName(ClassNode cn, MethodNode mn) {
-        String methodName;
-        if ("<init>".equals(mn.name)) {
-            String className = cn.name.replace('/', '.');
-            int lastDotIndex = className.lastIndexOf('.');
-            if (lastDotIndex != -1) {
-                methodName = className.substring(lastDotIndex+1);
-            } else {
-                methodName = className;
-            }
-        } else {
-            methodName = mn.name;
-        }
-        return methodName;
-    }
-
-    public static String getMethodSignature(ClassNode cn, MethodNode mn) {
-        String methodName = ASMUtil.getMethodName(cn, mn);
-        // build method signature
-        StringBuilder methodSignature = new StringBuilder(methodName);
-        methodSignature.append('(');
-        Type[] argumentTypes = Type.getArgumentTypes(mn.desc);
-        for (int i = 0; i < argumentTypes.length; i++) {
-            methodSignature.append(argumentTypes[i].getClassName());
-            if (i < argumentTypes.length-1) {
-                methodSignature.append(',');
-            }
-        }
-        methodSignature.append(')');
-        return methodSignature.toString();
-    }
-
-    public static Type getReturnType(MethodNode mn) {
-        if ("<init>".equals(mn.name)) {
-            return null;
-        } else {
-            return Type.getReturnType(mn.desc);
-        }
     }
 
     public static Map<LabelNode, Integer> getLabelNodeIndexMap(InsnList instructions) {

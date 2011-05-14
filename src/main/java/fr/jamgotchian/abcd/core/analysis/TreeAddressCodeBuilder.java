@@ -18,6 +18,7 @@ package fr.jamgotchian.abcd.core.analysis;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
@@ -55,12 +56,16 @@ public class TreeAddressCodeBuilder {
 
     private final ControlFlowGraph graph;
 
+    private final Method method;
+
     private final ClassNameFactory classNameFactory;
 
     private TemporaryVariableFactory tmpVarFactory;
 
-    public TreeAddressCodeBuilder(ControlFlowGraph graph, ClassNameFactory classNameFactory) {
+    public TreeAddressCodeBuilder(ControlFlowGraph graph, Method method,
+                                  ClassNameFactory classNameFactory) {
         this.graph = graph;
+        this.method = method;
         this.classNameFactory = classNameFactory;
     }
 
@@ -289,6 +294,6 @@ public class TreeAddressCodeBuilder {
         new SSAFormConverter(graph).convert();
 
         // analyse local variables types
-        new LocalVariableTypeAnalyser(graph, classNameFactory).analyse();
+        new LocalVariableTypeAnalyser(graph, method, classNameFactory).analyse();
     }
 }

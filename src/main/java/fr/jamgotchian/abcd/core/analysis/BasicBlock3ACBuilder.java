@@ -875,10 +875,17 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
     }
 
     public void visitMethodInsn(BasicBlock block, int index, MethodInsnNode node) {
-        int argCount = Type.getArgumentTypes(node.desc).length;
-        List<LocalVariable> args = new ArrayList<LocalVariable>(argCount);
-        for (int i = 0; i < argCount; i++) {
+        // return type
+        Type returnType = Type.getReturnType(node.desc);
+        JavaType returnJavaType = JavaType.newType(returnType, classNameFactory);
+
+        // argument types
+        Type[] argTypes = Type.getArgumentTypes(node.desc);
+        List<LocalVariable> args = new ArrayList<LocalVariable>(argTypes.length);
+        List<JavaType> argJavaTypes = new ArrayList<JavaType>(argTypes.length);
+        for (int i = 0; i < argTypes.length; i++) {
             args.add(0, popVar());
+            argJavaTypes.add(0, JavaType.newType(argTypes[i], classNameFactory));
         }
 
         String methodName = node.name;
@@ -889,17 +896,19 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC: {
                 LocalVariable objVar = popVar();
-                addInst(block, new CallMethodInst(resultVar, objVar, methodName, args));
+                addInst(block, new CallMethodInst(resultVar, objVar, methodName,
+                                                  returnJavaType, argJavaTypes,
+                                                  args));
                 break;
             }
 
             case INVOKESTATIC: {
                 ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
-                addInst(block, new CallStaticMethodInst(resultVar, className, methodName, args));
+                addInst(block, new CallStaticMethodInst(resultVar, className, methodName,
+                                                        returnJavaType, argJavaTypes, args));
                 break;
             }
         }
-        Type returnType = Type.getReturnType(node.desc);
         if (returnType != Type.VOID_TYPE) {
             pushVar(resultVar);
         }

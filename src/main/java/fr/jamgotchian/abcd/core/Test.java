@@ -141,6 +141,12 @@ public class Test {
         b();
     }
 
+    public void testIfBool(boolean a) {
+        if (a) {
+            a();
+        }
+    }
+
    public void testIfEt(int a) {
         if (a > 1 && a <= 3) {
             System.out.println("a");
@@ -1255,6 +1261,12 @@ public class Test {
         int b = a + 2;
     }
 
+    void testCharTypeInference() {
+        char c = 'z';
+        StringBuilder builder = new StringBuilder();
+        builder.append(c);
+    }
+
     private static class A {
     }
 
@@ -1285,6 +1297,11 @@ public class Test {
             a = new D();
         }
         System.out.println(a);
+    }
+
+    int testType5() {
+        char a = 'e';
+        return a;
     }
 
     class String {

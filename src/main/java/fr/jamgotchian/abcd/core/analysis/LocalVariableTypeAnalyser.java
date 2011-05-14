@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.analysis;
 
+import fr.jamgotchian.abcd.core.ast.Method;
+import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.tac.model.ArrayLengthInst;
@@ -61,6 +63,7 @@ import fr.jamgotchian.abcd.core.tac.model.TACInstVisitor;
 import fr.jamgotchian.abcd.core.tac.model.ThrowInst;
 import fr.jamgotchian.abcd.core.tac.model.UnaryInst;
 import fr.jamgotchian.abcd.core.tac.model.LocalVariableID;
+import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
@@ -82,13 +85,17 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
 
     private final ControlFlowGraph graph;
 
+    private final Method method;
+
     private final ClassNameFactory factory;
 
     private final Map<LocalVariableID, NarrowestType> types
             = new HashMap<LocalVariableID, NarrowestType>();
 
-    public LocalVariableTypeAnalyser(ControlFlowGraph graph, ClassNameFactory factory) {
+    public LocalVariableTypeAnalyser(ControlFlowGraph graph, Method method,
+                                     ClassNameFactory factory) {
         this.graph = graph;
+        this.method = method;
         this.factory = factory;
     }
 
@@ -110,8 +117,8 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
             LocalVariableID ID = entry.getKey();
             NarrowestType type = entry.getValue();
             nameColumn.add(ID.toString());
-            if (type.getType() != null) {
-                typeColumn.add(type.getType().getQualifiedName());
+            if (type.get() != null) {
+                typeColumn.add(type.get().getQualifiedName());
             } else {
                 typeColumn.add("?");
             }
@@ -122,6 +129,12 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
     }
 
     public void analyse() {
+        ClassName thisClassName = factory.newClassName(method.getClazz().getQualifiedName());
+        getType(new LocalVariableID(0)).narrow(JavaType.newRefType(thisClassName), factory);
+        for (LocalVariableDeclaration arg : method.getArguments()) {
+            getType(new LocalVariableID(arg.getIndex())).narrow(arg.getType(), factory);
+        }
+
         boolean change = true;
         while (change) {
             change = false;
@@ -188,6 +201,8 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
     }
 
     public Boolean visit(ArrayLengthInst inst, Void arg) {
+        LocalVariable result = inst.getResult();
+        getType(result.getID()).narrow(JavaType.INT, factory);
         return Boolean.FALSE;
     }
 
@@ -200,7 +215,7 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
     public Boolean visit(AssignVarInst inst, Void arg) {
         LocalVariable result = inst.getResult();
         LocalVariable value = inst.getValue();
-        return getType(result.getID()).narrow(getType(value.getID()).getType(), factory);
+        return getType(result.getID()).narrow(getType(value.getID()).get(), factory);
     }
 
     public Boolean visit(BinaryInst inst, Void arg) {
@@ -211,19 +226,45 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
             case PLUS:
             case MINUS:
                 NarrowestType tmpType = new NarrowestType();
-                tmpType.narrow(getType(var1.getID()).getType(), factory);
-                tmpType.narrow(getType(var2.getID()).getType(), factory);
-                return getType(result.getID()).narrow(tmpType.getType(), factory);
+                tmpType.narrow(getType(var1.getID()).get(), factory);
+                tmpType.narrow(getType(var2.getID()).get(), factory);
+                return getType(result.getID()).narrow(tmpType.get(), factory);
+
+            case EQ:
+            case NE:
+            case GT:
+            case GE:
+            case LT:
+            case LE:
+                return getType(result.getID()).narrow(JavaType.BOOLEAN, factory);
         }
         return Boolean.FALSE;
     }
 
     public Boolean visit(CallMethodInst inst, Void arg) {
-        return Boolean.FALSE;
+        LocalVariable result = inst.getResult();
+        boolean change = getType(result.getID()).narrow(inst.getReturnType(), factory);
+        for (int i = 0; i < inst.getArgs().size(); i++) {
+            JavaType argType = inst.getArgTypes().get(i);
+            LocalVariable var = inst.getArgs().get(i);
+            if (getType(var.getID()).narrow(argType, factory)) {
+                change = true;
+            }
+        }
+        return change;
     }
 
     public Boolean visit(CallStaticMethodInst inst, Void arg) {
-        return Boolean.FALSE;
+        LocalVariable result = inst.getResult();
+        boolean change = getType(result.getID()).narrow(inst.getReturnType(), factory);
+        for (int i = 0; i < inst.getArgs().size(); i++) {
+            JavaType argType = inst.getArgTypes().get(i);
+            LocalVariable var = inst.getArgs().get(i);
+            if (getType(var.getID()).narrow(argType, factory)) {
+                change = true;
+            }
+        }
+        return change;
     }
 
     public Boolean visit(CastInst inst, Void arg) {
@@ -232,7 +273,18 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
     }
 
     public Boolean visit(ConditionalInst inst, Void arg) {
-        return Boolean.FALSE;
+        LocalVariable result = inst.getResult();
+        LocalVariable cond = inst.getThen();
+        LocalVariable then = inst.getCond();
+        LocalVariable _else = inst.getElse();
+        boolean change = getType(cond.getID()).narrow(JavaType.BOOLEAN, factory);
+        if (getType(result.getID()).narrow(getType(then.getID()).get(), factory)) {
+            change = true;
+        }
+        if (getType(result.getID()).narrow(getType(_else.getID()).get(), factory)) {
+            change = true;
+        }
+        return change;
     }
 
     public Boolean visit(GetArrayInst inst, Void arg) {
@@ -264,7 +316,8 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
     }
 
     public Boolean visit(JumpIfInst inst, Void arg) {
-        return Boolean.FALSE;
+        LocalVariable cond = inst.getCond();
+        return getType(cond.getID()).narrow(JavaType.BOOLEAN, factory);
     }
 
     public Boolean visit(LabelInst inst, Void arg) {
@@ -272,7 +325,8 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
     }
 
     public Boolean visit(InstanceOfInst inst, Void arg) {
-        return Boolean.FALSE;
+        LocalVariable result = inst.getResult();
+        return getType(result.getID()).narrow(JavaType.BOOLEAN, factory);
     }
 
     public Boolean visit(MonitorEnterInst inst, Void arg) {
@@ -293,6 +347,11 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
     }
 
     public Boolean visit(ReturnInst inst, Void arg) {
+        LocalVariable ret = inst.getVar();
+        JavaType returnType = method.getReturnType();
+        if (ret != null && returnType != null) {
+            getType(ret.getID()).narrow(returnType, factory);
+        }
         return Boolean.FALSE;
     }
 
