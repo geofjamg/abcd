@@ -21,6 +21,7 @@ import fr.jamgotchian.abcd.core.controlflow.BackwardDataFlowAnalysis;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.tac.model.DefInst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.util.Collections3;
@@ -45,8 +46,8 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
     private static Set<Variable> getDefs(BasicBlock block) {
         Set<Variable> defs = new HashSet<Variable>();
         for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
-            if (inst.getDef() != null) {
-                defs.add(inst.getDef());
+            if (inst instanceof DefInst) {
+                defs.add(((DefInst) inst).getResult());
             }
         }
         return defs;
@@ -77,14 +78,13 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
     }
 
     @Override
-    protected Set<Variable> combineValues(Set<Variable> value1,
-                                               Set<Variable> value2) {
+    protected Set<Variable> combineValues(Set<Variable> value1, Set<Variable> value2) {
         return Sets.intersection(value1, value2);
     }
 
     @Override
     protected Set<Variable> applyTranferFunction(BasicBlock node,
-                                                      Set<Variable> outValue) {
+                                                 Set<Variable> outValue) {
         Set<Variable> inValue = new HashSet<Variable>(outValue);
         inValue.removeAll(getDefs(node));
         inValue.addAll(getUses(node));
@@ -92,8 +92,7 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
     }
 
     @Override
-    protected boolean valuesEqual(Set<Variable> value1,
-                                  Set<Variable> value2) {
+    protected boolean valuesEqual(Set<Variable> value1, Set<Variable> value2) {
         return Collections3.sameContent(value1, value2);
     }
 }

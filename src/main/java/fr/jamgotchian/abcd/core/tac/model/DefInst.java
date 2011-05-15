@@ -16,31 +16,26 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import fr.jamgotchian.abcd.core.common.Label;
-import java.util.Collections;
-import java.util.Set;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LabelInst implements TACInst {
+public abstract class DefInst implements TACInst {
 
-    private final Label label;
+    private final int defID;
 
-    LabelInst(Label label) {
-        this.label = label;
+    private final Variable result;
+
+    public DefInst(int defID, Variable result) {
+        this.defID = defID;
+        this.result = result;
     }
 
-    public Label getLabel() {
-        return label;
+    public int getDefID() {
+        return defID;
     }
 
-    public Set<Variable> getUses() {
-        return Collections.emptySet();
-    }
-
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
-        return visitor.visit(this, arg);
+    public Variable getResult() {
+        return result;
     }
 }

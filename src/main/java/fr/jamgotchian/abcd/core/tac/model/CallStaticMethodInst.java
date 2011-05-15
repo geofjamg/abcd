@@ -26,9 +26,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CallStaticMethodInst implements TACInst {
-
-    private final Variable result;
+public class CallStaticMethodInst extends DefInst {
 
     private final ClassName scope;
 
@@ -40,19 +38,15 @@ public class CallStaticMethodInst implements TACInst {
 
     private final List<Variable> args;
 
-    public CallStaticMethodInst(Variable result, ClassName scope, String methodName,
-                                JavaType returnType, List<JavaType> argTypes,
-                                List<Variable> args) {
-        this.result = result;
+    CallStaticMethodInst(int defID, Variable result, ClassName scope, String methodName,
+                         JavaType returnType, List<JavaType> argTypes,
+                         List<Variable> args) {
+        super(defID, result);
         this.scope = scope;
         this.methodName = methodName;
         this.returnType = returnType;
         this.argTypes = argTypes;
         this.args = args;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public ClassName getScope() {
@@ -73,10 +67,6 @@ public class CallStaticMethodInst implements TACInst {
 
     public List<Variable> getArgs() {
         return args;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

@@ -23,27 +23,17 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class AssignVarInst implements TACInst {
-
-    private final Variable result;
+public class AssignVarInst extends DefInst {
 
     private final Variable value;
 
-    public AssignVarInst(Variable result, Variable value) {
-        this.result = result;
+    AssignVarInst(int defID, Variable result, Variable value) {
+        super(defID, result);
         this.value = value;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public Variable getValue() {
         return value;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

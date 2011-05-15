@@ -31,8 +31,7 @@ public class SetArrayInst implements TACInst {
 
     private final Variable value;
 
-    public SetArrayInst(Variable array, Variable index,
-                        Variable value) {
+    SetArrayInst(Variable array, Variable index, Variable value) {
         this.array = array;
         this.index = index;
         this.value = value;
@@ -48,10 +47,6 @@ public class SetArrayInst implements TACInst {
 
     public Variable getValue() {
         return value;
-    }
-
-    public Variable getDef() {
-        return null;
     }
 
     public Set<Variable> getUses() {

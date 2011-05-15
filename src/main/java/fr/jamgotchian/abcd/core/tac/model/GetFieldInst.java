@@ -23,22 +23,16 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class GetFieldInst implements TACInst {
-
-    private final Variable result;
+public class GetFieldInst extends DefInst {
 
     private final Variable object;
 
     private final String fieldName;
 
-    public GetFieldInst(Variable result, Variable object, String fieldName) {
-        this.result = result;
+    GetFieldInst(int defID, Variable result, Variable object, String fieldName) {
+        super(defID, result);
         this.object = object;
         this.fieldName = fieldName;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public Variable getObject() {
@@ -47,10 +41,6 @@ public class GetFieldInst implements TACInst {
 
     public String getFieldName() {
         return fieldName;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

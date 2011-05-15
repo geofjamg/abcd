@@ -25,23 +25,16 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class NewArrayInst implements TACInst {
-
-    private final Variable result;
+public class NewArrayInst extends DefInst {
 
     private final JavaType type;
 
     private final List<Variable> dimensions;
 
-    public NewArrayInst(Variable result, JavaType type,
-                        List<Variable> dimensions) {
-        this.result = result;
+    NewArrayInst(int defID, Variable result, JavaType type, List<Variable> dimensions) {
+        super(defID, result);
         this.type = type;
         this.dimensions = dimensions;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public JavaType getType() {
@@ -50,10 +43,6 @@ public class NewArrayInst implements TACInst {
 
     public List<Variable> getDimensions() {
         return dimensions;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

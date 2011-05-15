@@ -27,16 +27,12 @@ public class MonitorExitInst implements TACInst {
 
     private final Variable var;
 
-    public MonitorExitInst(Variable var) {
+    MonitorExitInst(Variable var) {
         this.var = var;
     }
 
     public Variable getVar() {
         return var;
-    }
-
-    public Variable getDef() {
-        return null;
     }
 
     public Set<Variable> getUses() {

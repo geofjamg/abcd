@@ -31,7 +31,7 @@ public class Variable implements Operand {
 
     private JavaType type;
 
-    public Variable(VariableID ID, BasicBlock block) {
+    Variable(VariableID ID, BasicBlock block) {
         this.ID = ID;
         this.block = block;
     }

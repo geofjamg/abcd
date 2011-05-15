@@ -23,35 +23,21 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class AssignConstInst implements TACInst {
-
-    private final Variable result;
+public class AssignConstInst extends DefInst {
 
     private final Const value;
 
-    public AssignConstInst(Variable result, Const value) {
-        this.result = result;
+    AssignConstInst(int defID, Variable result, Const value) {
+        super(defID, result);
         this.value = value;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public Const getValue() {
         return value;
     }
 
-    public Variable getDef() {
-        return result;
-    }
-
     public Set<Variable> getUses() {
-        if (value instanceof Variable) {
-            return Collections.singleton((Variable) value);
-        } else {
-            return Collections.emptySet();
-        }
+        return Collections.emptySet();
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

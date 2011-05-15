@@ -23,22 +23,16 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class UnaryInst implements TACInst {
-
-    private final Variable result;
+public class UnaryInst extends DefInst {
 
     private final UnaryOp operator;
 
     private final Variable var;
 
-    public UnaryInst(Variable result, UnaryOp operator, Variable var) {
-        this.result = result;
+     UnaryInst(int defID, Variable result, UnaryOp operator, Variable var) {
+        super(defID, result);
         this.operator = operator;
         this.var = var;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public UnaryOp getOperator() {
@@ -47,10 +41,6 @@ public class UnaryInst implements TACInst {
 
     public Variable getVar() {
         return var;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

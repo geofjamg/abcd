@@ -31,7 +31,7 @@ public class SetFieldInst implements TACInst {
 
     private final Variable value;
 
-    public SetFieldInst(Variable object, String fieldName, Variable value) {
+    SetFieldInst(Variable object, String fieldName, Variable value) {
         this.object = object;
         this.fieldName = fieldName;
         this.value = value;
@@ -47,10 +47,6 @@ public class SetFieldInst implements TACInst {
 
     public Variable getValue() {
         return value;
-    }
-
-    public Variable getDef() {
-        return null;
     }
 
     public Set<Variable> getUses() {

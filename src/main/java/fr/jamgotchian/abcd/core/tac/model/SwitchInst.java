@@ -31,7 +31,7 @@ public class SwitchInst implements TACInst {
 
     private final List<Label> labels;
 
-    public SwitchInst(Variable cond, List<Label> labels) {
+    SwitchInst(Variable cond, List<Label> labels) {
         this.cond = cond;
         this.labels = labels;
     }
@@ -42,10 +42,6 @@ public class SwitchInst implements TACInst {
 
     public List<Label> getLabels() {
         return labels;
-    }
-
-    public Variable getDef() {
-        return null;
     }
 
     public Set<Variable> getUses() {

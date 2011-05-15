@@ -24,27 +24,17 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class PhiInst implements TACInst {
-
-    private final Variable result;
+public class PhiInst extends DefInst {
 
     private final List<Variable> args;
 
-    public PhiInst(Variable result, List<Variable> args) {
-        this.result = result;
+    PhiInst(int defID, Variable result, List<Variable> args) {
+        super(defID, result);
         this.args = args;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public List<Variable> getArgs() {
         return args;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

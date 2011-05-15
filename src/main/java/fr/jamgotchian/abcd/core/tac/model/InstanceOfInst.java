@@ -24,22 +24,16 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class InstanceOfInst implements TACInst {
-
-    private final Variable result;
+public class InstanceOfInst extends DefInst {
 
     private final Variable var;
 
     private final ClassName className;
 
-    public InstanceOfInst(Variable result, Variable var, ClassName className) {
-        this.result = result;
+    InstanceOfInst(int defID, Variable result, Variable var, ClassName className) {
+        super(defID, result);
         this.var = var;
         this.className = className;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public Variable getVar() {
@@ -48,10 +42,6 @@ public class InstanceOfInst implements TACInst {
 
     public ClassName getClassName() {
         return className;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

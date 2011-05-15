@@ -23,27 +23,17 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ArrayLengthInst implements TACInst {
-
-    private final Variable result;
+public class ArrayLengthInst extends DefInst {
 
     private final Variable array;
 
-    public ArrayLengthInst(Variable result, Variable array) {
-        this.result = result;
+    ArrayLengthInst(int defID, Variable result, Variable array) {
+        super(defID, result);
         this.array = array;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public Variable getArray() {
         return array;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

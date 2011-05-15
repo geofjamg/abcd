@@ -24,8 +24,6 @@ import java.util.Set;
  */
 public interface TACInst {
 
-    Variable getDef();
-
     Set<Variable> getUses();
 
     <R, A> R accept(TACInstVisitor<R, A> visitor, A arg);

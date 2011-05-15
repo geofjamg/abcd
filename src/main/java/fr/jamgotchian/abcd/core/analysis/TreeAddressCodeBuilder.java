@@ -25,13 +25,13 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.tac.model.AssignConstInst;
 import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
 import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.StringConst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
+import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
@@ -62,6 +62,8 @@ public class TreeAddressCodeBuilder {
 
     private TemporaryVariableFactory tmpVarFactory;
 
+    private TACInstFactory instFactory;
+
     public TreeAddressCodeBuilder(ControlFlowGraph graph, Method method,
                                   ClassNameFactory classNameFactory) {
         this.graph = graph;
@@ -90,7 +92,8 @@ public class TreeAddressCodeBuilder {
         Iterator<Edge> itE = graph.getIncomingEdgesOf(block).iterator();
         if (itE.hasNext() && itE.next().isExceptional()) {
             Variable tmpVar = tmpVarFactory.create(block);
-            BasicBlock3ACBuilder.addInst(block, new AssignConstInst(tmpVar, new StringConst("EXCEPTION", classNameFactory)));
+            BasicBlock3ACBuilder.addInst(block,
+                    instFactory.newAssignConst(tmpVar, new StringConst("EXCEPTION", classNameFactory)));
             outputStack.push(tmpVar);
         }
 
@@ -98,7 +101,9 @@ public class TreeAddressCodeBuilder {
             logger.log(Level.FINEST, ">>> Input stack : {0}", data.getInputStack2());
         }
 
-        BasicBlock3ACBuilder builder = new BasicBlock3ACBuilder(classNameFactory, tmpVarFactory, outputStack);
+        BasicBlock3ACBuilder builder
+                = new BasicBlock3ACBuilder(classNameFactory, tmpVarFactory,
+                                           outputStack, instFactory);
         block.visit(builder);
         data.setOutputStack2(outputStack);
 
@@ -140,7 +145,7 @@ public class TreeAddressCodeBuilder {
                 stacksMerge.add(vars.iterator().next());
             } else {
                 Variable result = tmpVarFactory.create(block);
-                BasicBlock3ACBuilder.addInst(block, new ChoiceInst(result, vars));
+                BasicBlock3ACBuilder.addInst(block, instFactory.newChoice(result, vars));
                 stacksMerge.add(result);
             }
         }
@@ -209,14 +214,14 @@ public class TreeAddressCodeBuilder {
                                 if (choiceInst.getChoices().isEmpty()) {
                                     Variable resultVar = choiceInst.getResult();
                                     ConditionalInst condInst
-                                            = new ConditionalInst(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
+                                            = instFactory.newConditional(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
                                     logger.log(Level.FINER, "Replace inst at {0} of {1} : {2}",
                                             new Object[]{i, joinBlock, TACInstWriter.toText(condInst)});
                                     replacement.add(condInst);
                                 } else {
                                     Variable resultVar = tmpVarFactory.create(forkBlock);
                                     ConditionalInst condInst
-                                            = new ConditionalInst(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
+                                            = instFactory.newConditional(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
                                     logger.log(Level.FINER, "Insert inst at {0} of {1} : {2}",
                                             new Object[]{i, joinBlock, TACInstWriter.toText(condInst)});
                                     replacement.add(condInst);
@@ -249,6 +254,7 @@ public class TreeAddressCodeBuilder {
 //        }
 
         tmpVarFactory = new TemporaryVariableFactory();
+        instFactory = new TACInstFactory();
 
         List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(graph.getDFST().getNodes());
         while (blocksToProcess.size() > 0) {
@@ -291,7 +297,7 @@ public class TreeAddressCodeBuilder {
         removeChoiceInst();
 
         // convert to SSA form
-        new SSAFormConverter(graph).convert();
+        new SSAFormConverter(graph, instFactory).convert();
 
         // analyse local variables types
         new LocalVariableTypeAnalyser(graph, method, classNameFactory).analyse();

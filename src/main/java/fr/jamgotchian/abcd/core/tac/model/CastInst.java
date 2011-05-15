@@ -24,22 +24,16 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CastInst implements TACInst {
-
-    private final Variable result;
+public class CastInst extends DefInst {
 
     private final Variable var;
 
     private final JavaType type;
 
-    public CastInst(Variable result, Variable var, JavaType type) {
-        this.result = result;
+    CastInst(int defID, Variable result, Variable var, JavaType type) {
+        super(defID, result);
         this.var = var;
         this.type = type;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public Variable getVar() {
@@ -48,10 +42,6 @@ public class CastInst implements TACInst {
 
     public JavaType getType() {
         return type;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

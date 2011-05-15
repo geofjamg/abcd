@@ -26,22 +26,16 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class NewObjectInst implements TACInst {
-
-    private final Variable result;
+public class NewObjectInst extends DefInst {
 
     private final ClassName className;
 
     private List<Variable> args;
 
-    public NewObjectInst(Variable result, ClassName className) {
-        this.result = result;
+    NewObjectInst(int defID, Variable result, ClassName className) {
+        super(defID, result);
         this.className = className;
         this.args = Collections.emptyList();
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public ClassName getClassName() {
@@ -54,10 +48,6 @@ public class NewObjectInst implements TACInst {
 
     public void setArgs(List<Variable> args) {
         this.args = args;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

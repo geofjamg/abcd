@@ -23,22 +23,16 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class GetArrayInst implements TACInst {
-
-    private final Variable result;
+public class GetArrayInst extends DefInst {
 
     private final Variable array;
 
     private final Variable index;
 
-    public GetArrayInst(Variable result, Variable array, Variable index) {
-        this.result = result;
+    GetArrayInst(int defID, Variable result, Variable array, Variable index) {
+        super(defID, result);
         this.array = array;
         this.index = index;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public Variable getArray() {
@@ -47,10 +41,6 @@ public class GetArrayInst implements TACInst {
 
     public Variable getIndex() {
         return index;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

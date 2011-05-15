@@ -30,7 +30,7 @@ public class JumpIfInst implements TACInst {
 
     private final Label label;
 
-    public JumpIfInst(Variable cond, Label label) {
+    JumpIfInst(Variable cond, Label label) {
         this.cond = cond;
         this.label = label;
     }
@@ -41,10 +41,6 @@ public class JumpIfInst implements TACInst {
 
     public Label getLabel() {
         return label;
-    }
-
-    public Variable getDef() {
-        return null;
     }
 
     public Set<Variable> getUses() {

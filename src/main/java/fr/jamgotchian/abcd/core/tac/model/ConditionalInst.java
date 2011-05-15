@@ -23,9 +23,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ConditionalInst implements TACInst {
-
-    private final Variable result;
+public class ConditionalInst extends DefInst {
 
     private Variable cond;
 
@@ -33,16 +31,12 @@ public class ConditionalInst implements TACInst {
 
     private final Variable _else;
 
-    public ConditionalInst(Variable result, Variable cond,
-                        Variable then, Variable _else) {
-        this.result = result;
+    ConditionalInst(int defID, Variable result, Variable cond, Variable then,
+                    Variable _else) {
+        super(defID, result);
         this.cond = cond;
         this.then = then;
         this._else = _else;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public Variable getCond() {
@@ -55,10 +49,6 @@ public class ConditionalInst implements TACInst {
 
     public Variable getElse() {
         return _else;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

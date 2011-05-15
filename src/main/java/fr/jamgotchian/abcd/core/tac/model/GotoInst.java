@@ -28,16 +28,12 @@ public class GotoInst implements TACInst {
 
     private final Label label;
 
-    public GotoInst(Label label) {
+    GotoInst(Label label) {
         this.label = label;
     }
 
     public Label getLabel() {
         return label;
-    }
-
-    public Variable getDef() {
-        return null;
     }
 
     public Set<Variable> getUses() {

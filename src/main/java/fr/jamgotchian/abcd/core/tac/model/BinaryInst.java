@@ -23,9 +23,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BinaryInst implements TACInst {
-
-    private final Variable result;
+public class BinaryInst extends DefInst {
 
     private final BinaryOp operator;
 
@@ -33,16 +31,12 @@ public class BinaryInst implements TACInst {
 
     private final Variable var2;
 
-    public BinaryInst(Variable result, BinaryOp operator,
-                      Variable var1, Variable var2) {
-        this.result = result;
+    BinaryInst(int defID, Variable result, BinaryOp operator, Variable var1,
+               Variable var2) {
+        super(defID, result);
         this.operator = operator;
         this.var1 = var1;
         this.var2 = var2;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public BinaryOp getOperator() {
@@ -55,10 +49,6 @@ public class BinaryInst implements TACInst {
 
     public Variable getVar2() {
         return var2;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {

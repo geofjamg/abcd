@@ -27,16 +27,12 @@ public class ThrowInst implements TACInst {
 
     private final Variable var;
 
-    public ThrowInst(Variable var) {
+    ThrowInst(Variable var) {
         this.var = var;
     }
 
     public Variable getVar() {
         return var;
-    }
-
-    public Variable getDef() {
-        return null;
     }
 
     public Set<Variable> getUses() {

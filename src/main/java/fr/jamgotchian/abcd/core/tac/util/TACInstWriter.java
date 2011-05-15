@@ -63,6 +63,7 @@ import fr.jamgotchian.abcd.core.output.DOTHTMLLikeCodeWriterFactory;
 import fr.jamgotchian.abcd.core.output.HTMLCodeWriterFactory;
 import fr.jamgotchian.abcd.core.output.TextCodeWriterFactory;
 import fr.jamgotchian.abcd.core.tac.model.AssignConstInst;
+import fr.jamgotchian.abcd.core.tac.model.DefInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.util.Range;
 import java.awt.Color;
@@ -154,6 +155,11 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
     public Void visit(TACInstSeq insts, Void arg) {
         for (Iterator<TACInst> it = insts.getInsts().iterator(); it.hasNext();) {
             TACInst inst = it.next();
+            if (inst instanceof DefInst) {
+                writer.write("d")
+                        .write(Integer.toString(((DefInst) inst).getDefID()))
+                        .write(":").writeSpace();
+            }
             inst.accept(this, arg);
             if (it.hasNext()) {
                 writer.newLine();

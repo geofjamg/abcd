@@ -25,9 +25,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CallMethodInst implements TACInst {
-
-    private final Variable result;
+public class CallMethodInst extends DefInst {
 
     private final Variable object;
 
@@ -39,19 +37,15 @@ public class CallMethodInst implements TACInst {
 
     private final List<Variable> args;
 
-    public CallMethodInst(Variable result, Variable object,
+    public CallMethodInst(int defID, Variable result, Variable object,
                           String methodName, JavaType returnType,
                           List<JavaType> argTypes, List<Variable> args) {
-        this.result = result;
+        super(defID, result);
         this.object = object;
         this.methodName = methodName;
         this.returnType = returnType;
         this.argTypes = argTypes;
         this.args = args;
-    }
-
-    public Variable getResult() {
-        return result;
     }
 
     public Variable getObject() {
@@ -72,10 +66,6 @@ public class CallMethodInst implements TACInst {
 
     public List<Variable> getArgs() {
         return args;
-    }
-
-    public Variable getDef() {
-        return result;
     }
 
     public Set<Variable> getUses() {
