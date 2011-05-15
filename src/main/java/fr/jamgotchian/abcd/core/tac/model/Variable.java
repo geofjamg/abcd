@@ -23,24 +23,24 @@ import fr.jamgotchian.abcd.core.type.JavaType;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LocalVariable implements Operand {
+public class Variable implements Operand {
 
-    private final LocalVariableID ID;
+    private final VariableID ID;
 
     private final BasicBlock block;
 
     private JavaType type;
 
-    public LocalVariable(LocalVariableID ID, BasicBlock block) {
+    public Variable(VariableID ID, BasicBlock block) {
         this.ID = ID;
         this.block = block;
     }
 
-    public LocalVariable(int index, BasicBlock block) {
-        this(new LocalVariableID(index), block);
+    public Variable(int index, BasicBlock block) {
+        this(new VariableID(index), block);
     }
 
-    public LocalVariableID getID() {
+    public VariableID getID() {
         return ID;
     }
 
@@ -78,10 +78,10 @@ public class LocalVariable implements Operand {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof LocalVariable)) {
+        if (!(obj instanceof Variable)) {
             return false;
         }
-        LocalVariable var = (LocalVariable) obj;
+        Variable var = (Variable) obj;
         return var.getID().equals(ID);
     }
 
@@ -91,8 +91,8 @@ public class LocalVariable implements Operand {
     }
 
     @Override
-    public LocalVariable clone() {
-        return new LocalVariable(ID.clone(), block);
+    public Variable clone() {
+        return new Variable(ID.clone(), block);
     }
 
     @Override

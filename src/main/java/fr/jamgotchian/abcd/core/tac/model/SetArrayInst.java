@@ -25,36 +25,36 @@ import java.util.Set;
  */
 public class SetArrayInst implements TACInst {
 
-    private final LocalVariable array;
+    private final Variable array;
 
-    private final LocalVariable index;
+    private final Variable index;
 
-    private final LocalVariable value;
+    private final Variable value;
 
-    public SetArrayInst(LocalVariable array, LocalVariable index,
-                        LocalVariable value) {
+    public SetArrayInst(Variable array, Variable index,
+                        Variable value) {
         this.array = array;
         this.index = index;
         this.value = value;
     }
 
-    public LocalVariable getArray() {
+    public Variable getArray() {
         return array;
     }
 
-    public LocalVariable getIndex() {
+    public Variable getIndex() {
         return index;
     }
 
-    public LocalVariable getValue() {
+    public Variable getValue() {
         return value;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return null;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Sets.newHashSet(array, index, value);
     }
 

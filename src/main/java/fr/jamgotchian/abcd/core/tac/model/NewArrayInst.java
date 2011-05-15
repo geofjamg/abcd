@@ -27,20 +27,20 @@ import java.util.Set;
  */
 public class NewArrayInst implements TACInst {
 
-    private final LocalVariable result;
+    private final Variable result;
 
     private final JavaType type;
 
-    private final List<LocalVariable> dimensions;
+    private final List<Variable> dimensions;
 
-    public NewArrayInst(LocalVariable result, JavaType type,
-                        List<LocalVariable> dimensions) {
+    public NewArrayInst(Variable result, JavaType type,
+                        List<Variable> dimensions) {
         this.result = result;
         this.type = type;
         this.dimensions = dimensions;
     }
 
-    public LocalVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
@@ -48,16 +48,16 @@ public class NewArrayInst implements TACInst {
         return type;
     }
 
-    public List<LocalVariable> getDimensions() {
+    public List<Variable> getDimensions() {
         return dimensions;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return result;
     }
 
-    public Set<LocalVariable> getUses() {
-        return new HashSet<LocalVariable>(dimensions);
+    public Set<Variable> getUses() {
+        return new HashSet<Variable>(dimensions);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

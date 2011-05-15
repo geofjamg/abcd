@@ -25,43 +25,43 @@ import java.util.Set;
  */
 public class ConditionalInst implements TACInst {
 
-    private final LocalVariable result;
+    private final Variable result;
 
-    private LocalVariable cond;
+    private Variable cond;
 
-    private final LocalVariable then;
+    private final Variable then;
 
-    private final LocalVariable _else;
+    private final Variable _else;
 
-    public ConditionalInst(LocalVariable result, LocalVariable cond,
-                        LocalVariable then, LocalVariable _else) {
+    public ConditionalInst(Variable result, Variable cond,
+                        Variable then, Variable _else) {
         this.result = result;
         this.cond = cond;
         this.then = then;
         this._else = _else;
     }
 
-    public LocalVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
-    public LocalVariable getCond() {
+    public Variable getCond() {
         return cond;
     }
 
-    public LocalVariable getThen() {
+    public Variable getThen() {
         return then;
     }
 
-    public LocalVariable getElse() {
+    public Variable getElse() {
         return _else;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return result;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Sets.newHashSet(cond, then, _else);
     }
 

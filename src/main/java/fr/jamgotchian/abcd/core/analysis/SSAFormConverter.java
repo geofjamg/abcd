@@ -26,10 +26,10 @@ import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.tac.model.AssignVarInst;
 import fr.jamgotchian.abcd.core.tac.model.GotoInst;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
-import fr.jamgotchian.abcd.core.tac.model.LocalVariable;
+import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.PhiInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
-import fr.jamgotchian.abcd.core.tac.model.LocalVariableID;
+import fr.jamgotchian.abcd.core.tac.model.VariableID;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -68,7 +68,7 @@ public class SSAFormConverter {
 
     private static boolean containsDef(BasicBlock block, int defIndex) {
         for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
-            LocalVariable def = inst.getDef();
+            Variable def = inst.getDef();
             if (def != null && def.getIndex() == defIndex) {
                 return true;
             }
@@ -90,14 +90,14 @@ public class SSAFormConverter {
                     BasicBlock y = graph.getEdgeTarget(e);
                     if (!phi.get(defIndex).contains(y)) {
                         boolean contains = containsDef(y, defIndex);
-                        List<LocalVariable> args = new ArrayList<LocalVariable>();
+                        List<Variable> args = new ArrayList<Variable>();
                         for (int i = 0; i < graph.getPredecessorCountOf(y); i++) {
-                            args.add(new LocalVariable(defIndex, y));
+                            args.add(new Variable(defIndex, y));
                         }
                         // is definition alive in basic block y ?
                         if (liveVariables.get(y).contains(defIndex)) {
                             ((AnalysisData) y.getData()).getInstructions()
-                                    .add(0, new PhiInst(new LocalVariable(defIndex, y), args));
+                                    .add(0, new PhiInst(new Variable(defIndex, y), args));
                             logger.log(Level.FINER, "Add Phi function to {0} for def {1}",
                                     new Object[] {y, defIndex});
                         }
@@ -127,14 +127,14 @@ public class SSAFormConverter {
 
         for (TACInst inst : ((AnalysisData) n.getData()).getInstructions()) {
             if (!(inst instanceof PhiInst)) {
-                for (LocalVariable use : inst.getUses()) {
+                for (Variable use : inst.getUses()) {
                     if (use.getIndex() == varIndex) {
                         int version = versionStack.peek();
                         use.setVersion(version);
                     }
                 }
             }
-            LocalVariable def = inst.getDef();
+            Variable def = inst.getDef();
             if (def != null && def.getIndex() == varIndex) {
                 int nextVersion = versionCount.incrementAndGet();
                 versionStack.push(nextVersion);
@@ -147,7 +147,7 @@ public class SSAFormConverter {
                 if (inst instanceof PhiInst) {
                     int j = new ArrayList<BasicBlock>(graph.getPredecessorsOf(y)).indexOf(n);
                     int version = versionStack.peek();
-                    LocalVariable phi = ((PhiInst) inst).getArgs().get(j);
+                    Variable phi = ((PhiInst) inst).getArgs().get(j);
                     if (phi.getIndex() == varIndex) {
                         phi.setVersion(version);
                     }
@@ -162,7 +162,7 @@ public class SSAFormConverter {
 
         for (TACInst inst : ((AnalysisData) n.getData()).getInstructions()) {
             if (!(inst instanceof PhiInst)) {
-                LocalVariable def = inst.getDef();
+                Variable def = inst.getDef();
                 if (def != null && def.getIndex() == varIndex) {
                     versionStack.pop();
                 }
@@ -194,7 +194,7 @@ public class SSAFormConverter {
                 if (inst instanceof PhiInst) {
                     PhiInst phiInst = (PhiInst) inst;
                     for (int i = 0; i < phiInst.getArgs().size(); i++) {
-                        LocalVariable v = phiInst.getArgs().get(i);
+                        Variable v = phiInst.getArgs().get(i);
                         BasicBlock p = predecessors.get(i);
                         addInst(p, new AssignVarInst(phiInst.getResult().clone(),
                                                   v /* no need to clone */));
@@ -207,11 +207,11 @@ public class SSAFormConverter {
 
     public void convert() {
         liveVariables = HashMultimap.create();
-        for (Map.Entry<BasicBlock, Set<LocalVariable>> entry :
+        for (Map.Entry<BasicBlock, Set<Variable>> entry :
                 new LiveVariablesAnalysis(graph).analyse().entrySet()) {
             BasicBlock block = entry.getKey();
-            for (LocalVariable var : entry.getValue()) {
-                if (var.getVersion() != LocalVariableID.UNDEFINED_VERSION) {
+            for (Variable var : entry.getValue()) {
+                if (var.getVersion() != VariableID.UNDEFINED_VERSION) {
                     throw new ABCDException("var.getVersion() != VariableID.UNDEFINED_VERSION");
                 }
                 liveVariables.put(block, var.getIndex());
@@ -222,7 +222,7 @@ public class SSAFormConverter {
         defSites = HashMultimap.create();
         for (BasicBlock block : graph.getBasicBlocks()) {
             for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
-                LocalVariable def = inst.getDef();
+                Variable def = inst.getDef();
                 if (def != null) {
                     defs.add(def.getIndex());
                     defSites.put(def.getIndex(), block);

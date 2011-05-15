@@ -27,9 +27,9 @@ import java.util.Set;
  */
 public class CallMethodInst implements TACInst {
 
-    private final LocalVariable result;
+    private final Variable result;
 
-    private final LocalVariable object;
+    private final Variable object;
 
     private final String methodName;
 
@@ -37,11 +37,11 @@ public class CallMethodInst implements TACInst {
 
     private final List<JavaType> argTypes;
 
-    private final List<LocalVariable> args;
+    private final List<Variable> args;
 
-    public CallMethodInst(LocalVariable result, LocalVariable object,
+    public CallMethodInst(Variable result, Variable object,
                           String methodName, JavaType returnType,
-                          List<JavaType> argTypes, List<LocalVariable> args) {
+                          List<JavaType> argTypes, List<Variable> args) {
         this.result = result;
         this.object = object;
         this.methodName = methodName;
@@ -50,11 +50,11 @@ public class CallMethodInst implements TACInst {
         this.args = args;
     }
 
-    public LocalVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
-    public LocalVariable getObject() {
+    public Variable getObject() {
         return object;
     }
 
@@ -70,16 +70,16 @@ public class CallMethodInst implements TACInst {
         return argTypes;
     }
 
-    public List<LocalVariable> getArgs() {
+    public List<Variable> getArgs() {
         return args;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return result;
     }
 
-    public Set<LocalVariable> getUses() {
-        Set<LocalVariable> uses = new HashSet<LocalVariable>(args.size()+1);
+    public Set<Variable> getUses() {
+        Set<Variable> uses = new HashSet<Variable>(args.size()+1);
         uses.add(object);
         uses.addAll(args);
         return uses;

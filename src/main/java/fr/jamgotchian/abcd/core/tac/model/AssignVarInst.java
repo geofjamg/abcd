@@ -25,28 +25,28 @@ import java.util.Set;
  */
 public class AssignVarInst implements TACInst {
 
-    private final LocalVariable result;
+    private final Variable result;
 
-    private final LocalVariable value;
+    private final Variable value;
 
-    public AssignVarInst(LocalVariable result, LocalVariable value) {
+    public AssignVarInst(Variable result, Variable value) {
         this.result = result;
         this.value = value;
     }
 
-    public LocalVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
-    public LocalVariable getValue() {
+    public Variable getValue() {
         return value;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return result;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Collections.singleton(value);
     }
 

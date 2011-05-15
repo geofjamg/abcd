@@ -30,9 +30,9 @@ public class SetStaticFieldInst implements TACInst {
 
     private final String fieldName;
 
-    private final LocalVariable value;
+    private final Variable value;
 
-    public SetStaticFieldInst(ClassName scope, String fieldName, LocalVariable value) {
+    public SetStaticFieldInst(ClassName scope, String fieldName, Variable value) {
         this.scope = scope;
         this.fieldName = fieldName;
         this.value = value;
@@ -46,15 +46,15 @@ public class SetStaticFieldInst implements TACInst {
         return fieldName;
     }
 
-    public LocalVariable getValue() {
+    public Variable getValue() {
         return value;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return null;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Sets.newHashSet(value);
     }
 

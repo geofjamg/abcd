@@ -25,21 +25,21 @@ import java.util.Set;
  */
 public class ThrowInst implements TACInst {
 
-    private final LocalVariable var;
+    private final Variable var;
 
-    public ThrowInst(LocalVariable var) {
+    public ThrowInst(Variable var) {
         this.var = var;
     }
 
-    public LocalVariable getVar() {
+    public Variable getVar() {
         return var;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return null;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Collections.singleton(var);
     }
 

@@ -25,19 +25,19 @@ import java.util.Set;
  */
 public class SetFieldInst implements TACInst {
 
-    private final LocalVariable object;
+    private final Variable object;
 
     private final String fieldName;
 
-    private final LocalVariable value;
+    private final Variable value;
 
-    public SetFieldInst(LocalVariable object, String fieldName, LocalVariable value) {
+    public SetFieldInst(Variable object, String fieldName, Variable value) {
         this.object = object;
         this.fieldName = fieldName;
         this.value = value;
     }
 
-    public LocalVariable getObject() {
+    public Variable getObject() {
         return object;
     }
 
@@ -45,15 +45,15 @@ public class SetFieldInst implements TACInst {
         return fieldName;
     }
 
-    public LocalVariable getValue() {
+    public Variable getValue() {
         return value;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return null;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Sets.newHashSet(object, value);
     }
 

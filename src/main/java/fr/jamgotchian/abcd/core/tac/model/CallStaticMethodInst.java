@@ -28,7 +28,7 @@ import java.util.Set;
  */
 public class CallStaticMethodInst implements TACInst {
 
-    private final LocalVariable result;
+    private final Variable result;
 
     private final ClassName scope;
 
@@ -38,11 +38,11 @@ public class CallStaticMethodInst implements TACInst {
 
     private final List<JavaType> argTypes;
 
-    private final List<LocalVariable> args;
+    private final List<Variable> args;
 
-    public CallStaticMethodInst(LocalVariable result, ClassName scope, String methodName,
+    public CallStaticMethodInst(Variable result, ClassName scope, String methodName,
                                 JavaType returnType, List<JavaType> argTypes,
-                                List<LocalVariable> args) {
+                                List<Variable> args) {
         this.result = result;
         this.scope = scope;
         this.methodName = methodName;
@@ -51,7 +51,7 @@ public class CallStaticMethodInst implements TACInst {
         this.args = args;
     }
 
-    public LocalVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
@@ -71,16 +71,16 @@ public class CallStaticMethodInst implements TACInst {
         return argTypes;
     }
 
-    public List<LocalVariable> getArgs() {
+    public List<Variable> getArgs() {
         return args;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return result;
     }
 
-    public Set<LocalVariable> getUses() {
-        return new HashSet<LocalVariable>(args);
+    public Set<Variable> getUses() {
+        return new HashSet<Variable>(args);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

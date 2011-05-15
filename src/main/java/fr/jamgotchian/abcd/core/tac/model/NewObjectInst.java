@@ -28,19 +28,19 @@ import java.util.Set;
  */
 public class NewObjectInst implements TACInst {
 
-    private final LocalVariable result;
+    private final Variable result;
 
     private final ClassName className;
 
-    private List<LocalVariable> args;
+    private List<Variable> args;
 
-    public NewObjectInst(LocalVariable result, ClassName className) {
+    public NewObjectInst(Variable result, ClassName className) {
         this.result = result;
         this.className = className;
         this.args = Collections.emptyList();
     }
 
-    public LocalVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
@@ -48,20 +48,20 @@ public class NewObjectInst implements TACInst {
         return className;
     }
 
-    public List<LocalVariable> getArgs() {
+    public List<Variable> getArgs() {
         return args;
     }
 
-    public void setArgs(List<LocalVariable> args) {
+    public void setArgs(List<Variable> args) {
         this.args = args;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return result;
     }
 
-    public Set<LocalVariable> getUses() {
-        return new HashSet<LocalVariable>(args);
+    public Set<Variable> getUses() {
+        return new HashSet<Variable>(args);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

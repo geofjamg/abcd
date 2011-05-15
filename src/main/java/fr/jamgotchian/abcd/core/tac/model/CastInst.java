@@ -26,23 +26,23 @@ import java.util.Set;
  */
 public class CastInst implements TACInst {
 
-    private final LocalVariable result;
+    private final Variable result;
 
-    private final LocalVariable var;
+    private final Variable var;
 
     private final JavaType type;
 
-    public CastInst(LocalVariable result, LocalVariable var, JavaType type) {
+    public CastInst(Variable result, Variable var, JavaType type) {
         this.result = result;
         this.var = var;
         this.type = type;
     }
 
-    public LocalVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
-    public LocalVariable getVar() {
+    public Variable getVar() {
         return var;
     }
 
@@ -50,11 +50,11 @@ public class CastInst implements TACInst {
         return type;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return result;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Collections.singleton(var);
     }
 

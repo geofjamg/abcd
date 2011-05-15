@@ -64,7 +64,7 @@ import fr.jamgotchian.abcd.core.tac.model.SetFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.ShortConst;
 import fr.jamgotchian.abcd.core.tac.model.StringConst;
 import fr.jamgotchian.abcd.core.tac.model.SwitchInst;
-import fr.jamgotchian.abcd.core.tac.model.LocalVariable;
+import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.SetStaticFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.tac.model.ThrowInst;
@@ -116,13 +116,13 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
     protected final ClassNameFactory classNameFactory;
 
-    protected final ArrayDeque<LocalVariable> stack;
+    protected final ArrayDeque<Variable> stack;
 
     protected final TemporaryVariableFactory tmpVarFactory;
 
     BasicBlock3ACBuilder(ClassNameFactory classNameFactory,
                         TemporaryVariableFactory tmpVarFactory,
-                        ArrayDeque<LocalVariable> stack) {
+                        ArrayDeque<Variable> stack) {
         this.classNameFactory = classNameFactory;
         this.tmpVarFactory = tmpVarFactory;
         this.stack = stack;
@@ -134,11 +134,11 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         ((AnalysisData) block.getData()).getInstructions().add(inst);
     }
 
-    protected void pushVar(LocalVariable var) {
+    protected void pushVar(Variable var) {
         stack.push(var);
     }
 
-    protected LocalVariable popVar() {
+    protected Variable popVar() {
         return stack.pop().clone();
     }
 
@@ -151,7 +151,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case GETSTATIC: {
                 ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
                 String varName = node.name;
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new GetStaticFieldInst(tmpVar, className, varName));
                 pushVar(tmpVar);
                 break;
@@ -160,14 +160,14 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case PUTSTATIC: {
                 ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
                 String varName = node.name;
-                LocalVariable tmpVar = popVar();
+                Variable tmpVar = popVar();
                 addInst(block, new SetStaticFieldInst(className, varName, tmpVar));
                 break;
             }
 
             case GETFIELD: {
-                LocalVariable resultVar = tmpVarFactory.create(block);
-                LocalVariable objVar = popVar();
+                Variable resultVar = tmpVarFactory.create(block);
+                Variable objVar = popVar();
                 String fieldName = node.name;
                 addInst(block, new GetFieldInst(resultVar, objVar, fieldName));
                 pushVar(resultVar);
@@ -175,8 +175,8 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             }
 
             case PUTFIELD: {
-                LocalVariable valueVar = popVar();
-                LocalVariable objVar = popVar();
+                Variable valueVar = popVar();
+                Variable objVar = popVar();
                 String fieldName = node.name;
                 addInst(block, new SetFieldInst(objVar, fieldName, valueVar));
                 break;
@@ -186,12 +186,12 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
     public void visitIincInsn(BasicBlock block, int index, IincInsnNode node) {
         Const value = new IntConst(Math.abs(node.incr));
-        LocalVariable var = new LocalVariable(node.var, block);
-        LocalVariable tmpVar = tmpVarFactory.create(block);
+        Variable var = new Variable(node.var, block);
+        Variable tmpVar = tmpVarFactory.create(block);
         addInst(block, new AssignVarInst(tmpVar, var));
-        LocalVariable tmpValue = tmpVarFactory.create(block);
+        Variable tmpValue = tmpVarFactory.create(block);
         addInst(block, new AssignConstInst(tmpValue, value));
-        LocalVariable tmpResult = tmpVarFactory.create(block);
+        Variable tmpResult = tmpVarFactory.create(block);
         addInst(block, new BinaryInst(tmpResult, node.incr > 0 ? BinaryOp.PLUS : BinaryOp.MINUS,
                                tmpVar, tmpValue));
         addInst(block, new AssignVarInst(var, tmpResult));
@@ -203,105 +203,105 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 break;
 
             case ACONST_NULL: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new NullConst(classNameFactory)));
                 pushVar(tmpVar);
                 break;
             }
 
             case ICONST_M1: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new IntConst(1)));
                 pushVar(tmpVar);
                 break;
             }
 
             case ICONST_0: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new IntConst(0)));
                 pushVar(tmpVar);
                 break;
             }
 
             case ICONST_1: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new IntConst(1)));
                 pushVar(tmpVar);
                 break;
             }
 
             case ICONST_2: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new IntConst(2)));
                 pushVar(tmpVar);
                 break;
             }
 
             case ICONST_3: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new IntConst(3)));
                 pushVar(tmpVar);
                 break;
             }
 
             case ICONST_4: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new IntConst(4)));
                 pushVar(tmpVar);
                 break;
             }
 
             case ICONST_5: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new IntConst(5)));
                 pushVar(tmpVar);
                 break;
             }
 
             case LCONST_0: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new LongConst(0)));
                 pushVar(tmpVar);
                 break;
             }
 
             case LCONST_1: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new LongConst(1)));
                 pushVar(tmpVar);
                 break;
             }
 
             case FCONST_0: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new FloatConst(0f)));
                 pushVar(tmpVar);
                 break;
             }
 
             case FCONST_1: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new FloatConst(1f)));
                 pushVar(tmpVar);
                 break;
             }
 
             case FCONST_2: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new FloatConst(2f)));
                 pushVar(tmpVar);
                 break;
             }
 
             case DCONST_0: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new DoubleConst(0d)));
                 pushVar(tmpVar);
                 break;
             }
 
             case DCONST_1: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpVar, new DoubleConst(1d)));
                 pushVar(tmpVar);
                 break;
@@ -315,9 +315,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case BALOAD:
             case CALOAD:
             case SALOAD: {
-                LocalVariable arrayIndex = popVar();
-                LocalVariable arrayVar = popVar();
-                LocalVariable tmpResultVar = tmpVarFactory.create(block);
+                Variable arrayIndex = popVar();
+                Variable arrayVar = popVar();
+                Variable tmpResultVar = tmpVarFactory.create(block);
                 addInst(block, new GetArrayInst(tmpResultVar, arrayVar, arrayIndex));
                 pushVar(tmpResultVar);
                 break;
@@ -331,9 +331,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case BASTORE:
             case CASTORE:
             case SASTORE: {
-                LocalVariable valueVar = popVar();
-                LocalVariable indexVar = popVar();
-                LocalVariable arrayVar = popVar();
+                Variable valueVar = popVar();
+                Variable indexVar = popVar();
+                Variable arrayVar = popVar();
                 addInst(block, new SetArrayInst(arrayVar, indexVar, valueVar));
                 break;
             }
@@ -347,15 +347,15 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 throw new ABCDException("TODO");
 
             case DUP: {
-                LocalVariable var = popVar();
+                Variable var = popVar();
                 pushVar(var);
                 pushVar(var);
                 break;
             }
 
             case DUP_X1: {
-                LocalVariable var1 = popVar();
-                LocalVariable var2 = popVar();
+                Variable var1 = popVar();
+                Variable var2 = popVar();
                 pushVar(var1);
                 pushVar(var2);
                 pushVar(var1);
@@ -368,8 +368,8 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 throw new ABCDException("TODO");
 
             case SWAP: {
-                LocalVariable var1 = popVar();
-                LocalVariable var2 = popVar();
+                Variable var1 = popVar();
+                Variable var2 = popVar();
                 pushVar(var1);
                 pushVar(var2);
                 break;
@@ -379,9 +379,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case LADD:
             case FADD:
             case DADD: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable right = popVar();
+                Variable left = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.PLUS, left, right));
                 pushVar(tmpResult);
                 break;
@@ -391,9 +391,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case LSUB:
             case FSUB:
             case DSUB: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable right = popVar();
+                Variable left = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.MINUS, left, right));
                 pushVar(tmpResult);
                 break;
@@ -403,9 +403,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case LMUL:
             case FMUL:
             case DMUL: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable right = popVar();
+                Variable left = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.MUL, left, right));
                 pushVar(tmpResult);
                 break;
@@ -415,9 +415,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case LDIV:
             case FDIV:
             case DDIV: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable right = popVar();
+                Variable left = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.DIV, left, right));
                 pushVar(tmpResult);
                 break;
@@ -427,9 +427,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case LREM:
             case FREM:
             case DREM: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable right = popVar();
+                Variable left = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.REMAINDER, left, right));
                 pushVar(tmpResult);
                 break;
@@ -439,7 +439,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case LNEG:
             case FNEG:
             case DNEG: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new UnaryInst(tmpResult, UnaryOp.MINUS, popVar()));
                 pushVar(tmpResult);
                 break;
@@ -447,9 +447,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
             case ISHL:
             case LSHL: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable right = popVar();
+                Variable left = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.SHIFT_LEFT, left, right));
                 pushVar(tmpResult);
                 break;
@@ -457,9 +457,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
             case ISHR:
             case LSHR: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable right = popVar();
+                Variable left = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.SHIFT_RIGHT, left, right));
                 pushVar(tmpResult);
                 break;
@@ -467,9 +467,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
             case IUSHR:
             case LUSHR: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable right = popVar();
+                Variable left = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.LOGICAL_SHIFT_RIGHT, left, right));
                 pushVar(tmpResult);
                 break;
@@ -477,9 +477,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
             case IAND:
             case LAND: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable right = popVar();
+                Variable left = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.AND, left, right));
                 pushVar(tmpResult);
                 break;
@@ -487,9 +487,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
             case IOR:
             case LOR: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable right = popVar();
+                Variable left = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.OR, left, right));
                 pushVar(tmpResult);
                 break;
@@ -497,128 +497,128 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
             case IXOR:
             case LXOR: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable right = popVar();
+                Variable left = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.XOR, left, right));
                 pushVar(tmpResult);
                 break;
             }
 
             case I2L: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.LONG));
                 pushVar(tmpResult);
                 break;
             }
 
             case I2F: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.FLOAT));
                 pushVar(tmpResult);
                 break;
             }
 
             case I2D: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.DOUBLE));
                 pushVar(tmpResult);
                 break;
             }
 
             case L2I: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.INT));
                 pushVar(tmpResult);
                 break;
             }
 
             case L2F: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.FLOAT));
                 pushVar(tmpResult);
                 break;
             }
 
             case L2D: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.DOUBLE));
                 pushVar(tmpResult);
                 break;
             }
 
             case F2I: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.INT));
                 pushVar(tmpResult);
                 break;
             }
 
             case F2L: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.LONG));
                 break;
             }
 
             case F2D: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.DOUBLE));
                 pushVar(tmpResult);
                 break;
             }
 
             case D2I: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.INT));
                 pushVar(tmpResult);
                 break;
             }
 
             case D2L: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.LONG));
                 pushVar(tmpResult);
                 break;
             }
 
             case D2F: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.FLOAT));
                 pushVar(tmpResult);
                 break;
             }
 
             case I2B: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.BYTE));
                 pushVar(tmpResult);
                 break;
             }
 
             case I2C: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.CHAR));
                 pushVar(tmpResult);
                 break;
             }
 
             case I2S: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
-                LocalVariable var = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
+                Variable var = popVar();
                 addInst(block, new CastInst(tmpResult, var, JavaType.SHORT));
                 pushVar(tmpResult);
                 break;
@@ -629,9 +629,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case FCMPG:
             case DCMPL:
             case DCMPG: {
-                LocalVariable value2 = popVar();
-                LocalVariable value1 = popVar();
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable value2 = popVar();
+                Variable value1 = popVar();
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.MINUS, value1, value2));
                 pushVar(tmpResult);
                 break;
@@ -650,8 +650,8 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 break;
 
             case ARRAYLENGTH: {
-                LocalVariable result = tmpVarFactory.create(block);
-                LocalVariable arrayVar = popVar();
+                Variable result = tmpVarFactory.create(block);
+                Variable arrayVar = popVar();
                 addInst(block, new ArrayLengthInst(result, arrayVar));
                 pushVar(result);
                 break;
@@ -672,7 +672,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
     }
 
     public void visitIntInsn(BasicBlock block, int index, IntInsnNode node) {
-        LocalVariable tmpVar = tmpVarFactory.create(block);
+        Variable tmpVar = tmpVarFactory.create(block);
         switch (node.getOpcode()) {
             case BIPUSH:
                 addInst(block, new AssignConstInst(tmpVar, new ByteConst((byte) node.operand)));
@@ -692,11 +692,11 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
     public void visitJumpInsn(BasicBlock block, int index, JumpInsnNode node) {
 
-        LocalVariable tmpResult = null;
+        Variable tmpResult = null;
 
         switch(node.getOpcode()) {
             case IFEQ: {
-                LocalVariable tmpZero = tmpVarFactory.create(block);
+                Variable tmpZero = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.EQ, popVar(), tmpZero));
@@ -704,7 +704,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             }
 
             case IFNE: {
-                LocalVariable tmpZero = tmpVarFactory.create(block);
+                Variable tmpZero = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.NE, popVar(), tmpZero));
@@ -712,7 +712,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             }
 
             case IFLT: {
-                LocalVariable tmpZero = tmpVarFactory.create(block);
+                Variable tmpZero = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.LT, popVar(), tmpZero));
@@ -720,7 +720,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             }
 
             case IFGE: {
-                LocalVariable tmpZero = tmpVarFactory.create(block);
+                Variable tmpZero = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.GE, popVar(), tmpZero));
@@ -728,7 +728,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             }
 
             case IFGT: {
-                LocalVariable tmpZero = tmpVarFactory.create(block);
+                Variable tmpZero = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.GT, popVar(), tmpZero));
@@ -736,7 +736,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             }
 
             case IFLE: {
-                LocalVariable tmpZero = tmpVarFactory.create(block);
+                Variable tmpZero = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.LE, popVar(), tmpZero));
@@ -744,64 +744,64 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             }
 
             case IF_ICMPEQ: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
+                Variable right = popVar();
+                Variable left = popVar();
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.EQ, left, right));
                 break;
             }
 
             case IF_ICMPNE: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
+                Variable right = popVar();
+                Variable left = popVar();
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.NE, left, right));
                 break;
             }
 
             case IF_ICMPLT: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
+                Variable right = popVar();
+                Variable left = popVar();
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.LT, left, right));
                 break;
             }
 
             case IF_ICMPGE: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
+                Variable right = popVar();
+                Variable left = popVar();
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.GE, left, right));
                 break;
             }
 
             case IF_ICMPGT: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
+                Variable right = popVar();
+                Variable left = popVar();
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.GT, left, right));
                 break;
             }
 
             case IF_ICMPLE: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
+                Variable right = popVar();
+                Variable left = popVar();
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.LE, left, right));
                 break;
             }
 
             case IF_ACMPEQ: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
+                Variable right = popVar();
+                Variable left = popVar();
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.EQ, left, right));
                 break;
             }
 
             case IF_ACMPNE: {
-                LocalVariable right = popVar();
-                LocalVariable left = popVar();
+                Variable right = popVar();
+                Variable left = popVar();
                 tmpResult = tmpVarFactory.create(block);
                 addInst(block, new BinaryInst(tmpResult, BinaryOp.NE, left, right));
                 break;
@@ -814,7 +814,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 throw new ABCDException("TODO : support JSR instruction");
 
             case IFNULL: {
-                LocalVariable tmpNull = tmpVarFactory.create(block);
+                Variable tmpNull = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpNull, new NullConst(classNameFactory)));
                 pushVar(tmpNull);
                 tmpResult = tmpVarFactory.create(block);
@@ -823,7 +823,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             }
 
             case IFNONNULL: {
-                LocalVariable tmpNull = tmpVarFactory.create(block);
+                Variable tmpNull = tmpVarFactory.create(block);
                 addInst(block, new AssignConstInst(tmpNull, new NullConst(classNameFactory)));
                 pushVar(tmpNull);
                 tmpResult = tmpVarFactory.create(block);
@@ -847,7 +847,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
     }
 
     public void visitLdcInsn(BasicBlock block, int index, LdcInsnNode node) {
-        LocalVariable tmpVar = tmpVarFactory.create(block);
+        Variable tmpVar = tmpVarFactory.create(block);
         if (node.cst instanceof Type) {
             ClassName className = classNameFactory.newClassName(((Type)node.cst).getClassName());
             addInst(block, new AssignConstInst(tmpVar, new ClassConst(className, classNameFactory)));
@@ -881,7 +881,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
         // argument types
         Type[] argTypes = Type.getArgumentTypes(node.desc);
-        List<LocalVariable> args = new ArrayList<LocalVariable>(argTypes.length);
+        List<Variable> args = new ArrayList<Variable>(argTypes.length);
         List<JavaType> argJavaTypes = new ArrayList<JavaType>(argTypes.length);
         for (int i = 0; i < argTypes.length; i++) {
             args.add(0, popVar());
@@ -889,13 +889,13 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         }
 
         String methodName = node.name;
-        LocalVariable resultVar = tmpVarFactory.create(block);
+        Variable resultVar = tmpVarFactory.create(block);
         switch (node.getOpcode()) {
             case INVOKEVIRTUAL:
             case INVOKESPECIAL:
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC: {
-                LocalVariable objVar = popVar();
+                Variable objVar = popVar();
                 addInst(block, new CallMethodInst(resultVar, objVar, methodName,
                                                   returnJavaType, argJavaTypes,
                                                   args));
@@ -917,11 +917,11 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
     public void visitMultiANewArrayInsn(BasicBlock block, int index, MultiANewArrayInsnNode node) {
         Type type = Type.getType(node.desc).getElementType();
         JavaType javaType = JavaType.newType(type, classNameFactory);
-        List<LocalVariable> dimensions = new ArrayList<LocalVariable>(node.dims);
+        List<Variable> dimensions = new ArrayList<Variable>(node.dims);
         for (int i = 0; i < node.dims; i++) {
             dimensions.add(0, popVar());
         }
-        LocalVariable tmpResult = tmpVarFactory.create(block);
+        Variable tmpResult = tmpVarFactory.create(block);
         addInst(block, new NewArrayInst(tmpResult, javaType, dimensions));
         pushVar(tmpResult);
     }
@@ -941,7 +941,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
         switch (node.getOpcode()) {
             case NEW: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new NewObjectInst(tmpResult, className));
                 pushVar(tmpResult);
                 break;
@@ -949,7 +949,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
             case ANEWARRAY: {
                 JavaType type = JavaType.newRefType(className);
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new NewArrayInst(tmpResult, type,
                                          Collections.singletonList(popVar())));
                 pushVar(tmpResult);
@@ -960,7 +960,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 break;
 
             case INSTANCEOF: {
-                LocalVariable tmpResult = tmpVarFactory.create(block);
+                Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, new InstanceOfInst(tmpResult, popVar(), className));
                 pushVar(tmpResult);
                 break;
@@ -975,9 +975,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case FLOAD:
             case DLOAD:
             case ALOAD: {
-                LocalVariable tmpVar = tmpVarFactory.create(block);
+                Variable tmpVar = tmpVarFactory.create(block);
                 pushVar(tmpVar);
-                addInst(block, new AssignVarInst(tmpVar, new LocalVariable(node.var, block)));
+                addInst(block, new AssignVarInst(tmpVar, new Variable(node.var, block)));
                 break;
             }
 
@@ -986,8 +986,8 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case FSTORE:
             case DSTORE:
             case ASTORE: {
-                LocalVariable var = popVar();
-                addInst(block, new AssignVarInst(new LocalVariable(node.var, block), var));
+                Variable var = popVar();
+                addInst(block, new AssignVarInst(new Variable(node.var, block), var));
                 break;
             }
 

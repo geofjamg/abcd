@@ -25,28 +25,28 @@ import java.util.Set;
  */
 public class ArrayLengthInst implements TACInst {
 
-    private final LocalVariable result;
+    private final Variable result;
 
-    private final LocalVariable array;
+    private final Variable array;
 
-    public ArrayLengthInst(LocalVariable result, LocalVariable array) {
+    public ArrayLengthInst(Variable result, Variable array) {
         this.result = result;
         this.array = array;
     }
 
-    public LocalVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
-    public LocalVariable getArray() {
+    public Variable getArray() {
         return array;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return result;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Collections.singleton(array);
     }
 

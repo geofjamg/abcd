@@ -25,23 +25,23 @@ import java.util.Set;
  */
 public class BinaryInst implements TACInst {
 
-    private final LocalVariable result;
+    private final Variable result;
 
     private final BinaryOp operator;
 
-    private final LocalVariable var1;
+    private final Variable var1;
 
-    private final LocalVariable var2;
+    private final Variable var2;
 
-    public BinaryInst(LocalVariable result, BinaryOp operator,
-                      LocalVariable var1, LocalVariable var2) {
+    public BinaryInst(Variable result, BinaryOp operator,
+                      Variable var1, Variable var2) {
         this.result = result;
         this.operator = operator;
         this.var1 = var1;
         this.var2 = var2;
     }
 
-    public LocalVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
@@ -49,19 +49,19 @@ public class BinaryInst implements TACInst {
         return operator;
     }
 
-    public LocalVariable getVar1() {
+    public Variable getVar1() {
         return var1;
     }
 
-    public LocalVariable getVar2() {
+    public Variable getVar2() {
         return var2;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return result;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Sets.newHashSet(var1, var2);
     }
 

@@ -27,16 +27,16 @@ import java.util.Set;
  */
 public class SwitchInst implements TACInst {
 
-    private final LocalVariable cond;
+    private final Variable cond;
 
     private final List<Label> labels;
 
-    public SwitchInst(LocalVariable cond, List<Label> labels) {
+    public SwitchInst(Variable cond, List<Label> labels) {
         this.cond = cond;
         this.labels = labels;
     }
 
-    public LocalVariable getCond() {
+    public Variable getCond() {
         return cond;
     }
 
@@ -44,11 +44,11 @@ public class SwitchInst implements TACInst {
         return labels;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return null;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Collections.singleton(cond);
     }
 

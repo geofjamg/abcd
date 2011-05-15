@@ -25,21 +25,21 @@ import java.util.Set;
  */
 public class MonitorExitInst implements TACInst {
 
-    private final LocalVariable var;
+    private final Variable var;
 
-    public MonitorExitInst(LocalVariable var) {
+    public MonitorExitInst(Variable var) {
         this.var = var;
     }
 
-    public LocalVariable getVar() {
+    public Variable getVar() {
         return var;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return null;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Collections.singleton(var);
     }
 

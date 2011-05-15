@@ -25,16 +25,16 @@ import java.util.Set;
  */
 public class AssignConstInst implements TACInst {
 
-    private final LocalVariable result;
+    private final Variable result;
 
     private final Const value;
 
-    public AssignConstInst(LocalVariable result, Const value) {
+    public AssignConstInst(Variable result, Const value) {
         this.result = result;
         this.value = value;
     }
 
-    public LocalVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
@@ -42,13 +42,13 @@ public class AssignConstInst implements TACInst {
         return value;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return result;
     }
 
-    public Set<LocalVariable> getUses() {
-        if (value instanceof LocalVariable) {
-            return Collections.singleton((LocalVariable) value);
+    public Set<Variable> getUses() {
+        if (value instanceof Variable) {
+            return Collections.singleton((Variable) value);
         } else {
             return Collections.emptySet();
         }

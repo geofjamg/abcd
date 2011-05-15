@@ -26,29 +26,29 @@ import java.util.Set;
  */
 public class PhiInst implements TACInst {
 
-    private final LocalVariable result;
+    private final Variable result;
 
-    private final List<LocalVariable> args;
+    private final List<Variable> args;
 
-    public PhiInst(LocalVariable result, List<LocalVariable> args) {
+    public PhiInst(Variable result, List<Variable> args) {
         this.result = result;
         this.args = args;
     }
 
-    public LocalVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
-    public List<LocalVariable> getArgs() {
+    public List<Variable> getArgs() {
         return args;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return result;
     }
 
-    public Set<LocalVariable> getUses() {
-        Set<LocalVariable> uses = new HashSet<LocalVariable>(args.size());
+    public Set<Variable> getUses() {
+        Set<Variable> uses = new HashSet<Variable>(args.size());
         uses.addAll(args);
         return uses;
     }

@@ -25,19 +25,19 @@ import java.util.Set;
  */
 public class UnaryInst implements TACInst {
 
-    private final LocalVariable result;
+    private final Variable result;
 
     private final UnaryOp operator;
 
-    private final LocalVariable var;
+    private final Variable var;
 
-    public UnaryInst(LocalVariable result, UnaryOp operator, LocalVariable var) {
+    public UnaryInst(Variable result, UnaryOp operator, Variable var) {
         this.result = result;
         this.operator = operator;
         this.var = var;
     }
 
-    public LocalVariable getResult() {
+    public Variable getResult() {
         return result;
     }
 
@@ -45,15 +45,15 @@ public class UnaryInst implements TACInst {
         return operator;
     }
 
-    public LocalVariable getVar() {
+    public Variable getVar() {
         return var;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return result;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Collections.singleton(var);
     }
 

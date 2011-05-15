@@ -21,7 +21,7 @@ import fr.jamgotchian.abcd.core.controlflow.BackwardDataFlowAnalysis;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.tac.model.LocalVariable;
+import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.HashSet;
@@ -34,7 +34,7 @@ import java.util.logging.Logger;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, Edge, Set<LocalVariable>> {
+public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, Edge, Set<Variable>> {
 
     private static final Logger logger = Logger.getLogger(LiveVariablesAnalysis.class.getName());
 
@@ -42,8 +42,8 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
         super(CFG.getGraph(), CFG.getExitBlock());
     }
 
-    private static Set<LocalVariable> getDefs(BasicBlock block) {
-        Set<LocalVariable> defs = new HashSet<LocalVariable>();
+    private static Set<Variable> getDefs(BasicBlock block) {
+        Set<Variable> defs = new HashSet<Variable>();
         for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
             if (inst.getDef() != null) {
                 defs.add(inst.getDef());
@@ -52,8 +52,8 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
         return defs;
     }
 
-    private static Set<LocalVariable> getUses(BasicBlock block) {
-        Set<LocalVariable> uses = new HashSet<LocalVariable>();
+    private static Set<Variable> getUses(BasicBlock block) {
+        Set<Variable> uses = new HashSet<Variable>();
         for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
             uses.addAll(inst.getUses());
         }
@@ -61,10 +61,10 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
     }
 
     @Override
-    public Map<BasicBlock, Set<LocalVariable>> analyse() {
+    public Map<BasicBlock, Set<Variable>> analyse() {
         logger.log(Level.FINER, "Live variables analysis :");
-        Map<BasicBlock, Set<LocalVariable>> liveVariables = super.analyse();
-        for (Map.Entry<BasicBlock, Set<LocalVariable>> entry : liveVariables.entrySet()) {
+        Map<BasicBlock, Set<Variable>> liveVariables = super.analyse();
+        for (Map.Entry<BasicBlock, Set<Variable>> entry : liveVariables.entrySet()) {
             logger.log(Level.FINER, "  {0} : {1}",
                     new Object[] {entry.getKey(), entry.getValue()});
         }
@@ -72,28 +72,28 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
     }
 
     @Override
-    protected Set<LocalVariable> getInitValue(BasicBlock node, boolean isExitNode) {
-        return new HashSet<LocalVariable>();
+    protected Set<Variable> getInitValue(BasicBlock node, boolean isExitNode) {
+        return new HashSet<Variable>();
     }
 
     @Override
-    protected Set<LocalVariable> combineValues(Set<LocalVariable> value1,
-                                               Set<LocalVariable> value2) {
+    protected Set<Variable> combineValues(Set<Variable> value1,
+                                               Set<Variable> value2) {
         return Sets.intersection(value1, value2);
     }
 
     @Override
-    protected Set<LocalVariable> applyTranferFunction(BasicBlock node,
-                                                      Set<LocalVariable> outValue) {
-        Set<LocalVariable> inValue = new HashSet<LocalVariable>(outValue);
+    protected Set<Variable> applyTranferFunction(BasicBlock node,
+                                                      Set<Variable> outValue) {
+        Set<Variable> inValue = new HashSet<Variable>(outValue);
         inValue.removeAll(getDefs(node));
         inValue.addAll(getUses(node));
         return inValue;
     }
 
     @Override
-    protected boolean valuesEqual(Set<LocalVariable> value1,
-                                  Set<LocalVariable> value2) {
+    protected boolean valuesEqual(Set<Variable> value1,
+                                  Set<Variable> value2) {
         return Collections3.sameContent(value1, value2);
     }
 }

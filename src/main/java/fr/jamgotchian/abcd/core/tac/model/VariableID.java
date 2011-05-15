@@ -20,7 +20,7 @@ package fr.jamgotchian.abcd.core.tac.model;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LocalVariableID {
+public class VariableID {
 
     public static final int UNDEFINED_VERSION = -1;
 
@@ -28,12 +28,12 @@ public class LocalVariableID {
 
     private int version;
 
-    public LocalVariableID(int index, int version) {
+    public VariableID(int index, int version) {
         this.index = index;
         this.version = version;
     }
 
-    public LocalVariableID(int index) {
+    public VariableID(int index) {
         this(index, UNDEFINED_VERSION);
     }
 
@@ -51,8 +51,8 @@ public class LocalVariableID {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof LocalVariableID) {
-            LocalVariableID id = (LocalVariableID) obj;
+        if (obj instanceof VariableID) {
+            VariableID id = (VariableID) obj;
             return index == id.index
                     && version == id.version;
         }
@@ -65,8 +65,8 @@ public class LocalVariableID {
     }
 
     @Override
-    public LocalVariableID clone() {
-        return new LocalVariableID(index, version);
+    public VariableID clone() {
+        return new VariableID(index, version);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class LocalVariableID {
         } else {
             builder.append("v").append(index);
         }
-        if (version != LocalVariableID.UNDEFINED_VERSION) {
+        if (version != VariableID.UNDEFINED_VERSION) {
             builder.append(".").append(version);
         }
         return builder.toString();

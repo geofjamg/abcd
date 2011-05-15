@@ -36,11 +36,11 @@ public class GotoInst implements TACInst {
         return label;
     }
 
-    public LocalVariable getDef() {
+    public Variable getDef() {
         return null;
     }
 
-    public Set<LocalVariable> getUses() {
+    public Set<Variable> getUses() {
         return Collections.emptySet();
     }
 

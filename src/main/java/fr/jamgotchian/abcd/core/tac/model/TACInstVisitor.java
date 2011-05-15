@@ -24,7 +24,7 @@ public interface TACInstVisitor<R, A> {
 
     R visit(TACInstSeq seq, A arg);
 
-    R visit(LocalVariable inst, A arg);
+    R visit(Variable inst, A arg);
 
     R visit(IntConst inst, A arg);
 
