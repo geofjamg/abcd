@@ -332,13 +332,9 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         writer.writeSpace().write("=").writeSpace().writeKeyword("call").writeSpace();
         inst.getObject().accept(this, arg);
         writer.writeSpace();
-        if ("<init>".equals(inst.getMethodName())) {
-            writer.writeLt().write("init").writeGt();
-        } else {
-            writer.write(inst.getMethodName());
-        }
+        writer.write(inst.getSignature());
         writer.writeSpace();
-        for (Iterator<Variable> it = inst.getArgs().iterator(); it.hasNext();) {
+        for (Iterator<Variable> it = inst.getArguments().iterator(); it.hasNext();) {
             Variable argVar = it.next();
             argVar.accept(this, arg);
             if (it.hasNext()) {
@@ -351,9 +347,9 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
     public Void visit(CallStaticMethodInst inst, Void arg) {
         inst.getResult().accept(this, arg);
         writer.writeSpace().write("=").writeSpace().writeKeyword("callstatic")
-                .writeSpace().write(inst.getScope()).writeSpace().write(inst.getMethodName())
+                .writeSpace().write(inst.getScope()).writeSpace().write(inst.getSignature())
                 .writeSpace();
-        for (Iterator<Variable> it = inst.getArgs().iterator(); it.hasNext();) {
+        for (Iterator<Variable> it = inst.getArguments().iterator(); it.hasNext();) {
             Variable argVar = it.next();
             argVar.accept(this, arg);
             if (it.hasNext()) {

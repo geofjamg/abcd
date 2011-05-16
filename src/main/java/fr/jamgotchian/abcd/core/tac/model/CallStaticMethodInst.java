@@ -30,47 +30,32 @@ public class CallStaticMethodInst extends DefInst {
 
     private final ClassName scope;
 
-    private final String methodName;
+    private final MethodeSignature signature;
 
-    private final JavaType returnType;
+    private final List<Variable> arguments;
 
-    private final List<JavaType> argTypes;
-
-    private final List<Variable> args;
-
-    CallStaticMethodInst(int defID, Variable result, ClassName scope, String methodName,
-                         JavaType returnType, List<JavaType> argTypes,
-                         List<Variable> args) {
+    CallStaticMethodInst(int defID, Variable result, ClassName scope,
+                         MethodeSignature signature, List<Variable> arguments) {
         super(defID, result);
         this.scope = scope;
-        this.methodName = methodName;
-        this.returnType = returnType;
-        this.argTypes = argTypes;
-        this.args = args;
+        this.signature = signature;
+        this.arguments = arguments;
     }
 
     public ClassName getScope() {
         return scope;
     }
 
-    public String getMethodName() {
-        return methodName;
+    public MethodeSignature getSignature() {
+        return signature;
     }
 
-    public JavaType getReturnType() {
-        return returnType;
-    }
-
-    public List<JavaType> getArgTypes() {
-        return argTypes;
-    }
-
-    public List<Variable> getArgs() {
-        return args;
+    public List<Variable> getArguments() {
+        return arguments;
     }
 
     public Set<Variable> getUses() {
-        return new HashSet<Variable>(args);
+        return new HashSet<Variable>(arguments);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

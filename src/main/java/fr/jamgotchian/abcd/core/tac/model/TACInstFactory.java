@@ -51,17 +51,15 @@ public class TACInstFactory {
     }
 
     public CallMethodInst newCallMethod(Variable result, Variable object,
-                                        String methodName, JavaType returnType,
-                                        List<JavaType> argTypes, List<Variable> args) {
-        return new CallMethodInst(defID++, result, object, methodName, returnType,
-                                  argTypes, args);
+                                        MethodeSignature signature,
+                                        List<Variable> arguments) {
+        return new CallMethodInst(defID++, result, object, signature, arguments);
     }
 
     public CallStaticMethodInst newCallStaticMethod(Variable result, ClassName scope,
-            String methodName, JavaType returnType, List<JavaType> argTypes,
-            List<Variable> args) {
-        return new CallStaticMethodInst(defID++, result, scope, methodName, returnType,
-                                        argTypes, args);
+                                                    MethodeSignature signature,
+                                                    List<Variable> arguments) {
+        return new CallStaticMethodInst(defID++, result, scope, signature, arguments);
     }
 
     public CastInst newCast(Variable result, Variable var, JavaType type) {

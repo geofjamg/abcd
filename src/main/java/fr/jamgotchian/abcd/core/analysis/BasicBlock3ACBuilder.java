@@ -39,6 +39,7 @@ import fr.jamgotchian.abcd.core.tac.model.FloatConst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.IntConst;
 import fr.jamgotchian.abcd.core.tac.model.LongConst;
+import fr.jamgotchian.abcd.core.tac.model.MethodeSignature;
 import fr.jamgotchian.abcd.core.tac.model.NullConst;
 import fr.jamgotchian.abcd.core.tac.model.ShortConst;
 import fr.jamgotchian.abcd.core.tac.model.StringConst;
@@ -869,6 +870,13 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         }
 
         String methodName = node.name;
+        if ("<init>".equals(methodName)) {
+            methodName = "#init#";
+        }
+
+        MethodeSignature signature = new MethodeSignature(methodName, returnJavaType,
+                                                          argJavaTypes);
+
         Variable resultVar = tmpVarFactory.create(block);
         switch (node.getOpcode()) {
             case INVOKEVIRTUAL:
@@ -876,16 +884,15 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC: {
                 Variable objVar = popVar();
-                addInst(block, instFactory.newCallMethod(resultVar, objVar, methodName,
-                                                  returnJavaType, argJavaTypes,
-                                                  args));
+                addInst(block, instFactory.newCallMethod(resultVar, objVar, signature,
+                                                         args));
                 break;
             }
 
             case INVOKESTATIC: {
                 ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
-                addInst(block, instFactory.newCallStaticMethod(resultVar, className, methodName,
-                                                        returnJavaType, argJavaTypes, args));
+                addInst(block, instFactory.newCallStaticMethod(resultVar, className,
+                                                               signature, args));
                 break;
             }
         }

@@ -29,49 +29,34 @@ public class CallMethodInst extends DefInst {
 
     private final Variable object;
 
-    private final String methodName;
+    private final MethodeSignature signature;
 
-    private final JavaType returnType;
-
-    private final List<JavaType> argTypes;
-
-    private final List<Variable> args;
+    private final List<Variable> arguments;
 
     public CallMethodInst(int defID, Variable result, Variable object,
-                          String methodName, JavaType returnType,
-                          List<JavaType> argTypes, List<Variable> args) {
+                          MethodeSignature signature, List<Variable> arguments) {
         super(defID, result);
         this.object = object;
-        this.methodName = methodName;
-        this.returnType = returnType;
-        this.argTypes = argTypes;
-        this.args = args;
+        this.signature = signature;
+        this.arguments = arguments;
     }
 
     public Variable getObject() {
         return object;
     }
 
-    public String getMethodName() {
-        return methodName;
+    public MethodeSignature getSignature() {
+        return signature;
     }
 
-    public JavaType getReturnType() {
-        return returnType;
-    }
-
-    public List<JavaType> getArgTypes() {
-        return argTypes;
-    }
-
-    public List<Variable> getArgs() {
-        return args;
+    public List<Variable> getArguments() {
+        return arguments;
     }
 
     public Set<Variable> getUses() {
-        Set<Variable> uses = new HashSet<Variable>(args.size()+1);
+        Set<Variable> uses = new HashSet<Variable>(arguments.size()+1);
         uses.add(object);
-        uses.addAll(args);
+        uses.addAll(arguments);
         return uses;
     }
 

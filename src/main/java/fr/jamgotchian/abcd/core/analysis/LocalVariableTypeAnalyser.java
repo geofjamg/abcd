@@ -243,10 +243,10 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
 
     public Boolean visit(CallMethodInst inst, Void arg) {
         Variable result = inst.getResult();
-        boolean change = getType(result.getID()).narrow(inst.getReturnType(), factory);
-        for (int i = 0; i < inst.getArgs().size(); i++) {
-            JavaType argType = inst.getArgTypes().get(i);
-            Variable var = inst.getArgs().get(i);
+        boolean change = getType(result.getID()).narrow(inst.getSignature().getReturnType(), factory);
+        for (int i = 0; i < inst.getArguments().size(); i++) {
+            JavaType argType = inst.getSignature().getArgumentTypes().get(i);
+            Variable var = inst.getArguments().get(i);
             if (getType(var.getID()).narrow(argType, factory)) {
                 change = true;
             }
@@ -256,10 +256,10 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
 
     public Boolean visit(CallStaticMethodInst inst, Void arg) {
         Variable result = inst.getResult();
-        boolean change = getType(result.getID()).narrow(inst.getReturnType(), factory);
-        for (int i = 0; i < inst.getArgs().size(); i++) {
-            JavaType argType = inst.getArgTypes().get(i);
-            Variable var = inst.getArgs().get(i);
+        boolean change = getType(result.getID()).narrow(inst.getSignature().getReturnType(), factory);
+        for (int i = 0; i < inst.getArguments().size(); i++) {
+            JavaType argType = inst.getSignature().getArgumentTypes().get(i);
+            Variable var = inst.getArguments().get(i);
             if (getType(var.getID()).narrow(argType, factory)) {
                 change = true;
             }
