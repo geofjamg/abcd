@@ -70,7 +70,6 @@ import java.awt.Color;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -109,8 +108,8 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
 
     public static String toString(Range range,
                                   TACInstSeq seq,
-                                  ArrayDeque<Variable> inputStack,
-                                  ArrayDeque<Variable> outputStack,
+                                  VariableStack inputStack,
+                                  VariableStack outputStack,
                                   CodeWriterFactory factory) {
         Writer writer = new StringWriter();
         try {
@@ -141,8 +140,8 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
 
     public static String toDOTHTMLLike(Range range,
                                        TACInstSeq seq,
-                                       ArrayDeque<Variable> inputStack,
-                                       ArrayDeque<Variable> outputStack) {
+                                       VariableStack inputStack,
+                                       VariableStack outputStack) {
         return toString(range, seq, inputStack, outputStack, new DOTHTMLLikeCodeWriterFactory());
     }
 

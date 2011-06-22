@@ -33,9 +33,9 @@ import fr.jamgotchian.abcd.core.tac.model.StringConst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.tac.util.VariableStack;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -71,15 +71,15 @@ public class TreeAddressCodeBuilder {
         this.classNameFactory = classNameFactory;
     }
 
-    private void processBlock(BasicBlock block, List<ArrayDeque<Variable>> inputStacks) {
+    private void processBlock(BasicBlock block, List<VariableStack> inputStacks) {
 
         logger.log(Level.FINER, "------ Process block {0} ------", block);
 
         AnalysisData data = (AnalysisData) block.getData();
 
-        ArrayDeque<Variable> inputStack = null;
+        VariableStack inputStack = null;
         if (inputStacks.isEmpty()) {
-            inputStack = new ArrayDeque<Variable>();
+            inputStack = new VariableStack();
         } else if (inputStacks.size() == 1) {
             inputStack = inputStacks.get(0).clone();
         } else {
@@ -88,7 +88,7 @@ public class TreeAddressCodeBuilder {
 
         data.setInputStack2(inputStack.clone());
 
-        ArrayDeque<Variable> outputStack = inputStack.clone();
+        VariableStack outputStack = inputStack.clone();
         Iterator<Edge> itE = graph.getIncomingEdgesOf(block).iterator();
         if (itE.hasNext() && itE.next().isExceptional()) {
             Variable tmpVar = tmpVarFactory.create(block);
@@ -112,8 +112,7 @@ public class TreeAddressCodeBuilder {
         }
     }
 
-    private ArrayDeque<Variable> mergeStacks
-            (List<ArrayDeque<Variable>> stacks, BasicBlock block) {
+    private VariableStack mergeStacks(List<VariableStack> stacks, BasicBlock block) {
         if (stacks.size() <= 1) {
             throw new ABCDException("stacks.size() <= 1");
         }
@@ -128,13 +127,11 @@ public class TreeAddressCodeBuilder {
             }
         }
 
-        ArrayDeque<Variable> stacksMerge
-                = new ArrayDeque<Variable>(stacks.get(0).size());
+        VariableStack stacksMerge = new VariableStack();
 
-        List<List<Variable>> toList
-                = new ArrayList<List<Variable>>(stacks.size());
+        List<List<Variable>> toList = new ArrayList<List<Variable>>(stacks.size());
         for (int i = 0; i < stacks.size(); i++) {
-            toList.add(new ArrayList<Variable>(stacks.get(i)));
+            toList.add(stacks.get(i).toList());
         }
         for (int i = 0; i < stacks.get(0).size(); i++) {
             Set<Variable> vars = new HashSet<Variable>(stacks.size());
@@ -142,11 +139,11 @@ public class TreeAddressCodeBuilder {
                 vars.add(toList.get(j).get(i));
             }
             if (vars.size() == 1) {
-                stacksMerge.add(vars.iterator().next());
+                stacksMerge.push(vars.iterator().next());
             } else {
                 Variable result = tmpVarFactory.create(block);
                 BasicBlock3ACBuilder.addInst(block, instFactory.newChoice(result, vars));
-                stacksMerge.add(result);
+                stacksMerge.push(result);
             }
         }
 
@@ -277,8 +274,7 @@ public class TreeAddressCodeBuilder {
                     break;
                 }
 
-                List<ArrayDeque<Variable>> inputStacks
-                        = new ArrayList<ArrayDeque<Variable>>();
+                List<VariableStack> inputStacks = new ArrayList<VariableStack>();
                 for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
                     if (incomingEdge.isLoopBack()) {
                         continue;

@@ -23,8 +23,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockData;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
-import java.util.ArrayDeque;
+import fr.jamgotchian.abcd.core.tac.util.VariableStack;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -45,9 +44,9 @@ public class AnalysisData implements BasicBlockData {
 
     private int stackProduction;
 
-    private ArrayDeque<Variable> inputStack2;
+    private VariableStack inputStack2;
 
-    private ArrayDeque<Variable> outputStack2;
+    private VariableStack outputStack2;
 
     private List<TACInst> instructions;
 
@@ -129,19 +128,19 @@ public class AnalysisData implements BasicBlockData {
         return instructions.isEmpty() ? null : instructions.get(instructions.size()-1);
     }
 
-    public ArrayDeque<Variable> getInputStack2() {
+    public VariableStack getInputStack2() {
         return inputStack2;
     }
 
-    public void setInputStack2(ArrayDeque<Variable> inputStack2) {
+    public void setInputStack2(VariableStack inputStack2) {
         this.inputStack2 = inputStack2;
     }
 
-    public ArrayDeque<Variable> getOutputStack2() {
+    public VariableStack getOutputStack2() {
         return outputStack2;
     }
 
-    public void setOutputStack2(ArrayDeque<Variable> outputStack2) {
+    public void setOutputStack2(VariableStack outputStack2) {
         this.outputStack2 = outputStack2;
     }
 }
