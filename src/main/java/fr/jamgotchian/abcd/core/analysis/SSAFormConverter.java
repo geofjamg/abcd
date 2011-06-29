@@ -77,8 +77,6 @@ public class SSAFormConverter {
 
     private Multimap<BasicBlock, Integer> liveVariables;
 
-    private Set<Integer> defs;
-
     private Multimap<Integer, BasicBlock> defBlocks;
 
     public SSAFormConverter(ControlFlowGraph graph, TACInstFactory instFactory) {
@@ -102,7 +100,7 @@ public class SSAFormConverter {
         DominatorInfo<BasicBlock, Edge> dominatorInfo = graph.getDominatorInfo();
 
         Multimap<Integer, BasicBlock> phi = HashMultimap.create();
-        for (int defIndex : defs) {
+        for (int defIndex : defBlocks.keySet()) {
             Set<BasicBlock> w = new HashSet<BasicBlock>(defBlocks.get(defIndex));
             while (w.size() > 0) {
                 BasicBlock n = w.iterator().next();
@@ -134,7 +132,7 @@ public class SSAFormConverter {
     }
 
     private void renameVariables() {
-        for (int defIndex : defs) {
+        for (int defIndex : defBlocks.keySet()) {
             Counter versionCount = new Counter(0);
             Deque<Integer> versionStack = new ArrayDeque<Integer>();
             versionStack.push(0);
@@ -237,6 +235,7 @@ public class SSAFormConverter {
     }
 
     public void convert() {
+        // live variables analysis
         liveVariables = HashMultimap.create();
         for (Map.Entry<BasicBlock, Set<Variable>> entry :
                 new LiveVariablesAnalysis(graph).analyse().entrySet()) {
@@ -251,13 +250,12 @@ public class SSAFormConverter {
 
         logger.log(Level.FINER, "Convert to SSA form");
 
-        defs = new HashSet<Integer>();
+        // fill map containing all definitions and its basic block
         defBlocks = HashMultimap.create();
         for (BasicBlock block : graph.getBasicBlocks()) {
             for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
                 if (inst instanceof DefInst) {
                     Variable def = ((DefInst) inst).getResult();
-                    defs.add(def.getIndex());
                     defBlocks.put(def.getIndex(), block);
                 }
             }
