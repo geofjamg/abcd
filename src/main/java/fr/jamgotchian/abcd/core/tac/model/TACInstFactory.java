@@ -79,12 +79,14 @@ public class TACInstFactory {
         return new GetArrayInst(defID++, result, array, index);
     }
 
-    public GetFieldInst newGetField(Variable result, Variable object, String fieldName) {
-        return new GetFieldInst(defID++, result, object, fieldName);
+    public GetFieldInst newGetField(Variable result, Variable object,
+                                    String fieldName, JavaType fieldType) {
+        return new GetFieldInst(defID++, result, object, fieldName, fieldType);
     }
 
-    public GetStaticFieldInst newGetStaticField(Variable result, ClassName scope, String fieldName) {
-        return new GetStaticFieldInst(defID++, result, scope, fieldName);
+    public GetStaticFieldInst newGetStaticField(Variable result, ClassName scope,
+                                                String fieldName, JavaType fieldType) {
+        return new GetStaticFieldInst(defID++, result, scope, fieldName, fieldType);
     }
 
     public GotoInst newGoto(Label label) {

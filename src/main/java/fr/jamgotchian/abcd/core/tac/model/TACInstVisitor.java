@@ -24,26 +24,6 @@ public interface TACInstVisitor<R, A> {
 
     R visit(TACInstSeq seq, A arg);
 
-    R visit(Variable inst, A arg);
-
-    R visit(IntConst inst, A arg);
-
-    R visit(LongConst inst, A arg);
-
-    R visit(ByteConst inst, A arg);
-
-    R visit(ShortConst inst, A arg);
-
-    R visit(FloatConst inst, A arg);
-
-    R visit(DoubleConst inst, A arg);
-
-    R visit(StringConst inst, A arg);
-
-    R visit(NullConst inst, A arg);
-
-    R visit(ClassConst inst, A arg);
-
     R visit(ArrayLengthInst inst, A arg);
 
     R visit(AssignConstInst inst, A arg);

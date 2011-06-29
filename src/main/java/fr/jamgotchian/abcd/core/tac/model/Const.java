@@ -16,10 +16,14 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import fr.jamgotchian.abcd.core.type.JavaType;
+import java.util.Set;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Const extends Operand {
+public interface Const {
 
+    Set<JavaType> getPossibleTypes();
 }

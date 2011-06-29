@@ -123,8 +123,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case GETSTATIC: {
                 ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
                 String varName = node.name;
+                JavaType fieldType = JavaType.newType(Type.getType(node.desc), classNameFactory);
                 Variable tmpVar = tmpVarFactory.create(block);
-                addInst(block, instFactory.newGetStaticField(tmpVar, className, varName));
+                addInst(block, instFactory.newGetStaticField(tmpVar, className, varName, fieldType));
                 stack.push(tmpVar);
                 break;
             }
@@ -141,7 +142,8 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable resultVar = tmpVarFactory.create(block);
                 Variable objVar = stack.pop();
                 String fieldName = node.name;
-                addInst(block, instFactory.newGetField(resultVar, objVar, fieldName));
+                JavaType fieldType = JavaType.newType(Type.getType(node.desc), classNameFactory);
+                addInst(block, instFactory.newGetField(resultVar, objVar, fieldName, fieldType));
                 stack.push(resultVar);
                 break;
             }

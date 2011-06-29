@@ -17,6 +17,8 @@
 package fr.jamgotchian.abcd.core.tac.model;
 
 import fr.jamgotchian.abcd.core.type.JavaType;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  *
@@ -34,12 +36,8 @@ public class DoubleConst implements Const {
         return value;
     }
 
-    public JavaType getType() {
-        return JavaType.DOUBLE;
-    }
-
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
-        return visitor.visit(this, arg);
+    public Set<JavaType> getPossibleTypes() {
+        return Collections.singleton(JavaType.DOUBLE);
     }
 
     @Override

@@ -23,7 +23,7 @@ import fr.jamgotchian.abcd.core.type.JavaType;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Variable implements Operand {
+public class Variable {
 
     private final VariableID ID;
 
@@ -70,10 +70,6 @@ public class Variable implements Operand {
 
     public void setType(JavaType type) {
         this.type = type;
-    }
-
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
-        return visitor.visit(this, arg);
     }
 
     @Override

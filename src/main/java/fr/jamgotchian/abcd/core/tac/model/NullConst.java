@@ -18,6 +18,8 @@ package fr.jamgotchian.abcd.core.tac.model;
 
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  *
@@ -31,12 +33,8 @@ public class NullConst implements Const {
         this.factory = factory;
     }
 
-    public JavaType getType() {
-        return JavaType.newRefType(factory.newClassName(Object.class.getName()));
-    }
-
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
-        return visitor.visit(this, arg);
+    public Set<JavaType> getPossibleTypes() {
+        return Collections.singleton(JavaType.newRefType(factory.newClassName(Object.class.getName())));
     }
 
     @Override

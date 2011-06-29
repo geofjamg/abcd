@@ -17,6 +17,9 @@
 package fr.jamgotchian.abcd.core.tac.model;
 
 import fr.jamgotchian.abcd.core.type.JavaType;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -34,11 +37,17 @@ public class ShortConst implements Const {
         return value;
     }
 
-    public JavaType getType() {
-        return JavaType.SHORT;
+    public Set<JavaType> getPossibleTypes() {
+        Set<JavaType> types = new HashSet<JavaType>(2);
+        types.add(JavaType.SHORT);
+        if (value == 0 || value == 1) {
+            types.add(JavaType.BOOLEAN);
+        }
+        return Collections.unmodifiableSet(types);
     }
 
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
-        return visitor.visit(this, arg);
+    @Override
+    public String toString() {
+        return Short.toString(value);
     }
 }

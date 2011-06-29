@@ -30,6 +30,8 @@ public class BasicBlockTestImpl extends Vertex implements BasicBlock {
 
     private int loopLevel;
 
+    private BasicBlockData data;
+
     public BasicBlockTestImpl(int id) {
         this(null, id);
     }
@@ -78,9 +80,10 @@ public class BasicBlockTestImpl extends Vertex implements BasicBlock {
     }
 
     public BasicBlockData getData() {
-        return null;
+        return data;
     }
 
     public void setData(BasicBlockData data) {
+        this.data = data;
     }
 }

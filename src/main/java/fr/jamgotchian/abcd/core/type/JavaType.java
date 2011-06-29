@@ -17,6 +17,18 @@
 package fr.jamgotchian.abcd.core.type;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Sets;
+import fr.jamgotchian.abcd.core.common.ABCDException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.objectweb.asm.Type;
 
 /**
@@ -57,6 +69,46 @@ public class JavaType {
     public static final JavaType BOOLEAN = new JavaType(PrimitiveType.BOOLEAN, null, null, 0);
     public static final JavaType FLOAT = new JavaType(PrimitiveType.FLOAT, null, null, 0);
     public static final JavaType DOUBLE = new JavaType(PrimitiveType.DOUBLE, null, null, 0);
+
+    public static final Set<JavaType> PRIMITIVE_TYPES
+            = Sets.newHashSet(VOID, INT, LONG, CHAR, BYTE, SHORT, BOOLEAN, FLOAT, DOUBLE);
+
+    public static final Set<JavaType> ARITHMETIC_TYPES
+            = Sets.newHashSet(INT, LONG, BYTE, SHORT, FLOAT, DOUBLE);
+
+    private static final Map<JavaType, List<JavaType>> WIDENING_PRIMITIVE_CONVERSION;
+
+    static {
+        Map<JavaType, List<JavaType>> conversion = new HashMap<JavaType, List<JavaType>>();
+        conversion.put(JavaType.BYTE,
+                Collections.unmodifiableList(Arrays.asList(JavaType.BYTE, JavaType.SHORT,
+                                                           JavaType.INT, JavaType.LONG,
+                                                           JavaType.FLOAT, JavaType.DOUBLE)));
+        conversion.put(JavaType.SHORT,
+                Collections.unmodifiableList(Arrays.asList(JavaType.SHORT, JavaType.INT,
+                                                           JavaType.LONG, JavaType.FLOAT,
+                                                           JavaType.DOUBLE)));
+        conversion.put(JavaType.CHAR,
+                Collections.unmodifiableList(Arrays.asList(JavaType.CHAR, JavaType.INT,
+                                                           JavaType.LONG, JavaType.FLOAT,
+                                                           JavaType.DOUBLE)));
+        conversion.put(JavaType.INT,
+                Collections.unmodifiableList(Arrays.asList(JavaType.INT, JavaType.LONG,
+                                                           JavaType.FLOAT, JavaType.DOUBLE)));
+        conversion.put(JavaType.LONG,
+                Collections.unmodifiableList(Arrays.asList(JavaType.LONG, JavaType.FLOAT,
+                                                           JavaType.DOUBLE)));
+        conversion.put(JavaType.FLOAT,
+                Collections.unmodifiableList(Arrays.asList(JavaType.FLOAT, JavaType.DOUBLE)));
+
+        conversion.put(JavaType.BOOLEAN,
+                Collections.unmodifiableList(Arrays.asList(JavaType.BOOLEAN)));
+
+        conversion.put(JavaType.VOID,
+                Collections.unmodifiableList(Arrays.asList(JavaType.VOID)));
+
+        WIDENING_PRIMITIVE_CONVERSION = Collections.unmodifiableMap(conversion);
+    }
 
     public static JavaType newRefType(ClassName className) {
         return new JavaType(null, className, null, 0);
@@ -183,6 +235,106 @@ public class JavaType {
 
     public String getQualifiedName() {
         return getName(true);
+    }
+
+    public static Set<JavaType> widen(Set<JavaType> types1, Set<JavaType> types2,
+                                      ClassNameFactory factory) {
+        if (types2.isEmpty()) {
+            return types1;
+        }
+        Set<JavaType> newTypes = new HashSet<JavaType>();
+        for (JavaType type1 : types1) {
+            newTypes.addAll(type1.widen(types2, factory));
+        }
+        return newTypes;
+    }
+
+    public Set<JavaType> widen(Set<JavaType> otherTypes, ClassNameFactory factory) {
+        if (otherTypes.isEmpty()) {
+            throw new ABCDException("otherTypes.isEmpty()");
+        }
+        Set<JavaType> newTypes = new HashSet<JavaType>();
+        for (JavaType otherType : otherTypes) {
+            JavaType newType = widen(otherType, factory);
+            if (newType != null) {
+                newTypes.add(newType);
+            }
+        }
+        return newTypes;
+    }
+
+    public JavaType widen(JavaType otherType, ClassNameFactory factory) {
+        if (otherType == null) {
+            throw new ABCDException("otherType == null");
+        }
+        // types are equals
+        if (otherType.equals(this)) {
+            return this;
+        }
+        if (isPrimitive()) {
+            // cannot widen primitive to reference type
+            if (otherType.isReference()) {
+                return null;
+            }
+            // try to find a common widening conversion type
+            List<JavaType> possibleTypes
+                    = new ArrayList<JavaType>(WIDENING_PRIMITIVE_CONVERSION.get(this));
+            possibleTypes.retainAll(WIDENING_PRIMITIVE_CONVERSION.get(otherType));
+            if (possibleTypes.isEmpty()) {
+                return null;
+            }
+            JavaType newType = possibleTypes.get(0);
+            if (newType.equals(this)) {
+                return this;
+            } else {
+                return newType;
+            }
+        }
+        if (isReference()) {
+            if (otherType.isPrimitive()) {
+                // cannot widen reference to primitive type
+                return null;
+            }
+            // find first common ancestor
+            try {
+                Class<?> clazz = Class.forName(getClassName().getQualifiedName());
+                Collection<Class<?>> ancestors = getAncestors(clazz);
+
+                Class<?> otherClazz = Class.forName(otherType.getClassName().getQualifiedName());
+                Collection<Class<?>> otherAncestors = getAncestors(otherClazz);
+
+                ancestors.retainAll(otherAncestors);
+                // should remain at least java.lang.Object
+                Class<?> firstCommonAncestor = ancestors.iterator().next();
+
+                JavaType newType = JavaType.newRefType(factory.newClassName(firstCommonAncestor.getName()));
+                if (newType.equals(this)) {
+                    return this;
+                } else {
+                    return newType;
+                }
+            } catch (ClassNotFoundException e) {
+                throw new ABCDException(e);
+            }
+        }
+        throw new InternalError();
+    }
+
+    private static void addAncestors(Set<Class<?>> ancestors, Class<?> clazz) {
+        ancestors.add(clazz);
+        for (Class<?> i : clazz.getInterfaces()) {
+            addAncestors(ancestors, i);
+        }
+        Class<?> sc = clazz.getSuperclass();
+        if (sc != null) {
+            addAncestors(ancestors, sc);
+        }
+    }
+
+    private static Collection<Class<?>> getAncestors(Class<?> clazz) {
+        Set<Class<?>> ancestors = new LinkedHashSet<Class<?>>();
+        addAncestors(ancestors, clazz);
+        return ancestors;
     }
 
     @Override

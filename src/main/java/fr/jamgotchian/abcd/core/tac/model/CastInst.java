@@ -28,20 +28,20 @@ public class CastInst extends DefInst {
 
     private final Variable var;
 
-    private final JavaType type;
+    private final JavaType castType;
 
-    CastInst(int defID, Variable result, Variable var, JavaType type) {
+    CastInst(int defID, Variable result, Variable var, JavaType castType) {
         super(defID, result);
         this.var = var;
-        this.type = type;
+        this.castType = castType;
     }
 
     public Variable getVar() {
         return var;
     }
 
-    public JavaType getType() {
-        return type;
+    public JavaType getCastType() {
+        return castType;
     }
 
     public Set<Variable> getUses() {

@@ -91,7 +91,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public ControlFlowGraphImpl(String name, InsnList instructions) {
-        this(name, new BasicBlockImpl(Integer.MIN_VALUE, -1, BasicBlockType.ENTRY));
+        this(name, new BasicBlockImpl(Integer.MIN_VALUE, -1, BasicBlockType.ENTRY),
+                new BasicBlockImpl(BasicBlockType.EXIT));
         if (instructions == null) {
             throw new IllegalArgumentException("instructions == null");
         }
@@ -103,12 +104,16 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public ControlFlowGraphImpl(String name, BasicBlock entryBlock) {
+        this(name, entryBlock, new BasicBlockImpl(BasicBlockType.EXIT));
+    }
+
+    public ControlFlowGraphImpl(String name, BasicBlock entryBlock, BasicBlock exitBlock) {
         if (name == null) {
             throw new IllegalArgumentException("name == null");
         }
         this.name = name;
         this.entryBlock = entryBlock;
-        exitBlock = new BasicBlockImpl(BasicBlockType.EXIT);
+        this.exitBlock = exitBlock;
         graph = DirectedGraphs.newDirectedGraph();
         basicBlocks = new RangeMap<Range, BasicBlock>();
         naturalLoops = new HashMap<BasicBlock, NaturalLoop>();
@@ -120,7 +125,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public ControlFlowGraphImpl(String name) {
-        this(name, new BasicBlockImpl(BasicBlockType.ENTRY));
+        this(name, new BasicBlockImpl(BasicBlockType.ENTRY),
+                new BasicBlockImpl(BasicBlockType.EXIT));
     }
 
     public String getName() {
@@ -348,7 +354,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     public void analyse() {
         removeUnreachableBlock();
         removeUnnecessaryBlock();
-//        removeCriticalEdges();
+        removeCriticalEdges();
         dominatorInfo = DominatorInfo.create(graph, entryBlock, exitBlock, new EdgeFactoryImpl());
         performDepthFirstSearch();
         analyseForkJoin();

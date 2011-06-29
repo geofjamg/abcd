@@ -35,6 +35,7 @@ import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.tac.util.VariableStack;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
+import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,11 +90,14 @@ public class TreeAddressCodeBuilder {
         data.setInputStack2(inputStack.clone());
 
         VariableStack outputStack = inputStack.clone();
-        Iterator<Edge> itE = graph.getIncomingEdgesOf(block).iterator();
-        if (itE.hasNext() && itE.next().isExceptional()) {
+        Edge edge = graph.getFirstIncomingEdgeOf(block);
+        if (edge != null && edge.isExceptional()) {
             Variable tmpVar = tmpVarFactory.create(block);
-            BasicBlock3ACBuilder.addInst(block,
-                    instFactory.newAssignConst(tmpVar, new StringConst("EXCEPTION", classNameFactory)));
+            ClassName className
+                    = classNameFactory.newClassName((String) edge.getValue());
+            TACInst fakeInst
+                    = instFactory.newNewObject(tmpVar, className);
+            BasicBlock3ACBuilder.addInst(block, fakeInst);
             outputStack.push(tmpVar);
         }
 

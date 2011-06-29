@@ -25,18 +25,18 @@ import java.util.Set;
  */
 public class MonitorExitInst implements TACInst {
 
-    private final Variable var;
+    private final Variable obj;
 
-    MonitorExitInst(Variable var) {
-        this.var = var;
+    MonitorExitInst(Variable obj) {
+        this.obj = obj;
     }
 
-    public Variable getVar() {
-        return var;
+    public Variable getObj() {
+        return obj;
     }
 
     public Set<Variable> getUses() {
-        return Collections.singleton(var);
+        return Collections.singleton(obj);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

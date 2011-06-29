@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.tac.model;
 
 import fr.jamgotchian.abcd.core.type.ClassName;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.Collections;
 import java.util.Set;
 
@@ -30,10 +31,14 @@ public class GetStaticFieldInst extends DefInst {
 
     private final String fieldName;
 
-    GetStaticFieldInst(int defID, Variable result, ClassName scope, String fieldName) {
+    private final JavaType fieldType;
+
+    GetStaticFieldInst(int defID, Variable result, ClassName scope,
+                       String fieldName, JavaType fieldType) {
         super(defID, result);
         this.scope = scope;
         this.fieldName = fieldName;
+        this.fieldType = fieldType;
     }
 
     public ClassName getScope() {
@@ -42,6 +47,10 @@ public class GetStaticFieldInst extends DefInst {
 
     public String getFieldName() {
         return fieldName;
+    }
+
+    public JavaType getFieldType() {
+        return fieldType;
     }
 
     public Set<Variable> getUses() {

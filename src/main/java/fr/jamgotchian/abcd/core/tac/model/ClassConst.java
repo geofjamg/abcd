@@ -19,6 +19,8 @@ package fr.jamgotchian.abcd.core.tac.model;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  *
@@ -39,12 +41,8 @@ public class ClassConst implements Const {
         return className;
     }
 
-    public JavaType getType() {
-        return JavaType.newRefType(factory.newClassName(Class.class.getName()));
-    }
-
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
-        return visitor.visit(this, arg);
+    public Set<JavaType> getPossibleTypes() {
+        return Collections.singleton(JavaType.newRefType(factory.newClassName(Class.class.getName())));
     }
 
     @Override

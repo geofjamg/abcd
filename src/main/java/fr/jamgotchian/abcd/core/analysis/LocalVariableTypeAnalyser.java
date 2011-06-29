@@ -16,61 +16,49 @@
  */
 package fr.jamgotchian.abcd.core.analysis;
 
+import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.tac.model.ArrayLengthInst;
 import fr.jamgotchian.abcd.core.tac.model.AssignConstInst;
 import fr.jamgotchian.abcd.core.tac.model.AssignVarInst;
 import fr.jamgotchian.abcd.core.tac.model.BinaryInst;
-import fr.jamgotchian.abcd.core.tac.model.ByteConst;
 import fr.jamgotchian.abcd.core.tac.model.CallMethodInst;
 import fr.jamgotchian.abcd.core.tac.model.CallStaticMethodInst;
 import fr.jamgotchian.abcd.core.tac.model.CastInst;
 import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
-import fr.jamgotchian.abcd.core.tac.model.ClassConst;
 import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
-import fr.jamgotchian.abcd.core.tac.model.Const;
-import fr.jamgotchian.abcd.core.tac.model.DoubleConst;
-import fr.jamgotchian.abcd.core.tac.model.FloatConst;
-import fr.jamgotchian.abcd.core.tac.model.GetArrayInst;
+import fr.jamgotchian.abcd.core.tac.model.DefInst;
 import fr.jamgotchian.abcd.core.tac.model.GetFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.GetStaticFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.GotoInst;
 import fr.jamgotchian.abcd.core.tac.model.InstanceOfInst;
-import fr.jamgotchian.abcd.core.tac.model.IntConst;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
 import fr.jamgotchian.abcd.core.tac.model.LabelInst;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
-import fr.jamgotchian.abcd.core.tac.model.LongConst;
+import fr.jamgotchian.abcd.core.tac.model.MethodeSignature;
 import fr.jamgotchian.abcd.core.tac.model.MonitorEnterInst;
 import fr.jamgotchian.abcd.core.tac.model.MonitorExitInst;
 import fr.jamgotchian.abcd.core.tac.model.NewArrayInst;
 import fr.jamgotchian.abcd.core.tac.model.NewObjectInst;
-import fr.jamgotchian.abcd.core.tac.model.NullConst;
-import fr.jamgotchian.abcd.core.tac.model.PhiInst;
-import fr.jamgotchian.abcd.core.tac.model.ReturnInst;
-import fr.jamgotchian.abcd.core.tac.model.SetArrayInst;
-import fr.jamgotchian.abcd.core.tac.model.SetFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.SetStaticFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.ShortConst;
-import fr.jamgotchian.abcd.core.tac.model.StringConst;
-import fr.jamgotchian.abcd.core.tac.model.SwitchInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
-import fr.jamgotchian.abcd.core.tac.model.TACInstVisitor;
-import fr.jamgotchian.abcd.core.tac.model.ThrowInst;
-import fr.jamgotchian.abcd.core.tac.model.UnaryInst;
+import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.VariableID;
+import fr.jamgotchian.abcd.core.tac.util.EmptyTACInstVisitor;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
+import fr.jamgotchian.abcd.core.util.Collections3;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -78,7 +66,7 @@ import java.util.logging.Logger;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> {
+public class LocalVariableTypeAnalyser {
 
     private static final Logger logger
             = Logger.getLogger(LocalVariableTypeAnalyser.class.getName());
@@ -89,8 +77,250 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
 
     private final ClassNameFactory factory;
 
-    private final Map<VariableID, NarrowestType> types
-            = new HashMap<VariableID, NarrowestType>();
+    private final Map<VariableID, Set<JavaType>> possibleTypes
+            = new HashMap<VariableID, Set<JavaType>>();
+
+    private class Visitor extends EmptyTACInstVisitor<Boolean, Void> {
+
+        @Override
+        public Boolean visit(TACInstSeq seq, Void arg) {
+            Boolean change = Boolean.FALSE;
+            for (TACInst inst : seq.getInsts()) {
+            if (Boolean.TRUE.equals(inst.accept(this, arg))) {
+                    change = Boolean.TRUE;
+                }
+            }
+            return change;
+        }
+
+        private Boolean infereTypes(Set<JavaType> possibleLeftTypes,
+                                    JavaType... possibleRightTypes) {
+            return infereTypes(possibleLeftTypes, Sets.newHashSet(possibleRightTypes));
+        }
+
+        private Boolean infereTypes(Set<JavaType> possibleLeftTypes,
+                                    Set<JavaType> possibleRightTypes) {
+            if (possibleLeftTypes.isEmpty()) {
+                if (possibleRightTypes.isEmpty()) {
+                    return Boolean.FALSE;
+                } else {
+                    possibleLeftTypes.addAll(possibleRightTypes);
+                    return Boolean.TRUE;
+                }
+            } else {
+                Set<JavaType> newPossibleLeftTypes
+                        = fr.jamgotchian.abcd.core.util.Sets.intersection(possibleLeftTypes, possibleRightTypes);
+                if (newPossibleLeftTypes.isEmpty()) {
+                    newPossibleLeftTypes
+                            = JavaType.widen(possibleLeftTypes, possibleRightTypes, factory);
+                }
+                if (Collections3.sameContent(possibleLeftTypes, newPossibleLeftTypes)) {
+                    return Boolean.FALSE;
+                } else {
+                    possibleLeftTypes.clear();
+                    possibleLeftTypes.addAll(newPossibleLeftTypes);
+                    return Boolean.TRUE;
+                }
+            }
+        }
+
+        @Override
+        public Boolean visit(AssignConstInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getResult().getID()),
+                               inst.getValue().getPossibleTypes());
+        }
+
+        @Override
+        public Boolean visit(AssignVarInst inst, Void arg) {
+            boolean change
+                    = infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                  getPossibleTypes(inst.getValue().getID()));
+
+            change |= infereTypes(getPossibleTypes(inst.getValue().getID()),
+                                  getPossibleTypes(inst.getResult().getID()));
+
+            return change;
+        }
+
+        @Override
+        public Boolean visit(BinaryInst inst, Void arg) {
+            switch (inst.getOperator()) {
+                case AND:
+                case OR:
+                case EQ:
+                case NE:
+                case GE:
+                case GT:
+                case LE:
+                case LT: {
+                    boolean change
+                            = infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                          JavaType.BOOLEAN);
+
+                    change |= infereTypes(getPossibleTypes(inst.getVar1().getID()),
+                                          getPossibleTypes(inst.getVar2().getID()));
+
+                    change |= infereTypes(getPossibleTypes(inst.getVar2().getID()),
+                                          getPossibleTypes(inst.getVar1().getID()));
+
+                    return change;
+                }
+
+                case PLUS:
+                case MINUS: {
+                    // the result type is an arithmetic type
+                    boolean change
+                            = infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                          JavaType.ARITHMETIC_TYPES);
+
+                    change |= infereTypes(getPossibleTypes(inst.getVar1().getID()),
+                                          getPossibleTypes(inst.getVar2().getID()));
+
+                    change |= infereTypes(getPossibleTypes(inst.getVar2().getID()),
+                                          getPossibleTypes(inst.getVar1().getID()));
+
+                    change |= infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                          getPossibleTypes(inst.getVar1().getID()));
+
+                    return change;
+                }
+
+                default:
+                    return Boolean.FALSE;
+            }
+        }
+
+        @Override
+        public Boolean visit(ConditionalInst inst, Void arg) {
+            boolean change
+                    = infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                  getPossibleTypes(inst.getThen().getID()));
+            change |= infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                  getPossibleTypes(inst.getElse().getID()));
+            change |= infereTypes(getPossibleTypes(inst.getThen().getID()),
+                                  getPossibleTypes(inst.getResult().getID()));
+            change |= infereTypes(getPossibleTypes(inst.getElse().getID()),
+                                  getPossibleTypes(inst.getResult().getID()));
+            change |= infereTypes(getPossibleTypes(inst.getCond().getID()),
+                                  JavaType.BOOLEAN);
+
+            return change;
+        }
+
+        @Override
+        public Boolean visit(GetFieldInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getResult().getID()),
+                               inst.getFieldType());
+        }
+
+        @Override
+        public Boolean visit(GetStaticFieldInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getResult().getID()),
+                               inst.getFieldType());
+        }
+
+        @Override
+        public Boolean visit(NewObjectInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getResult().getID()),
+                               JavaType.newRefType(inst.getClassName()));
+        }
+
+        @Override
+        public Boolean visit(ArrayLengthInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getResult().getID()),
+                               JavaType.INT);
+        }
+
+        @Override
+        public Boolean visit(CastInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getResult().getID()),
+                               inst.getCastType());
+        }
+
+        @Override
+        public Boolean visit(InstanceOfInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getResult().getID()),
+                               JavaType.BOOLEAN);
+        }
+
+        @Override
+        public Boolean visit(CallMethodInst inst, Void arg) {
+            MethodeSignature signature = inst.getSignature();
+
+            boolean change = infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                         signature.getReturnType());
+
+            for (int i = 0; i < signature.getArgumentTypes().size(); i++) {
+                JavaType argType = signature.getArgumentTypes().get(i);
+                Variable argVar = inst.getArguments().get(i);
+                change |= infereTypes(getPossibleTypes(argVar.getID()), argType);
+            }
+
+            return change;
+        }
+
+        @Override
+        public Boolean visit(CallStaticMethodInst inst, Void arg) {
+            MethodeSignature signature = inst.getSignature();
+
+            boolean change = infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                         signature.getReturnType());
+
+            for (int i = 0; i < signature.getArgumentTypes().size(); i++) {
+                JavaType argType = signature.getArgumentTypes().get(i);
+                Variable argVar = inst.getArguments().get(i);
+                change |= infereTypes(getPossibleTypes(argVar.getID()), argType);
+            }
+
+            return change;
+        }
+
+        @Override
+        public Boolean visit(GotoInst inst, Void arg) {
+            // no type info
+            return Boolean.FALSE;
+        }
+
+        @Override
+        public Boolean visit(LabelInst inst, Void arg) {
+            // no type info
+            return Boolean.FALSE;
+        }
+
+        @Override
+        public Boolean visit(JumpIfInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getCond().getID()),
+                               JavaType.BOOLEAN);
+        }
+
+        @Override
+        public Boolean visit(MonitorEnterInst inst, Void arg) {
+            return Boolean.FALSE;
+        }
+
+        @Override
+        public Boolean visit(MonitorExitInst inst, Void arg) {
+            return Boolean.FALSE;
+        }
+
+        @Override
+        public Boolean visit(ChoiceInst inst, Void arg) {
+            throw new ABCDException("Should not have choice instruction during type analysis");
+        }
+
+        @Override
+        public Boolean visit(NewArrayInst inst, Void arg) {
+            boolean change
+                    = infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                  JavaType.newArrayType(inst.getType(), inst.getDimensions().size()));
+            for (Variable dimVar : inst.getDimensions()) {
+                change |= infereTypes(getPossibleTypes(dimVar.getID()), JavaType.INT);
+            }
+            return change;
+        }
+    }
+
+    private final Visitor visitor = new Visitor();
 
     public LocalVariableTypeAnalyser(ControlFlowGraph graph, Method method,
                                      ClassNameFactory factory) {
@@ -99,13 +329,13 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
         this.factory = factory;
     }
 
-    private NarrowestType getType(VariableID ID) {
-        NarrowestType type = types.get(ID);
-        if (type == null) {
-            type = new NarrowestType();
-            types.put(ID, type);
+    private Set<JavaType> getPossibleTypes(VariableID ID) {
+        Set<JavaType> types = possibleTypes.get(ID);
+        if (types == null) {
+            types = new HashSet<JavaType>();
+            possibleTypes.put(ID, types);
         }
-        return type;
+        return types;
     }
 
     private void printTypeTable() {
@@ -113,15 +343,11 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
         List<String> typeColumn = new ArrayList<String>(1);
         nameColumn.add("Name");
         typeColumn.add("Type");
-        for (Map.Entry<VariableID, NarrowestType> entry : types.entrySet()) {
+        for (Map.Entry<VariableID, Set<JavaType>> entry : possibleTypes.entrySet()) {
             VariableID ID = entry.getKey();
-            NarrowestType type = entry.getValue();
+            Set<JavaType> types = entry.getValue();
             nameColumn.add(ID.toString());
-            if (type.get() != null) {
-                typeColumn.add(type.get().getQualifiedName());
-            } else {
-                typeColumn.add("?");
-            }
+            typeColumn.add(types.toString());
         }
 
         logger.log(Level.FINEST, "Variables type :\n{0}",
@@ -129,10 +355,13 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
     }
 
     public void analyse() {
+        // find type of this
         ClassName thisClassName = factory.newClassName(method.getClazz().getQualifiedName());
-        getType(new VariableID(0)).narrow(JavaType.newRefType(thisClassName), factory);
+        getPossibleTypes(new VariableID(0)).add(JavaType.newRefType(thisClassName));
+
+        // and types of method parameters
         for (LocalVariableDeclaration arg : method.getArguments()) {
-            getType(new VariableID(arg.getIndex())).narrow(arg.getType(), factory);
+            getPossibleTypes(new VariableID(arg.getIndex())).add(arg.getType());
         }
 
         boolean change = true;
@@ -141,237 +370,29 @@ public class LocalVariableTypeAnalyser implements TACInstVisitor<Boolean, Void> 
             for (BasicBlock block : graph.getBasicBlocks()) {
                 AnalysisData data = (AnalysisData) block.getData();
                 TACInstSeq seq = new TACInstSeq(data.getInstructions());
-                if (Boolean.TRUE.equals(seq.accept(this, null))) {
+                if (Boolean.TRUE.equals(seq.accept(visitor, null))) {
                     change = true;
                 }
             }
         }
 
+        // check that all variable have been types correctly
+        for (BasicBlock bb : graph.getBasicBlocks()) {
+            for (TACInst inst : ((AnalysisData) bb.getData()).getInstructions()) {
+                if (inst instanceof DefInst) {
+                    Variable v = ((DefInst) inst).getResult();
+                    assert v.getType() == null;
+                    Set<JavaType> types = getPossibleTypes(v.getID());
+                    if (types.size() == 1) {
+                        v.setType(types.iterator().next());
+                    } else {
+                        logger.log(Level.WARNING, "Type not found for variable {0}",
+                                v.getID());
+                    }
+                }
+            }
+        }
+
         printTypeTable();
-    }
-
-    public Boolean visit(TACInstSeq seq, Void arg) {
-        Boolean change = Boolean.FALSE;
-        for (TACInst inst : seq.getInsts()) {
-            if (Boolean.TRUE.equals(inst.accept(this, arg))) {
-                change = Boolean.TRUE;
-            }
-        }
-        return change;
-    }
-
-    public Boolean visit(Variable inst, Void arg) {
-        return null;
-    }
-
-    public Boolean visit(IntConst inst, Void arg) {
-        return null;
-    }
-
-    public Boolean visit(LongConst inst, Void arg) {
-        return null;
-    }
-
-    public Boolean visit(ByteConst inst, Void arg) {
-        return null;
-    }
-
-    public Boolean visit(ShortConst inst, Void arg) {
-        return null;
-    }
-
-    public Boolean visit(FloatConst inst, Void arg) {
-        return null;
-    }
-
-    public Boolean visit(DoubleConst inst, Void arg) {
-        return null;
-    }
-
-    public Boolean visit(StringConst inst, Void arg) {
-        return null;
-    }
-
-    public Boolean visit(NullConst inst, Void arg) {
-        return null;
-    }
-
-    public Boolean visit(ClassConst inst, Void arg) {
-        return null;
-    }
-
-    public Boolean visit(ArrayLengthInst inst, Void arg) {
-        Variable result = inst.getResult();
-        getType(result.getID()).narrow(JavaType.INT, factory);
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(AssignConstInst inst, Void arg) {
-        Variable result = inst.getResult();
-        Const value = inst.getValue();
-        return getType(result.getID()).narrow(value.getType(), factory);
-    }
-
-    public Boolean visit(AssignVarInst inst, Void arg) {
-        Variable result = inst.getResult();
-        Variable value = inst.getValue();
-        return getType(result.getID()).narrow(getType(value.getID()).get(), factory);
-    }
-
-    public Boolean visit(BinaryInst inst, Void arg) {
-        Variable result = inst.getResult();
-        Variable var1 = inst.getVar1();
-        Variable var2 = inst.getVar2();
-        switch (inst.getOperator()) {
-            case PLUS:
-            case MINUS:
-                NarrowestType tmpType = new NarrowestType();
-                tmpType.narrow(getType(var1.getID()).get(), factory);
-                tmpType.narrow(getType(var2.getID()).get(), factory);
-                return getType(result.getID()).narrow(tmpType.get(), factory);
-
-            case EQ:
-            case NE:
-            case GT:
-            case GE:
-            case LT:
-            case LE:
-                return getType(result.getID()).narrow(JavaType.BOOLEAN, factory);
-        }
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(CallMethodInst inst, Void arg) {
-        Variable result = inst.getResult();
-        boolean change = getType(result.getID()).narrow(inst.getSignature().getReturnType(), factory);
-        for (int i = 0; i < inst.getArguments().size(); i++) {
-            JavaType argType = inst.getSignature().getArgumentTypes().get(i);
-            Variable var = inst.getArguments().get(i);
-            if (getType(var.getID()).narrow(argType, factory)) {
-                change = true;
-            }
-        }
-        return change;
-    }
-
-    public Boolean visit(CallStaticMethodInst inst, Void arg) {
-        Variable result = inst.getResult();
-        boolean change = getType(result.getID()).narrow(inst.getSignature().getReturnType(), factory);
-        for (int i = 0; i < inst.getArguments().size(); i++) {
-            JavaType argType = inst.getSignature().getArgumentTypes().get(i);
-            Variable var = inst.getArguments().get(i);
-            if (getType(var.getID()).narrow(argType, factory)) {
-                change = true;
-            }
-        }
-        return change;
-    }
-
-    public Boolean visit(CastInst inst, Void arg) {
-        Variable result = inst.getResult();
-        return getType(result.getID()).narrow(inst.getType(), factory);
-    }
-
-    public Boolean visit(ConditionalInst inst, Void arg) {
-        Variable result = inst.getResult();
-        Variable cond = inst.getThen();
-        Variable then = inst.getCond();
-        Variable _else = inst.getElse();
-        boolean change = getType(cond.getID()).narrow(JavaType.BOOLEAN, factory);
-        if (getType(result.getID()).narrow(getType(then.getID()).get(), factory)) {
-            change = true;
-        }
-        if (getType(result.getID()).narrow(getType(_else.getID()).get(), factory)) {
-            change = true;
-        }
-        return change;
-    }
-
-    public Boolean visit(GetArrayInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(SetArrayInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(GetStaticFieldInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(SetStaticFieldInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(GetFieldInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(SetFieldInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(GotoInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(JumpIfInst inst, Void arg) {
-        Variable cond = inst.getCond();
-        return getType(cond.getID()).narrow(JavaType.BOOLEAN, factory);
-    }
-
-    public Boolean visit(LabelInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(InstanceOfInst inst, Void arg) {
-        Variable result = inst.getResult();
-        return getType(result.getID()).narrow(JavaType.BOOLEAN, factory);
-    }
-
-    public Boolean visit(MonitorEnterInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(MonitorExitInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(NewArrayInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(NewObjectInst inst, Void arg) {
-        Variable result = inst.getResult();
-        return getType(result.getID()).narrow(JavaType.newRefType(inst.getClassName()), factory);
-    }
-
-    public Boolean visit(ReturnInst inst, Void arg) {
-        Variable ret = inst.getVar();
-        JavaType returnType = method.getReturnType();
-        if (ret != null && returnType != null) {
-            getType(ret.getID()).narrow(returnType, factory);
-        }
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(SwitchInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(ThrowInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(UnaryInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(ChoiceInst inst, Void arg) {
-        return Boolean.FALSE;
-    }
-
-    public Boolean visit(PhiInst inst, Void arg) {
-        return Boolean.FALSE;
     }
 }
