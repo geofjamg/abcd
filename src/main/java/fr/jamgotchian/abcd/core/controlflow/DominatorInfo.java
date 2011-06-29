@@ -99,6 +99,14 @@ public class DominatorInfo<N, E> {
         return dominanceFrontierOf.get(n);
     }
 
+    public Set<N> getDominanceFrontierOf2(N n) {
+        Set<N> frontier = new HashSet<N>();
+        for (E e : dominanceFrontierOf.get(n)) {
+            frontier.add(graph.getEdgeTarget(e));
+        }
+        return frontier;
+    }
+
     public Set<N> getPostDominatorsOf(N n) {
         return postDominatorsOf.get(n);
     }
@@ -109,6 +117,14 @@ public class DominatorInfo<N, E> {
 
     public Set<E> getPostDominanceFrontierOf(N n) {
         return postDominanceFrontierOf.get(n);
+    }
+
+    public Set<N> getPostDominanceFrontierOf2(N n) {
+        Set<N> frontier = new HashSet<N>();
+        for (E e : postDominanceFrontierOf.get(n)) {
+            frontier.add(graph.getEdgeSource(e));
+        }
+        return frontier;
     }
 
     public boolean postDominate(N x, N y) {
@@ -150,9 +166,11 @@ public class DominatorInfo<N, E> {
             dominanceFrontierOf.put(x, new HashSet<E>());
             for (N y : dominatorsTree.getSubTree(x).getNodes()) {
                 for (N z : graph.getSuccessorsOf(y)) {
-                    if (!strictlyDominate(x, z)) {
-                        E yz = graph.getEdge(y, z);
-                        dominanceFrontierOf.get(x).add(yz);
+                    if (!z.equals(x)) {
+                        if (!strictlyDominate(x, z)) {
+                            E yz = graph.getEdge(y, z);
+                            dominanceFrontierOf.get(x).add(yz);
+                        }
                     }
                 }
             }
@@ -169,9 +187,11 @@ public class DominatorInfo<N, E> {
             postDominanceFrontierOf.put(x, new HashSet<E>());
             for (N y : postDominatorsTree.getSubTree(x).getNodes()) {
                 for (N z : graph.getPredecessorsOf(y)) {
-                    if (!strictlyPostDominate(x, z)) {
-                        E zy = graph.getEdge(z, y);
-                        postDominanceFrontierOf.get(x).add(zy);
+                    if (!z.equals(x)) {
+                        if (!strictlyPostDominate(x, z)) {
+                            E zy = graph.getEdge(z, y);
+                            postDominanceFrontierOf.get(x).add(zy);
+                        }
                     }
                 }
             }
