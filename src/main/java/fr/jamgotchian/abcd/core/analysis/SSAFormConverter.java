@@ -39,7 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,7 +51,24 @@ public class SSAFormConverter {
     private static final Logger logger = Logger.getLogger(SSAFormConverter.class.getName());
 
     static {
-        logger.setLevel(Level.FINER);
+        logger.setLevel(Level.FINEST);
+    }
+
+    private static class Counter {
+
+        private int count;
+
+        private Counter(int count) {
+            this.count = count;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public void increment() {
+            count++;
+        }
     }
 
     private final ControlFlowGraph graph;
@@ -104,7 +120,7 @@ public class SSAFormConverter {
                         if (liveVariables.get(y).contains(defIndex)) {
                             ((AnalysisData) y.getData()).getInstructions()
                                     .add(0, instFactory.newPhi(new Variable(defIndex, y), args));
-                            logger.log(Level.FINER, "Add Phi function to {0} for def {1}",
+                            logger.log(Level.FINEST, "  Add Phi function to {0} for var {1}",
                                     new Object[] {y, defIndex});
                         }
                         phi.put(defIndex, y);
@@ -119,7 +135,7 @@ public class SSAFormConverter {
 
     private void renameVariables() {
         for (int defIndex : defs) {
-            AtomicInteger versionCount = new AtomicInteger(0); // used as a mutable integer
+            Counter versionCount = new Counter(0);
             Deque<Integer> versionStack = new ArrayDeque<Integer>();
             versionStack.push(0);
             renameVariables(defIndex, graph.getEntryBlock(), versionStack, versionCount);
@@ -127,11 +143,16 @@ public class SSAFormConverter {
     }
 
     private void renameVariables(int varIndex, BasicBlock n, Deque<Integer> versionStack,
-                                 AtomicInteger versionCount) {
+                                 Counter versionCount) {
         logger.log(Level.FINEST, "  Rename variables {0} of {1}",
                 new Object[] {varIndex, n});
 
+        // generated version in current block
+        Set<Integer> generatedVersion = new HashSet<Integer>();
+
         for (TACInst inst : ((AnalysisData) n.getData()).getInstructions()) {
+            // for each use of the variable rename with the current version
+            // (version on top of version stack)
             if (!(inst instanceof PhiInst)) {
                 for (Variable use : inst.getUses()) {
                     if (use.getIndex() == varIndex) {
@@ -140,16 +161,21 @@ public class SSAFormConverter {
                     }
                 }
             }
+            // for each new definition of the variable create and push a new
+            // version on version stack
             if (inst instanceof DefInst) {
                 Variable def = ((DefInst) inst).getResult();
                 if (def.getIndex() == varIndex) {
-                    int nextVersion = versionCount.incrementAndGet();
+                    int nextVersion = versionCount.getCount();
+                    versionCount.increment();
                     versionStack.push(nextVersion);
                     def.setVersion(nextVersion);
+                    generatedVersion.add(nextVersion);
                 }
             }
         }
 
+        // fill in phi function parameters of successor blocks
         for (BasicBlock y : graph.getSuccessorsOf(n)) {
             for (TACInst inst : ((AnalysisData) y.getData()).getInstructions()) {
                 if (inst instanceof PhiInst) {
@@ -163,18 +189,15 @@ public class SSAFormConverter {
             }
         }
 
+        // recurse on current block children in the dominator tree
         DominatorInfo<BasicBlock, Edge> dominatorInfo = graph.getDominatorInfo();
         for (BasicBlock x : dominatorInfo.getDominatorsTree().getChildren(n)) {
             renameVariables(varIndex, x, versionStack, versionCount);
         }
 
-        for (TACInst inst : ((AnalysisData) n.getData()).getInstructions()) {
-            if (!(inst instanceof PhiInst) && inst instanceof DefInst) {
-                Variable def = ((DefInst )inst).getResult();
-                if (def.getIndex() == varIndex) {
-                    versionStack.pop();
-                }
-            }
+        // remove from the version stack, versions generated in current block
+        for (Integer version : generatedVersion) {
+            versionStack.remove(version);
         }
     }
 
@@ -225,6 +248,8 @@ public class SSAFormConverter {
                 liveVariables.put(block, var.getIndex());
             }
         }
+
+        logger.log(Level.FINER, "Convert to SSA form");
 
         defs = new HashSet<Integer>();
         defBlocks = HashMultimap.create();
