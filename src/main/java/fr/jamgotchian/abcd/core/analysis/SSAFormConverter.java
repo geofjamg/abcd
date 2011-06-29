@@ -51,7 +51,7 @@ public class SSAFormConverter {
     private static final Logger logger = Logger.getLogger(SSAFormConverter.class.getName());
 
     static {
-        logger.setLevel(Level.FINEST);
+        logger.setLevel(Level.FINER);
     }
 
     private static class Counter {
@@ -223,10 +223,13 @@ public class SSAFormConverter {
                 if (inst instanceof PhiInst) {
                     PhiInst phiInst = (PhiInst) inst;
                     for (int i = 0; i < phiInst.getArgs().size(); i++) {
+                        Variable result = phiInst.getResult();
                         Variable v = phiInst.getArgs().get(i);
                         BasicBlock p = predecessors.get(i);
-                        addInst(p, instFactory.newAssignVar(phiInst.getResult().clone(),
-                                                            v /* no need to clone */));
+                        if (!result.getID().equals(v.getID())) {
+                            addInst(p, instFactory.newAssignVar(result.clone(),
+                                                                v /* no need to clone */));
+                        }
                     }
                     it.remove();
                 }
