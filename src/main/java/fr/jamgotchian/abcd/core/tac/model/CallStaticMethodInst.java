@@ -17,7 +17,6 @@
 package fr.jamgotchian.abcd.core.tac.model;
 
 import fr.jamgotchian.abcd.core.type.ClassName;
-import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
