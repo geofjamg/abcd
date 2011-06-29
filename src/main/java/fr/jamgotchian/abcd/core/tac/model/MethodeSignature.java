@@ -53,11 +53,14 @@ public class MethodeSignature {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append(returnType).append("-").append(methodName).append("-");
-        for (Iterator<JavaType> it = argumentTypes.iterator(); it.hasNext();) {
-            builder.append(it.next());
-            if (it.hasNext()) {
-                builder.append("-");
+        builder.append(returnType).append("-").append(methodName);
+        if (argumentTypes.size() > 0) {
+            builder.append("-");
+            for (Iterator<JavaType> it = argumentTypes.iterator(); it.hasNext();) {
+                builder.append(it.next());
+                if (it.hasNext()) {
+                    builder.append("-");
+                }
             }
         }
         return builder.toString();
