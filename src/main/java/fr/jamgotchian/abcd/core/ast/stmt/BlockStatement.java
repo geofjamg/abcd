@@ -17,8 +17,6 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
-import fr.jamgotchian.abcd.core.controlflow.LocalVariableTable;
-import fr.jamgotchian.abcd.core.controlflow.LocalVariableTableImpl;
 import fr.jamgotchian.abcd.core.controlflow.NameGenerator;
 import fr.jamgotchian.abcd.core.controlflow.SimpleNameGenerator;
 import java.util.ArrayList;
@@ -50,12 +48,12 @@ public class BlockStatement extends AbstractStatement
         localVariableTable = new LocalVariableTableImpl();
         nameGenerator = new SimpleNameGenerator();
     }
-    
+
     public BlockStatement(Iterable<Statement> stmts) {
         this();
         addAll(stmts);
     }
-    
+
     public Statement getFirst() {
         return first;
     }
@@ -193,7 +191,7 @@ public class BlockStatement extends AbstractStatement
         Statement prevStmt = oldStmt.getPrevious();
 
         remove(oldStmt);
-        
+
         for (Statement newStmt : newStmts) {
             insertAfter(prevStmt, newStmt);
             prevStmt = newStmt;

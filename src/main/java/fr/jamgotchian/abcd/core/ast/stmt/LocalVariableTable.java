@@ -15,34 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.controlflow;
+package fr.jamgotchian.abcd.core.ast.stmt;
 
-import com.google.common.collect.HashBiMap;
-import java.util.Collections;
 import java.util.Map;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LocalVariableTableImpl implements LocalVariableTable {
+public interface LocalVariableTable {
 
-    private final Map<Integer, String> variables = HashBiMap.create();
+    void addVariable(int index, String name);
 
-    public void addVariable(int index, String name) {
-        variables.put(index, name);
-    }
+    String getVariable(int index);
 
-    public String getVariable(int index) {
-        return variables.get(index);
-    }
+    boolean containsVariable(String name);
 
-    public Map<Integer, String> getVariables() {
-        return Collections.unmodifiableMap(variables);
-    }
-
-    public boolean containsVariable(String name) {
-        return variables.containsValue(name);
-    }
-
+    Map<Integer, String> getVariables();
 }
