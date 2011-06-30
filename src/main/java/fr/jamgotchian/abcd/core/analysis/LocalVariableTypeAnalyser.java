@@ -339,19 +339,19 @@ public class LocalVariableTypeAnalyser {
     }
 
     private void printTypeTable() {
-        List<String> nameColumn = new ArrayList<String>(1);
+        List<String> indexColumn = new ArrayList<String>(1);
         List<String> typeColumn = new ArrayList<String>(1);
-        nameColumn.add("Name");
+        indexColumn.add("Index");
         typeColumn.add("Type");
         for (Map.Entry<VariableID, Set<JavaType>> entry : possibleTypes.entrySet()) {
             VariableID ID = entry.getKey();
             Set<JavaType> types = entry.getValue();
-            nameColumn.add(ID.toString());
+            indexColumn.add(ID.toString());
             typeColumn.add(types.toString());
         }
 
-        logger.log(Level.FINEST, "Variables type :\n{0}",
-                ConsoleUtil.printTable(nameColumn, typeColumn));
+        logger.log(Level.FINEST, "Variable types :\n{0}",
+                ConsoleUtil.printTable(indexColumn, typeColumn));
     }
 
     public void analyse() {

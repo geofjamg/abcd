@@ -117,7 +117,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
     public void before(BasicBlock block) {
     }
 
-    public void visitFieldInsn(BasicBlock block, int index, FieldInsnNode node) {
+    public void visitFieldInsn(BasicBlock block, int position, FieldInsnNode node) {
 
         switch (node.getOpcode()) {
             case GETSTATIC: {
@@ -158,18 +158,18 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         }
     }
 
-    public void visitIincInsn(BasicBlock block, int index, IincInsnNode node) {
+    public void visitIincInsn(BasicBlock block, int position, IincInsnNode node) {
         Variable tmpVar = tmpVarFactory.create(block);
-        addInst(block, instFactory.newAssignVar(tmpVar, new Variable(node.var, block)));
+        addInst(block, instFactory.newAssignVar(tmpVar, new Variable(node.var, block, position)));
         Variable tmpValue = tmpVarFactory.create(block);
         addInst(block, instFactory.newAssignConst(tmpValue, new IntConst(Math.abs(node.incr))));
         Variable tmpResult = tmpVarFactory.create(block);
         BinaryOp binOp = node.incr > 0 ? BinaryOp.PLUS : BinaryOp.MINUS;
         addInst(block, instFactory.newBinary(tmpResult, binOp, tmpVar, tmpValue));
-        addInst(block, instFactory.newAssignVar(new Variable(node.var, block), tmpResult));
+        addInst(block, instFactory.newAssignVar(new Variable(node.var, block, position), tmpResult));
     }
 
-    public void visitInsn(BasicBlock block, int index, InsnNode node) {
+    public void visitInsn(BasicBlock block, int position, InsnNode node) {
         switch (node.getOpcode()) {
             case NOP:
                 break;
@@ -643,7 +643,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         }
     }
 
-    public void visitIntInsn(BasicBlock block, int index, IntInsnNode node) {
+    public void visitIntInsn(BasicBlock block, int position, IntInsnNode node) {
         Variable tmpVar = tmpVarFactory.create(block);
         switch (node.getOpcode()) {
             case BIPUSH:
@@ -662,7 +662,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         stack.push(tmpVar);
     }
 
-    public void visitJumpInsn(BasicBlock block, int index, JumpInsnNode node) {
+    public void visitJumpInsn(BasicBlock block, int position, JumpInsnNode node) {
 
         Variable tmpResult = null;
 
@@ -813,12 +813,12 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         }
     }
 
-    public void visitLabel(BasicBlock block, int index, LabelNode node) {
+    public void visitLabel(BasicBlock block, int position, LabelNode node) {
         Label label = block.getGraph().getLabelManager().getLabel(node);
         addInst(block, instFactory.newLabel(label));
     }
 
-    public void visitLdcInsn(BasicBlock block, int index, LdcInsnNode node) {
+    public void visitLdcInsn(BasicBlock block, int position, LdcInsnNode node) {
         Variable tmpVar = tmpVarFactory.create(block);
         if (node.cst instanceof Type) {
             ClassName className = classNameFactory.newClassName(((Type)node.cst).getClassName());
@@ -837,7 +837,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         stack.push(tmpVar);
     }
 
-    public void visitLookupSwitchInsn(BasicBlock block, int index, LookupSwitchInsnNode node) {
+    public void visitLookupSwitchInsn(BasicBlock block, int position, LookupSwitchInsnNode node) {
         List<Label> labels = new ArrayList<Label>();
         for (LabelNode labelNode : (List<LabelNode>) node.labels) {
             labels.add(block.getGraph().getLabelManager().getLabel(labelNode));
@@ -846,7 +846,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         addInst(block, instFactory.newSwitch(stack.pop(), labels));
     }
 
-    public void visitMethodInsn(BasicBlock block, int index, MethodInsnNode node) {
+    public void visitMethodInsn(BasicBlock block, int position, MethodInsnNode node) {
         // return type
         Type returnType = Type.getReturnType(node.desc);
         JavaType returnJavaType = JavaType.newType(returnType, classNameFactory);
@@ -892,7 +892,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         }
     }
 
-    public void visitMultiANewArrayInsn(BasicBlock block, int index, MultiANewArrayInsnNode node) {
+    public void visitMultiANewArrayInsn(BasicBlock block, int position, MultiANewArrayInsnNode node) {
         Type type = Type.getType(node.desc).getElementType();
         JavaType javaType = JavaType.newType(type, classNameFactory);
         List<Variable> dimensions = new ArrayList<Variable>(node.dims);
@@ -904,7 +904,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         stack.push(tmpResult);
     }
 
-    public void visitTableSwitchInsn(BasicBlock block, int index, TableSwitchInsnNode node) {
+    public void visitTableSwitchInsn(BasicBlock block, int position, TableSwitchInsnNode node) {
         List<Label> labels = new ArrayList<Label>();
         for (LabelNode labelNode : (List<LabelNode>) node.labels) {
             labels.add(block.getGraph().getLabelManager().getLabel(labelNode));
@@ -913,7 +913,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         addInst(block, instFactory.newSwitch(stack.pop(), labels));
     }
 
-    public void visitTypeInsnInsn(BasicBlock block, int index, TypeInsnNode node) {
+    public void visitTypeInsnInsn(BasicBlock block, int position, TypeInsnNode node) {
         ClassName className
                 = classNameFactory.newClassName(Type.getObjectType(node.desc).getClassName());
 
@@ -946,7 +946,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         }
     }
 
-    public void visitVarInsn(BasicBlock block, int index, VarInsnNode node) {
+    public void visitVarInsn(BasicBlock block, int position, VarInsnNode node) {
         switch (node.getOpcode()) {
             case ILOAD:
             case LLOAD:
@@ -955,7 +955,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case ALOAD: {
                 Variable tmpVar = tmpVarFactory.create(block);
                 stack.push(tmpVar);
-                addInst(block, instFactory.newAssignVar(tmpVar, new Variable(node.var, block)));
+                addInst(block, instFactory.newAssignVar(tmpVar, new Variable(node.var, block, position)));
                 break;
             }
 
@@ -965,7 +965,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case DSTORE:
             case ASTORE: {
                 Variable var = stack.pop();
-                addInst(block, instFactory.newAssignVar(new Variable(node.var, block), var));
+                addInst(block, instFactory.newAssignVar(new Variable(node.var, block, position), var));
                 break;
             }
 

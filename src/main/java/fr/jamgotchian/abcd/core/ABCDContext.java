@@ -416,18 +416,18 @@ public class ABCDContext {
 
                 logger.log(Level.FINER, "Bytecode :\n{0}", OutputUtil.toText(mn.instructions));
 
-                builder = new StringBuilder();
-                ASMUtil.printTryCatchBlocks(mn, builder);
-                logger.log(Level.FINER, "Try catch blocks :\n{0}", builder.toString());
-
-                builder = new StringBuilder();
-                ASMUtil.printLocalVariableTable(mn, builder);
-                logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
-
-                logger.log(Level.FINE, "////////// Build Control flow graph of {0} //////////", methodSignature);
+                logger.log(Level.FINE, "////////// Build control flow graph of {0} //////////", methodSignature);
                 ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
 
-                logger.log(Level.FINE, "////////// Analyse Control flow of {0} //////////", methodSignature);
+                builder = new StringBuilder();
+                graph.getExceptionTable().print(builder);
+                logger.log(Level.FINER, "Exception table :\n{0}", builder.toString());
+
+                builder = new StringBuilder();
+                graph.getLocalVariableTable().print(builder);
+                logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
+
+                logger.log(Level.FINE, "////////// Analyse control flow of {0} //////////", methodSignature);
                 graph.analyse();
 
                 String baseName = outputDir.getPath() + "/" + methodSignature;

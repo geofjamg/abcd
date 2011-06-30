@@ -27,6 +27,6 @@ public class TemporaryVariableFactory {
     private int count = -1;
 
     public Variable create(BasicBlock block) {
-        return new Variable(count--, block);
+        return new Variable(count--, block, -1);
     }
 }

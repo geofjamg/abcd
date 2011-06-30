@@ -116,4 +116,12 @@ public interface ControlFlowGraph {
     String toString(Edge edge);
 
     void visit(ControlFlowGraphVisitor visitor);
+
+    LocalVariableTable getLocalVariableTable();
+
+    void setLocalVariableTable(LocalVariableTable localVariableTable);
+
+    ExceptionTable getExceptionTable();
+
+    void setExceptionTable(ExceptionTable exceptionTable);
 }

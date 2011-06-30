@@ -127,13 +127,13 @@ class BasicBlockImpl implements BasicBlock {
         if (range != null) {
             InsnList instructions = graph.getInstructions();
 
-            for (int index : range) {
-                AbstractInsnNode abstractNode = instructions.get(index);
+            for (int position : range) {
+                AbstractInsnNode abstractNode = instructions.get(position);
 
                 switch (abstractNode.getType()) {
                     case FIELD_INSN: {
                         FieldInsnNode node = (FieldInsnNode) abstractNode;
-                        visitor.visitFieldInsn(this, index, node);
+                        visitor.visitFieldInsn(this, position, node);
                         break;
                     }
 
@@ -144,37 +144,37 @@ class BasicBlockImpl implements BasicBlock {
 
                     case IINC_INSN: {
                         IincInsnNode node = (IincInsnNode) abstractNode;
-                        visitor.visitIincInsn(this, index, node);
+                        visitor.visitIincInsn(this, position, node);
                         break;
                     }
 
                     case INSN: {
                         InsnNode node = (InsnNode) abstractNode;
-                        visitor.visitInsn(this, index, node);
+                        visitor.visitInsn(this, position, node);
                         break;
                     }
 
                     case INT_INSN: {
                         IntInsnNode node = (IntInsnNode) abstractNode;
-                        visitor.visitIntInsn(this, index, node);
+                        visitor.visitIntInsn(this, position, node);
                         break;
                     }
 
                     case JUMP_INSN: {
                         JumpInsnNode node = (JumpInsnNode) abstractNode;
-                        visitor.visitJumpInsn(this, index, node);
+                        visitor.visitJumpInsn(this, position, node);
                         break;
                     }
 
                     case LABEL: {
                         LabelNode node = (LabelNode) abstractNode;
-                        visitor.visitLabel(this, index, node);
+                        visitor.visitLabel(this, position, node);
                         break;
                     }
 
                     case LDC_INSN: {
                         LdcInsnNode node = (LdcInsnNode) abstractNode;
-                        visitor.visitLdcInsn(this, index, node);
+                        visitor.visitLdcInsn(this, position, node);
                         break;
                     }
 
@@ -185,37 +185,37 @@ class BasicBlockImpl implements BasicBlock {
 
                     case LOOKUPSWITCH_INSN: {
                         LookupSwitchInsnNode node = (LookupSwitchInsnNode) abstractNode;
-                        visitor.visitLookupSwitchInsn(this, index, node);
+                        visitor.visitLookupSwitchInsn(this, position, node);
                         break;
                     }
 
                     case METHOD_INSN: {
                         MethodInsnNode node = (MethodInsnNode) abstractNode;
-                        visitor.visitMethodInsn(this, index, node);
+                        visitor.visitMethodInsn(this, position, node);
                         break;
                     }
 
                     case MULTIANEWARRAY_INSN: {
                         MultiANewArrayInsnNode node = (MultiANewArrayInsnNode) abstractNode;
-                        visitor.visitMultiANewArrayInsn(this, index, node);
+                        visitor.visitMultiANewArrayInsn(this, position, node);
                         break;
                     }
 
                     case TABLESWITCH_INSN: {
                         TableSwitchInsnNode node = (TableSwitchInsnNode) abstractNode;
-                        visitor.visitTableSwitchInsn(this, index, node);
+                        visitor.visitTableSwitchInsn(this, position, node);
                         break;
                     }
 
                     case TYPE_INSN: {
                         TypeInsnNode node = (TypeInsnNode) abstractNode;
-                        visitor.visitTypeInsnInsn(this, index, node);
+                        visitor.visitTypeInsnInsn(this, position, node);
                         break;
                     }
 
                     case VAR_INSN: {
                         VarInsnNode node = (VarInsnNode) abstractNode;
-                        visitor.visitVarInsn(this, index, node);
+                        visitor.visitVarInsn(this, position, node);
                         break;
                     }
 

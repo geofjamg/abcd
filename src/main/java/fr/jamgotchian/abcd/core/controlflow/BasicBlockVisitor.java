@@ -38,32 +38,32 @@ import org.objectweb.asm.tree.VarInsnNode;
 public interface BasicBlockVisitor {
 
     void before(BasicBlock block);
-    
-    void visitFieldInsn(BasicBlock block, int index, FieldInsnNode node);
 
-    void visitIincInsn(BasicBlock block, int index, IincInsnNode node);
+    void visitFieldInsn(BasicBlock block, int position, FieldInsnNode node);
 
-    void visitInsn(BasicBlock block, int index, InsnNode node);
+    void visitIincInsn(BasicBlock block, int position, IincInsnNode node);
 
-    void visitIntInsn(BasicBlock block, int index, IntInsnNode node);
+    void visitInsn(BasicBlock block, int position, InsnNode node);
 
-    void visitJumpInsn(BasicBlock block, int index, JumpInsnNode node);
+    void visitIntInsn(BasicBlock block, int position, IntInsnNode node);
 
-    void visitLabel(BasicBlock block, int index, LabelNode node);
+    void visitJumpInsn(BasicBlock block, int position, JumpInsnNode node);
 
-    void visitLdcInsn(BasicBlock block, int index, LdcInsnNode node);
+    void visitLabel(BasicBlock block, int position, LabelNode node);
 
-    void visitLookupSwitchInsn(BasicBlock block, int index, LookupSwitchInsnNode node);
+    void visitLdcInsn(BasicBlock block, int position, LdcInsnNode node);
 
-    void visitMethodInsn(BasicBlock block, int index, MethodInsnNode node);
+    void visitLookupSwitchInsn(BasicBlock block, int position, LookupSwitchInsnNode node);
 
-    void visitMultiANewArrayInsn(BasicBlock block, int index, MultiANewArrayInsnNode node);
+    void visitMethodInsn(BasicBlock block, int position, MethodInsnNode node);
 
-    void visitTableSwitchInsn(BasicBlock block, int index, TableSwitchInsnNode node);
+    void visitMultiANewArrayInsn(BasicBlock block, int position, MultiANewArrayInsnNode node);
 
-    void visitTypeInsnInsn(BasicBlock block, int index, TypeInsnNode node);
+    void visitTableSwitchInsn(BasicBlock block, int position, TableSwitchInsnNode node);
 
-    void visitVarInsn(BasicBlock block, int index, VarInsnNode node);
+    void visitTypeInsnInsn(BasicBlock block, int position, TypeInsnNode node);
+
+    void visitVarInsn(BasicBlock block, int position, VarInsnNode node);
 
     void after(BasicBlock block);
 

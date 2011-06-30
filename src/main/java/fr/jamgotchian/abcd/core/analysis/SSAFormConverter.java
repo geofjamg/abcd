@@ -112,12 +112,12 @@ public class SSAFormConverter {
                         boolean contains = containsDef(y, defIndex);
                         List<Variable> args = new ArrayList<Variable>();
                         for (int i = 0; i < graph.getPredecessorCountOf(y); i++) {
-                            args.add(new Variable(defIndex, y));
+                            args.add(new Variable(defIndex, y, -1));
                         }
                         // is definition alive in basic block y ?
                         if (liveVariables.get(y).contains(defIndex)) {
                             ((AnalysisData) y.getData()).getInstructions()
-                                    .add(0, instFactory.newPhi(new Variable(defIndex, y), args));
+                                    .add(0, instFactory.newPhi(new Variable(defIndex, y, -1), args));
                             logger.log(Level.FINEST, "  Add Phi function to {0} for var {1}",
                                     new Object[] {y, defIndex});
                         }

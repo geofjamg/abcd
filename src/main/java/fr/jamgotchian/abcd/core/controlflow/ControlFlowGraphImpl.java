@@ -81,7 +81,9 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private final Map<BasicBlock, ForkJoinInfo> forkBlocks;
 
-    private final List<ExceptionHandler> exceptionHandlers;
+    private LocalVariableTable localVariableTable;
+
+    private ExceptionTable exceptionTable;
 
     private static class EdgeFactoryImpl implements EdgeFactory<Edge> {
 
@@ -119,7 +121,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         naturalLoops = new HashMap<BasicBlock, NaturalLoop>();
         joinBlocks = HashMultimap.create();
         forkBlocks = new HashMap<BasicBlock, ForkJoinInfo>();
-        exceptionHandlers = new ArrayList<ExceptionHandler>();
         addBasicBlock(entryBlock);
         addBasicBlock(exitBlock);
     }
@@ -361,7 +362,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         analyseEdgeCategory();
         analyseNaturalLoops();
         analyseLoopLevel();
-        analyseExceptionHandlers();
     }
 
     private void performDepthFirstSearch() {
@@ -615,22 +615,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
        }
     }
 
-    private void analyseExceptionHandlers() {
-        exceptionHandlers.clear();
-        Set<BasicBlock> handlerEntries = new HashSet<BasicBlock>();
-        for (Edge edge : graph.getEdges()) {
-            if (edge.isExceptional()) {
-                handlerEntries.add(graph.getEdgeTarget(edge));
-            }
-        }
-        for (BasicBlock handlerEntry : handlerEntries) {
-            Set<BasicBlock> handledBlocks = new HashSet<BasicBlock>(graph.getPredecessorsOf(handlerEntry));
-            exceptionHandlers.add(new ExceptionHandler(handlerEntry, handledBlocks));
-            logger.log(Level.FINEST, "Exception handler : entryBlock={0}, handledBlocks={1}",
-                    new Object[] {handlerEntry, handledBlocks});
-        }
-    }
-
     public String toString(Collection<Edge> edges) {
         return graph.toString(edges);
     }
@@ -639,6 +623,22 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return graph.toString(edge);
     }
 
+    public LocalVariableTable getLocalVariableTable() {
+        return localVariableTable;
+    }
+
+    public void setLocalVariableTable(LocalVariableTable localVariableTable) {
+        this.localVariableTable = localVariableTable;
+    }
+
+    public ExceptionTable getExceptionTable() {
+        return exceptionTable;
+    }
+
+    public void setExceptionTable(ExceptionTable exceptionTable) {
+        this.exceptionTable = exceptionTable;
+    }
+    
     @Override
     public String toString() {
         return name;

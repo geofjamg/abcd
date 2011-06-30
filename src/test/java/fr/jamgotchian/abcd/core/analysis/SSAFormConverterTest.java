@@ -91,7 +91,7 @@ public class SSAFormConverterTest {
         AnalysisData data = new AnalysisData();
         bb.setData(data);
         for (int var : vars) {
-            data.getInstructions().add(instFactory.newAssignConst(new Variable(var, bb),
+            data.getInstructions().add(instFactory.newAssignConst(new Variable(var, bb, -1),
                                                                   new IntConst(0)));
         }
         return bb;

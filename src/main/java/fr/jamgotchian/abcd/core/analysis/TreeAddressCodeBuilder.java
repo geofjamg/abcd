@@ -25,11 +25,12 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.LocalVariableTable;
 import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
 import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
+import fr.jamgotchian.abcd.core.tac.model.DefInst;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
-import fr.jamgotchian.abcd.core.tac.model.StringConst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
@@ -37,6 +38,7 @@ import fr.jamgotchian.abcd.core.tac.util.VariableStack;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -248,6 +250,21 @@ public class TreeAddressCodeBuilder {
         }
     }
 
+    private void printVariableName(Set<Variable> variables) {
+        List<String> indexColumn = new ArrayList<String>(1);
+        List<String> positionColumn = new ArrayList<String>(1);
+        List<String> nameColumn = new ArrayList<String>(1);
+        indexColumn.add("Index");
+        positionColumn.add("Position");
+        nameColumn.add("Name");
+        for (Variable v : variables) {
+            indexColumn.add(v.getID().toString());
+            positionColumn.add(Integer.toString(v.getPosition()));
+            nameColumn.add(v.getName() != null ? v.getName() : "<undefined>");
+        }
+        logger.log(Level.FINEST, "Variable names :\n{0}",
+                ConsoleUtil.printTable(indexColumn, positionColumn, nameColumn));
+    }
 
     public void build() {
 //        for (BasicBlock block : graph.getBasicBlocks()) {
@@ -301,5 +318,30 @@ public class TreeAddressCodeBuilder {
 
         // analyse local variables types
         new LocalVariableTypeAnalyser(graph, method, classNameFactory).analyse();
+
+        // assign a name to each variable
+        LocalVariableTable table = graph.getLocalVariableTable();
+        Set<Variable> variables = new HashSet<Variable>();
+        for (BasicBlock block : graph.getBasicBlocks()) {
+            for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
+                if (inst instanceof DefInst) {
+                    Variable def = ((DefInst) inst).getResult();
+                    if (!def.isTemporary()) {
+                        variables.add(def);
+                    }
+                }
+                for (Variable use : inst.getUses()) {
+                    if (!use.isTemporary()) {
+                        variables.add(use);
+                    }
+                }
+            }
+        }
+
+        for (Variable v : variables) {
+            v.setName(table.getName(v.getIndex(), v.getPosition()));
+        }
+
+        printVariableName(variables);
     }
 }

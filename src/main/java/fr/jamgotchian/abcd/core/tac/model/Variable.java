@@ -29,15 +29,21 @@ public class Variable {
 
     private final BasicBlock block;
 
+    /* position in bytecode array */
+    private final int position;
+
     private JavaType type;
 
-    Variable(VariableID ID, BasicBlock block) {
+    private String name;
+
+    Variable(VariableID ID, BasicBlock block, int position) {
         this.ID = ID;
         this.block = block;
+        this.position = position;
     }
 
-    public Variable(int index, BasicBlock block) {
-        this(new VariableID(index), block);
+    public Variable(int index, BasicBlock block, int position) {
+        this(new VariableID(index), block, position);
     }
 
     public VariableID getID() {
@@ -60,6 +66,10 @@ public class Variable {
         return block;
     }
 
+    public int getPosition() {
+        return position;
+    }
+
     public boolean isTemporary() {
         return ID.getIndex() < 0;
     }
@@ -70,6 +80,14 @@ public class Variable {
 
     public void setType(JavaType type) {
         this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -88,7 +106,7 @@ public class Variable {
 
     @Override
     public Variable clone() {
-        return new Variable(ID.clone(), block);
+        return new Variable(ID.clone(), block, position);
     }
 
     @Override

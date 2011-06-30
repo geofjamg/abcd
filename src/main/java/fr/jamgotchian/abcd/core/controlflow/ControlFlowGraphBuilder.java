@@ -18,8 +18,8 @@
 package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.util.ASMUtil;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +31,7 @@ import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
+import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.LookupSwitchInsnNode;
 import org.objectweb.asm.tree.TableSwitchInsnNode;
 import org.objectweb.asm.tree.TryCatchBlockNode;
@@ -56,9 +57,15 @@ public class ControlFlowGraphBuilder {
 
         graph = new ControlFlowGraphImpl(methodName, mn.instructions);
 
-        labelNodeIndex = ASMUtil.getLabelNodeIndexMap(mn.instructions);
+        labelNodeIndex = new HashMap<LabelNode, Integer>();
+        for (int i = 0; i < mn.instructions.size(); i++) {
+            AbstractInsnNode node = mn.instructions.get(i);
+            if (node.getType() == AbstractInsnNode.LABEL) {
+                labelNodeIndex.put((LabelNode) node, i);
+            }
+        }
 
-        List<TryCatchBlock> tryCatchBlocks = new ArrayList<TryCatchBlock>();
+        ExceptionTable table = new ExceptionTable();
         for (int i = 0; i < mn.tryCatchBlocks.size(); i++) {
             TryCatchBlockNode node = (TryCatchBlockNode) mn.tryCatchBlocks.get(i);
 
@@ -74,31 +81,43 @@ public class ControlFlowGraphBuilder {
                 continue;
             }
 
-            tryCatchBlocks.add(new TryCatchBlock(tryStart, tryEnd, catchStart, exceptionClassName));
+            table.addEntry(tryStart, tryEnd, catchStart, exceptionClassName);
         }
+        graph.setExceptionTable(table);
 
         analyseInstructions(mn.instructions);
-        analyseTryCatchBlocks(tryCatchBlocks);
+        analyseExceptionTable(table);
+
+        // fill local variable table
+        LocalVariableTable table2 = new LocalVariableTable();
+        for (int i = 0; i < mn.localVariables.size(); i++) {
+            LocalVariableNode node = (LocalVariableNode) mn.localVariables.get(i);
+            table2.addEntry(node.index,
+                      labelNodeIndex.get(node.start),
+                      labelNodeIndex.get(node.end),
+                      node.name,
+                      node.desc);
+        }
+        graph.setLocalVariableTable(table2);
 
         return graph;
     }
 
-    private void analyseTryCatchBlocks(List<TryCatchBlock> tryCatchBlocks) {
-        for (TryCatchBlock tcb : tryCatchBlocks) {
-
+    private void analyseExceptionTable(ExceptionTable table) {
+        for (ExceptionTable.Entry entry : table.getEntries()) {
             // split at tryStart and tryEnd
-            BasicBlockSplit tryStartSplit = graph.splitBasicBlockAt(tcb.getTryStart());
-            BasicBlockSplit tryEndSplit = graph.splitBasicBlockAt(tcb.getTryEnd());
+            BasicBlockSplit tryStartSplit = graph.splitBasicBlockAt(entry.getTryStart());
+            BasicBlockSplit tryEndSplit = graph.splitBasicBlockAt(entry.getTryEnd());
             graph.addEdge(tryEndSplit.getBlockBefore(), tryEndSplit.getBlockAfter());
 
             // split at catchStart
-            BasicBlockSplit catchStartSplit = graph.splitBasicBlockAt(tcb.getCatchStart());
+            BasicBlockSplit catchStartSplit = graph.splitBasicBlockAt(entry.getCatchStart());
             BasicBlock catchEntryBlock = catchStartSplit.getBlockAfter();
             graph.removeEdge(catchStartSplit.getBlockBefore(), catchEntryBlock);
 
             // link all blocks contained in the try range to the catch entry block
-            for (BasicBlock block : graph.getBasicBlocksWithinRange(tcb.getTryStart(), tcb.getTryEnd() - 1)) {
-                graph.addEdge(block, catchEntryBlock, true).setValue(tcb.getExceptionClassName());
+            for (BasicBlock block : graph.getBasicBlocksWithinRange(entry.getTryStart(), entry.getTryEnd() - 1)) {
+                graph.addEdge(block, catchEntryBlock, true).setValue(entry.getExceptionClassName());
             }
         }
     }
