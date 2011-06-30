@@ -38,7 +38,7 @@ import fr.jamgotchian.abcd.core.tac.model.GotoInst;
 import fr.jamgotchian.abcd.core.tac.model.InstanceOfInst;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
 import fr.jamgotchian.abcd.core.tac.model.LabelInst;
-import fr.jamgotchian.abcd.core.tac.model.MethodeSignature;
+import fr.jamgotchian.abcd.core.tac.model.MethodSignature;
 import fr.jamgotchian.abcd.core.tac.model.MonitorEnterInst;
 import fr.jamgotchian.abcd.core.tac.model.MonitorExitInst;
 import fr.jamgotchian.abcd.core.tac.model.NewArrayInst;
@@ -245,7 +245,7 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Boolean visit(CallMethodInst inst, Void arg) {
-            MethodeSignature signature = inst.getSignature();
+            MethodSignature signature = inst.getSignature();
 
             boolean change = infereTypes(getPossibleTypes(inst.getResult().getID()),
                                          signature.getReturnType());
@@ -261,7 +261,7 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Boolean visit(CallStaticMethodInst inst, Void arg) {
-            MethodeSignature signature = inst.getSignature();
+            MethodSignature signature = inst.getSignature();
 
             boolean change = infereTypes(getPossibleTypes(inst.getResult().getID()),
                                          signature.getReturnType());

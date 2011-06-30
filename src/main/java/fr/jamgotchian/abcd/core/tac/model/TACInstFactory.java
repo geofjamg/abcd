@@ -51,13 +51,13 @@ public class TACInstFactory {
     }
 
     public CallMethodInst newCallMethod(Variable result, Variable object,
-                                        MethodeSignature signature,
+                                        MethodSignature signature,
                                         List<Variable> arguments) {
         return new CallMethodInst(defID++, result, object, signature, arguments);
     }
 
     public CallStaticMethodInst newCallStaticMethod(Variable result, ClassName scope,
-                                                    MethodeSignature signature,
+                                                    MethodSignature signature,
                                                     List<Variable> arguments) {
         return new CallStaticMethodInst(defID++, result, scope, signature, arguments);
     }

@@ -38,7 +38,7 @@ import fr.jamgotchian.abcd.core.tac.model.FloatConst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.IntConst;
 import fr.jamgotchian.abcd.core.tac.model.LongConst;
-import fr.jamgotchian.abcd.core.tac.model.MethodeSignature;
+import fr.jamgotchian.abcd.core.tac.model.MethodSignature;
 import fr.jamgotchian.abcd.core.tac.model.NullConst;
 import fr.jamgotchian.abcd.core.tac.model.ShortConst;
 import fr.jamgotchian.abcd.core.tac.model.StringConst;
@@ -865,7 +865,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             methodName = "#init#";
         }
 
-        MethodeSignature signature = new MethodeSignature(methodName, returnJavaType,
+        MethodSignature signature = new MethodSignature(methodName, returnJavaType,
                                                           argJavaTypes);
 
         Variable resultVar = tmpVarFactory.create(block);

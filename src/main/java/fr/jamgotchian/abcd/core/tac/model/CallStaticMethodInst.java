@@ -29,12 +29,12 @@ public class CallStaticMethodInst extends DefInst {
 
     private final ClassName scope;
 
-    private final MethodeSignature signature;
+    private final MethodSignature signature;
 
     private final List<Variable> arguments;
 
     CallStaticMethodInst(int defID, Variable result, ClassName scope,
-                         MethodeSignature signature, List<Variable> arguments) {
+                         MethodSignature signature, List<Variable> arguments) {
         super(defID, result);
         this.scope = scope;
         this.signature = signature;
@@ -45,7 +45,7 @@ public class CallStaticMethodInst extends DefInst {
         return scope;
     }
 
-    public MethodeSignature getSignature() {
+    public MethodSignature getSignature() {
         return signature;
     }
 

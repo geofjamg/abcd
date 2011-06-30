@@ -24,7 +24,7 @@ import java.util.List;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class MethodeSignature {
+public class MethodSignature {
 
     private final String methodName;
 
@@ -32,7 +32,7 @@ public class MethodeSignature {
 
     private final List<JavaType> argumentTypes;
 
-    public MethodeSignature(String methodName, JavaType returnType, List<JavaType> argumentTypes) {
+    public MethodSignature(String methodName, JavaType returnType, List<JavaType> argumentTypes) {
         this.methodName = methodName;
         this.returnType = returnType;
         this.argumentTypes = argumentTypes;

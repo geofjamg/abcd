@@ -28,12 +28,12 @@ public class CallMethodInst extends DefInst {
 
     private final Variable object;
 
-    private final MethodeSignature signature;
+    private final MethodSignature signature;
 
     private final List<Variable> arguments;
 
     public CallMethodInst(int defID, Variable result, Variable object,
-                          MethodeSignature signature, List<Variable> arguments) {
+                          MethodSignature signature, List<Variable> arguments) {
         super(defID, result);
         this.object = object;
         this.signature = signature;
@@ -44,7 +44,7 @@ public class CallMethodInst extends DefInst {
         return object;
     }
 
-    public MethodeSignature getSignature() {
+    public MethodSignature getSignature() {
         return signature;
     }
 
