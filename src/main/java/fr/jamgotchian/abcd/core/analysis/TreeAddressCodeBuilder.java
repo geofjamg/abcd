@@ -30,6 +30,7 @@ import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
 import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
 import fr.jamgotchian.abcd.core.tac.model.DefInst;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
+import fr.jamgotchian.abcd.core.tac.model.StringConst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
@@ -38,6 +39,7 @@ import fr.jamgotchian.abcd.core.tac.util.VariableStack;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -95,10 +97,13 @@ public class TreeAddressCodeBuilder {
         Edge edge = graph.getFirstIncomingEdgeOf(block);
         if (edge != null && edge.isExceptional()) {
             Variable tmpVar = tmpVarFactory.create(block);
-            ClassName className
-                    = classNameFactory.newClassName((String) edge.getValue());
-            TACInst fakeInst
-                    = instFactory.newNewObject(tmpVar, className);
+            TACInst fakeInst;
+            if (edge.getValue() == null) { // finally
+                fakeInst = instFactory.newAssignConst(tmpVar, new StringConst("FAKE", classNameFactory));
+            } else { // catch
+                ClassName className = classNameFactory.newClassName((String) edge.getValue());
+                fakeInst = instFactory.newNewObject(tmpVar, JavaType.newRefType(className));
+            }
             BasicBlock3ACBuilder.addInst(block, fakeInst);
             outputStack.push(tmpVar);
         }

@@ -914,19 +914,17 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
     }
 
     public void visitTypeInsnInsn(BasicBlock block, int position, TypeInsnNode node) {
-        ClassName className
-                = classNameFactory.newClassName(Type.getObjectType(node.desc).getClassName());
+        JavaType type = JavaType.newType(Type.getObjectType(node.desc), classNameFactory);
 
         switch (node.getOpcode()) {
             case NEW: {
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newNewObject(tmpResult, className));
+                addInst(block, instFactory.newNewObject(tmpResult, type));
                 stack.push(tmpResult);
                 break;
             }
 
             case ANEWARRAY: {
-                JavaType type = JavaType.newRefType(className);
                 Variable tmpResult = tmpVarFactory.create(block);
                 addInst(block, instFactory.newNewArray(tmpResult, type,
                                          Collections.singletonList(stack.pop())));
@@ -939,7 +937,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
             case INSTANCEOF: {
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newInstanceOf(tmpResult, stack.pop(), className));
+                addInst(block, instFactory.newInstanceOf(tmpResult, stack.pop(), type));
                 stack.push(tmpResult);
                 break;
             }

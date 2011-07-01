@@ -32,6 +32,7 @@ import fr.jamgotchian.abcd.core.tac.model.CastInst;
 import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
 import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
 import fr.jamgotchian.abcd.core.tac.model.DefInst;
+import fr.jamgotchian.abcd.core.tac.model.GetArrayInst;
 import fr.jamgotchian.abcd.core.tac.model.GetFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.GetStaticFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.GotoInst;
@@ -43,6 +44,8 @@ import fr.jamgotchian.abcd.core.tac.model.MonitorEnterInst;
 import fr.jamgotchian.abcd.core.tac.model.MonitorExitInst;
 import fr.jamgotchian.abcd.core.tac.model.NewArrayInst;
 import fr.jamgotchian.abcd.core.tac.model.NewObjectInst;
+import fr.jamgotchian.abcd.core.tac.model.ReturnInst;
+import fr.jamgotchian.abcd.core.tac.model.SetArrayInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
@@ -222,7 +225,7 @@ public class LocalVariableTypeAnalyser {
         @Override
         public Boolean visit(NewObjectInst inst, Void arg) {
             return infereTypes(getPossibleTypes(inst.getResult().getID()),
-                               JavaType.newRefType(inst.getClassName()));
+                               inst.getType());
         }
 
         @Override
@@ -318,6 +321,28 @@ public class LocalVariableTypeAnalyser {
             }
             return change;
         }
+
+        @Override
+        public Boolean visit(GetArrayInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getIndex().getID()),
+                               JavaType.INT);
+        }
+
+        @Override
+        public Boolean visit(SetArrayInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getIndex().getID()),
+                               JavaType.INT);
+        }
+
+        @Override
+        public Boolean visit(ReturnInst inst, Void arg) {
+            if (inst.getVar() != null && method.getReturnType() != null) {
+                return infereTypes(getPossibleTypes(inst.getVar().getID()),
+                                   method.getReturnType());
+            } else {
+                return Boolean.FALSE;
+            }
+        }
     }
 
     private final Visitor visitor = new Visitor();
@@ -386,8 +411,13 @@ public class LocalVariableTypeAnalyser {
                     if (types.size() == 1) {
                         v.setType(types.iterator().next());
                     } else {
-                        logger.log(Level.WARNING, "Type not found for variable {0}",
-                                v.getID());
+                        if (types.isEmpty()) {
+                            logger.log(Level.WARNING, "Unable to find type of variable {0}",
+                                    v.getID());
+                        } else {
+                            logger.log(Level.WARNING, "Multiple type found for variable {0} : {1}",
+                                new Object[] {v.getID(), types});
+                        }
                     }
                 }
             }

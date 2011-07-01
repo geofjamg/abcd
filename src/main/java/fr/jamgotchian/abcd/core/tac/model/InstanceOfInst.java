@@ -16,7 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import fr.jamgotchian.abcd.core.type.ClassName;
+import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.Collections;
 import java.util.Set;
 
@@ -28,20 +29,23 @@ public class InstanceOfInst extends DefInst {
 
     private final Variable var;
 
-    private final ClassName className;
+    private final JavaType type;
 
-    InstanceOfInst(int defID, Variable result, Variable var, ClassName className) {
+    InstanceOfInst(int defID, Variable result, Variable var, JavaType type) {
         super(defID, result);
+        if (type.isPrimitive()) {
+            throw new ABCDException("type.isPrimitive()");
+        }
         this.var = var;
-        this.className = className;
+        this.type = type;
     }
 
     public Variable getVar() {
         return var;
     }
 
-    public ClassName getClassName() {
-        return className;
+    public JavaType getType() {
+        return type;
     }
 
     public Set<Variable> getUses() {

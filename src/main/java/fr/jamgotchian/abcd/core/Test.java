@@ -1304,6 +1304,20 @@ public class Test {
         return a;
     }
 
+    void testTypeArray(int x) {
+        A[] a = null;
+        if (x == 45) {
+            a = new C[3];
+        } else {
+            a = new D[3];
+        }
+        Object o = a;
+        Object[] ee = a;
+        System.out.println(a[1]);
+        Object bb = new float[2][5];
+        A[][] zzz = new C[2][5];
+    }
+
     class String {
 
     }

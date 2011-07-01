@@ -373,7 +373,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .write(inst.getVar()).writeSpace()
               .writeKeyword("instanceof").writeSpace()
-              .write(inst.getClassName());
+              .write(inst.getType());
         return null;
     }
 
@@ -401,7 +401,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
     public Void visit(NewObjectInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .writeKeyword("new").writeSpace()
-              .write(inst.getClassName()).write("(");
+              .write(inst.getType()).write("(");
         for (Iterator<Variable> it = inst.getArgs().iterator(); it.hasNext();) {
             Variable argVar = it.next();
             writer.write(argVar);

@@ -101,6 +101,9 @@ public class JavaType {
         conversion.put(JavaType.FLOAT,
                 Collections.unmodifiableList(Arrays.asList(JavaType.FLOAT, JavaType.DOUBLE)));
 
+        conversion.put(JavaType.DOUBLE,
+                Collections.unmodifiableList(Arrays.asList(JavaType.DOUBLE)));
+
         conversion.put(JavaType.BOOLEAN,
                 Collections.unmodifiableList(Arrays.asList(JavaType.BOOLEAN)));
 
@@ -295,29 +298,59 @@ public class JavaType {
                 // cannot widen reference to primitive type
                 return null;
             }
-            // find first common ancestor
-            try {
-                Class<?> clazz = Class.forName(getClassName().getQualifiedName());
-                Collection<Class<?>> ancestors = getAncestors(clazz);
 
-                Class<?> otherClazz = Class.forName(otherType.getClassName().getQualifiedName());
-                Collection<Class<?>> otherAncestors = getAncestors(otherClazz);
-
-                ancestors.retainAll(otherAncestors);
-                // should remain at least java.lang.Object
-                Class<?> firstCommonAncestor = ancestors.iterator().next();
-
-                JavaType newType = JavaType.newRefType(factory.newClassName(firstCommonAncestor.getName()));
-                if (newType.equals(this)) {
-                    return this;
+            ClassName javaLangObjectClassName = factory.newClassName(Object.class.getName());
+            if (getArrayDimension() == 0 && otherType.getArrayDimension() > 0) {
+                if (javaLangObjectClassName.equals(getClassName())) {
+                    return JavaType.newRefType(javaLangObjectClassName);
                 } else {
-                    return newType;
+                    return null;
                 }
-            } catch (ClassNotFoundException e) {
-                throw new ABCDException(e);
+            } else if (getArrayDimension() > 0 && otherType.getArrayDimension() == 0) {
+                if (javaLangObjectClassName.equals(otherType.getClassName())) {
+                    return JavaType.newRefType(javaLangObjectClassName);
+                } else {
+                    return null;
+                }
+            } else if (getArrayDimension() > 0 && otherType.getArrayDimension() > 0) {
+                if (getArrayDimension() != otherType.getArrayDimension()) {
+                    return null;
+                } else {
+                    if (getArrayElementType().isPrimitive()
+                            || otherType.getArrayElementType().isPrimitive()) {
+                        // equality test have already be done
+                        return null;
+                    }
+                    JavaType commonArrayEltType
+                            = getFirstCommonAncestor(getArrayElementType(),
+                                                     otherType.getArrayElementType(),
+                                                     factory);
+                    return JavaType.newArrayType(commonArrayEltType, getArrayDimension());
+                }
+            } else {
+                // find first common ancestor
+                return getFirstCommonAncestor(this, otherType, factory);
             }
         }
         throw new InternalError();
+    }
+
+    private static JavaType getFirstCommonAncestor(JavaType type1, JavaType type2, ClassNameFactory factory) {
+        try {
+            Class<?> clazz1 = Class.forName(type1.getClassName().getQualifiedName());
+            Collection<Class<?>> ancestors1 = getAncestors(clazz1);
+
+            Class<?> clazz2 = Class.forName(type2.getClassName().getQualifiedName());
+            Collection<Class<?>> ancestors2 = getAncestors(clazz2);
+
+            ancestors1.retainAll(ancestors2);
+            // should remain at least java.lang.Object
+            Class<?> firstCommonAncestor = ancestors1.iterator().next();
+
+            return JavaType.newRefType(factory.newClassName(firstCommonAncestor.getName()));
+        } catch (ClassNotFoundException e) {
+            throw new ABCDException(e);
+        }
     }
 
     private static void addAncestors(Set<Class<?>> ancestors, Class<?> clazz) {

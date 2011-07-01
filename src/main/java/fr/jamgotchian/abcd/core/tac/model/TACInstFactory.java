@@ -93,8 +93,8 @@ public class TACInstFactory {
         return new GotoInst(label);
     }
 
-    public InstanceOfInst newInstanceOf(Variable result, Variable var, ClassName className) {
-        return new InstanceOfInst(defID++, result, var, className);
+    public InstanceOfInst newInstanceOf(Variable result, Variable var, JavaType type) {
+        return new InstanceOfInst(defID++, result, var, type);
     }
 
     public JumpIfInst newJumpIf(Variable cond, Label label) {
@@ -118,8 +118,8 @@ public class TACInstFactory {
         return new NewArrayInst(defID++, result, type, dimensions);
     }
 
-    public NewObjectInst newNewObject(Variable result, ClassName className) {
-        return new NewObjectInst(defID++, result, className);
+    public NewObjectInst newNewObject(Variable result, JavaType type) {
+        return new NewObjectInst(defID++, result, type);
     }
 
     public PhiInst newPhi(Variable result, List<Variable> args) {

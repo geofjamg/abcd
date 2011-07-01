@@ -16,7 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import fr.jamgotchian.abcd.core.type.ClassName;
+import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -28,18 +29,21 @@ import java.util.Set;
  */
 public class NewObjectInst extends DefInst {
 
-    private final ClassName className;
+    private final JavaType type;
 
     private List<Variable> args;
 
-    NewObjectInst(int defID, Variable result, ClassName className) {
+    NewObjectInst(int defID, Variable result, JavaType type) {
         super(defID, result);
-        this.className = className;
+        if (type.isPrimitive()) {
+            throw new ABCDException("type.isPrimitive()");
+        }
+        this.type = type;
         this.args = Collections.emptyList();
     }
 
-    public ClassName getClassName() {
-        return className;
+    public JavaType getType() {
+        return type;
     }
 
     public List<Variable> getArgs() {
