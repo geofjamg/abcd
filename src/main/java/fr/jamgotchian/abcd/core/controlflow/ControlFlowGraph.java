@@ -85,8 +85,6 @@ public interface ControlFlowGraph {
 
     InsnList getInstructions();
 
-    Multimap<BasicBlock, ForkJoinInfo> getJoinBlocks();
-
     LabelManager getLabelManager();
 
     String getName();

@@ -17,9 +17,6 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
@@ -77,10 +74,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private DominatorInfo<BasicBlock, Edge> dominatorInfo;
 
-    private final Multimap<BasicBlock, ForkJoinInfo> joinBlocks;
-
-    private final Map<BasicBlock, ForkJoinInfo> forkBlocks;
-
     private LocalVariableTable localVariableTable;
 
     private ExceptionTable exceptionTable;
@@ -119,8 +112,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         graph = DirectedGraphs.newDirectedGraph();
         basicBlocks = new RangeMap<Range, BasicBlock>();
         naturalLoops = new HashMap<BasicBlock, NaturalLoop>();
-        joinBlocks = HashMultimap.create();
-        forkBlocks = new HashMap<BasicBlock, ForkJoinInfo>();
         addBasicBlock(entryBlock);
         addBasicBlock(exitBlock);
     }
@@ -156,10 +147,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public DominatorInfo<BasicBlock, Edge> getDominatorInfo() {
         return dominatorInfo;
-    }
-
-    public Multimap<BasicBlock, ForkJoinInfo> getJoinBlocks() {
-        return Multimaps.unmodifiableMultimap(joinBlocks);
     }
 
     public Tree<BasicBlock, Edge> getDFST() {
@@ -250,7 +237,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return basicBlocks.values();
     }
 
-    final public void addBasicBlock(BasicBlock block) {
+    public void addBasicBlock(BasicBlock block) {
         block.setGraph(this);
         graph.addVertex(block);
         if (block.getRange() != null) {
@@ -303,7 +290,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
     }
 
-    final public Edge addEdge(BasicBlock source, BasicBlock target) {
+    public Edge addEdge(BasicBlock source, BasicBlock target) {
         return addEdge(source, target, false);
     }
 
@@ -358,7 +345,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         removeCriticalEdges();
         dominatorInfo = DominatorInfo.create(graph, entryBlock, exitBlock, new EdgeFactoryImpl());
         performDepthFirstSearch();
-        analyseForkJoin();
         analyseEdgeCategory();
         analyseNaturalLoops();
         analyseLoopLevel();
@@ -463,37 +449,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             graph.addVertex(fakeBlock);
             graph.addEdge(source, fakeBlock, new EdgeImpl());
             graph.addEdge(fakeBlock, target, criticalEdge);
-        }
-    }
-
-    private void analyseForkJoin() {
-        // update fork / join infos
-        joinBlocks.clear();
-        forkBlocks.clear();
-        for (BasicBlock forkBlock : dfst.getNodes()) {
-            if (graph.getSuccessorsOf(forkBlock).size() > 1) {
-                BasicBlock joinBlock = dominatorInfo.getPostDominatorsTree().getParent(forkBlock);
-                Set<ForkJoinInfo.Branch> branches = new HashSet<ForkJoinInfo.Branch>();
-                for (Edge forkEdge : graph.getOutgoingEdgesOf(forkBlock)) {
-                    BasicBlock target = graph.getEdgeTarget(forkEdge);
-                    if (target.equals(joinBlock)) {
-                        branches.add(new ForkJoinInfo.Branch(forkEdge, forkEdge));
-                    } else {
-                        Edge joinEdge = dominatorInfo.getDominanceFrontierOf(target).iterator().next();
-                        branches.add(new ForkJoinInfo.Branch(forkEdge, joinEdge));
-                    }
-                }
-                ForkJoinInfo info = new ForkJoinInfo(forkBlock, joinBlock, branches);
-                joinBlocks.put(joinBlock, info);
-                forkBlocks.put(forkBlock, info);
-                logger.log(Level.FINEST, "Fork at {0}, join at {1}",
-                            new Object[]{forkBlock, joinBlock});
-                for (ForkJoinInfo.Branch branch : branches) {
-                    logger.log(Level.FINEST, "  Branch start at {0}, end at {1}",
-                                new Object[]{graph.toString(branch.getForkEdge()),
-                                             graph.toString(branch.getJoinEdge())});
-                }
-            }
         }
     }
 
@@ -638,7 +593,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     public void setExceptionTable(ExceptionTable exceptionTable) {
         this.exceptionTable = exceptionTable;
     }
-    
+
     @Override
     public String toString() {
         return name;
