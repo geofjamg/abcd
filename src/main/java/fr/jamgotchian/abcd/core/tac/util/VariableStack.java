@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.tac.util;
 
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -45,6 +46,9 @@ public class VariableStack {
     }
 
     public Variable pop() {
+        if (stack.isEmpty()) {
+            throw new ABCDException("stack.isEmpty()");
+        }
         return stack.pop().clone();
     }
 

@@ -284,22 +284,6 @@ public class TreeAddressCodeBuilder {
             for (Iterator<BasicBlock> it = blocksToProcess.iterator(); it.hasNext();) {
                 BasicBlock block = it.next();
 
-                boolean processable = true;
-                for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
-                    if (incomingEdge.isLoopBack()) {
-                        continue;
-                    }
-                    BasicBlock pred = graph.getEdgeSource(incomingEdge);
-                    if (blocksToProcess.contains(pred)) {
-                        processable = false;
-                        break;
-                    }
-                }
-
-                if (!processable) {
-                    break;
-                }
-
                 List<VariableStack> inputStacks = new ArrayList<VariableStack>();
                 for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
                     if (incomingEdge.isLoopBack()) {
