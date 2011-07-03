@@ -279,7 +279,8 @@ public class ABCDContext {
                 ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
 
                 logger.log(Level.FINE, "////////// Analyse Control flow of {0} //////////", methodSignature);
-                graph.analyse();
+                graph.compact();
+                graph.analyseLoops();
 
                 logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
                 new ControlFlowGraphStmtAnalysis().analyse(graph, importManager);
@@ -428,7 +429,9 @@ public class ABCDContext {
                 logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
 
                 logger.log(Level.FINE, "////////// Analyse control flow of {0} //////////", methodSignature);
-                graph.analyse();
+                graph.compact();
+                graph.removeCriticalEdges();
+                graph.analyseLoops();
 
                 String baseName = outputDir.getPath() + "/" + methodSignature;
 
@@ -453,6 +456,10 @@ public class ABCDContext {
 
                 logger.log(Level.FINE, "////////// Build 3AC instructions of {0} //////////", methodSignature);
                 new TreeAddressCodeBuilder(graph, method, new ImportManager()).build();
+
+                // to remove empty basic blocks added tu remove critical edges
+                graph.compact();
+                graph.analyseLoops();
 
                 Set<Region> rootRegions = null;
                 if (drawRegions) {

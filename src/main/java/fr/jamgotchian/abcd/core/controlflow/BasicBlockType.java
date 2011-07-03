@@ -28,5 +28,5 @@ public enum BasicBlockType {
     SWITCH,
     GOTO,
     RETURN,
-    FAKE
+    EMPTY
 }

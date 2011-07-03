@@ -124,7 +124,7 @@ public class SSAFormConverterTest {
         Edge e56 = graph.addEdge(bb5, bb6);
         Edge e67 = graph.addEdge(bb6, bb7);
         Edge e71 = graph.addEdge(bb7, bb1);
-        graph.analyse();
+        graph.analyseLoops();
         DominatorInfo<BasicBlock, Edge> info = graph.getDominatorInfo();
 
         /*

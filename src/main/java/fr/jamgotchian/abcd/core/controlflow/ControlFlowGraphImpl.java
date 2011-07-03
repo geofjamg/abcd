@@ -85,6 +85,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
     }
 
+    private static final EdgeFactory<Edge> EDGE_FACTORY = new EdgeFactoryImpl();
+
     public ControlFlowGraphImpl(String name, InsnList instructions) {
         this(name, new BasicBlockImpl(Integer.MIN_VALUE, -1, BasicBlockType.ENTRY),
                 new BasicBlockImpl(BasicBlockType.EXIT));
@@ -339,11 +341,18 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return graph.getEdgeTarget(edge);
     }
 
-    public void analyse() {
-        removeUnreachableBlock();
+    /**
+     * Compact the control flow graph i.e. remove unreachable and unnecessary
+     * basic blocks.
+     */
+    public void compact() {
+        removeUnreachableBlocks();
         removeUnnecessaryBlock();
-        removeCriticalEdges();
-        dominatorInfo = DominatorInfo.create(graph, entryBlock, exitBlock, new EdgeFactoryImpl());
+    }
+
+    public void analyseLoops() {
+        logger.log(Level.FINER, "Analyse loops");
+        dominatorInfo = DominatorInfo.create(graph, entryBlock, exitBlock, EDGE_FACTORY);
         performDepthFirstSearch();
         analyseEdgeCategory();
         analyseNaturalLoops();
@@ -362,7 +371,11 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         logger.log(Level.FINEST, "DFST : \n{0}", Trees.toString(dfst));
     }
 
-    private void removeUnreachableBlock() {
+    /**
+     * Remove unreachable basic blocks. A basic block is unreachable if it has no
+     * predecessors et no successors.
+     */
+    private void removeUnreachableBlocks() {
         for (BasicBlock block : new HashSet<BasicBlock>(graph.getVertices())) {
             if (!block.equals(entryBlock) && !block.equals(exitBlock)
                     && graph.getIncomingEdgesOf(block).isEmpty()
@@ -374,19 +387,23 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
     }
 
+    /**
+     * Remove unnecessary basic blocks. A basic block is unnecessary if it does
+     * not contains bytecode instructions except JUMP, GOTO, FRAME, LABEL OR LINE.
+     */
     private void removeUnnecessaryBlock() {
         Set<BasicBlock> blocksToRemove = new HashSet<BasicBlock>();
         for (BasicBlock block : graph.getVertices()) {
             if (graph.getIncomingEdgesOf(block).size() == 1 &&
                 graph.getOutgoingEdgesOf(block).size() == 1) {
                 Range range = block.getRange();
+                boolean remove = true;
                 if (range != null && range.size() > 0) {
-                    AbstractInsnNode node = block.getGraph().getInstructions().get(range.getLast());
+                    AbstractInsnNode node = instructions.get(range.getLast());
                     if (node.getType() == AbstractInsnNode.JUMP_INSN &&
                         node.getOpcode() == Opcodes.GOTO) {
-                        boolean remove = true;
                         for (int i = range.getFirst(); i <= range.getLast()-1; i++) {
-                            node = block.getGraph().getInstructions().get(i);
+                            node = instructions.get(i);
                             if (node.getType() != AbstractInsnNode.FRAME &&
                                 node.getType() != AbstractInsnNode.LABEL &&
                                 node.getType() != AbstractInsnNode.LINE) {
@@ -394,10 +411,12 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                                 break;
                             }
                         }
-                        if (remove) {
-                            blocksToRemove.add(block);
-                        }
+                    } else {
+                        remove = false;
                     }
+                }
+                if (remove) {
+                    blocksToRemove.add(block);
                 }
             }
         }
@@ -424,7 +443,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
      * the edge) in order to insert computations on the edge without affecting
      * any other edges.
      */
-    private void removeCriticalEdges() {
+    public void removeCriticalEdges() {
         List<Edge> criticalEdges = new ArrayList<Edge>();
 
         // find critical edges
@@ -444,11 +463,11 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             BasicBlock source = graph.getEdgeSource(criticalEdge);
             BasicBlock target = graph.getEdgeTarget(criticalEdge);
             graph.removeEdge(criticalEdge);
-            BasicBlock fakeBlock = new BasicBlockImpl(BasicBlockType.FAKE);
-            fakeBlock.setGraph(this);
-            graph.addVertex(fakeBlock);
-            graph.addEdge(source, fakeBlock, new EdgeImpl());
-            graph.addEdge(fakeBlock, target, criticalEdge);
+            BasicBlock emptyBlock = new BasicBlockImpl(BasicBlockType.EMPTY);
+            emptyBlock.setGraph(this);
+            graph.addVertex(emptyBlock);
+            graph.addEdge(source, emptyBlock, criticalEdge);
+            graph.addEdge(emptyBlock, target, new EdgeImpl(criticalEdge.isExceptional()));
         }
     }
 

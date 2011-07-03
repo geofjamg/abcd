@@ -39,7 +39,11 @@ public interface ControlFlowGraph {
 
     Edge addEdge(BasicBlock source, BasicBlock target, boolean exceptional);
 
-    void analyse();
+    void compact();
+
+    void removeCriticalEdges();
+
+    void analyseLoops();
 
     boolean containsEdge(BasicBlock source, BasicBlock target);
 

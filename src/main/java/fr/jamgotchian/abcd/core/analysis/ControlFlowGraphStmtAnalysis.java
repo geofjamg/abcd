@@ -24,6 +24,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
@@ -144,9 +145,11 @@ public class ControlFlowGraphStmtAnalysis {
         data.setInputStack(inputStack.clone());
 
         ExpressionStack outputStack = inputStack.clone();
-        Iterator<Edge> itE = graph.getIncomingEdgesOf(block).iterator();
-        if (itE.hasNext() && itE.next().isExceptional()) {
-            outputStack.push(Expressions.newStringExpr("EXCEPTION", block));
+        if (block.getType() != BasicBlockType.EMPTY) {
+            Iterator<Edge> itE = graph.getIncomingEdgesOf(block).iterator();
+            if (itE.hasNext() && itE.next().isExceptional()) {
+                outputStack.push(Expressions.newStringExpr("EXCEPTION", block));
+            }
         }
 
         if (data.getInputStack().size() > 0) {

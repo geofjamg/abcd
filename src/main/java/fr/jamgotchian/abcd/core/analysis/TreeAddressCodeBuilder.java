@@ -94,18 +94,21 @@ public class TreeAddressCodeBuilder {
         data.setInputStack2(inputStack.clone());
 
         VariableStack outputStack = inputStack.clone();
-        Edge edge = graph.getFirstIncomingEdgeOf(block);
-        if (edge != null && edge.isExceptional()) {
-            Variable tmpVar = tmpVarFactory.create(block);
-            TACInst fakeInst;
-            if (edge.getValue() == null) { // finally
-                fakeInst = instFactory.newAssignConst(tmpVar, new StringConst("FAKE", classNameFactory));
-            } else { // catch
-                ClassName className = classNameFactory.newClassName((String) edge.getValue());
-                fakeInst = instFactory.newNewObject(tmpVar, JavaType.newRefType(className));
+
+        if (block.getType() != BasicBlockType.EMPTY) {
+            Edge edge = graph.getFirstIncomingEdgeOf(block);
+            if (edge != null && edge.isExceptional()) {
+                Variable tmpVar = tmpVarFactory.create(block);
+                TACInst fakeInst;
+                if (edge.getValue() == null) { // finally
+                    fakeInst = instFactory.newAssignConst(tmpVar, new StringConst("FAKE", classNameFactory));
+                } else { // catch
+                    ClassName className = classNameFactory.newClassName((String) edge.getValue());
+                    fakeInst = instFactory.newNewObject(tmpVar, JavaType.newRefType(className));
+                }
+                BasicBlock3ACBuilder.addInst(block, fakeInst);
+                outputStack.push(tmpVar);
             }
-            BasicBlock3ACBuilder.addInst(block, fakeInst);
-            outputStack.push(tmpVar);
         }
 
         if (data.getInputStack2().size() > 0) {
