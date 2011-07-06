@@ -28,15 +28,15 @@ import java.util.Set;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class BlockRegion extends AbstractRegion {
- 
+
     private final Set<Edge> edges;
-    
+
     private final List<Region> regions;
-    
+
     BlockRegion(Set<Edge> edges, List<Region> regions) {
         if (edges == null) {
             throw new IllegalArgumentException("edges == null");
-        }                           
+        }
         if (regions == null) {
             throw new IllegalArgumentException("regions == null");
         }
@@ -45,8 +45,11 @@ public class BlockRegion extends AbstractRegion {
         }
         this.edges = edges;
         this.regions = regions;
+        for (Region r : regions) {
+            r.setParent(this);
+        }
     }
-    
+
     public RegionType getType() {
         return RegionType.BLOCK;
     }

@@ -17,12 +17,12 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -53,6 +53,7 @@ public class LoopRegion extends AbstractRegion {
         this.backEdge = backEdge;
         this.loopRegion = loopRegion;
         this.loopID = loopID;
+        loopRegion.setParent(this);
     }
 
     public RegionType getType() {
@@ -84,11 +85,11 @@ public class LoopRegion extends AbstractRegion {
     }
 
     public Collection<Region> getChildRegions() {
-        return Sets.newHashSet(loopRegion);
+        return Collections.singleton(loopRegion);
     }
 
     public Collection<Edge> getChildEdges() {
-        return Sets.newHashSet(backEdge);
+        return Collections.singleton(backEdge);
     }
 
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {

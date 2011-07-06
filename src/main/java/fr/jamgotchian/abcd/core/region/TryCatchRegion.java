@@ -58,6 +58,10 @@ public class TryCatchRegion extends AbstractRegion {
         this.tryRegion2 = tryRegion2;
         this.tryEdge2 = tryEdge2;
         this.catchRegions = catchRegions;
+        tryRegion1.setParent(this);
+        if (tryRegion2 != null) {
+            tryRegion2.setParent(this);
+        }
     }
 
     public Region getTryRegion1() {

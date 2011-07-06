@@ -123,8 +123,8 @@ public class Expressions {
         return expr;
     }
 
-    public static ArrayAccess newArrayAcces(Expression arrayRef, Expression arrayIndexExpr,
-                                            BasicBlock block) {
+    public static ArrayAccess newArrayAccess(Expression arrayRef, Expression arrayIndexExpr,
+                                             BasicBlock block) {
         ArrayAccess expr = new ArrayAccess(arrayRef, arrayIndexExpr);
         expr.setBasicBlock(block);
         return expr;
@@ -178,8 +178,8 @@ public class Expressions {
         return expr;
     }
 
-    public static LocalVariable newVarExpr(int index, BasicBlock block) {
-        LocalVariable expr = new LocalVariable(index);
+    public static LocalVariable newVarExpr(int index, int version, String name, BasicBlock block) {
+        LocalVariable expr = new LocalVariable(index, version, name);
         expr.setBasicBlock(block);
         return expr;
     }
@@ -191,15 +191,15 @@ public class Expressions {
         return expr;
     }
 
-    public static ObjectCreationExpression newObjCreatExpr(ClassName className, List<Expression> arguments,
+    public static ObjectCreationExpression newObjCreatExpr(JavaType type, List<Expression> arguments,
                                                            BasicBlock block) {
-        ObjectCreationExpression expr = new ObjectCreationExpression(className, arguments);
+        ObjectCreationExpression expr = new ObjectCreationExpression(type, arguments);
         expr.setBasicBlock(block);
         return expr;
     }
 
-    public static ObjectCreationExpression newObjCreatExpr(ClassName className, BasicBlock block) {
-        ObjectCreationExpression expr = new ObjectCreationExpression(className);
+    public static ObjectCreationExpression newObjCreatExpr(JavaType type, BasicBlock block) {
+        ObjectCreationExpression expr = new ObjectCreationExpression(type);
         expr.setBasicBlock(block);
         return expr;
     }

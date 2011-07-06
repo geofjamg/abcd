@@ -80,7 +80,7 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
             visit(innerClass, null);
             writer.newLine();
         }
-        
+
         for (Method method : _class.getMethods()) {
             method.accept(this, null);
             writer.newLine().newLine();
@@ -112,8 +112,7 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
             List<LocalVariableDeclaration> arguments = method.getArguments();
             for (int i = 0; i < arguments.size(); i++) {
                 LocalVariableDeclaration argument = arguments.get(i);
-                String argumentName = method.getBody().getVariable(argument.getIndex());
-                writer.write(argument.getType()).writeSpace().write(argumentName);
+                writer.write(argument.getType()).writeSpace().write(argument.getVariable().getName());
                 if (i < arguments.size()-1) {
                     writer.write(",").writeSpace();
                 }

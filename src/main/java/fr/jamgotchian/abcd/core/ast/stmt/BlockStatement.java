@@ -17,8 +17,6 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
-import fr.jamgotchian.abcd.core.controlflow.NameGenerator;
-import fr.jamgotchian.abcd.core.controlflow.SimpleNameGenerator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -39,14 +37,8 @@ public class BlockStatement extends AbstractStatement
 
     private Statement last;
 
-    private final LocalVariableTable localVariableTable;
-
-    private final NameGenerator nameGenerator;
-
     public BlockStatement() {
         id = ID_GENERATOR++;
-        localVariableTable = new LocalVariableTableImpl();
-        nameGenerator = new SimpleNameGenerator();
     }
 
     public BlockStatement(Iterable<Statement> stmts) {
@@ -68,14 +60,6 @@ public class BlockStatement extends AbstractStatement
 
     public void setLast(Statement last) {
         this.last = last;
-    }
-
-    public LocalVariableTable getLocalVariableTable() {
-        return localVariableTable;
-    }
-
-    public NameGenerator getNameGenerator() {
-        return nameGenerator;
     }
 
     public boolean isEmpty() {
@@ -210,43 +194,6 @@ public class BlockStatement extends AbstractStatement
         return visitor.visit(this, arg);
     }
 
-    private String findVariable(int index) {
-        String name = localVariableTable.getVariable(index);
-        if (name != null) {
-            return name;
-        } else {
-            if (getBlock() != null) {
-                return getBlock().findVariable(index);
-            } else {
-                return null;
-            }
-        }
-    }
-
-    private boolean containsVariable(String name) {
-        if (localVariableTable.containsVariable(name)) {
-            return true;
-        } else {
-            if (getBlock() != null) {
-                return getBlock().containsVariable(name);
-            } else {
-                return false;
-            }
-        }
-    }
-
-    public String getVariable(int index) {
-        String name = findVariable(index);
-        if (name == null) {
-            do {
-                name = nameGenerator.generate();
-            } while (containsVariable(name));
-
-            localVariableTable.addVariable(index, name);
-        }
-        return name;
-    }
-
     public List<String> getDebugInfos() {
         List<Integer> parentIds = new ArrayList<Integer>();
         for (BlockStatement b = getBlock(); b != null; b = b.getBlock()) {
@@ -256,7 +203,6 @@ public class BlockStatement extends AbstractStatement
         infos.add("block id    : " + id);
         infos.add("block depth : " + getDepth());
         infos.add("parents id  : " + parentIds);
-        infos.add("variables   : " + localVariableTable.getVariables());
         return infos;
     }
 }

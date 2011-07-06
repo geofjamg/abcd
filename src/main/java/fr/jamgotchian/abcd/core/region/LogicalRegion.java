@@ -74,6 +74,8 @@ public class LogicalRegion extends AbstractRegion {
         this.falseEdgeA = falseEdgeA;
         this.trueEdgeB = trueEdgeB;
         this.falseEdgeB = falseEdgeB;
+        regionA.setParent(this);
+        regionB.setParent(this);
     }
 
     public RegionType getType() {

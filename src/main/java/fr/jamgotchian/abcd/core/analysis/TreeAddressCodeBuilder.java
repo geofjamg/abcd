@@ -121,7 +121,7 @@ public class TreeAddressCodeBuilder {
         block.visit(builder);
         data.setOutputStack2(outputStack);
 
-        if (data.getOutputStack().size() > 0) {
+        if (data.getOutputStack2().size() > 0) {
             logger.log(Level.FINEST, "<<< Output stack : {0}", data.getOutputStack2());
         }
     }
@@ -275,9 +275,9 @@ public class TreeAddressCodeBuilder {
     }
 
     public void build() {
-//        for (BasicBlock block : graph.getBasicBlocks()) {
-//            block.setData(new AnalysisData());
-//        }
+        for (BasicBlock block : graph.getBasicBlocks()) {
+            block.setData(new AnalysisData());
+        }
 
         tmpVarFactory = new TemporaryVariableFactory();
         instFactory = new TACInstFactory();
@@ -320,18 +320,16 @@ public class TreeAddressCodeBuilder {
                     Variable def = ((DefInst) inst).getResult();
                     if (!def.isTemporary()) {
                         variables.add(def);
+                        def.setName(table.getName(def.getIndex(), def.getPosition()));
                     }
                 }
                 for (Variable use : inst.getUses()) {
                     if (!use.isTemporary()) {
                         variables.add(use);
+                        use.setName(table.getName(use.getIndex(), use.getPosition()));
                     }
                 }
             }
-        }
-
-        for (Variable v : variables) {
-            v.setName(table.getName(v.getIndex(), v.getPosition()));
         }
 
         printVariableName(variables);

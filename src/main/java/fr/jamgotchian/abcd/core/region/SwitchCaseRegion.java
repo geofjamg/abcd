@@ -32,7 +32,7 @@ import java.util.Set;
 public class SwitchCaseRegion extends AbstractRegion {
 
     private final Region switchRegion;
-    
+
     private final List<CaseRegion> caseRegions;
 
     SwitchCaseRegion(Region switchRegion, List<CaseRegion> caseRegions) {
@@ -47,12 +47,18 @@ public class SwitchCaseRegion extends AbstractRegion {
         }
         this.switchRegion = switchRegion;
         this.caseRegions = caseRegions;
+        switchRegion.setParent(this);
+        for (CaseRegion _case : caseRegions) {
+            if (_case.getRegion() != null) {
+                _case.getRegion().setParent(this);
+            }
+        }
     }
-    
+
     public RegionType getType() {
         return RegionType.SWITCH_CASE;
     }
-   
+
     public Region getEntryRegion() {
          return switchRegion;
     }
@@ -68,13 +74,13 @@ public class SwitchCaseRegion extends AbstractRegion {
     public List<CaseRegion> getCaseRegions() {
         return caseRegions;
     }
-    
+
     public Collection<Region> getChildRegions() {
         Set<Region> regions = new HashSet<Region>();
         regions.add(switchRegion);
         for (CaseRegion _case : caseRegions) {
             if (_case.getRegion() != null) {
-                regions.add(_case.getRegion()); 
+                regions.add(_case.getRegion());
             }
         }
         return regions;
@@ -103,7 +109,7 @@ public class SwitchCaseRegion extends AbstractRegion {
                 graph.removeEdge(_case.getOutgoingEdge());
                 graph.removeVertex(_case.getRegion());
             }
-        }        
+        }
         graph.addEdge(this, switchExitRegion, new EdgeImpl());
         Regions.moveIncomingEdges(graph, switchRegion, this);
         graph.removeVertex(switchRegion);

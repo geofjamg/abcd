@@ -30,11 +30,11 @@ public class ClassConst implements Const {
 
     private final ClassName className;
 
-    private final ClassNameFactory factory;
+    private final JavaType type;
 
     public ClassConst(ClassName className, ClassNameFactory factory) {
         this.className = className;
-        this.factory = factory;
+        this.type = JavaType.newRefType(factory.newClassName(Class.class.getName()));
     }
 
     public ClassName getClassName() {
@@ -42,7 +42,7 @@ public class ClassConst implements Const {
     }
 
     public Set<JavaType> getPossibleTypes() {
-        return Collections.singleton(JavaType.newRefType(factory.newClassName(Class.class.getName())));
+        return Collections.singleton(type);
     }
 
     @Override

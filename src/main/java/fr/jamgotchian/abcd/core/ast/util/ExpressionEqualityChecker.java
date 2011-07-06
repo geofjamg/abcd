@@ -88,7 +88,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
             return Boolean.FALSE;
         }
     }
-    
+
     public Boolean visit(ByteLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof ByteLiteralExpression) {
             return ((ByteLiteralExpression) expr2).getValue() == expr1.getValue();
@@ -96,7 +96,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
             return Boolean.FALSE;
         }
     }
-    
+
     public Boolean visit(ShortLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof ShortLiteralExpression) {
             return ((ShortLiteralExpression) expr2).getValue() == expr1.getValue();
@@ -104,7 +104,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
             return Boolean.FALSE;
         }
     }
-    
+
     public Boolean visit(BooleanLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof BooleanLiteralExpression) {
             return ((BooleanLiteralExpression) expr2).getValue() == expr1.getValue();
@@ -112,7 +112,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
             return Boolean.FALSE;
         }
     }
-    
+
     public Boolean visit(FloatLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof FloatLiteralExpression) {
             return ((FloatLiteralExpression) expr2).getValue() == expr1.getValue();
@@ -139,7 +139,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
     public Boolean visit(NullLiteralExpression expr1, Expression expr2) {
         return (expr2 instanceof NullLiteralExpression ? Boolean.TRUE : Boolean.FALSE);
     }
-    
+
     public Boolean visit(ClassLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof ClassLiteralExpression) {
             return ((ClassLiteralExpression) expr2).getClassName().equals(expr1.getClassName());
@@ -235,7 +235,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
 
     public Boolean visit(ObjectCreationExpression expr1, Expression expr2) {
         if (expr2 instanceof ObjectCreationExpression) {
-            if (!expr1.getClassName().equals(((ObjectCreationExpression) expr2).getClassName())
+            if (!expr1.getType().equals(((ObjectCreationExpression) expr2).getType())
                     || !nullableListEqual(expr1.getArguments(), ((ObjectCreationExpression) expr2).getArguments())) {
                 return Boolean.FALSE;
             } else {

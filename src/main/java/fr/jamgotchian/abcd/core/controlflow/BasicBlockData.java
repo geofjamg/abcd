@@ -23,5 +23,5 @@ package fr.jamgotchian.abcd.core.controlflow;
  */
 public interface BasicBlockData {
 
-    int getStatementCount();
+    int getInstructionCount();
 }

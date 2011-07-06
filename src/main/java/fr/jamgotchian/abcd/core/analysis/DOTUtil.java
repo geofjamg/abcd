@@ -105,30 +105,6 @@ public class DOTUtil {
         }
     }
 
-    private static class StmtAttributeProvider implements AttributeProvider<BasicBlock> {
-
-        public Map<String, String> getAttributes(BasicBlock block) {
-            Map<String, String> attrs = new HashMap<String, String>(3);
-            attrs.put("shape", "box");
-            attrs.put("color", "black");
-            StringBuilder builder = new StringBuilder();
-            builder.append("< ");
-            if (block.getType() == BasicBlockType.ENTRY
-                    || block.getType() == BasicBlockType.EXIT) {
-                builder.append("<font color=\"black\">").append(block.getType())
-                      .append("</font>");
-            } else {
-                AnalysisData data = (AnalysisData) block.getData();
-                builder.append(OutputUtil.toDOTHTMLLike(data.getStatements(),
-                                                        data.getInputStack(),
-                                                        data.getOutputStack()));
-            }
-            builder.append(" >");
-            attrs.put("label", builder.toString());
-            return attrs;
-        }
-    }
-
     private static class TACAttributeProvider implements AttributeProvider<BasicBlock> {
 
         public Map<String, String> getAttributes(BasicBlock block) {
@@ -178,7 +154,6 @@ public class DOTUtil {
     public enum DisplayMode {
         RANGE,
         BYTECODE,
-        STATEMENTS,
         TAC
     }
 
@@ -197,9 +172,6 @@ public class DOTUtil {
     public static final AttributeProvider<BasicBlock> BYTECODE_ATTRIBUTE_PROVIDER
             = new BytecodeAttributeProvider();
 
-    public static final AttributeProvider<BasicBlock> STMT_ATTRIBUTE_PROVIDER
-            = new StmtAttributeProvider();
-
     public static final AttributeProvider<BasicBlock> TAC_ATTRIBUTE_PROVIDER
             = new TACAttributeProvider();
 
@@ -208,7 +180,6 @@ public class DOTUtil {
                 = new EnumMap<DisplayMode, AttributeProvider<BasicBlock>>(DisplayMode.class);
         providers.put(DisplayMode.RANGE, RANGE_ATTRIBUTE_PROVIDER);
         providers.put(DisplayMode.BYTECODE, BYTECODE_ATTRIBUTE_PROVIDER);
-        providers.put(DisplayMode.STATEMENTS, STMT_ATTRIBUTE_PROVIDER);
         providers.put(DisplayMode.TAC, TAC_ATTRIBUTE_PROVIDER);
         BASIC_BLOCK_ATTRIBUTE_PROVIDERS = Collections.unmodifiableMap(providers);
     }

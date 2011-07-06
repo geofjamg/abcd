@@ -58,15 +58,6 @@ public class Method {
         this.exceptions = exceptions;
         this.body = new BlockStatement();
         this.constructor = constructor;
-
-        // fill local variable table
-        if(!this.modifiers.contains(Modifier.STATIC)) {
-            body.getLocalVariableTable().addVariable(0, "this");
-        }
-        for (LocalVariableDeclaration argument : this.arguments) {
-            String argumentName = body.getNameGenerator().generate();
-            body.getLocalVariableTable().addVariable(argument.getIndex(), argumentName);
-        }
     }
 
     public Class getClazz() {

@@ -24,13 +24,9 @@ import fr.jamgotchian.abcd.core.ast.stmt.CommentStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.DoWhileStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ForStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.JumpIfStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.MonitorEnterStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
@@ -43,7 +39,6 @@ import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -56,13 +51,11 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
 
     private static final StatementEqualityChecker INSTANCE = new StatementEqualityChecker();
 
-    public static boolean equal(Iterable<Statement> stmts1, Iterable<Statement> stmts2) {
-        List<Statement> filteredStmts1 = filter(stmts1);
-        List<Statement> filteredStmts2 = filter(stmts2);
-        if (filteredStmts1.size() == filteredStmts2.size()) {
-            for (int i = 0; i < filteredStmts1.size(); i++) {
-                Statement filteredStmt1 = filteredStmts1.get(i);
-                Statement filteredStmt2 = filteredStmts2.get(i);
+    public static boolean equal(List<Statement> stmts1, List<Statement> stmts2) {
+        if (stmts1.size() == stmts2.size()) {
+            for (int i = 0; i < stmts1.size(); i++) {
+                Statement filteredStmt1 = stmts1.get(i);
+                Statement filteredStmt2 = stmts2.get(i);
                 if (Boolean.FALSE.equals(filteredStmt1.accept(INSTANCE, filteredStmt2))) {
                     return false;
                 }
@@ -70,21 +63,6 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
             return true;
         }
         return false;
-    }
-
-    private static List<Statement> filter(Iterable<Statement> stmts) {
-        List<Statement> filteredStmts = new ArrayList<Statement>();
-        for (Statement stmt : stmts) {
-            if (stmt instanceof CommentStatement
-                    || stmt instanceof JumpIfStatement
-                    || stmt instanceof GotoStatement
-                    || stmt instanceof LabelStatement
-                    || stmt instanceof LookupOrTableSwitchStatement) {
-                continue;
-            }
-            filteredStmts.add(stmt);
-        }
-        return filteredStmts;
     }
 
     private static boolean nullableStmtEqual(StatementVisitor<Boolean, Statement> visitor,
@@ -129,7 +107,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
 
     public Boolean visit(LocalVariableDeclarationStatement stmt, Statement arg) {
         if (arg instanceof LocalVariableDeclarationStatement) {
-            LocalVariableDeclarationStatement stmt2 = (LocalVariableDeclarationStatement) stmt;
+            LocalVariableDeclarationStatement stmt2 = (LocalVariableDeclarationStatement) arg;
             if (!stmt.getLocalVarDecl().equals(stmt2.getLocalVarDecl())) {
                 return Boolean.FALSE;
             }
@@ -243,22 +221,6 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
-    public Boolean visit(JumpIfStatement stmt, Statement arg) {
-        throw new IllegalStateException();
-    }
-
-    public Boolean visit(GotoStatement stmt, Statement arg) {
-        throw new IllegalStateException();
-    }
-
-    public Boolean visit(LabelStatement stmt, Statement arg) {
-        throw new IllegalStateException();
-    }
-
-    public Boolean visit(LookupOrTableSwitchStatement stmt, Statement arg) {
-        throw new IllegalStateException();
-    }
-
     public Boolean visit(SwitchCaseStatement stmt, Statement arg) {
         if (arg instanceof SwitchCaseStatement) {
             SwitchCaseStatement stmt2 = (SwitchCaseStatement) arg;
@@ -286,7 +248,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
                 for (int i = 0; i < caseStmt1.size(); i++) {
                     if (Boolean.FALSE.equals(caseStmt1.get(i).accept(this, caseStmt2.get(i)))) {
                         return Boolean.FALSE;
-                    }                    
+                    }
                 }
             }
             return Boolean.TRUE;

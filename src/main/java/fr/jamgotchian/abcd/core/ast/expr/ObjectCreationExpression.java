@@ -1,16 +1,16 @@
 /*
  *  Copyright (C) 2010 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
- * 
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.ast.expr;
 
 import fr.jamgotchian.abcd.core.type.ClassName;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.List;
 
 /**
@@ -26,12 +27,12 @@ import java.util.List;
  */
 public class ObjectCreationExpression extends AbstractExpression {
 
-    private final ClassName className;
+    private final JavaType type;
 
     private List<Expression> arguments;
 
-    ObjectCreationExpression(ClassName className, List<Expression> arguments) {
-        this.className = className;
+    ObjectCreationExpression(JavaType type, List<Expression> arguments) {
+        this.type = type;
         this.arguments = arguments;
         if (arguments != null) {
             for (Expression arg : arguments) {
@@ -40,12 +41,12 @@ public class ObjectCreationExpression extends AbstractExpression {
         }
     }
 
-    ObjectCreationExpression(ClassName className) {
-        this(className, null);
+    ObjectCreationExpression(JavaType type) {
+        this(type, null);
     }
 
-    public ClassName getClassName() {
-        return className;
+    public JavaType getType() {
+        return type;
     }
 
     public List<Expression> getArguments() {

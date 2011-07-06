@@ -44,25 +44,17 @@ public interface StatementVisitor<R, A> {
     R visit(DoWhileStatement stmt, A arg);
 
     R visit(ForStatement stmt, A arg);
-   
+
     R visit(ThrowStatement stmt, A arg);
 
-    R visit(JumpIfStatement stmt, A arg);
-    
-    R visit(GotoStatement stmt, A arg);
-    
-    R visit(LabelStatement stmt, A arg);
-    
-    R visit(LookupOrTableSwitchStatement stmt, A arg);
-
     R visit(SwitchCaseStatement stmt, A arg);
-    
+
     R visit(LabeledStatement stmt, A arg);
-    
+
     R visit(MonitorEnterStatement stmt, A arg);
-    
+
     R visit(MonitorExitStatement stmt, A arg);
-    
+
     R visit(SynchronizedStatement stmt, A arg);
 
 }

@@ -42,20 +42,8 @@ public class LocalVariableDeclarationStatement extends AbstractStatement {
         this.initExpr = initExpr;
     }
 
-    public LocalVariableDeclarationStatement(int index, JavaType type) {
-        this(new LocalVariableDeclaration(index, type), null);
-    }
-
     public LocalVariableDeclaration getLocalVarDecl() {
         return localVarDecl;
-    }
-
-    public int getIndex() {
-        return localVarDecl.getIndex();
-    }
-
-    public JavaType getType() {
-        return localVarDecl.getType();
     }
 
     public Expression getInitExpr() {

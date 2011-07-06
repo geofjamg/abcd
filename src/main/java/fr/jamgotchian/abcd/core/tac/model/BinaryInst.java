@@ -27,32 +27,32 @@ public class BinaryInst extends DefInst {
 
     private final BinaryOp operator;
 
-    private final Variable var1;
+    private final Variable left;
 
-    private final Variable var2;
+    private final Variable right;
 
-    BinaryInst(int defID, Variable result, BinaryOp operator, Variable var1,
-               Variable var2) {
+    BinaryInst(int defID, Variable result, BinaryOp operator, Variable left,
+               Variable right) {
         super(defID, result);
         this.operator = operator;
-        this.var1 = var1;
-        this.var2 = var2;
+        this.left = left;
+        this.right = right;
     }
 
     public BinaryOp getOperator() {
         return operator;
     }
 
-    public Variable getVar1() {
-        return var1;
+    public Variable getLeft() {
+        return left;
     }
 
-    public Variable getVar2() {
-        return var2;
+    public Variable getRight() {
+        return right;
     }
 
     public Set<Variable> getUses() {
-        return Sets.newHashSet(var1, var2);
+        return Sets.newHashSet(left, right);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

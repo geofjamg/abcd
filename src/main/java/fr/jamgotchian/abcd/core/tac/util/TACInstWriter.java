@@ -172,13 +172,13 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
 
     public Void visit(AssignConstInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
-              .write(inst.getValue());
+              .write(inst.getConst());
         return null;
     }
 
     public Void visit(BinaryInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
-              .write(inst.getVar1()).writeSpace();
+              .write(inst.getLeft()).writeSpace();
         switch (inst.getOperator()) {
             case PLUS:
                 writer.write("+");
@@ -258,7 +258,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
                 throw new AssertionError();
         }
         writer.writeSpace()
-              .write(inst.getVar2());
+              .write(inst.getRight());
         return null;
     }
 
@@ -402,7 +402,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .writeKeyword("new").writeSpace()
               .write(inst.getType()).write("(");
-        for (Iterator<Variable> it = inst.getArgs().iterator(); it.hasNext();) {
+        for (Iterator<Variable> it = inst.getArguments().iterator(); it.hasNext();) {
             Variable argVar = it.next();
             writer.write(argVar);
             if (it.hasNext()) {

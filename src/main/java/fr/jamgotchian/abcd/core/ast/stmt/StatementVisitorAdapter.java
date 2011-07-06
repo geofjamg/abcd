@@ -135,28 +135,6 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
-    public R visit(JumpIfStatement stmt, A arg) {
-        if (exprVisitor != null) {
-            stmt.getCondition().accept(exprVisitor, null);
-        }
-        return null;
-    }
-
-    public R visit(GotoStatement stmt, A arg) {
-        return null;
-    }
-
-    public R visit(LabelStatement stmt, A arg) {
-        return null;
-    }
-
-    public R visit(LookupOrTableSwitchStatement stmt, A arg) {
-        if (exprVisitor != null) {
-            stmt.getCondition().accept(exprVisitor, null);
-        }
-        return null;
-    }
-
     public R visit(SwitchCaseStatement stmt, A arg) {
         if (exprVisitor != null) {
             stmt.getCondition().accept(exprVisitor, null);

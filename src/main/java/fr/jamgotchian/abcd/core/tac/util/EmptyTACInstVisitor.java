@@ -42,6 +42,7 @@ import fr.jamgotchian.abcd.core.tac.model.SetArrayInst;
 import fr.jamgotchian.abcd.core.tac.model.SetFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.SetStaticFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.SwitchInst;
+import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.tac.model.TACInstVisitor;
 import fr.jamgotchian.abcd.core.tac.model.ThrowInst;
@@ -54,6 +55,9 @@ import fr.jamgotchian.abcd.core.tac.model.UnaryInst;
 public class EmptyTACInstVisitor<R, A> implements TACInstVisitor<R, A> {
 
     public R visit(TACInstSeq seq, A arg) {
+        for (TACInst inst : seq.getInsts()) {
+            inst.accept(this, arg);
+        }
         return null;
     }
 

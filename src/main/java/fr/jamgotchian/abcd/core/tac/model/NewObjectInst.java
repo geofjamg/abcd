@@ -31,7 +31,7 @@ public class NewObjectInst extends DefInst {
 
     private final JavaType type;
 
-    private List<Variable> args;
+    private List<Variable> arguments;
 
     NewObjectInst(int defID, Variable result, JavaType type) {
         super(defID, result);
@@ -39,23 +39,23 @@ public class NewObjectInst extends DefInst {
             throw new ABCDException("type.isPrimitive()");
         }
         this.type = type;
-        this.args = Collections.emptyList();
+        this.arguments = Collections.emptyList();
     }
 
     public JavaType getType() {
         return type;
     }
 
-    public List<Variable> getArgs() {
-        return args;
+    public List<Variable> getArguments() {
+        return arguments;
     }
 
-    public void setArgs(List<Variable> args) {
-        this.args = args;
+    public int getArgumentCount() {
+        return arguments.size();
     }
 
     public Set<Variable> getUses() {
-        return new HashSet<Variable>(args);
+        return new HashSet<Variable>(arguments);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

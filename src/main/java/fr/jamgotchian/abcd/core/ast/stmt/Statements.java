@@ -1,16 +1,16 @@
 /*
  *  Copyright (C) 2010 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
- * 
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -25,8 +25,8 @@ import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.StringLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryOperator;
-import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -69,44 +69,44 @@ public class Statements {
             targetBlock.addAll(stmts);
         }
     }
-    
-    public static <E extends Throwable> Statement 
+
+    public static <E extends Throwable> Statement
             createThrowErrorStmt(Class<E> excCls, String msg, ClassNameFactory factory) {
         StringLiteralExpression msgExpr = Expressions.newStringExpr(msg, null);
-        ClassName className = factory.newClassName(excCls.getName());
+        JavaType type = JavaType.newRefType(factory.newClassName(excCls.getName()));
         ObjectCreationExpression objCreatExpr
-                = Expressions.newObjCreatExpr(className,
-                                              Collections.<Expression>singletonList(msgExpr), 
+                = Expressions.newObjCreatExpr(type,
+                                              Collections.<Expression>singletonList(msgExpr),
                                               null);
         return new ThrowStatement(objCreatExpr);
     }
-    
+
     public static IfStatement createIfThenBreakStmt(Expression condition) {
         IfStatement ifStmt = new IfStatement(condition, new BlockStatement());
         ifStmt.getThen().add(new BreakStatement());
         return ifStmt;
     }
-    
+
     public static boolean isAssignment(Statement stmt) {
         if (!(stmt instanceof ExpressionStatement)) {
             return false;
         }
-        
+
         ExpressionStatement exprStmt = (ExpressionStatement) stmt;
         if (!(exprStmt.getExpression() instanceof AssignExpression)) {
             return false;
         }
-        
+
         AssignExpression assignExpr = (AssignExpression) exprStmt.getExpression();
-        
+
         return assignExpr.getOperator() == AssignOperator.ASSIGN;
     }
-    
+
     public static boolean isIncrement(Statement stmt) {
         if (!(stmt instanceof ExpressionStatement)) {
             return false;
         }
-        
+
         ExpressionStatement exprStmt = (ExpressionStatement) stmt;
         if (exprStmt.getExpression() instanceof AssignExpression) {
             AssignExpression assignExpr = (AssignExpression) exprStmt.getExpression();

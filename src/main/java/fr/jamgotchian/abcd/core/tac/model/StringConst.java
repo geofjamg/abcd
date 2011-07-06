@@ -29,11 +29,11 @@ public class StringConst implements Const {
 
     private final String value;
 
-    private final ClassNameFactory factory;
+    private final JavaType type;
 
     public StringConst(String value, ClassNameFactory factory) {
         this.value = value;
-        this.factory = factory;
+        this.type = JavaType.newRefType(factory.newClassName(String.class.getName()));
     }
 
     public String getValue() {
@@ -41,7 +41,7 @@ public class StringConst implements Const {
     }
 
     public Set<JavaType> getPossibleTypes() {
-        return Collections.singleton(JavaType.newRefType(factory.newClassName(String.class.getName())));
+        return Collections.singleton(type);
     }
 
     @Override

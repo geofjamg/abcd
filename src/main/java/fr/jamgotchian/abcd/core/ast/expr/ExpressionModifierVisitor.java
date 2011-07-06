@@ -87,8 +87,8 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         if (newLeft == null && newRight == null) {
             return null;
         } else {
-            return new BinaryExpression(newLeft != null ? newLeft : expr.getLeft(), 
-                                        newRight != null ? newRight : expr.getRight(), 
+            return new BinaryExpression(newLeft != null ? newLeft : expr.getLeft(),
+                                        newRight != null ? newRight : expr.getRight(),
                                         expr.getOperator());
         }
     }
@@ -99,7 +99,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         if (newtarget == null && newValue == null) {
             return null;
         } else {
-            return new AssignExpression(newtarget != null ? newtarget : expr.getTarget(), 
+            return new AssignExpression(newtarget != null ? newtarget : expr.getTarget(),
                                         newValue != null ? newValue : expr.getValue(), expr.getOperator());
         }
     }
@@ -132,8 +132,8 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
             }
         }
         if (newScope != null || argumentsModified) {
-            return new MethodCall(newScope != null ? newScope : expr.getScope(), 
-                                  expr.getMethodName(), 
+            return new MethodCall(newScope != null ? newScope : expr.getScope(),
+                                  expr.getMethodName(),
                                   argumentsModified ? newArguments : expr.getArguments());
         } else {
             return null;
@@ -147,8 +147,8 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         if (newCond == null && newThen == null && newElse == null) {
             return null;
         } else {
-            return new ConditionalExpression(newCond != null ? newCond : expr.getCondition(), 
-                                             newThen != null ? newThen : expr.getThen(), 
+            return new ConditionalExpression(newCond != null ? newCond : expr.getCondition(),
+                                             newThen != null ? newThen : expr.getThen(),
                                              newElse != null ? newElse : expr.getElse());
         }
     }
@@ -164,7 +164,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
             }
         }
         if (argumentsModified) {
-            return new ObjectCreationExpression(expr.getClassName(), newArguments);
+            return new ObjectCreationExpression(expr.getType(), newArguments);
         } else {
             return null;
         }
@@ -211,7 +211,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         if (newArrayRef == null && newArrayIndex == null) {
             return null;
         } else {
-            return new ArrayAccess(newArrayRef != null ? newArrayRef : expr.getArrayRef(), 
+            return new ArrayAccess(newArrayRef != null ? newArrayRef : expr.getArrayRef(),
                                    newArrayIndex != null ? newArrayIndex : expr.getArrayIndexExpr());
         }
     }

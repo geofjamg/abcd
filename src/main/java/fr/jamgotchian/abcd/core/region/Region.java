@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.region;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
+import java.util.Set;
 
 /**
  *
@@ -32,6 +33,12 @@ public interface Region {
     RegionType getType();
 
     String getTypeName();
+
+    Region getParent();
+
+    void setParent(Region parent);
+
+    Region getAncestor(Set<RegionType> types);
 
     Region getEntryRegion();
 

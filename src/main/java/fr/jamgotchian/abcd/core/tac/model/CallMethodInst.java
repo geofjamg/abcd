@@ -52,6 +52,10 @@ public class CallMethodInst extends DefInst {
         return arguments;
     }
 
+    public int getArgumentCount() {
+        return arguments.size();
+    }
+
     public Set<Variable> getUses() {
         Set<Variable> uses = new HashSet<Variable>(arguments.size()+1);
         uses.add(object);

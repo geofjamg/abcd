@@ -107,22 +107,6 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
         return null;
     }
 
-    public Collection<Statement> visit(JumpIfStatement stmt, Void arg) {
-        return null;
-    }
-
-    public Collection<Statement> visit(GotoStatement stmt, Void arg) {
-        return null;
-    }
-
-    public Collection<Statement> visit(LabelStatement stmt, Void arg) {
-        return null;
-    }
-
-    public Collection<Statement> visit(LookupOrTableSwitchStatement stmt, Void arg) {
-        return null;
-    }
-
     public Collection<Statement> visit(SwitchCaseStatement stmt, Void arg) {
         for (CaseStatement _case : stmt.getCases()) {
             for (Statement stmt2 : _case.getStmts()) {
@@ -148,5 +132,5 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
     public Collection<Statement> visit(SynchronizedStatement stmt, Void arg) {
         return null;
     }
-    
+
 }

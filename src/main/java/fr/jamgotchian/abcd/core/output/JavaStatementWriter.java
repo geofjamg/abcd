@@ -23,13 +23,10 @@ import fr.jamgotchian.abcd.core.ast.stmt.CommentStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.DoWhileStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ForStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.JumpIfStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LookupOrTableSwitchStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.MonitorEnterStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
@@ -42,7 +39,6 @@ import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
-import fr.jamgotchian.abcd.core.common.Label;
 import fr.jamgotchian.abcd.core.controlflow.CaseValues;
 import java.util.Iterator;
 
@@ -99,7 +95,8 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
     }
 
     public Void visit(LocalVariableDeclarationStatement stmt, Void arg) {
-        writer.write(stmt.getType()).write(" v").write(stmt.getIndex());
+        LocalVariableDeclaration decl = stmt.getLocalVarDecl();
+        writer.write(decl.getType()).write(" ").write(decl.getVariable().getName());
         if (stmt.getInitExpr() != null) {
             writer.writeSpace().write("=").writeSpace();
             stmt.getInitExpr().accept(exprVisitor, stmt.getBlock());
@@ -137,7 +134,7 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
         for (CatchClause _catch : stmt.getCatchs()) {
             writer.writeSpace().writeKeyword("catch").writeSpace().write("(")
                   .write(_catch.getExceptionVarDecl().getType())
-                  .writeSpace().write(stmt.getBlock().getVariable(_catch.getExceptionVarDecl().getIndex()))
+                  .writeSpace().write(_catch.getExceptionVarDecl().getVariable().getName())
                   .write(")").writeSpace();
             _catch.getBlockStmt().accept(this, null);
         }
@@ -185,42 +182,6 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
     public Void visit(ThrowStatement stmt, Void arg) {
         writer.writeKeyword("throw").writeSpace();
         stmt.getObjectRef().accept(exprVisitor, stmt.getBlock());
-        writer.write(";");
-        return null;
-    }
-
-    public Void visit(JumpIfStatement stmt, Void arg) {
-        writer.writeKeyword("jumpif").writeSpace();
-        stmt.getCondition().accept(exprVisitor, stmt.getBlock());
-        writer.writeSpace();
-        writer.writeLabel(stmt.getLabel());
-        writer.write(";");
-        return null;
-    }
-
-    public Void visit(GotoStatement stmt, Void arg) {
-        writer.writeKeyword("goto").writeSpace();
-        writer.writeLabel(stmt.getLabel());
-        writer.write(";");
-        return null;
-    }
-
-    public Void visit(LabelStatement stmt, Void arg) {
-        writer.writeLabel(stmt.getLabel());
-        return null;
-    }
-
-    public Void visit(LookupOrTableSwitchStatement stmt, Void arg) {
-        writer.writeKeyword("lookupOrTableSwitch").writeSpace();
-        stmt.getCondition().accept(exprVisitor, stmt.getBlock());
-        writer.writeSpace();
-        for (Iterator<Label> it = stmt.getLabels().iterator(); it.hasNext();) {
-            Label label = it.next();
-            writer.writeLabel(label);
-            if (it.hasNext()) {
-                writer.writeSpace();
-            }
-        }
         writer.write(";");
         return null;
     }

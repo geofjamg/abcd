@@ -523,6 +523,20 @@ public class Test {
         }
     }
 
+    public void testForWithBreak(int i) {
+        for (int j = 0; j < 4; j++) {
+            a();
+            if(j == 2) {
+                b();
+                if (i == 4) {
+                    break;
+                }
+            }
+            c();
+        }
+        d();
+    }
+
     public void testNestedForWithContinue() {
         for (int i = 0; i < 3; i++) {
             a();

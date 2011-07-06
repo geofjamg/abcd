@@ -48,7 +48,7 @@ public class LogicalRecognizer implements RegionRecognizer {
             return null;
         }
         BasicBlockData dataB = exitBlockB.getData();
-        if (dataB.getStatementCount() != 1) {
+        if (dataB.getInstructionCount() != 1) {
             return null;
         }
         if (Regions.getSuccessorCountOf(graph, regionB, false) != 2) {
@@ -101,7 +101,7 @@ public class LogicalRecognizer implements RegionRecognizer {
             return null;
         }
         BasicBlockData dataB = exitBlockB.getData();
-        if (dataB.getStatementCount() != 1) {
+        if (dataB.getInstructionCount() != 1) {
             return null;
         }
         if (Regions.getSuccessorCountOf(graph, regionB, false) != 2) {

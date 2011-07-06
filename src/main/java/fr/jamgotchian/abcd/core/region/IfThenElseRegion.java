@@ -31,17 +31,17 @@ import java.util.Collection;
 public class IfThenElseRegion extends AbstractRegion {
 
     private final Edge beforeThenEdge;
-    
+
     private final Edge afterThenEdge;
-                            
+
     private final Edge beforeElseEdge;
-    
+
     private final Edge afterElseEdge;
-    
+
     private final Region ifRegion;
-    
+
     private final Region thenRegion;
-    
+
     private final Region elseRegion;
 
     IfThenElseRegion(Edge beforeThenEdge, Edge afterThenEdge,
@@ -58,7 +58,7 @@ public class IfThenElseRegion extends AbstractRegion {
         }
         if (afterElseEdge == null) {
             throw new IllegalArgumentException("afterElseEdge == null");
-        }                                
+        }
         if (ifRegion == null) {
             throw new IllegalArgumentException("ifRegion == null");
         }
@@ -75,8 +75,11 @@ public class IfThenElseRegion extends AbstractRegion {
         this.ifRegion = ifRegion;
         this.thenRegion = thenRegion;
         this.elseRegion = elseRegion;
+        ifRegion.setParent(this);
+        thenRegion.setParent(this);
+        elseRegion.setParent(this);
     }
-    
+
     public RegionType getType() {
         return RegionType.IF_THEN_ELSE;
     }
@@ -122,7 +125,7 @@ public class IfThenElseRegion extends AbstractRegion {
     }
 
     public Collection<Edge> getChildEdges() {
-        return Sets.newHashSet(beforeThenEdge, afterThenEdge, beforeElseEdge, 
+        return Sets.newHashSet(beforeThenEdge, afterThenEdge, beforeElseEdge,
                                afterElseEdge);
     }
 

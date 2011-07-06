@@ -31,19 +31,19 @@ import java.util.Collection;
 public class IfThenRegion extends AbstractRegion {
 
     private final Edge beforeThenEdge;
-    
+
     private final Edge afterThenEdge;
-    
+
     private final Edge jumpEdge;
 
     private final Region ifRegion;
-    
+
     private final Region thenRegion;
 
-    private final boolean invertCondition;
-    
+    private final boolean shouldInvertCondition;
+
     IfThenRegion(Edge beforeThenEdge, Edge afterThenEdge, Edge jumpEdge,
-                 Region ifRegion, Region thenRegion, boolean invertCondition) {
+                 Region ifRegion, Region thenRegion, boolean shouldInvertCondition) {
         if (beforeThenEdge == null) {
             throw new IllegalArgumentException("beforeThenEdge == null");
         }
@@ -52,7 +52,7 @@ public class IfThenRegion extends AbstractRegion {
         }
         if (jumpEdge == null) {
             throw new IllegalArgumentException("jumpEdge == null");
-        }                            
+        }
         if (ifRegion == null) {
             throw new IllegalArgumentException("ifRegion == null");
         }
@@ -64,9 +64,11 @@ public class IfThenRegion extends AbstractRegion {
         this.jumpEdge = jumpEdge;
         this.ifRegion = ifRegion;
         this.thenRegion = thenRegion;
-        this.invertCondition = invertCondition;
+        this.shouldInvertCondition = shouldInvertCondition;
+        ifRegion.setParent(this);
+        thenRegion.setParent(this);
     }
-    
+
     public RegionType getType() {
         return RegionType.IF_THEN;
     }
@@ -87,10 +89,10 @@ public class IfThenRegion extends AbstractRegion {
         return thenRegion;
     }
 
-    public boolean isInvertCondition() {
-        return invertCondition;
+    public boolean shouldInvertCondition() {
+        return shouldInvertCondition;
     }
-    
+
     public Collection<Region> getChildRegions() {
         return Arrays.asList(ifRegion, thenRegion);
     }
@@ -98,7 +100,7 @@ public class IfThenRegion extends AbstractRegion {
     public Collection<Edge> getChildEdges() {
         return Sets.newHashSet(beforeThenEdge, afterThenEdge, jumpEdge);
     }
-    
+
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
         Regions.moveHandlers(graph, ifRegion, this);

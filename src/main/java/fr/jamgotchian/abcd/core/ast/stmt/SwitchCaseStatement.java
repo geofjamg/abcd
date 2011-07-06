@@ -19,6 +19,8 @@ package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.controlflow.CaseValues;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -44,6 +46,10 @@ public class SwitchCaseStatement extends AbstractStatement {
             this.stmts = stmts;
         }
 
+        public CaseStatement(CaseValues values) {
+            this(values, new ArrayList<Statement>());
+        }
+
         public CaseValues getValues() {
             return values;
         }
@@ -64,11 +70,12 @@ public class SwitchCaseStatement extends AbstractStatement {
         if (cases == null) {
             throw new IllegalArgumentException("cases == null");
         }
-        if (cases.isEmpty()) {
-            throw new IllegalArgumentException("cases.isEmpty()");
-        }
         this.condition = condition;
         this.cases = cases;
+    }
+
+    public SwitchCaseStatement(Expression condition) {
+        this(condition, Collections.<CaseStatement>emptyList());
     }
 
     @Override

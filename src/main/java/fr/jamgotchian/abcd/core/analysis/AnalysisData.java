@@ -17,15 +17,10 @@
 
 package fr.jamgotchian.abcd.core.analysis;
 
-import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
-import fr.jamgotchian.abcd.core.ast.stmt.GotoStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LabelStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockData;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.util.VariableStack;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -34,94 +29,22 @@ import java.util.List;
  */
 public class AnalysisData implements BasicBlockData {
 
-    private final List<Statement> statements;
-
-    private ExpressionStack outputStack;
-
-    private ExpressionStack inputStack;
-
-    private int stackConsumption;
-
-    private int stackProduction;
-
     private VariableStack inputStack2;
 
     private VariableStack outputStack2;
 
-    private List<TACInst> instructions;
+    private final List<TACInst> instructions;
 
     public AnalysisData() {
-        this.statements = new ArrayList<Statement>();
-        stackConsumption = 0;
-        stackProduction = 0;
         instructions = new ArrayList<TACInst>();
-    }
-
-    public int getStatementCount() {
-        return getUsefullStatements().size();
-    }
-
-    public Collection<Statement> getStatements() {
-        return statements;
-    }
-
-    public Collection<Statement> getUsefullStatements() {
-        List<Statement> usefullStmts = new ArrayList<Statement>();
-        for (Statement stmt : statements) {
-            if (stmt instanceof LabelStatement || stmt instanceof GotoStatement) {
-                continue;
-            }
-            usefullStmts.add(stmt);
-        }
-        return usefullStmts;
-    }
-
-    public void addStatement(Statement stmt) {
-        statements.add(stmt);
-    }
-
-    public Statement getLastStatement() {
-        if (statements.isEmpty()) {
-            return null;
-        } else {
-            return statements.get(statements.size()-1);
-        }
-    }
-
-    public ExpressionStack getOutputStack() {
-        return outputStack;
-    }
-
-    public void setOutputStack(ExpressionStack stack) {
-        outputStack = stack;
-    }
-
-    public ExpressionStack getInputStack() {
-        return inputStack;
-    }
-
-    public void setInputStack(ExpressionStack stack) {
-        inputStack = stack;
-    }
-
-    public int getStackConsumption() {
-        return stackConsumption;
-    }
-
-    public void setStackConsumption(int stackConsumption) {
-        this.stackConsumption = stackConsumption;
-    }
-
-    public int getStackProduction() {
-        return stackProduction;
-    }
-
-    public void setStackProduction(int stackProduction) {
-        this.stackProduction = stackProduction;
     }
 
     public List<TACInst> getInstructions() {
         return instructions;
+    }
+
+    public int getInstructionCount() {
+        return instructions.size();
     }
 
     public TACInst getLastInst() {

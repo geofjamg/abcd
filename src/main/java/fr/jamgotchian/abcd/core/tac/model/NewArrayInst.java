@@ -45,6 +45,10 @@ public class NewArrayInst extends DefInst {
         return dimensions;
     }
 
+    public int getDimensionCount() {
+        return dimensions.size();
+    }
+
     public Set<Variable> getUses() {
         return new HashSet<Variable>(dimensions);
     }

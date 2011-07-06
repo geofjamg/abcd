@@ -98,6 +98,13 @@ public class IfThenBreakRegion extends AbstractRegion {
         this.afterThenRegion = afterThenRegion;
         this.afterThenEdge = afterThenEdge;
         this.invertCond = invertCond;
+        ifRegion.setParent(this);
+        if (beforeThenRegion != null) {
+            beforeThenRegion.setParent(this);
+        }
+        if (afterThenRegion != null) {
+            afterThenRegion.setParent(this);
+        }
     }
 
     public Region getIfRegion() {

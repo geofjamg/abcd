@@ -25,15 +25,15 @@ import java.util.Set;
  */
 public class AssignConstInst extends DefInst {
 
-    private final Const value;
+    private final Const _const;
 
-    AssignConstInst(int defID, Variable result, Const value) {
+    AssignConstInst(int defID, Variable result, Const _const) {
         super(defID, result);
-        this.value = value;
+        this._const = _const;
     }
 
-    public Const getValue() {
-        return value;
+    public Const getConst() {
+        return _const;
     }
 
     public Set<Variable> getUses() {

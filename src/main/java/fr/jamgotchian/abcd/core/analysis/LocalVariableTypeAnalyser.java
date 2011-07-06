@@ -18,6 +18,7 @@ package fr.jamgotchian.abcd.core.analysis;
 
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.ast.Method;
+import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
@@ -130,7 +131,7 @@ public class LocalVariableTypeAnalyser {
         @Override
         public Boolean visit(AssignConstInst inst, Void arg) {
             return infereTypes(getPossibleTypes(inst.getResult().getID()),
-                               inst.getValue().getPossibleTypes());
+                               inst.getConst().getPossibleTypes());
         }
 
         @Override
@@ -160,11 +161,11 @@ public class LocalVariableTypeAnalyser {
                             = infereTypes(getPossibleTypes(inst.getResult().getID()),
                                           JavaType.BOOLEAN);
 
-                    change |= infereTypes(getPossibleTypes(inst.getVar1().getID()),
-                                          getPossibleTypes(inst.getVar2().getID()));
+                    change |= infereTypes(getPossibleTypes(inst.getLeft().getID()),
+                                          getPossibleTypes(inst.getRight().getID()));
 
-                    change |= infereTypes(getPossibleTypes(inst.getVar2().getID()),
-                                          getPossibleTypes(inst.getVar1().getID()));
+                    change |= infereTypes(getPossibleTypes(inst.getRight().getID()),
+                                          getPossibleTypes(inst.getLeft().getID()));
 
                     return change;
                 }
@@ -176,14 +177,14 @@ public class LocalVariableTypeAnalyser {
                             = infereTypes(getPossibleTypes(inst.getResult().getID()),
                                           JavaType.ARITHMETIC_TYPES);
 
-                    change |= infereTypes(getPossibleTypes(inst.getVar1().getID()),
-                                          getPossibleTypes(inst.getVar2().getID()));
+                    change |= infereTypes(getPossibleTypes(inst.getLeft().getID()),
+                                          getPossibleTypes(inst.getRight().getID()));
 
-                    change |= infereTypes(getPossibleTypes(inst.getVar2().getID()),
-                                          getPossibleTypes(inst.getVar1().getID()));
+                    change |= infereTypes(getPossibleTypes(inst.getRight().getID()),
+                                          getPossibleTypes(inst.getLeft().getID()));
 
                     change |= infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                          getPossibleTypes(inst.getVar1().getID()));
+                                          getPossibleTypes(inst.getLeft().getID()));
 
                     return change;
                 }
@@ -385,8 +386,9 @@ public class LocalVariableTypeAnalyser {
         getPossibleTypes(new VariableID(0)).add(JavaType.newRefType(thisClassName));
 
         // and types of method parameters
-        for (LocalVariableDeclaration arg : method.getArguments()) {
-            getPossibleTypes(new VariableID(arg.getIndex())).add(arg.getType());
+        for (LocalVariableDeclaration decl : method.getArguments()) {
+            LocalVariable var = decl.getVariable();
+            getPossibleTypes(new VariableID(var.getIndex())).add(decl.getType());
         }
 
         boolean change = true;

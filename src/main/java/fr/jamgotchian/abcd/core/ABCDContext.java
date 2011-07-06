@@ -30,20 +30,25 @@ import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.Statements;
 import fr.jamgotchian.abcd.core.output.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.output.TextCodeWriter;
-import fr.jamgotchian.abcd.core.analysis.ControlFlowGraphStmtAnalysis;
 import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
-import fr.jamgotchian.abcd.core.analysis.ConditionalExpressionRefactorer;
 import fr.jamgotchian.abcd.core.analysis.DOTUtil;
 import static fr.jamgotchian.abcd.core.analysis.DOTUtil.DisplayMode.*;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactorer;
+import fr.jamgotchian.abcd.core.analysis.LiveVariablesAnalysis;
 import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
 import fr.jamgotchian.abcd.core.analysis.Refactorer;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
+import fr.jamgotchian.abcd.core.ast.expr.Expressions;
+import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.controlflow.LocalVariableTable;
+import fr.jamgotchian.abcd.core.output.JavaClassWriter;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
+import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
 import fr.jamgotchian.abcd.core.util.SimplestFormatter;
@@ -88,8 +93,7 @@ public class ABCDContext {
     private static final Logger logger;
 
     private static List<Refactorer> REFACTORERS = Collections.unmodifiableList(
-            Arrays.<Refactorer>asList(new ForLoopRefactorer(),
-                                      new ConditionalExpressionRefactorer()));
+            Arrays.<Refactorer>asList(new ForLoopRefactorer()));
 
     static {
         // root logger configuration
@@ -244,7 +248,8 @@ public class ABCDContext {
                 localVarIndex++;
             }
             JavaType javaArgType = JavaType.newType(argType, importManager);
-            arguments.add(new LocalVariableDeclaration(localVarIndex, javaArgType));
+            LocalVariable var = Expressions.newVarExpr(localVarIndex, 0, "", null);
+            arguments.add(new LocalVariableDeclaration(var, javaArgType));
         }
 
         Method method = new Method(methodName, methodModifiers,
@@ -278,12 +283,22 @@ public class ABCDContext {
                 logger.log(Level.FINE, "////////// Build Control flow graph of {0} //////////", methodSignature);
                 ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
 
+                LocalVariableTable table = graph.getLocalVariableTable();
+                for (LocalVariableDeclaration decl : method.getArguments()) {
+                    decl.getVariable().setName(table.getName(decl.getVariable().getIndex(), 0));
+                }
+
                 logger.log(Level.FINE, "////////// Analyse Control flow of {0} //////////", methodSignature);
                 graph.compact();
+                graph.removeCriticalEdges();
                 graph.analyseLoops();
 
-                logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
-                new ControlFlowGraphStmtAnalysis().analyse(graph, importManager);
+                logger.log(Level.FINE, "////////// Build 3AC instructions of {0} //////////", methodSignature);
+                new TreeAddressCodeBuilder(graph, method, new ImportManager()).build();
+
+                // to remove empty basic blocks added tu remove critical edges
+                graph.compact();
+                graph.analyseLoops();
 
                 logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
                 Set<Region> rootRegions = new StructuralAnalysis(graph).analyse();
@@ -293,7 +308,8 @@ public class ABCDContext {
                 Region rootRegion = rootRegions.iterator().next();
 
                 logger.log(Level.FINE, "////////// Build AST of {0} //////////", methodSignature);
-                new AbstractSyntaxTreeBuilder(importManager).build(rootRegion, method.getBody());
+                Map<BasicBlock, Set<Variable>> liveVariables = new LiveVariablesAnalysis(graph).analyse();
+                new AbstractSyntaxTreeBuilder(importManager).build(rootRegion, method.getBody(), liveVariables);
 
                 // refactor AST
                 for (Refactorer refactorer : REFACTORERS) {
@@ -428,6 +444,11 @@ public class ABCDContext {
                 graph.getLocalVariableTable().print(builder);
                 logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
 
+                LocalVariableTable table = graph.getLocalVariableTable();
+                for (LocalVariableDeclaration decl : method.getArguments()) {
+                    decl.getVariable().setName(table.getName(decl.getVariable().getIndex(), 0));
+                }
+
                 logger.log(Level.FINE, "////////// Analyse control flow of {0} //////////", methodSignature);
                 graph.compact();
                 graph.removeCriticalEdges();
@@ -450,9 +471,6 @@ public class ABCDContext {
                         writer.close();
                     }
                 }
-
-                logger.log(Level.FINE, "////////// Build Statements of {0} //////////", methodSignature);
-                new ControlFlowGraphStmtAnalysis().analyse(graph, importManager);
 
                 logger.log(Level.FINE, "////////// Build 3AC instructions of {0} //////////", methodSignature);
                 new TreeAddressCodeBuilder(graph, method, new ImportManager()).build();
@@ -491,14 +509,7 @@ public class ABCDContext {
                     }
                 }
 
-                Writer writer = new FileWriter(baseName + "_STMT.dot");
-                try {
-                    DOTUtil.writeCFG(graph, rootRegions, writer, STATEMENTS);
-                } finally {
-                    writer.close();
-                }
-
-                writer = new FileWriter(baseName + "_TAC.dot");
+                Writer writer = new FileWriter(baseName + "_TAC.dot");
                 try {
                     DOTUtil.writeCFG(graph, rootRegions, writer, TAC);
                 } finally {
@@ -523,6 +534,12 @@ public class ABCDContext {
                     writer.close();
                 }
 
+                Region rootRegion = rootRegions.iterator().next();
+
+                logger.log(Level.FINE, "////////// Build AST of {0} //////////", methodSignature);
+                Map<BasicBlock, Set<Variable>> liveVariables = new LiveVariablesAnalysis(graph).analyse();
+                new AbstractSyntaxTreeBuilder(importManager).build(rootRegion, method.getBody(), liveVariables);
+
                 if (rootRegions != null && rootRegions.size() > 1) {
                     throw new ABCDException("Fail to recognize structure");
                 }
@@ -530,6 +547,12 @@ public class ABCDContext {
                 errorMsgs.add(exc.toString() + " (" + methodSignature + ")");
                 logger.log(Level.SEVERE, exc.toString(), exc);
             }
+        }
+        Writer writer2 = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream("/tmp/toto.java")));
+        try {
+            _class.accept(new JavaClassWriter(new TextCodeWriter(writer2, 4), DEBUG), null);
+        } finally {
+            writer2.close();
         }
 
         logger.fine("");

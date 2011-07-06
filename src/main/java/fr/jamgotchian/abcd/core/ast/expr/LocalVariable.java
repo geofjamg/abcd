@@ -25,12 +25,30 @@ public class LocalVariable extends AbstractExpression {
 
     private final int index;
 
-    LocalVariable(int index) {
+    private final int version;
+
+    private String name;
+
+    LocalVariable(int index, int version, String name) {
         this.index = index;
+        this.version = version;
+        this.name = name;
     }
 
     public int getIndex() {
         return index;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public String getName() {
+        return name == null ? "???" : name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public <R, A> R accept(ExpressionVisitor<R, A> visitor, A arg) {

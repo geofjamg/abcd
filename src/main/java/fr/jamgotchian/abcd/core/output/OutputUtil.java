@@ -18,19 +18,14 @@
 package fr.jamgotchian.abcd.core.output;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
-import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.Statement;
-import fr.jamgotchian.abcd.core.ast.util.ExpressionStack;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphImpl;
-import java.awt.Color;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.objectweb.asm.tree.InsnList;
@@ -162,53 +157,5 @@ public class OutputUtil {
 
     public static String toHTML(Statement stmt) {
         return toString(stmt, new HTMLCodeWriterFactory());
-    }
-
-    public static String toString(Iterable<Statement> stmts,
-                                  ExpressionStack inputStack,
-                                  ExpressionStack outputStack,
-                                  CodeWriterFactory factory) {
-        StringWriter writer = new StringWriter();
-        try {
-            CodeWriter codeWriter = factory.create(writer);
-            JavaStatementWriter stmtWriter = new JavaStatementWriter(codeWriter);
-            List<ColoredString> infosBefore = new ArrayList<ColoredString>(1);
-            if (inputStack != null && inputStack.size() > 0) {
-                infosBefore.add(new ColoredString(toString(inputStack.toIterable(), factory), Color.ORANGE));
-            }
-            codeWriter.before(infosBefore);
-            BlockStatement blockStmt = new BlockStatement(stmts);
-            blockStmt.accept(stmtWriter, null);
-            List<ColoredString> infosAfter = new ArrayList<ColoredString>(1);
-            if (outputStack != null && outputStack.size() > 0) {
-                infosAfter.add(new ColoredString(toString(outputStack.toIterable(), factory), Color.ORANGE));
-            }
-            codeWriter.after(infosAfter);
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
-            }
-        }
-        return writer.toString();
-    }
-
-    public static String toText(Iterable<Statement> stmts,
-                                ExpressionStack inputStack,
-                                ExpressionStack outputStack) {
-        return toString(stmts, inputStack, outputStack, new TextCodeWriterFactory());
-    }
-
-    public static String toHTML(Iterable<Statement> stmts,
-                                ExpressionStack inputStack,
-                                ExpressionStack outputStack) {
-        return toString(stmts, inputStack, outputStack, new HTMLCodeWriterFactory());
-    }
-
-    public static String toDOTHTMLLike(Iterable<Statement> stmts,
-                                       ExpressionStack inputStack,
-                                       ExpressionStack outputStack) {
-        return toString(stmts, inputStack, outputStack, new DOTHTMLLikeCodeWriterFactory());
     }
 }

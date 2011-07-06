@@ -228,14 +228,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
     }
 
     public Void visit(LocalVariable expr, BlockStatement blockStmt) {
-        String name = null;
-        if (blockStmt!= null) {
-            name = blockStmt.getVariable(expr.getIndex());
-        } else {
-            name = expr.getIndex() == 0 ? "this" : "$" + expr.getIndex();
-        }
-
-        writer.write(name);
+        writer.write(expr.getName());
         return null;
     }
 
@@ -279,7 +272,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
     }
 
     public Void visit(ObjectCreationExpression expr, BlockStatement blockStmt) {
-        writer.writeKeyword("new").writeSpace().write(expr.getClassName()).write("(");
+        writer.writeKeyword("new").writeSpace().write(expr.getType()).write("(");
         if (expr.getArguments() != null) {
             for (Iterator<Expression> it = expr.getArguments().iterator(); it.hasNext();) {
                 Expression argument = it.next();

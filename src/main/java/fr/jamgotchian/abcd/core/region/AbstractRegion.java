@@ -17,10 +17,10 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -32,7 +32,9 @@ abstract class AbstractRegion implements Region {
 
     private int breakLoopID;
 
-    public AbstractRegion() {
+    private Region parent;
+
+    AbstractRegion() {
         breakTargetStatus = BreakTargetStatus.NONE;
         breakLoopID = -1;
     }
@@ -74,6 +76,25 @@ abstract class AbstractRegion implements Region {
 //                    + this.breakTargetStatus + " to " + breakTargetStatus);
 //        }
         this.breakTargetStatus = breakTargetStatus;
+    }
+
+    public Region getParent() {
+        return parent;
+    }
+
+    public void setParent(Region parent) {
+        this.parent = parent;
+    }
+
+    public Region getAncestor(Set<RegionType> types) {
+        if (parent == null) {
+            return null;
+        }
+        if (types.contains(parent.getType())) {
+            return parent;
+        } else {
+            return parent.getAncestor(types);
+        }
     }
 
     public RegionName getName() {
