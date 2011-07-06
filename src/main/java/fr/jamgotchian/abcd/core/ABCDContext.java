@@ -28,11 +28,7 @@ import fr.jamgotchian.abcd.core.ast.Package;
 import fr.jamgotchian.abcd.core.ast.stmt.CommentStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.Statements;
-import fr.jamgotchian.abcd.core.output.JavaCompilationUnitWriter;
-import fr.jamgotchian.abcd.core.output.TextCodeWriter;
 import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
-import fr.jamgotchian.abcd.core.analysis.DOTUtil;
-import static fr.jamgotchian.abcd.core.analysis.DOTUtil.DisplayMode.*;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.analysis.LiveVariablesAnalysis;
 import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
@@ -42,8 +38,10 @@ import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.LocalVariableTable;
-import fr.jamgotchian.abcd.core.output.JavaClassWriter;
+import fr.jamgotchian.abcd.core.graph.DirectedGraph;
+import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.Region;
@@ -52,16 +50,12 @@ import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
 import fr.jamgotchian.abcd.core.util.SimplestFormatter;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -110,11 +104,12 @@ public class ABCDContext {
     }
 
     public static void decompile(File classFile, OutputStream os) throws IOException {
-        new ABCDContext().decompileFile(classFile, os);
+        new ABCDContext().decompileFile(classFile, new DefaultOutputHandler(DEBUG, os));
     }
 
-    public static void analyse(File classFile, File outputDir, boolean drawRegions) throws IOException {
-        new ABCDContext().analyseFile(classFile, outputDir, drawRegions);
+    public static void analyse(File classFile, OutputStream os,
+                               File outputDir, boolean drawRegions) throws IOException {
+        new ABCDContext().decompileFile(classFile, new DebugOutputHandler(DEBUG, os, outputDir, drawRegions));
     }
 
     private final Map<String, String> innerClasses = new HashMap<String, String>();
@@ -122,10 +117,10 @@ public class ABCDContext {
     public ABCDContext() {
     }
 
-    private void decompileFile(File classFile, OutputStream os) throws IOException {
+    private void decompileFile(File classFile, OutputHandler handler) throws IOException {
         ImportManager importManager = new ImportManager();
 
-        Class _class = decompileClass(classFile, importManager);
+        Class _class = decompileClass(classFile, importManager, handler);
 
         CompilationUnit compilUnit = new CompilationUnit(_class.getPackage(), importManager);
         compilUnit.getClasses().add(_class);
@@ -140,16 +135,9 @@ public class ABCDContext {
             classRootDir = classRootDir.getParentFile();
         }
 
-        decompileInnerClass(_class, classRootDir, importManager);
+        decompileInnerClass(_class, classRootDir, importManager, handler);
 
-        if (os != null) {
-            Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
-            try {
-                compilUnit.accept(new JavaCompilationUnitWriter(new TextCodeWriter(writer, 4), DEBUG), null);
-            } finally {
-                writer.close();
-            }
-        }
+        handler.abstractSyntaxTreeBuilt(compilUnit);
     }
 
     private Class createClass(ClassNode cn, ImportManager importManager) {
@@ -258,7 +246,8 @@ public class ABCDContext {
         return method;
     }
 
-    private Class decompileClass(File classFile, ImportManager importManager) throws IOException {
+    private Class decompileClass(File classFile, ImportManager importManager,
+                                 OutputHandler handler) throws IOException {
         ClassNode cn = new ClassNode();
         ClassReader cr = new ClassReader(new FileInputStream(classFile));
         cr.accept(cn, 0);
@@ -268,6 +257,8 @@ public class ABCDContext {
         logger.fine("");
         logger.log(Level.FINE, "########## Decompile class {0} ##########", _class.getQualifiedName());
         logger.fine("");
+
+        List<String> errorMsgs = new ArrayList<String>();
 
         for (MethodNode mn : (List<MethodNode>) cn.methods) {
             Method method = createMethod(cn, mn, importManager);
@@ -280,8 +271,18 @@ public class ABCDContext {
                 logger.log(Level.FINE, "********** Decompile method {0} **********", methodSignature);
                 logger.log(Level.FINE, "");
 
+                logger.log(Level.FINER, "Bytecode :\n{0}", OutputUtil.toText(mn.instructions));
+
                 logger.log(Level.FINE, "////////// Build Control flow graph of {0} //////////", methodSignature);
                 ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
+
+                StringBuilder builder = new StringBuilder();
+                graph.getExceptionTable().print(builder);
+                logger.log(Level.FINER, "Exception table :\n{0}", builder.toString());
+
+                builder = new StringBuilder();
+                graph.getLocalVariableTable().print(builder);
+                logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
 
                 LocalVariableTable table = graph.getLocalVariableTable();
                 for (LocalVariableDeclaration decl : method.getArguments()) {
@@ -293,15 +294,23 @@ public class ABCDContext {
                 graph.removeCriticalEdges();
                 graph.analyseLoops();
 
+                handler.controlFlowGraphBuilt(graph);
+
                 logger.log(Level.FINE, "////////// Build 3AC instructions of {0} //////////", methodSignature);
                 new TreeAddressCodeBuilder(graph, method, new ImportManager()).build();
+
+                handler.treeAddressCodeBuilt(graph);
 
                 // to remove empty basic blocks added tu remove critical edges
                 graph.compact();
                 graph.analyseLoops();
 
                 logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
-                Set<Region> rootRegions = new StructuralAnalysis(graph).analyse();
+                DirectedGraph<Region, Edge> regionGraph = new StructuralAnalysis(graph).analyse();
+
+                handler.regionGraphBuilt(DirectedGraphs.unmodifiableDirectedGraph(regionGraph));
+
+                Set<Region> rootRegions = regionGraph.getVertices();
                 if (rootRegions.size() > 1) {
                     throw new ABCDException("Fail to recognize structure");
                 }
@@ -329,8 +338,24 @@ public class ABCDContext {
                 method.getBody().add(Statements.createThrowErrorStmt(InternalError.class,
                                                                      "Decompilation failed",
                                                                      importManager));
+
+                errorMsgs.add(exc.toString() + " (" + methodSignature + ")");
             }
         }
+
+        logger.fine("");
+        logger.log(Level.FINE, "########## Summary {0} ##########", cn.name.replace('/', '.'));
+        logger.fine("");
+        logger.log(Level.FINE, "Succeed : {0}/{1}",
+                new Object[]{cn.methods.size() - errorMsgs.size(), cn.methods.size()});
+        StringBuilder errorStr = new StringBuilder();
+        for (String errorMsg : errorMsgs) {
+            errorStr.append("  ").append(errorMsg).append("\n");
+        }
+        logger.log(Level.FINE, "Failed : {0}/{1}\n{2}",
+                new Object[]{errorMsgs.size(), cn.methods.size(),
+                    errorStr.toString()});
+
         return _class;
     }
 
@@ -376,7 +401,8 @@ public class ABCDContext {
     }
 
     private void decompileInnerClass(Class outerClass, File classRootDir,
-                                     ImportManager importManager) throws IOException {
+                                     ImportManager importManager,
+                                     OutputHandler handler) throws IOException {
         String outerClassName = outerClass.getQualifiedName();
         for (Map.Entry<String, String> entry : innerClasses.entrySet()) {
             String innerClassName = entry.getKey();
@@ -384,234 +410,40 @@ public class ABCDContext {
                 String innerClassFileName = classRootDir.getAbsolutePath() + '/'
                         + innerClassName.replace('.', '/') + ".class";
                 File innerClassFile = new File(innerClassFileName);
-                Class innerClass = decompileClass(innerClassFile, importManager);
+                Class innerClass = decompileClass(innerClassFile, importManager, handler);
                 outerClass.addInnerClass(innerClass);
 
-                decompileInnerClass(innerClass, classRootDir, importManager);
+                decompileInnerClass(innerClass, classRootDir, importManager, handler);
             }
         }
-    }
-
-    private void analyseFile(File classFile, File outputDir, boolean drawRegions) throws IOException {
-        if (!outputDir.exists()) {
-            throw new ABCDException(outputDir + " does not exist");
-        }
-
-        if (!outputDir.isDirectory()) {
-            throw new ABCDException(outputDir + " is not a directory");
-        }
-
-        ClassNode cn = new ClassNode();
-        ClassReader cr = new ClassReader(new FileInputStream(classFile));
-        cr.accept(cn, 0);
-
-        ImportManager importManager = new ImportManager();
-        Class _class = createClass(cn, importManager);
-
-        logger.fine("");
-        logger.log(Level.FINE, "########## Analyse class {0} ##########", cn.name.replace('/', '.'));
-        logger.fine("");
-
-        File classDir = classFile.getParentFile();
-        analyseInnerClassesFromSyntheticFields(classDir);
-
-        StringBuilder builder = new StringBuilder();
-        ASMUtil.printInnerClasses(innerClasses, builder);
-        logger.log(Level.FINER, "Inner classes :\n{0}", builder.toString());
-
-        List<String> errorMsgs = new ArrayList<String>();
-
-        for (MethodNode mn : (List<MethodNode>) cn.methods) {
-
-            Method method = createMethod(cn, mn, importManager);
-            _class.addMethod(method);
-
-            String methodSignature = method.getSignature();
-
-            try {
-                logger.log(Level.FINE, "********** Analyse method {0} **********", methodSignature);
-
-                logger.log(Level.FINER, "Bytecode :\n{0}", OutputUtil.toText(mn.instructions));
-
-                logger.log(Level.FINE, "////////// Build control flow graph of {0} //////////", methodSignature);
-                ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
-
-                builder = new StringBuilder();
-                graph.getExceptionTable().print(builder);
-                logger.log(Level.FINER, "Exception table :\n{0}", builder.toString());
-
-                builder = new StringBuilder();
-                graph.getLocalVariableTable().print(builder);
-                logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
-
-                LocalVariableTable table = graph.getLocalVariableTable();
-                for (LocalVariableDeclaration decl : method.getArguments()) {
-                    decl.getVariable().setName(table.getName(decl.getVariable().getIndex(), 0));
-                }
-
-                logger.log(Level.FINE, "////////// Analyse control flow of {0} //////////", methodSignature);
-                graph.compact();
-                graph.removeCriticalEdges();
-                graph.analyseLoops();
-
-                String baseName = outputDir.getPath() + "/" + methodSignature;
-
-                if (!drawRegions) {
-                    Writer writer = new FileWriter(baseName + "_CFG.dot");
-                    try {
-                        DOTUtil.writeCFG(graph, null, writer, RANGE);
-                    } finally {
-                        writer.close();
-                    }
-
-                    writer = new FileWriter(baseName + "_BC.dot");
-                    try {
-                        DOTUtil.writeCFG(graph, null, writer, BYTECODE);
-                    } finally {
-                        writer.close();
-                    }
-                }
-
-                logger.log(Level.FINE, "////////// Build 3AC instructions of {0} //////////", methodSignature);
-                new TreeAddressCodeBuilder(graph, method, new ImportManager()).build();
-
-                // to remove empty basic blocks added tu remove critical edges
-                graph.compact();
-                graph.analyseLoops();
-
-                Set<Region> rootRegions = null;
-                if (drawRegions) {
-                    logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
-                    StructuralAnalysis analysis = new StructuralAnalysis(graph);
-                    rootRegions = analysis.analyse();
-
-                    Writer writer = new FileWriter(baseName + "_RG.dot");
-                    try {
-                        analysis.getRegionGraph().writeDOT(writer, "RG",
-                                DOTUtil.REGION_ATTRIBUTE_PROVIDER,
-                                DOTUtil.EDGE_ATTRIBUTE_PROVIDER);
-                    } finally {
-                        writer.close();
-                    }
-
-                    writer = new FileWriter(baseName + "_CFG.dot");
-                    try {
-                        DOTUtil.writeCFG(graph, rootRegions, writer, RANGE);
-                    } finally {
-                        writer.close();
-                    }
-
-                    writer = new FileWriter(baseName + "_BC.dot");
-                    try {
-                        DOTUtil.writeCFG(graph, rootRegions, writer, BYTECODE);
-                    } finally {
-                        writer.close();
-                    }
-                }
-
-                Writer writer = new FileWriter(baseName + "_TAC.dot");
-                try {
-                    DOTUtil.writeCFG(graph, rootRegions, writer, TAC);
-                } finally {
-                    writer.close();
-                }
-
-                writer = new FileWriter(baseName + "_DT.dot");
-                try {
-                    graph.getDominatorInfo().getDominatorsTree()
-                            .writeDOT(writer, "DT", DOTUtil.RANGE_ATTRIBUTE_PROVIDER,
-                                                    DOTUtil.EDGE_ATTRIBUTE_PROVIDER);
-                } finally {
-                    writer.close();
-                }
-
-                writer = new FileWriter(baseName + "_PDT.dot");
-                try {
-                    graph.getDominatorInfo().getPostDominatorsTree()
-                            .writeDOT(writer, "PDT", DOTUtil.RANGE_ATTRIBUTE_PROVIDER,
-                                                     DOTUtil.EDGE_ATTRIBUTE_PROVIDER);
-                } finally {
-                    writer.close();
-                }
-
-                Region rootRegion = rootRegions.iterator().next();
-
-                logger.log(Level.FINE, "////////// Build AST of {0} //////////", methodSignature);
-                Map<BasicBlock, Set<Variable>> liveVariables = new LiveVariablesAnalysis(graph).analyse();
-                new AbstractSyntaxTreeBuilder(importManager).build(rootRegion, method.getBody(), liveVariables);
-
-                if (rootRegions != null && rootRegions.size() > 1) {
-                    throw new ABCDException("Fail to recognize structure");
-                }
-            } catch (Exception exc) {
-                errorMsgs.add(exc.toString() + " (" + methodSignature + ")");
-                logger.log(Level.SEVERE, exc.toString(), exc);
-            }
-        }
-        Writer writer2 = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream("/tmp/toto.java")));
-        try {
-            _class.accept(new JavaClassWriter(new TextCodeWriter(writer2, 4), DEBUG), null);
-        } finally {
-            writer2.close();
-        }
-
-        logger.fine("");
-        logger.log(Level.FINE, "########## Summary {0} ##########", cn.name.replace('/', '.'));
-        logger.fine("");
-        logger.log(Level.FINE, "Succeed : {0}/{1}",
-                new Object[]{cn.methods.size() - errorMsgs.size(), cn.methods.size()});
-        StringBuilder errorStr = new StringBuilder();
-        for (String errorMsg : errorMsgs) {
-            errorStr.append("  ").append(errorMsg).append("\n");
-        }
-        logger.log(Level.FINE, "Failed : {0}/{1}\n{2}",
-                new Object[]{errorMsgs.size(), cn.methods.size(),
-                    errorStr.toString()});
     }
 
     private static void printUsage() {
         System.out.println("Usage:");
-        System.out.println("    -decompile <class file> <output java file>");
-        System.out.println("    -analyse <class file> <output directory> [<-regions>]");
+        System.out.println("    -class <class file> -java <output java file> [-analyse <dir>]");
         System.exit(1);
     }
 
     public static void main(String[] args) {
-        if (args.length != 3 && args.length != 4) {
-            printUsage();
-        }
-        String cmd = args[0];
-        String classFileName = args[1];
-        File classFile = new File(classFileName);
-        if ("-decompile".equals(cmd)) {
-            if (args.length != 3) {
+        try {
+            if ((args.length != 4 && args.length != 6)
+                    || !"-class".equals(args[0])
+                    || !"-java".equals(args[2])) {
                 printUsage();
             }
-            String javaFileName = args[2];
-            try {
-                OutputStream os = new FileOutputStream(javaFileName);
-
-                ABCDContext.decompile(classFile, os);
-            } catch (IOException exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
-            }
-        } else if ("-analyse".equals(cmd)) {
-            File outputDir = new File(args[2]);
-            boolean drawRegions = false;
-            if (args.length == 4) {
-                if("-regions".equals(args[3])) {
-                    drawRegions = true;
-                } else {
+            File classFile = new File(args[1]);
+            OutputStream os = new FileOutputStream(args[3]);
+            if (args.length == 6) {
+                if (!"-analyse".equals(args[4])) {
                     printUsage();
                 }
+                File outputDir = new File(args[5]);
+                ABCDContext.analyse(classFile, os, outputDir, true);
+            } else {
+                ABCDContext.decompile(classFile, os);
             }
-            try {
-                ABCDContext.analyse(classFile, outputDir, drawRegions);
-            } catch (IOException exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
-            }
-        } else {
-            printUsage();
+        } catch (IOException exc) {
+            logger.log(Level.SEVERE, exc.toString(), exc);
         }
     }
 }

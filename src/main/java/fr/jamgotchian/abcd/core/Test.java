@@ -55,10 +55,10 @@ public class Test {
             a();
         }
 
-        void hello2() {
-            int a = driiing(3);
-            driiing2();
-        }
+//        void hello2() {
+//            int a = driiing(3);
+//            driiing2();
+//        }
     }
 
     public class InnerTestClass2 {
@@ -73,10 +73,10 @@ public class Test {
             a();
         }
 
-        void hello2() {
-            int a = driiing(3);
-            driiing2();
-        }
+//        void hello2() {
+//            int a = driiing(3);
+//            driiing2();
+//        }
     }
 
     public void testInnerClass() {

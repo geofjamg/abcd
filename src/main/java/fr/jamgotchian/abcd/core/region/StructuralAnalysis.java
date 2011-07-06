@@ -166,7 +166,7 @@ public class StructuralAnalysis {
         }
     }
 
-    public Set<Region> analyse() {
+    public DirectedGraph<Region, Edge> analyse() {
         // build initial region graph
         buildRegionGraph();
 
@@ -180,6 +180,6 @@ public class StructuralAnalysis {
             buildControlTree(rootRegion, controlTree);
             logger.log(Level.FINEST, "Control tree :\n{0}", Trees.toString(controlTree));
         }
-        return rootRegions;
+        return regionGraph;
     }
 }
