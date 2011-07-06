@@ -32,32 +32,27 @@ public class ConsoleUtil {
     }
 
     public static void printTable(StringBuilder out, List<String>... columns) {
-        List<Integer> widths = new ArrayList<Integer>(columns.length);
+        List<Integer> columnWidths = new ArrayList<Integer>(columns.length);
         for (List<String> column : columns) {
-            widths.add(getColumnWidth(column));
-        }
-        int rowWidth = 1;
-        for (int width : widths) {
-            rowWidth += 3;
-            rowWidth += width;
+            columnWidths.add(getColumnWidth(column));
         }
 
-        printSeparator(out, rowWidth);
+        printSeparator(out, columnWidths);
         out.append("\n");
         int rowCount = columns[0].size();
         for (int r = 0; r < rowCount; r++) {
             out.append("|");
             for (int c = 0; c < columns.length; c++) {
-                String format = " %1$-" + widths.get(c) + "s |";
+                String format = " %1$-" + columnWidths.get(c) + "s |";
                 out.append(String.format(format, columns[c].get(r)));
             }
             out.append("\n");
             if (r == 0) {
-                printSeparator(out, rowWidth);
+                printSeparator(out, columnWidths);
                 out.append("\n");
             }
         }
-        printSeparator(out, rowWidth);
+        printSeparator(out, columnWidths);
     }
 
     private static int getColumnWidth(List<String> column) {
@@ -71,9 +66,13 @@ public class ConsoleUtil {
         return max;
     }
 
-    private static void printSeparator(StringBuilder builder, int width) {
-        for (int i = 0; i < width; i++) {
-            builder.append("-");
+    private static void printSeparator(StringBuilder builder, List<Integer> columnWidths) {
+        builder.append("+");
+        for (int columnWidth : columnWidths) {
+            for (int i = 0; i < columnWidth+1; i++) {
+                builder.append("-");
+            }
+            builder.append("-+");
         }
     }
 }
