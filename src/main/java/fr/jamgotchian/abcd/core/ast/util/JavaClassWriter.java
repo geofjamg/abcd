@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.output;
+package fr.jamgotchian.abcd.core.ast.util;
 
 import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.ClassVisitor;
@@ -23,6 +23,7 @@ import fr.jamgotchian.abcd.core.ast.Field;
 import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
+import fr.jamgotchian.abcd.core.output.CodeWriter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import java.util.List;
 import javax.lang.model.element.Modifier;

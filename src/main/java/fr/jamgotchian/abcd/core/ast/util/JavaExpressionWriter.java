@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.output;
+package fr.jamgotchian.abcd.core.ast.util;
 
 import fr.jamgotchian.abcd.core.ast.expr.ArrayAccess;
 import fr.jamgotchian.abcd.core.ast.expr.ArrayCreationExpression;
@@ -44,6 +44,7 @@ import fr.jamgotchian.abcd.core.ast.expr.ShortLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.StringLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
+import fr.jamgotchian.abcd.core.output.CodeWriter;
 import java.util.Iterator;
 
 /**

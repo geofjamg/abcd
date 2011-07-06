@@ -17,10 +17,10 @@
 package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
+import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-import fr.jamgotchian.abcd.core.output.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.output.TextCodeWriter;
 import fr.jamgotchian.abcd.core.region.Region;
 import java.io.BufferedOutputStream;

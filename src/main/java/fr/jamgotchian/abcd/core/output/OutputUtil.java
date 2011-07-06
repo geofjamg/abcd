@@ -17,16 +17,12 @@
 
 package fr.jamgotchian.abcd.core.output;
 
-import fr.jamgotchian.abcd.core.ast.expr.Expression;
-import fr.jamgotchian.abcd.core.ast.stmt.Statement;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphImpl;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Iterator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.objectweb.asm.tree.InsnList;
 
@@ -89,73 +85,5 @@ public class OutputUtil {
         BasicBlock block = graph.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next();
         block.visit(new InstnPrintVisitor(new HTMLInstnWriter(writer)));
         return writer.toString();
-    }
-
-    public static String toString(Expression expr, CodeWriterFactory factory) {
-        StringWriter writer = new StringWriter();
-        try {
-            JavaExpressionWriter exprWriter = new JavaExpressionWriter(factory.create(writer));
-            expr.accept(exprWriter, null);
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
-            }
-        }
-        return writer.toString();
-    }
-
-    public static String toText(Expression expr) {
-        return toString(expr, new TextCodeWriterFactory());
-    }
-
-    public static String toHTML(Expression expr) {
-        return toString(expr, new HTMLCodeWriterFactory());
-    }
-
-    public static String toString(Iterable<Expression> exprs, CodeWriterFactory factory) {
-        StringBuilder builder = new StringBuilder("[");
-        Iterator<Expression> it = exprs.iterator();
-        while (it.hasNext()) {
-            Expression expr = it.next();
-            builder.append(OutputUtil.toString(expr, factory));
-            if (it.hasNext()) {
-                builder.append(", ");
-            }
-        }
-        builder.append("]");
-        return builder.toString();
-    }
-
-    public static String toText(Iterable<Expression> exprs) {
-        return toString(exprs, new TextCodeWriterFactory());
-    }
-
-    public static String toHTML(Iterable<Expression> exprs) {
-        return toString(exprs, new HTMLCodeWriterFactory());
-    }
-
-    public static String toString(Statement stmt, CodeWriterFactory factory) {
-        StringWriter writer = new StringWriter();
-        try {
-            JavaStatementWriter stmtWriter = new JavaStatementWriter(factory.create(writer));
-            stmt.accept(stmtWriter, null);
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
-            }
-        }
-        return writer.toString();
-    }
-
-    public static String toText(Statement stmt) {
-        return toString(stmt, new TextCodeWriterFactory());
-    }
-
-    public static String toHTML(Statement stmt) {
-        return toString(stmt, new HTMLCodeWriterFactory());
     }
 }
