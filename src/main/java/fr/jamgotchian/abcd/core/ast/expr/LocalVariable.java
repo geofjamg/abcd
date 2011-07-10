@@ -17,34 +17,32 @@
 
 package fr.jamgotchian.abcd.core.ast.expr;
 
+import fr.jamgotchian.abcd.core.tac.model.VariableID;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class LocalVariable extends AbstractExpression {
 
-    private final int index;
-
-    private final int version;
+    private VariableID id;
 
     private String name;
 
-    LocalVariable(int index, int version, String name) {
-        this.index = index;
-        this.version = version;
+    LocalVariable(VariableID id, String name) {
+        this.id = id;
         this.name = name;
     }
 
-    public int getIndex() {
-        return index;
-    }
-
-    public int getVersion() {
-        return version;
+    public VariableID getID() {
+        return id;
     }
 
     public String getName() {
-        return name == null ? "???" : name;
+        if (name != null) {
+            return name;
+        }
+        return id.toString();
     }
 
     public void setName(String name) {

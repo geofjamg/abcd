@@ -150,7 +150,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
 
     public Boolean visit(LocalVariable expr1, Expression expr2) {
         if (expr2 instanceof LocalVariable) {
-            return ((LocalVariable) expr2).getIndex() == expr1.getIndex();
+            return ((LocalVariable) expr2).getID().equals(expr1.getID());
         } else {
             return Boolean.FALSE;
         }

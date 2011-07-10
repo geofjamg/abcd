@@ -17,12 +17,14 @@
 package fr.jamgotchian.abcd.core.analysis;
 
 import fr.jamgotchian.abcd.core.ast.ImportManager;
+import fr.jamgotchian.abcd.core.ast.expr.ArrayCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignOperator;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryOperator;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
+import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.TypeExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryOperator;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
@@ -54,7 +56,6 @@ import fr.jamgotchian.abcd.core.region.LogicalRegion;
 import fr.jamgotchian.abcd.core.region.LogicalType;
 import fr.jamgotchian.abcd.core.region.LoopRegion;
 import fr.jamgotchian.abcd.core.region.Region;
-import fr.jamgotchian.abcd.core.region.RegionType;
 import fr.jamgotchian.abcd.core.region.SwitchCaseRegion;
 import fr.jamgotchian.abcd.core.region.TryCatchRegion;
 import fr.jamgotchian.abcd.core.tac.model.ArrayLengthInst;
@@ -93,7 +94,6 @@ import fr.jamgotchian.abcd.core.tac.model.SetStaticFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.ShortConst;
 import fr.jamgotchian.abcd.core.tac.model.StringConst;
 import fr.jamgotchian.abcd.core.tac.model.SwitchInst;
-import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.tac.model.ThrowInst;
 import fr.jamgotchian.abcd.core.tac.model.UnaryInst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
@@ -102,7 +102,6 @@ import fr.jamgotchian.abcd.core.tac.util.EmptyTACInstVisitor;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,8 +139,7 @@ public class AbstractSyntaxTreeBuilder {
             if (var.isTemporary()) {
                 return expressions.get(var.getID());
             } else {
-                return Expressions.newVarExpr(var.getIndex(),
-                                              var.getVersion(),
+                return Expressions.newVarExpr(var.getID(),
                                               var.getName(),
                                               var.getBasicBlock());
             }
@@ -154,8 +152,7 @@ public class AbstractSyntaxTreeBuilder {
             } else {
                 BasicBlock bb = leftVar.getBasicBlock();
                 Expression varExpr
-                        = Expressions.newVarExpr(leftVar.getIndex(),
-                                                 leftVar.getVersion(),
+                        = Expressions.newVarExpr(leftVar.getID(),
                                                  leftVar.getName(),
                                                  bb);
                 Expression assignExpr
@@ -260,20 +257,30 @@ public class AbstractSyntaxTreeBuilder {
             for (Variable argVar : inst.getArguments()) {
                 argsExpr.add(getVarExpr(argVar));
             }
-            Expression callExpr
-                    = Expressions.newMethodExpr(objExpr, inst.getSignature().getMethodName(),
-                                                argsExpr, bb);
-            if (liveVariables.get(bb).contains(resultVar)) {
-                expressions.put(resultVar.getID(), callExpr);
+            if (inst.getSignature().isConstructor()) {
+                // contructor call
+                if (objExpr instanceof ObjectCreationExpression) {
+                    ((ObjectCreationExpression) objExpr).setArguments(argsExpr);
+                } else {
+                    // TODO
+                }
             } else {
-                blockStmt.add(new ExpressionStatement(callExpr));
+                Expression callExpr
+                        = Expressions.newMethodExpr(objExpr, inst.getSignature().getMethodName(),
+                                                    argsExpr, bb);
+                if (liveVariables.get(bb).contains(resultVar)) {
+                    expressions.put(resultVar.getID(), callExpr);
+                } else {
+                    blockStmt.add(new ExpressionStatement(callExpr));
+                }
             }
             return null;
         }
 
         @Override
         public Void visit(CallStaticMethodInst inst, BlockStatement blockStmt) {
-            return super.visit(inst, blockStmt);
+            // TODO
+            return null;
         }
 
         @Override
@@ -324,11 +331,15 @@ public class AbstractSyntaxTreeBuilder {
             Expression arrayExpr = getVarExpr(arrayVar);
             Expression indexExpr = getVarExpr(indexVar);
             Expression valueExpr = getVarExpr(valueVar);
-            Expression accessExpr = Expressions.newArrayAccess(arrayExpr, indexExpr, bb);
-            Expression assignExpr
-                        = Expressions.newAssignExpr(accessExpr, valueExpr,
-                                                    AssignOperator.ASSIGN, bb);
-            blockStmt.add(new ExpressionStatement(assignExpr));
+            if (arrayExpr instanceof ArrayCreationExpression) {
+                ((ArrayCreationExpression) arrayExpr).addInitValue(valueExpr);
+            } else {
+                Expression accessExpr = Expressions.newArrayAccess(arrayExpr, indexExpr, bb);
+                Expression assignExpr
+                            = Expressions.newAssignExpr(accessExpr, valueExpr,
+                                                        AssignOperator.ASSIGN, bb);
+                blockStmt.add(new ExpressionStatement(assignExpr));
+            }
             return null;
         }
 
@@ -368,24 +379,7 @@ public class AbstractSyntaxTreeBuilder {
         public Void visit(JumpIfInst inst, BlockStatement blockStmt) {
             Variable condVar = inst.getCond();
             Expression condExpr = getVarExpr(condVar);
-            IfStatement ifStmt;
-            Region parent = region.getAncestor(EnumSet.of(RegionType.IF_THEN,
-                                                          RegionType.IF_THEN_ELSE,
-                                                          RegionType.IF_THEN_BREAK));
-            if (parent.getType() == RegionType.IF_THEN) {
-                Expression condExpr2
-                        = ((IfThenRegion) parent).shouldInvertCondition()
-                        ? ExpressionInverter.invert(condExpr)
-                        : condExpr;
-                ifStmt = new IfStatement(condExpr2, new BlockStatement());
-            } else if (parent.getType() == RegionType.IF_THEN_BREAK) {
-                ifStmt = new IfStatement(condExpr, new BlockStatement());
-            } else if (parent.getType() == RegionType.IF_THEN_ELSE) {
-                ifStmt = new IfStatement(condExpr, new BlockStatement(), new BlockStatement());
-            } else {
-                throw new InternalError();
-            }
-            blockStmt.add(ifStmt);
+            blockStmt.add(new IfStatement(condExpr));
             return null;
         }
 
@@ -557,7 +551,7 @@ public class AbstractSyntaxTreeBuilder {
                 BasicBlockRegion basicBlockRegion = (BasicBlockRegion) region;
                 AnalysisData data = (AnalysisData) basicBlockRegion.getBasicBlock().getData();
                 RegionTACInstVisitor visitor = new RegionTACInstVisitor(region);
-                new TACInstSeq(data.getInstructions()).accept(visitor, blockStmt);
+                data.getInstructions().accept(visitor, blockStmt);
                 break;
             }
 
@@ -569,18 +563,18 @@ public class AbstractSyntaxTreeBuilder {
             }
 
             case LOGICAL: {
-                LogicalRegion logical = (LogicalRegion) region;
+                LogicalRegion logicalRegion = (LogicalRegion) region;
 
-                buildAST(logical.getRegionA(), logical, blockStmt);
+                buildAST(logicalRegion.getRegionA(), logicalRegion, blockStmt);
                 IfStatement ifStmtA = (IfStatement) blockStmt.getLast();
                 ifStmtA.remove();
 
                 BlockStatement tmpBlockStmt = new BlockStatement();
-                buildAST(logical.getRegionB(), logical, tmpBlockStmt);
+                buildAST(logicalRegion.getRegionB(), logicalRegion, tmpBlockStmt);
                 IfStatement ifStmtB = (IfStatement) tmpBlockStmt.getLast();
 
                 BinaryOperator operator = null;
-                switch (logical.getLogicalType()) {
+                switch (logicalRegion.getLogicalType()) {
                     case AND:
                     case AND_INVERT_B:
                         operator = BinaryOperator.AND;
@@ -597,8 +591,8 @@ public class AbstractSyntaxTreeBuilder {
 
                 Expression conditionA = ifStmtA.getCondition();
                 Expression conditionB = ifStmtB.getCondition();
-                if (logical.getLogicalType() == LogicalType.AND_INVERT_B
-                        || logical.getLogicalType() == LogicalType.OR_INVERT_B) {
+                if (logicalRegion.getLogicalType() == LogicalType.AND_INVERT_B
+                        || logicalRegion.getLogicalType() == LogicalType.OR_INVERT_B) {
                     conditionB = ExpressionInverter.invert(conditionB);
                 }
                 Expression condition
@@ -609,24 +603,34 @@ public class AbstractSyntaxTreeBuilder {
             }
 
             case IF_THEN_ELSE: {
-                IfThenElseRegion ifThenElse = (IfThenElseRegion) region;
-                buildAST(ifThenElse.getIfRegion(), region, blockStmt);
+                IfThenElseRegion ifThenElseRegion = (IfThenElseRegion) region;
+
+                buildAST(ifThenElseRegion.getIfRegion(), region, blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
-                buildAST(ifThenElse.getThenRegion(), region, ifStmt.getThen());
-                buildAST(ifThenElse.getElseRegion(), region, ifStmt.getElse());
+                ifStmt.invertCondition();
+                BlockStatement thenBlockStmt = new BlockStatement();
+                ifStmt.setThen(thenBlockStmt);
+                BlockStatement elseBlockStmt = new BlockStatement();
+                ifStmt.setElse(elseBlockStmt);
+                buildAST(ifThenElseRegion.getThenRegion(), region, elseBlockStmt);
+                buildAST(ifThenElseRegion.getElseRegion(), region, thenBlockStmt);
                 if (ifStmt.getThen().isEmpty() && ifStmt.getElse().isEmpty()) {
                     ifStmt.remove();
-                } else {
-                    ifStmt.invert();
                 }
                 break;
             }
 
             case IF_THEN: {
-                IfThenRegion ifThen = (IfThenRegion) region;
-                buildAST(ifThen.getIfRegion(), region, blockStmt);
+                IfThenRegion ifThenRegion = (IfThenRegion) region;
+
+                buildAST(ifThenRegion.getIfRegion(), region, blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
-                buildAST(ifThen.getThenRegion(), region, ifStmt.getThen());
+                if (ifThenRegion.mustInvertCondition()) {
+                    ifStmt.invertCondition();
+                }
+                BlockStatement thenBlockStmt = new BlockStatement();
+                ifStmt.setThen(thenBlockStmt);
+                buildAST(ifThenRegion.getThenRegion(), region, thenBlockStmt);
                 if (ifStmt.getThen().isEmpty()) {
                     ifStmt.remove();
                 }
@@ -634,16 +638,19 @@ public class AbstractSyntaxTreeBuilder {
             }
 
             case IF_THEN_BREAK: {
-                IfThenBreakRegion ifBreak = (IfThenBreakRegion) region;
-                buildAST(ifBreak.getIfRegion(), ifBreak, blockStmt);
+                IfThenBreakRegion ifThenBreakRegion = (IfThenBreakRegion) region;
+                buildAST(ifThenBreakRegion.getIfRegion(), ifThenBreakRegion, blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
-                ifStmt.remove();
-                BlockStatement thenBlockStmt = new BlockStatement();
-                if (ifBreak.getBeforeThenRegion() != null) {
-                    buildAST(ifBreak.getBeforeThenRegion(), ifBreak, thenBlockStmt);
+                if (ifThenBreakRegion.mustInvertCondition()) {
+                    ifStmt.invertCondition();
                 }
-                if (ifBreak.getAfterThenRegion() != null) {
-                    buildAST(ifBreak.getAfterThenRegion(), ifBreak, thenBlockStmt);
+                BlockStatement thenBlockStmt = new BlockStatement();
+                ifStmt.setThen(thenBlockStmt);
+                if (ifThenBreakRegion.getBeforeThenRegion() != null) {
+                    buildAST(ifThenBreakRegion.getBeforeThenRegion(), ifThenBreakRegion, thenBlockStmt);
+                }
+                if (ifThenBreakRegion.getAfterThenRegion() != null) {
+                    buildAST(ifThenBreakRegion.getAfterThenRegion(), ifThenBreakRegion, thenBlockStmt);
                 }
                 Statement lastStmt = thenBlockStmt.getLast();
                 if (!(lastStmt instanceof ReturnStatement)
@@ -652,18 +659,13 @@ public class AbstractSyntaxTreeBuilder {
 //                            + ifBreak.getBreakTargetRegion().getBreakLoopID()));
                     thenBlockStmt.add(new BreakStatement());
                 }
-                Expression condition = ifStmt.getCondition();
-                if (ifBreak.isInvertCond()) {
-                    condition = ExpressionInverter.invert(condition);
-                }
-                blockStmt.add(new IfStatement(condition, thenBlockStmt));
                 break;
             }
 
             case LOOP: {
                 LoopRegion loopRegion = (LoopRegion) region;
-                BlockStatement bodyBlockStmt = new BlockStatement();
 
+                BlockStatement bodyBlockStmt = new BlockStatement();
                 buildAST(loopRegion.getLoopRegion(), loopRegion, bodyBlockStmt);
 
 //                blockStmt.add(new CommentStatement("Loop ID : " + loopRegion.getLoopID()));
@@ -694,20 +696,18 @@ public class AbstractSyntaxTreeBuilder {
             }
 
             case SWITCH_CASE: {
-                SwitchCaseRegion switchCase = (SwitchCaseRegion) region;
+                SwitchCaseRegion switchCaseRegion = (SwitchCaseRegion) region;
 
-                buildAST(switchCase.getSwitchRegion(), switchCase, blockStmt);
+                buildAST(switchCaseRegion.getSwitchRegion(), switchCaseRegion, blockStmt);
                 SwitchCaseStatement switchStmt
                         = (SwitchCaseStatement) blockStmt.getLast();
-                switchStmt.remove();
 
-                List<CaseStatement> cases = new ArrayList<CaseStatement>();
-                for (CaseRegion caseRegion : switchCase.getCaseRegions()) {
+                for (CaseRegion caseRegion : switchCaseRegion.getCaseRegions()) {
                     List<Statement> caseStmts = new ArrayList<Statement>();
 
                     if (caseRegion.getRegion() != null) {
                         BlockStatement caseCompoundStmt = new BlockStatement();
-                        buildAST(caseRegion.getRegion(), switchCase, caseCompoundStmt);
+                        buildAST(caseRegion.getRegion(), switchCaseRegion, caseCompoundStmt);
                         for (Statement stmt : caseCompoundStmt) {
                             caseStmts.add(stmt);
                         }
@@ -719,9 +719,8 @@ public class AbstractSyntaxTreeBuilder {
                         caseStmts.add(new BreakStatement());
                     }
 
-                    cases.add(new CaseStatement(caseRegion.getValues(), caseStmts));
+                    switchStmt.addCase(new CaseStatement(caseRegion.getValues(), caseStmts));
                 }
-                blockStmt.add(new SwitchCaseStatement(switchStmt.getCondition(), cases));
 
                 break;
             }

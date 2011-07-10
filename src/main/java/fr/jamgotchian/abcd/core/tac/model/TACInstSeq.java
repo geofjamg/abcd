@@ -16,22 +16,78 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import com.google.common.base.Predicate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TACInstSeq {
+public class TACInstSeq implements Iterable<TACInst> {
 
     private final List<TACInst> insts;
+
+    public TACInstSeq() {
+        this(new ArrayList<TACInst>());
+    }
 
     public TACInstSeq(List<TACInst> insts) {
         this.insts = insts;
     }
 
-    public List<TACInst> getInsts() {
-        return insts;
+    public TACInst get(int index) {
+        return insts.get(index);
+    }
+
+    public void add(TACInst inst) {
+        insts.add(inst);
+    }
+
+    public void addAll(int index, Collection<TACInst> insts) {
+        this.insts.addAll(index, insts);
+    }
+
+    public TACInst remove(int index) {
+        return insts.remove(index);
+    }
+
+    public boolean removeIf(Predicate<TACInst> predicate) {
+        boolean done = false;
+        for (Iterator<TACInst> it = insts.iterator(); it.hasNext();) {
+            TACInst inst = it.next();
+            if (predicate.apply(inst)) {
+                it.remove();
+                done = true;
+            }
+        }
+        return done;
+    }
+
+    public void insertAt(int index, TACInst inst) {
+        insts.add(index, inst);
+    }
+
+    public int size() {
+        return insts.size();
+    }
+
+    public boolean isEmpty() {
+        return insts.isEmpty();
+    }
+
+    public TACInst getLast() {
+        if (insts.isEmpty()) {
+            return null;
+        } else {
+            return insts.get(insts.size()-1);
+        }
+    }
+
+    public Iterator<TACInst> iterator() {
+        return insts.iterator();
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

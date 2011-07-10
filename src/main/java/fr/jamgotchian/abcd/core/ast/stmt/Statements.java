@@ -81,12 +81,6 @@ public class Statements {
         return new ThrowStatement(objCreatExpr);
     }
 
-    public static IfStatement createIfThenBreakStmt(Expression condition) {
-        IfStatement ifStmt = new IfStatement(condition, new BlockStatement());
-        ifStmt.getThen().add(new BreakStatement());
-        return ifStmt;
-    }
-
     public static boolean isAssignment(Statement stmt) {
         if (!(stmt instanceof ExpressionStatement)) {
             return false;

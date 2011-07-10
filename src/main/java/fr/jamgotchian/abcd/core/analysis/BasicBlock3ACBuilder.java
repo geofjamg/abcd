@@ -17,7 +17,6 @@
 
 package fr.jamgotchian.abcd.core.analysis;
 
-import fr.jamgotchian.abcd.core.tac.util.VariableStack;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +46,7 @@ import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.tac.model.UnaryOp;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
+import fr.jamgotchian.abcd.core.tac.util.VariableStack;
 import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.*;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -110,7 +110,6 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
     static void addInst(BasicBlock block, TACInst inst) {
         logger.log(Level.FINER, "Add inst : {0}", TACInstWriter.toText(inst));
-
         ((AnalysisData) block.getData()).getInstructions().add(inst);
     }
 
@@ -861,12 +860,9 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         }
 
         String methodName = node.name;
-        if ("<init>".equals(methodName)) {
-            methodName = "#init#";
-        }
 
         MethodSignature signature = new MethodSignature(methodName, returnJavaType,
-                                                          argJavaTypes);
+                                                        argJavaTypes);
 
         Variable resultVar = tmpVarFactory.create(block);
         switch (node.getOpcode()) {

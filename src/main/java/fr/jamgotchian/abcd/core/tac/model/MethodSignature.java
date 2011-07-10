@@ -50,6 +50,10 @@ public class MethodSignature {
         return argumentTypes;
     }
 
+    public boolean isConstructor() {
+        return "<init>".equals(methodName) && returnType.equals(JavaType.VOID);
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

@@ -27,7 +27,6 @@ import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.RegionType;
-import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -120,9 +119,9 @@ public class DOTUtil {
             } else {
                 AnalysisData data = (AnalysisData) block.getData();
                 builder.append(TACInstWriter.toDOTHTMLLike(block.getRange(),
-                                                           new TACInstSeq(data.getInstructions()),
-                                                           data.getInputStack2(),
-                                                           data.getOutputStack2()));
+                                                           data.getInstructions(),
+                                                           data.getInputStack(),
+                                                           data.getOutputStack()));
             }
             builder.append(" >");
             attrs.put("label", builder.toString());

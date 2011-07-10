@@ -61,11 +61,9 @@ public abstract class CodeWriter {
         indentLevel++;
     }
 
-    public void before(List<ColoredString> infos) {
-    }
+    public abstract void before(List<ColoredString> infos);
 
-    public void after(List<ColoredString> infos) {
-    }
+    public abstract void after(List<ColoredString> infos);
 
     protected abstract void writeEol() throws IOException;
 
@@ -129,4 +127,6 @@ public abstract class CodeWriter {
         }
         return this;
     }
+
+    public abstract String removeSpecialCharacters(String str);
 }

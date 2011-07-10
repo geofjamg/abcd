@@ -47,6 +47,7 @@ import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
+import fr.jamgotchian.abcd.core.tac.model.VariableID;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
 import fr.jamgotchian.abcd.core.util.SimplestFormatter;
@@ -236,7 +237,7 @@ public class ABCDContext {
                 localVarIndex++;
             }
             JavaType javaArgType = JavaType.newType(argType, importManager);
-            LocalVariable var = Expressions.newVarExpr(localVarIndex, 0, "", null);
+            LocalVariable var = Expressions.newVarExpr(new VariableID(localVarIndex), "", null);
             arguments.add(new LocalVariableDeclaration(var, javaArgType));
         }
 
@@ -286,7 +287,7 @@ public class ABCDContext {
 
                 LocalVariableTable table = graph.getLocalVariableTable();
                 for (LocalVariableDeclaration decl : method.getArguments()) {
-                    decl.getVariable().setName(table.getName(decl.getVariable().getIndex(), 0));
+                    decl.getVariable().setName(table.getName(decl.getVariable().getID().getIndex(), 0));
                 }
 
                 logger.log(Level.FINE, "////////// Analyse Control flow of {0} //////////", methodSignature);
@@ -438,7 +439,7 @@ public class ABCDContext {
                     printUsage();
                 }
                 File outputDir = new File(args[5]);
-                ABCDContext.analyse(classFile, os, outputDir, true);
+                ABCDContext.analyse(classFile, os, outputDir, false);
             } else {
                 ABCDContext.decompile(classFile, os);
             }

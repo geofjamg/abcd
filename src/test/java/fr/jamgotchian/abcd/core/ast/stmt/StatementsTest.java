@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
+import fr.jamgotchian.abcd.core.tac.model.VariableID;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.Iterator;
 import org.junit.Assert;
@@ -51,7 +52,7 @@ public class StatementsTest {
 
     @Test
     public void oneStatementSourceBlockMoveTest() {
-        LocalVariable var = Expressions.newVarExpr(0, 0, "v0", null);
+        LocalVariable var = Expressions.newVarExpr(new VariableID(0), "v0", null);
         Statement stmt = new LocalVariableDeclarationStatement(new LocalVariableDeclaration(var, JavaType.INT));
         sourceBlock.add(stmt);
         Assert.assertFalse(sourceBlock.isEmpty());

@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.ast.expr;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.tac.model.VariableID;
 import java.util.List;
 import java.util.Set;
 
@@ -178,8 +179,8 @@ public class Expressions {
         return expr;
     }
 
-    public static LocalVariable newVarExpr(int index, int version, String name, BasicBlock block) {
-        LocalVariable expr = new LocalVariable(index, version, name);
+    public static LocalVariable newVarExpr(VariableID id, String name, BasicBlock block) {
+        LocalVariable expr = new LocalVariable(id, name);
         expr.setBasicBlock(block);
         return expr;
     }

@@ -18,10 +18,8 @@
 package fr.jamgotchian.abcd.core.analysis;
 
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockData;
-import fr.jamgotchian.abcd.core.tac.model.TACInst;
+import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.tac.util.VariableStack;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -29,17 +27,17 @@ import java.util.List;
  */
 public class AnalysisData implements BasicBlockData {
 
-    private VariableStack inputStack2;
+    private final TACInstSeq instructions;
 
-    private VariableStack outputStack2;
+    private VariableStack inputStack;
 
-    private final List<TACInst> instructions;
+    private VariableStack outputStack;
 
     public AnalysisData() {
-        instructions = new ArrayList<TACInst>();
+        instructions = new TACInstSeq();
     }
 
-    public List<TACInst> getInstructions() {
+    public TACInstSeq getInstructions() {
         return instructions;
     }
 
@@ -47,23 +45,19 @@ public class AnalysisData implements BasicBlockData {
         return instructions.size();
     }
 
-    public TACInst getLastInst() {
-        return instructions.isEmpty() ? null : instructions.get(instructions.size()-1);
+    public VariableStack getInputStack() {
+        return inputStack;
     }
 
-    public VariableStack getInputStack2() {
-        return inputStack2;
+    public void setInputStack(VariableStack inputStack) {
+        this.inputStack = inputStack;
     }
 
-    public void setInputStack2(VariableStack inputStack2) {
-        this.inputStack2 = inputStack2;
+    public VariableStack getOutputStack() {
+        return outputStack;
     }
 
-    public VariableStack getOutputStack2() {
-        return outputStack2;
-    }
-
-    public void setOutputStack2(VariableStack outputStack2) {
-        this.outputStack2 = outputStack2;
+    public void setOutputStack(VariableStack outputStack) {
+        this.outputStack = outputStack;
     }
 }

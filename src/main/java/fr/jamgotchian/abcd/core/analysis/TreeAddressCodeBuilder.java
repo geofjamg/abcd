@@ -34,6 +34,7 @@ import fr.jamgotchian.abcd.core.tac.model.StringConst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
+import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.tac.util.VariableStack;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
@@ -91,7 +92,7 @@ public class TreeAddressCodeBuilder {
             inputStack = mergeStacks(inputStacks, block);
         }
 
-        data.setInputStack2(inputStack.clone());
+        data.setInputStack(inputStack.clone());
 
         VariableStack outputStack = inputStack.clone();
 
@@ -99,30 +100,30 @@ public class TreeAddressCodeBuilder {
             Edge edge = graph.getFirstIncomingEdgeOf(block);
             if (edge != null && edge.isExceptional()) {
                 Variable tmpVar = tmpVarFactory.create(block);
-                TACInst fakeInst;
+                TACInst tmpInst;
                 if (edge.getValue() == null) { // finally
-                    fakeInst = instFactory.newAssignConst(tmpVar, new StringConst("FAKE", classNameFactory));
+                    tmpInst = instFactory.newAssignConst(tmpVar, new StringConst("TMP", classNameFactory));
                 } else { // catch
                     ClassName className = classNameFactory.newClassName((String) edge.getValue());
-                    fakeInst = instFactory.newNewObject(tmpVar, JavaType.newRefType(className));
+                    tmpInst = instFactory.newNewObject(tmpVar, JavaType.newRefType(className));
                 }
-                BasicBlock3ACBuilder.addInst(block, fakeInst);
+                BasicBlock3ACBuilder.addInst(block, tmpInst);
                 outputStack.push(tmpVar);
             }
         }
 
-        if (data.getInputStack2().size() > 0) {
-            logger.log(Level.FINEST, ">>> Input stack : {0}", data.getInputStack2());
+        if (data.getInputStack().size() > 0) {
+            logger.log(Level.FINEST, ">>> Input stack : {0}", data.getInputStack());
         }
 
         BasicBlock3ACBuilder builder
                 = new BasicBlock3ACBuilder(classNameFactory, tmpVarFactory,
                                            outputStack, instFactory);
         block.visit(builder);
-        data.setOutputStack2(outputStack);
+        data.setOutputStack(outputStack);
 
-        if (data.getOutputStack2().size() > 0) {
-            logger.log(Level.FINEST, "<<< Output stack : {0}", data.getOutputStack2());
+        if (data.getOutputStack().size() > 0) {
+            logger.log(Level.FINEST, "<<< Output stack : {0}", data.getOutputStack());
         }
     }
 
@@ -166,7 +167,7 @@ public class TreeAddressCodeBuilder {
 
     private void removeChoiceInst() {
         for (BasicBlock joinBlock : graph.getDFST()) {
-            List<TACInst> joinInsts = ((AnalysisData) joinBlock.getData()).getInstructions();
+            TACInstSeq joinInsts = ((AnalysisData) joinBlock.getData()).getInstructions();
 
             for (int i = 0; i < joinInsts.size(); i++) {
                 TACInst inst = joinInsts.get(i);
@@ -219,7 +220,7 @@ public class TreeAddressCodeBuilder {
                             }
                             if (thenVar != null && elseVar != null) {
                                 AnalysisData forkData = (AnalysisData) forkBlock.getData();
-                                JumpIfInst jumpIfInst = (JumpIfInst) forkData.getLastInst();
+                                JumpIfInst jumpIfInst = (JumpIfInst) forkData.getInstructions().getLast();
                                 choiceInst.getChoices().remove(thenVar);
                                 choiceInst.getChoices().remove(elseVar);
                                 if (choiceInst.getChoices().isEmpty()) {
@@ -294,7 +295,7 @@ public class TreeAddressCodeBuilder {
                     }
                     BasicBlock pred = graph.getEdgeSource(incomingEdge);
                     AnalysisData data = (AnalysisData) pred.getData();
-                    inputStacks.add(data.getOutputStack2().clone());
+                    inputStacks.add(data.getOutputStack().clone());
                 }
 
                 processBlock(block, inputStacks);

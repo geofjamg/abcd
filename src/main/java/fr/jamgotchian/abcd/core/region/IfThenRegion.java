@@ -40,10 +40,10 @@ public class IfThenRegion extends AbstractRegion {
 
     private final Region thenRegion;
 
-    private final boolean shouldInvertCondition;
+    private final boolean mustInvertCondition;
 
     IfThenRegion(Edge beforeThenEdge, Edge afterThenEdge, Edge jumpEdge,
-                 Region ifRegion, Region thenRegion, boolean shouldInvertCondition) {
+                 Region ifRegion, Region thenRegion, boolean mustInvertCondition) {
         if (beforeThenEdge == null) {
             throw new IllegalArgumentException("beforeThenEdge == null");
         }
@@ -64,7 +64,7 @@ public class IfThenRegion extends AbstractRegion {
         this.jumpEdge = jumpEdge;
         this.ifRegion = ifRegion;
         this.thenRegion = thenRegion;
-        this.shouldInvertCondition = shouldInvertCondition;
+        this.mustInvertCondition = mustInvertCondition;
         ifRegion.setParent(this);
         thenRegion.setParent(this);
     }
@@ -89,8 +89,8 @@ public class IfThenRegion extends AbstractRegion {
         return thenRegion;
     }
 
-    public boolean shouldInvertCondition() {
-        return shouldInvertCondition;
+    public boolean mustInvertCondition() {
+        return mustInvertCondition;
     }
 
     public Collection<Region> getChildRegions() {

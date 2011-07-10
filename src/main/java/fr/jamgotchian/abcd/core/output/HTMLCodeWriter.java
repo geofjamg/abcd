@@ -22,6 +22,7 @@ import fr.jamgotchian.abcd.core.util.Colors;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -36,6 +37,14 @@ public class HTMLCodeWriter extends CodeWriter {
 
     public HTMLCodeWriter(Writer writer, int indentSpace) {
         super(writer, indentSpace);
+    }
+
+    @Override
+    public void before(List<ColoredString> infos) {
+    }
+
+    @Override
+    public void after(List<ColoredString> infos) {
     }
 
     @Override
@@ -128,5 +137,11 @@ public class HTMLCodeWriter extends CodeWriter {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
+    }
+
+    @Override
+    public String removeSpecialCharacters(String str) {
+        return str.replace("<", "&lt;")
+                .replace(">", "&gt;");
     }
 }

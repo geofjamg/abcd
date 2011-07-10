@@ -55,7 +55,7 @@ import fr.jamgotchian.abcd.core.tac.model.UnaryInst;
 public class EmptyTACInstVisitor<R, A> implements TACInstVisitor<R, A> {
 
     public R visit(TACInstSeq seq, A arg) {
-        for (TACInst inst : seq.getInsts()) {
+        for (TACInst inst : seq) {
             inst.accept(this, arg);
         }
         return null;

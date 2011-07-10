@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
+import fr.jamgotchian.abcd.core.tac.model.VariableID;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.Collections;
 import java.util.Iterator;
@@ -40,7 +41,7 @@ public class BlockStatementTest {
     }
 
     private static Statement newStmt(int index, JavaType type) {
-        LocalVariable var = Expressions.newVarExpr(index, 0, "v" + index, null);
+        LocalVariable var = Expressions.newVarExpr(new VariableID(index), "v" + index, null);
         return new LocalVariableDeclarationStatement(new LocalVariableDeclaration(var, type));
     }
 

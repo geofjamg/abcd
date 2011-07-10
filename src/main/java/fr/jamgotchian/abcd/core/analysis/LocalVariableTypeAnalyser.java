@@ -89,7 +89,7 @@ public class LocalVariableTypeAnalyser {
         @Override
         public Boolean visit(TACInstSeq seq, Void arg) {
             Boolean change = Boolean.FALSE;
-            for (TACInst inst : seq.getInsts()) {
+            for (TACInst inst : seq) {
             if (Boolean.TRUE.equals(inst.accept(this, arg))) {
                     change = Boolean.TRUE;
                 }
@@ -388,7 +388,7 @@ public class LocalVariableTypeAnalyser {
         // and types of method parameters
         for (LocalVariableDeclaration decl : method.getArguments()) {
             LocalVariable var = decl.getVariable();
-            getPossibleTypes(new VariableID(var.getIndex())).add(decl.getType());
+            getPossibleTypes(var.getID()).add(decl.getType());
         }
 
         boolean change = true;
@@ -396,8 +396,7 @@ public class LocalVariableTypeAnalyser {
             change = false;
             for (BasicBlock block : graph.getBasicBlocks()) {
                 AnalysisData data = (AnalysisData) block.getData();
-                TACInstSeq seq = new TACInstSeq(data.getInstructions());
-                if (Boolean.TRUE.equals(seq.accept(visitor, null))) {
+                if (Boolean.TRUE.equals(data.getInstructions().accept(visitor, null))) {
                     change = true;
                 }
             }

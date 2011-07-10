@@ -45,7 +45,7 @@ public class IfThenBreakRegion extends AbstractRegion {
 
     private Edge beforeThenEdge;
 
-    private final boolean invertCond;
+    private final boolean mustInvertCondition;
 
     static IfThenBreakRegion newInstance(Region ifRegion, Region breakTargetRegion,
                                          Edge elseEdge, Edge thenBreakEdge,
@@ -76,7 +76,7 @@ public class IfThenBreakRegion extends AbstractRegion {
 
     private IfThenBreakRegion(Region ifRegion, Region breakTargetRegion, Edge elseEdge,
                               Edge thenBreakEdge, Region beforeThenRegion, Edge beforeThenEdge,
-                              Region afterThenRegion, Edge afterThenEdge, boolean invertCond) {
+                              Region afterThenRegion, Edge afterThenEdge, boolean mustInvertCondition) {
         if (ifRegion == null) {
             throw new IllegalArgumentException("ifRegion == null");
         }
@@ -97,7 +97,7 @@ public class IfThenBreakRegion extends AbstractRegion {
         this.beforeThenEdge = beforeThenEdge;
         this.afterThenRegion = afterThenRegion;
         this.afterThenEdge = afterThenEdge;
-        this.invertCond = invertCond;
+        this.mustInvertCondition = mustInvertCondition;
         ifRegion.setParent(this);
         if (beforeThenRegion != null) {
             beforeThenRegion.setParent(this);
@@ -155,8 +155,8 @@ public class IfThenBreakRegion extends AbstractRegion {
         this.beforeThenEdge = beforeThenEdge;
     }
 
-    public boolean isInvertCond() {
-        return invertCond;
+    public boolean mustInvertCondition() {
+        return mustInvertCondition;
     }
 
     public RegionType getType() {

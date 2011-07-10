@@ -674,13 +674,18 @@ public class Test {
         }
     }
 
-    public void testContinue() {
+    public void testContinue(int j) {
         for (int i = 0; i < 3; i++) {
             if (i == 1) {
-                continue;
+                a();
+                if (j == 4) {
+                    continue;
+                }
+                b();
             }
-            a();
+            c();
         }
+        d();
     }
 
     public void testContinue2() {
@@ -1180,7 +1185,7 @@ public class Test {
     }
 
     void testMultiArrayInitializer() {
-        int[][] a = { {2, 2}, {2, 2} };
+        int[][] a = { {1, 2}, {3, 4} };
     }
 
     int function(float e) {

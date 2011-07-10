@@ -20,7 +20,6 @@ package fr.jamgotchian.abcd.core.ast.stmt;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.controlflow.CaseValues;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -75,7 +74,7 @@ public class SwitchCaseStatement extends AbstractStatement {
     }
 
     public SwitchCaseStatement(Expression condition) {
-        this(condition, Collections.<CaseStatement>emptyList());
+        this(condition, new ArrayList<CaseStatement>(1));
     }
 
     @Override
@@ -94,6 +93,10 @@ public class SwitchCaseStatement extends AbstractStatement {
 
     public List<CaseStatement> getCases() {
         return cases;
+    }
+
+    public void addCase(CaseStatement _case) {
+        cases.add(_case);
     }
 
     public <R, A> R accept(StatementVisitor<R, A> visitor, A arg) {

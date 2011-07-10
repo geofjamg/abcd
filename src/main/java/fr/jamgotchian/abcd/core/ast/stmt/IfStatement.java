@@ -19,7 +19,6 @@ package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
-import fr.jamgotchian.abcd.core.common.ABCDException;
 
 /**
  *
@@ -37,21 +36,20 @@ public class IfStatement extends AbstractStatement {
         if (condition == null) {
             throw new IllegalArgumentException("condition == null");
         }
-        if (then == null) {
-            throw new IllegalArgumentException("then == null");
-        }
         this.condition = condition;
         this.then = then;
         this._else = _else;
     }
 
-    public IfStatement(Expression condition, BlockStatement then) {
-        this(condition, then, null);
+    public IfStatement(Expression condition) {
+        this(condition, null, null);
     }
 
     @Override
     public void setBlock(BlockStatement block) {
-        then.setBlock(block);
+        if (then != null) {
+            then.setBlock(block);
+        }
         if (_else != null) {
             _else.setBlock(block);
         }
@@ -62,6 +60,10 @@ public class IfStatement extends AbstractStatement {
         return condition;
     }
 
+    public void invertCondition() {
+        condition = ExpressionInverter.invert(condition);
+    }
+
     public BlockStatement getThen() {
         return then;
     }
@@ -70,19 +72,14 @@ public class IfStatement extends AbstractStatement {
         return _else;
     }
 
+    public void setThen(BlockStatement then) {
+        this.then = then;
+        then.setBlock(getBlock());
+    }
+
     public void setElse(BlockStatement _else) {
         this._else = _else;
         _else.setBlock(getBlock());
-    }
-
-    public void invert() {
-        if (_else == null) {
-            throw new ABCDException("Cannot invert an if then statement");
-        }
-        BlockStatement tmp = then;
-        then = _else;
-        _else = tmp;
-        condition = ExpressionInverter.invert(condition);
     }
 
     public <R, A> R accept(StatementVisitor<R, A> visitor, A arg) {

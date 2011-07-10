@@ -30,6 +30,7 @@ import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.PhiInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
+import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.tac.model.VariableID;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -117,7 +118,7 @@ public class SSAFormConverter {
                         // is definition alive in basic block y ?
                         if (liveVariables.get(y).contains(defIndex)) {
                             ((AnalysisData) y.getData()).getInstructions()
-                                    .add(0, instFactory.newPhi(new Variable(defIndex, y, -1), args));
+                                    .insertAt(0, instFactory.newPhi(new Variable(defIndex, y, -1), args));
                             logger.log(Level.FINEST, "  Add Phi function to {0} for var {1}",
                                     new Object[] {y, defIndex});
                         }
@@ -200,13 +201,13 @@ public class SSAFormConverter {
     }
 
     private static void addInst(BasicBlock b, TACInst inst) {
-        List<TACInst> insts = ((AnalysisData) b.getData()).getInstructions();
+        TACInstSeq insts = ((AnalysisData) b.getData()).getInstructions();
         if (insts.isEmpty()) {
             insts.add(inst);
         } else {
             TACInst lastInst = insts.get(insts.size()-1);
             if (lastInst instanceof GotoInst || lastInst instanceof JumpIfInst) {
-                insts.add(insts.size()-1, inst);
+                insts.insertAt(insts.size()-1, inst);
             } else {
                 insts.add(inst);
             }
@@ -217,7 +218,7 @@ public class SSAFormConverter {
         for (BasicBlock b : graph.getBasicBlocks()) {
             List<BasicBlock> predecessors
                     = new ArrayList<BasicBlock>(graph.getPredecessorsOf(b));
-            List<TACInst> insts = ((AnalysisData) b.getData()).getInstructions();
+            TACInstSeq insts = ((AnalysisData) b.getData()).getInstructions();
             for (Iterator<TACInst> it = insts.iterator(); it.hasNext();) {
                 TACInst inst = it.next();
                 if (inst instanceof PhiInst) {
