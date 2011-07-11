@@ -279,7 +279,22 @@ public class AbstractSyntaxTreeBuilder {
 
         @Override
         public Void visit(CallStaticMethodInst inst, BlockStatement blockStmt) {
-            // TODO
+            Variable resultVar = inst.getResult();
+            BasicBlock bb = resultVar.getBasicBlock();
+            List<Expression> argsExpr = new ArrayList<Expression>(inst.getArgumentCount());
+            for (Variable argVar : inst.getArguments()) {
+                argsExpr.add(getVarExpr(argVar));
+            }
+            Expression typeExpr
+                    = Expressions.newTypeExpr(JavaType.newRefType(inst.getScope()), bb);
+            Expression callExpr
+                    = Expressions.newMethodExpr(typeExpr, inst.getSignature().getMethodName(),
+                                                argsExpr, bb);
+            if (liveVariables.get(bb).contains(resultVar)) {
+                expressions.put(resultVar.getID(), callExpr);
+            } else {
+                blockStmt.add(new ExpressionStatement(callExpr));
+            }
             return null;
         }
 
@@ -495,8 +510,7 @@ public class AbstractSyntaxTreeBuilder {
 
         @Override
         public Void visit(ChoiceInst inst, BlockStatement blockStmt) {
-            // TODO
-            return null;
+            throw new InternalError();
         }
 
         @Override

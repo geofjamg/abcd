@@ -53,6 +53,10 @@ public class CallStaticMethodInst extends DefInst {
         return arguments;
     }
 
+    public int getArgumentCount() {
+        return arguments.size();
+    }
+
     public Set<Variable> getUses() {
         return new HashSet<Variable>(arguments);
     }

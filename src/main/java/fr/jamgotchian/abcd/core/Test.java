@@ -1346,6 +1346,10 @@ public class Test {
         java.lang.String b = new java.lang.String();
     }
 
+    void testCallStaticMethod(int rrr) {
+        TOTO.aaa(rrr * 4);
+    }
+
 //    public static void main(String[] args) {
 //        new Test().testBreakLabel2();
 //    }
@@ -1355,4 +1359,8 @@ public class Test {
 class TOTO {
     static int a;
     float b;
+
+    static int aaa(int a_int) {
+        return -1 + a_int;
+    }
 }
