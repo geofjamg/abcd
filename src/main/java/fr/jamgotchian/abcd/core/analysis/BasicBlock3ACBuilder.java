@@ -802,7 +802,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         Label label = block.getGraph().getLabelManager().getLabel(node.label);
 
         if (tmpResult != null) {
-            addInst(block, instFactory.newJumpIf(tmpResult, label));
+            addInst(block, instFactory.newJumpIf(tmpResult.clone(), label));
         } else {
             addInst(block, instFactory.newGoto(label));
         }

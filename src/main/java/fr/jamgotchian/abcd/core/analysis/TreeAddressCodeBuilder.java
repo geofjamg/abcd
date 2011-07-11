@@ -223,17 +223,18 @@ public class TreeAddressCodeBuilder {
                                 JumpIfInst jumpIfInst = (JumpIfInst) forkData.getInstructions().getLast();
                                 choiceInst.getChoices().remove(thenVar);
                                 choiceInst.getChoices().remove(elseVar);
+                                Variable condVar = jumpIfInst.getCond().clone();
                                 if (choiceInst.getChoices().isEmpty()) {
                                     Variable resultVar = choiceInst.getResult();
                                     ConditionalInst condInst
-                                            = instFactory.newConditional(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
+                                            = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
                                     logger.log(Level.FINER, "Replace inst at {0} of {1} : {2}",
                                             new Object[]{i, joinBlock, TACInstWriter.toText(condInst)});
                                     replacement.add(condInst);
                                 } else {
                                     Variable resultVar = tmpVarFactory.create(forkBlock);
                                     ConditionalInst condInst
-                                            = instFactory.newConditional(resultVar, jumpIfInst.getCond(), thenVar, elseVar);
+                                            = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
                                     logger.log(Level.FINER, "Insert inst at {0} of {1} : {2}",
                                             new Object[]{i, joinBlock, TACInstWriter.toText(condInst)});
                                     replacement.add(condInst);
