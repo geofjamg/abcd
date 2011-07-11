@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.tac.model;
 
 import com.google.common.collect.Sets;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.Set;
 
 /**
@@ -29,11 +30,14 @@ public class SetFieldInst implements TACInst {
 
     private final String fieldName;
 
+    private final JavaType fieldType;
+
     private final Variable value;
 
-    SetFieldInst(Variable object, String fieldName, Variable value) {
+    SetFieldInst(Variable object, String fieldName, JavaType fieldType, Variable value) {
         this.object = object;
         this.fieldName = fieldName;
+        this.fieldType = fieldType;
         this.value = value;
     }
 
@@ -43,6 +47,10 @@ public class SetFieldInst implements TACInst {
 
     public String getFieldName() {
         return fieldName;
+    }
+
+    public JavaType getFieldType() {
+        return fieldType;
     }
 
     public Variable getValue() {

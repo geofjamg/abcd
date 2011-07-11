@@ -189,7 +189,7 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
 
     public Void visit(SwitchCaseStatement stmt, Void arg) {
         writer.writeKeyword("switch").writeSpace().write("(");
-        stmt.getCondition().accept(exprVisitor, stmt.getBlock());
+        stmt.getIndex().accept(exprVisitor, stmt.getBlock());
         writer.write(")").writeSpace().write("{").newLine();
         writer.incrIndent();
         for (CaseStatement _case : stmt.getCases()) {

@@ -224,7 +224,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
     public Boolean visit(SwitchCaseStatement stmt, Statement arg) {
         if (arg instanceof SwitchCaseStatement) {
             SwitchCaseStatement stmt2 = (SwitchCaseStatement) arg;
-            if (!ExpressionEqualityChecker.equal(stmt.getCondition(), stmt2.getCondition())) {
+            if (!ExpressionEqualityChecker.equal(stmt.getIndex(), stmt2.getIndex())) {
                 return Boolean.FALSE;
             }
             Collection<CaseStatement> cases1 = stmt.getCases();

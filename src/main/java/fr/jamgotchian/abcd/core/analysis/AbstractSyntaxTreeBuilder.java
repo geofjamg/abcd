@@ -460,9 +460,9 @@ public class AbstractSyntaxTreeBuilder {
 
         @Override
         public Void visit(SwitchInst inst, BlockStatement blockStmt) {
-            Variable condVar = inst.getCond();
-            Expression condExpr = getVarExpr(condVar);
-            SwitchCaseStatement switchStmt = new SwitchCaseStatement(condExpr);
+            Variable indexVar = inst.getIndex();
+            Expression indexExpr = getVarExpr(indexVar);
+            SwitchCaseStatement switchStmt = new SwitchCaseStatement(indexExpr);
             blockStmt.add(switchStmt);
             return null;
         }

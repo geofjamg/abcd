@@ -138,17 +138,18 @@ public class TACInstFactory {
         return new SetArrayInst(array, index, value);
     }
 
-    public SetFieldInst newSetField(Variable object, String fieldName, Variable value) {
-        return new SetFieldInst(object, fieldName, value);
+    public SetFieldInst newSetField(Variable object, String fieldName, JavaType fieldType,
+                                    Variable value) {
+        return new SetFieldInst(object, fieldName, fieldType, value);
     }
 
     public SetStaticFieldInst newSetStaticField(ClassName scope, String fieldName,
-                                                Variable value) {
-        return new SetStaticFieldInst(scope, fieldName, value);
+                                                JavaType fieldType, Variable value) {
+        return new SetStaticFieldInst(scope, fieldName, fieldType, value);
     }
 
-    public SwitchInst newSwitch(Variable cond, List<Label> labels) {
-        return new SwitchInst(cond, labels);
+    public SwitchInst newSwitch(Variable index, List<Label> labels) {
+        return new SwitchInst(index, labels);
     }
 
     public ThrowInst newThrow(Variable var) {

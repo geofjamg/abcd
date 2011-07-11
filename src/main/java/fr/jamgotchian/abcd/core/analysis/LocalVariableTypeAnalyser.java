@@ -47,8 +47,12 @@ import fr.jamgotchian.abcd.core.tac.model.NewArrayInst;
 import fr.jamgotchian.abcd.core.tac.model.NewObjectInst;
 import fr.jamgotchian.abcd.core.tac.model.ReturnInst;
 import fr.jamgotchian.abcd.core.tac.model.SetArrayInst;
+import fr.jamgotchian.abcd.core.tac.model.SetFieldInst;
+import fr.jamgotchian.abcd.core.tac.model.SetStaticFieldInst;
+import fr.jamgotchian.abcd.core.tac.model.SwitchInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
+import fr.jamgotchian.abcd.core.tac.model.UnaryInst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.VariableID;
 import fr.jamgotchian.abcd.core.tac.util.EmptyTACInstVisitor;
@@ -147,10 +151,48 @@ public class LocalVariableTypeAnalyser {
         }
 
         @Override
+        public Boolean visit(UnaryInst inst, Void arg) {
+            switch (inst.getOperator()) {
+                case MINUS: {
+                    boolean change
+                            = infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                          JavaType.ARITHMETIC_TYPES);
+
+                    change |= infereTypes(getPossibleTypes(inst.getVar().getID()),
+                                          JavaType.ARITHMETIC_TYPES);
+
+                    change |= infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                          getPossibleTypes(inst.getVar().getID()));
+
+                    change |= infereTypes(getPossibleTypes(inst.getVar().getID()),
+                                          getPossibleTypes(inst.getResult().getID()));
+
+                    return change;
+                }
+
+                default:
+                    return Boolean.FALSE;
+            }
+        }
+
+        @Override
         public Boolean visit(BinaryInst inst, Void arg) {
             switch (inst.getOperator()) {
                 case AND:
-                case OR:
+                case OR: {
+                    boolean change
+                            = infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                          JavaType.BOOLEAN);
+
+                    change |= infereTypes(getPossibleTypes(inst.getLeft().getID()),
+                                          JavaType.BOOLEAN);
+
+                    change |= infereTypes(getPossibleTypes(inst.getRight().getID()),
+                                          JavaType.BOOLEAN);
+
+                    return change;
+                }
+
                 case EQ:
                 case NE:
                 case GE:
@@ -171,10 +213,17 @@ public class LocalVariableTypeAnalyser {
                 }
 
                 case PLUS:
-                case MINUS: {
+                case MINUS:
+                case MUL: {
                     // the result type is an arithmetic type
                     boolean change
                             = infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                          JavaType.ARITHMETIC_TYPES);
+
+                    change |= infereTypes(getPossibleTypes(inst.getLeft().getID()),
+                                          JavaType.ARITHMETIC_TYPES);
+
+                    change |= infereTypes(getPossibleTypes(inst.getRight().getID()),
                                           JavaType.ARITHMETIC_TYPES);
 
                     change |= infereTypes(getPossibleTypes(inst.getLeft().getID()),
@@ -218,8 +267,20 @@ public class LocalVariableTypeAnalyser {
         }
 
         @Override
+        public Boolean visit(SetFieldInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getValue().getID()),
+                               inst.getFieldType());
+        }
+
+        @Override
         public Boolean visit(GetStaticFieldInst inst, Void arg) {
             return infereTypes(getPossibleTypes(inst.getResult().getID()),
+                               inst.getFieldType());
+        }
+
+        @Override
+        public Boolean visit(SetStaticFieldInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getValue().getID()),
                                inst.getFieldType());
         }
 
@@ -298,6 +359,12 @@ public class LocalVariableTypeAnalyser {
         }
 
         @Override
+        public Boolean visit(SwitchInst inst, Void arg) {
+            return infereTypes(getPossibleTypes(inst.getIndex().getID()),
+                               JavaType.INT);
+        }
+
+        @Override
         public Boolean visit(MonitorEnterInst inst, Void arg) {
             return Boolean.FALSE;
         }
@@ -325,14 +392,30 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Boolean visit(GetArrayInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getIndex().getID()),
-                               JavaType.INT);
+            boolean change
+                    = infereTypes(getPossibleTypes(inst.getIndex().getID()),
+                                  JavaType.INT);
+            Set<JavaType> possibleEltTypes = new HashSet<JavaType>();
+            for (JavaType type : getPossibleTypes(inst.getArray().getID())) {
+                possibleEltTypes.add(type.getArrayElementType());
+            }
+            change |= infereTypes(getPossibleTypes(inst.getResult().getID()),
+                                  possibleEltTypes);
+            return change;
         }
 
         @Override
         public Boolean visit(SetArrayInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getIndex().getID()),
-                               JavaType.INT);
+            boolean change
+                    = infereTypes(getPossibleTypes(inst.getIndex().getID()),
+                                  JavaType.INT);
+            Set<JavaType> possibleEltTypes = new HashSet<JavaType>();
+            for (JavaType type : getPossibleTypes(inst.getArray().getID())) {
+                possibleEltTypes.add(type.getArrayElementType());
+            }
+            change |= infereTypes(getPossibleTypes(inst.getValue().getID()),
+                                  possibleEltTypes);
+            return change;
         }
 
         @Override

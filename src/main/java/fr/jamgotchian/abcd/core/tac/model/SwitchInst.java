@@ -27,17 +27,17 @@ import java.util.Set;
  */
 public class SwitchInst implements TACInst {
 
-    private final Variable cond;
+    private final Variable index;
 
     private final List<Label> labels;
 
-    SwitchInst(Variable cond, List<Label> labels) {
-        this.cond = cond;
+    SwitchInst(Variable index, List<Label> labels) {
+        this.index = index;
         this.labels = labels;
     }
 
-    public Variable getCond() {
-        return cond;
+    public Variable getIndex() {
+        return index;
     }
 
     public List<Label> getLabels() {
@@ -45,7 +45,7 @@ public class SwitchInst implements TACInst {
     }
 
     public Set<Variable> getUses() {
-        return Collections.singleton(cond);
+        return Collections.singleton(index);
     }
 
     public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {

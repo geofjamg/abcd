@@ -58,18 +58,18 @@ public class SwitchCaseStatement extends AbstractStatement {
         }
     }
 
-    private final Expression condition;
+    private final Expression index;
 
     private final List<CaseStatement> cases;
 
-    public SwitchCaseStatement(Expression condition, List<CaseStatement> cases) {
-        if (condition == null) {
-            throw new IllegalArgumentException("condition == null");
+    public SwitchCaseStatement(Expression index, List<CaseStatement> cases) {
+        if (index == null) {
+            throw new IllegalArgumentException("index == null");
         }
         if (cases == null) {
             throw new IllegalArgumentException("cases == null");
         }
-        this.condition = condition;
+        this.index = index;
         this.cases = cases;
     }
 
@@ -87,8 +87,8 @@ public class SwitchCaseStatement extends AbstractStatement {
         super.setBlock(block);
     }
 
-    public Expression getCondition() {
-        return condition;
+    public Expression getIndex() {
+        return index;
     }
 
     public List<CaseStatement> getCases() {

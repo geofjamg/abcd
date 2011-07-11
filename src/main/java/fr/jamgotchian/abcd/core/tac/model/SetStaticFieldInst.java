@@ -18,6 +18,7 @@ package fr.jamgotchian.abcd.core.tac.model;
 
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.type.ClassName;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.Set;
 
 /**
@@ -30,11 +31,15 @@ public class SetStaticFieldInst implements TACInst {
 
     private final String fieldName;
 
+    private final JavaType fieldType;
+
     private final Variable value;
 
-    SetStaticFieldInst(ClassName scope, String fieldName, Variable value) {
+    SetStaticFieldInst(ClassName scope, String fieldName, JavaType fieldType,
+                       Variable value) {
         this.scope = scope;
         this.fieldName = fieldName;
+        this.fieldType = fieldType;
         this.value = value;
     }
 
@@ -44,6 +49,10 @@ public class SetStaticFieldInst implements TACInst {
 
     public String getFieldName() {
         return fieldName;
+    }
+
+    public JavaType getFieldType() {
+        return fieldType;
     }
 
     public Variable getValue() {

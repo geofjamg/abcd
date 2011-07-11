@@ -429,7 +429,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
 
     public Void visit(SwitchInst inst, Void arg) {
         writer.writeKeyword("switch").writeSpace()
-              .write(inst.getCond()).writeSpace();
+              .write(inst.getIndex()).writeSpace();
         for (Iterator<Label> it = inst.getLabels().iterator(); it.hasNext();) {
             writer.writeLabel(it.next());
             if (it.hasNext()) {

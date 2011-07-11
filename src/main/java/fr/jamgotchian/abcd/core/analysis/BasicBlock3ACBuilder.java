@@ -117,31 +117,28 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
     }
 
     public void visitFieldInsn(BasicBlock block, int position, FieldInsnNode node) {
+        JavaType fieldType = JavaType.newType(Type.getType(node.desc), classNameFactory);
+        String fieldName = node.name;
 
         switch (node.getOpcode()) {
             case GETSTATIC: {
                 ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
-                String varName = node.name;
-                JavaType fieldType = JavaType.newType(Type.getType(node.desc), classNameFactory);
                 Variable tmpVar = tmpVarFactory.create(block);
-                addInst(block, instFactory.newGetStaticField(tmpVar, className, varName, fieldType));
+                addInst(block, instFactory.newGetStaticField(tmpVar, className, fieldName, fieldType));
                 stack.push(tmpVar);
                 break;
             }
 
             case PUTSTATIC: {
                 ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
-                String varName = node.name;
                 Variable tmpVar = stack.pop();
-                addInst(block, instFactory.newSetStaticField(className, varName, tmpVar));
+                addInst(block, instFactory.newSetStaticField(className, fieldName, fieldType, tmpVar));
                 break;
             }
 
             case GETFIELD: {
                 Variable resultVar = tmpVarFactory.create(block);
                 Variable objVar = stack.pop();
-                String fieldName = node.name;
-                JavaType fieldType = JavaType.newType(Type.getType(node.desc), classNameFactory);
                 addInst(block, instFactory.newGetField(resultVar, objVar, fieldName, fieldType));
                 stack.push(resultVar);
                 break;
@@ -150,8 +147,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case PUTFIELD: {
                 Variable valueVar = stack.pop();
                 Variable objVar = stack.pop();
-                String fieldName = node.name;
-                addInst(block, instFactory.newSetField(objVar, fieldName, valueVar));
+                addInst(block, instFactory.newSetField(objVar, fieldName, fieldType, valueVar));
                 break;
             }
         }

@@ -137,7 +137,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
 
     public R visit(SwitchCaseStatement stmt, A arg) {
         if (exprVisitor != null) {
-            stmt.getCondition().accept(exprVisitor, null);
+            stmt.getIndex().accept(exprVisitor, null);
         }
         for (CaseStatement _case : stmt.getCases()) {
             for (Statement stmt2 : _case.getStmts()) {
