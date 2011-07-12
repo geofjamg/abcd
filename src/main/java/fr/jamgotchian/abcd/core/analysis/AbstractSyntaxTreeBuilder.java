@@ -533,10 +533,10 @@ public class AbstractSyntaxTreeBuilder {
     public void build(Region rootRegion, BlockStatement methodBody,
                       Map<BasicBlock, Set<Variable>> liveVariables) {
         this.liveVariables = liveVariables;
-        buildAST(rootRegion, null, methodBody);
+        buildAST(rootRegion, methodBody);
     }
 
-    private void buildAST(Region region, Region parent, BlockStatement blockStmt) {
+    private void buildAST(Region region, BlockStatement blockStmt) {
         logger.log(Level.FINEST, "Build AST from region {0} {1}",
                 new Object[] {region, region.getTypeName()});
 
@@ -551,7 +551,7 @@ public class AbstractSyntaxTreeBuilder {
 
             case BLOCK: {
                 for (Region child : ((BlockRegion) region).getRegions()) {
-                    buildAST(child, region, blockStmt);
+                    buildAST(child, blockStmt);
                 }
                 break;
             }
@@ -559,12 +559,12 @@ public class AbstractSyntaxTreeBuilder {
             case LOGICAL: {
                 LogicalRegion logicalRegion = (LogicalRegion) region;
 
-                buildAST(logicalRegion.getRegionA(), logicalRegion, blockStmt);
+                buildAST(logicalRegion.getRegionA(), blockStmt);
                 IfStatement ifStmtA = (IfStatement) blockStmt.getLast();
                 ifStmtA.remove();
 
                 BlockStatement tmpBlockStmt = new BlockStatement();
-                buildAST(logicalRegion.getRegionB(), logicalRegion, tmpBlockStmt);
+                buildAST(logicalRegion.getRegionB(), tmpBlockStmt);
                 IfStatement ifStmtB = (IfStatement) tmpBlockStmt.getLast();
 
                 BinaryOperator operator = null;
@@ -598,15 +598,15 @@ public class AbstractSyntaxTreeBuilder {
             case IF_THEN_ELSE: {
                 IfThenElseRegion ifThenElseRegion = (IfThenElseRegion) region;
 
-                buildAST(ifThenElseRegion.getIfRegion(), region, blockStmt);
+                buildAST(ifThenElseRegion.getIfRegion(), blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
                 ifStmt.invertCondition();
                 BlockStatement thenBlockStmt = new BlockStatement();
                 ifStmt.setThen(thenBlockStmt);
                 BlockStatement elseBlockStmt = new BlockStatement();
                 ifStmt.setElse(elseBlockStmt);
-                buildAST(ifThenElseRegion.getThenRegion(), region, elseBlockStmt);
-                buildAST(ifThenElseRegion.getElseRegion(), region, thenBlockStmt);
+                buildAST(ifThenElseRegion.getThenRegion(), elseBlockStmt);
+                buildAST(ifThenElseRegion.getElseRegion(), thenBlockStmt);
                 if (ifStmt.getThen().isEmpty() && ifStmt.getElse().isEmpty()) {
                     ifStmt.remove();
                 }
@@ -616,14 +616,14 @@ public class AbstractSyntaxTreeBuilder {
             case IF_THEN: {
                 IfThenRegion ifThenRegion = (IfThenRegion) region;
 
-                buildAST(ifThenRegion.getIfRegion(), region, blockStmt);
+                buildAST(ifThenRegion.getIfRegion(), blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
                 if (ifThenRegion.mustInvertCondition()) {
                     ifStmt.invertCondition();
                 }
                 BlockStatement thenBlockStmt = new BlockStatement();
                 ifStmt.setThen(thenBlockStmt);
-                buildAST(ifThenRegion.getThenRegion(), region, thenBlockStmt);
+                buildAST(ifThenRegion.getThenRegion(), thenBlockStmt);
                 if (ifStmt.getThen().isEmpty()) {
                     ifStmt.remove();
                 }
@@ -632,7 +632,7 @@ public class AbstractSyntaxTreeBuilder {
 
             case IF_THEN_BREAK: {
                 IfThenBreakRegion ifThenBreakRegion = (IfThenBreakRegion) region;
-                buildAST(ifThenBreakRegion.getIfRegion(), ifThenBreakRegion, blockStmt);
+                buildAST(ifThenBreakRegion.getIfRegion(), blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
                 if (ifThenBreakRegion.mustInvertCondition()) {
                     ifStmt.invertCondition();
@@ -640,10 +640,10 @@ public class AbstractSyntaxTreeBuilder {
                 BlockStatement thenBlockStmt = new BlockStatement();
                 ifStmt.setThen(thenBlockStmt);
                 if (ifThenBreakRegion.getBeforeThenRegion() != null) {
-                    buildAST(ifThenBreakRegion.getBeforeThenRegion(), ifThenBreakRegion, thenBlockStmt);
+                    buildAST(ifThenBreakRegion.getBeforeThenRegion(), thenBlockStmt);
                 }
                 if (ifThenBreakRegion.getAfterThenRegion() != null) {
-                    buildAST(ifThenBreakRegion.getAfterThenRegion(), ifThenBreakRegion, thenBlockStmt);
+                    buildAST(ifThenBreakRegion.getAfterThenRegion(), thenBlockStmt);
                 }
                 Statement lastStmt = thenBlockStmt.getLast();
                 if (!(lastStmt instanceof ReturnStatement)
@@ -659,7 +659,7 @@ public class AbstractSyntaxTreeBuilder {
                 LoopRegion loopRegion = (LoopRegion) region;
 
                 BlockStatement bodyBlockStmt = new BlockStatement();
-                buildAST(loopRegion.getLoopRegion(), loopRegion, bodyBlockStmt);
+                buildAST(loopRegion.getLoopRegion(), bodyBlockStmt);
 
 //                blockStmt.add(new CommentStatement("Loop ID : " + loopRegion.getLoopID()));
                 switch (loopRegion.getLoopType()) {
@@ -691,7 +691,7 @@ public class AbstractSyntaxTreeBuilder {
             case SWITCH_CASE: {
                 SwitchCaseRegion switchCaseRegion = (SwitchCaseRegion) region;
 
-                buildAST(switchCaseRegion.getSwitchRegion(), switchCaseRegion, blockStmt);
+                buildAST(switchCaseRegion.getSwitchRegion(), blockStmt);
                 SwitchCaseStatement switchStmt
                         = (SwitchCaseStatement) blockStmt.getLast();
 
@@ -700,7 +700,7 @@ public class AbstractSyntaxTreeBuilder {
 
                     if (caseRegion.getRegion() != null) {
                         BlockStatement caseCompoundStmt = new BlockStatement();
-                        buildAST(caseRegion.getRegion(), switchCaseRegion, caseCompoundStmt);
+                        buildAST(caseRegion.getRegion(), caseCompoundStmt);
                         for (Statement stmt : caseCompoundStmt) {
                             caseStmts.add(stmt);
                         }
@@ -722,17 +722,17 @@ public class AbstractSyntaxTreeBuilder {
                 TryCatchRegion tryCatchRegion = (TryCatchRegion) region;
 
                 BlockStatement tryBlockStmt = new BlockStatement();
-                buildAST(tryCatchRegion.getTryRegion1(), tryCatchRegion, tryBlockStmt);
+                buildAST(tryCatchRegion.getTryRegion1(), tryBlockStmt);
 
                 if (tryCatchRegion.getTryRegion2() != null) {
-                    buildAST(tryCatchRegion.getTryRegion2(), tryCatchRegion, tryBlockStmt);
+                    buildAST(tryCatchRegion.getTryRegion2(), tryBlockStmt);
                 }
 
                 List<CatchClause> catchs = new ArrayList<CatchClause>();
                 for (CatchRegion catchRegion : tryCatchRegion.getCatchRegions()) {
 
                     BlockStatement catchBlockStmt = new BlockStatement();
-                    buildAST(catchRegion.getRegion(), tryCatchRegion, catchBlockStmt);
+                    buildAST(catchRegion.getRegion(), catchBlockStmt);
 
                     ExpressionStatement exprStmt = (ExpressionStatement) catchBlockStmt.getFirst();
                     exprStmt.remove();
