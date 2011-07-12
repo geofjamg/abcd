@@ -47,7 +47,11 @@ class ClassNameImpl implements ClassName {
     }
 
     public String getName() {
-        return name;
+        if (packageName == null || importManager.isImported(this)) {
+            return name;
+        } else {
+            return getQualifiedName();
+        }
     }
 
     public String getQualifiedName() {
@@ -69,11 +73,7 @@ class ClassNameImpl implements ClassName {
 
     @Override
     public String toString() {
-        if (packageName == null || importManager.isImported(this)) {
-            return name;
-        } else {
-            return getQualifiedName();
-        }
+        return getName();
     }
 }
 

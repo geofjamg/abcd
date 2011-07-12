@@ -77,7 +77,7 @@ public class Method {
         builder.append(name).append("(");
         for (Iterator<LocalVariableDeclaration> it = arguments.iterator(); it.hasNext();) {
             LocalVariableDeclaration arg = it.next();
-            builder.append(arg.getType().getQualifiedName());
+            builder.append(arg.getType().toString());
             if (it.hasNext()) {
                 builder.append(",");
             }

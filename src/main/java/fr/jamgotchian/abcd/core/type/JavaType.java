@@ -231,7 +231,11 @@ public class JavaType {
             if (isPrimitive()) {
                 return primitiveType.toString();
             } else { // reference
-                return className.getQualifiedName();
+                if (qualifiedName) {
+                    return className.getQualifiedName();
+                } else {
+                    return className.getName();
+                }
             }
         }
     }

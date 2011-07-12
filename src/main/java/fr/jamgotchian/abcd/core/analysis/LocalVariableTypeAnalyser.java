@@ -64,6 +64,7 @@ import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -456,7 +457,16 @@ public class LocalVariableTypeAnalyser {
             VariableID ID = entry.getKey();
             Set<JavaType> types = entry.getValue();
             indexColumn.add(ID.toString());
-            typeColumn.add(types.toString());
+            StringBuilder builder = new StringBuilder();
+            builder.append("[");
+            for (Iterator<JavaType> it = types.iterator(); it.hasNext();) {
+                builder.append(it.next().getQualifiedName());
+                if (it.hasNext()) {
+                    builder.append(", ");
+                }
+            }
+            builder.append("]");
+            typeColumn.add(builder.toString());
         }
 
         logger.log(Level.FINEST, "Variable types :\n{0}",
