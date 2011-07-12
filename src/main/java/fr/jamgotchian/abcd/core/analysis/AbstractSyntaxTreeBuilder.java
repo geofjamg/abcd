@@ -140,8 +140,7 @@ public class AbstractSyntaxTreeBuilder {
                 return expressions.get(var.getID());
             } else {
                 return Expressions.newVarExpr(var.getID(),
-                                              var.getName(),
-                                              var.getBasicBlock());
+                                              var.getName());
             }
         }
 
@@ -150,14 +149,12 @@ public class AbstractSyntaxTreeBuilder {
             if (leftVar.isTemporary()) {
                 expressions.put(leftVar.getID(), rightExpr);
             } else {
-                BasicBlock bb = leftVar.getBasicBlock();
                 Expression varExpr
                         = Expressions.newVarExpr(leftVar.getID(),
-                                                 leftVar.getName(),
-                                                 bb);
+                                                 leftVar.getName());
                 Expression assignExpr
                         = Expressions.newAssignExpr(varExpr, rightExpr,
-                                                    AssignOperator.ASSIGN, bb);
+                                                    AssignOperator.ASSIGN);
                 blockStmt.add(new ExpressionStatement(assignExpr));
             }
         }
@@ -166,9 +163,8 @@ public class AbstractSyntaxTreeBuilder {
         public Void visit(ArrayLengthInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
             Variable arrayVar = inst.getArray();
-            BasicBlock bb = resultVar.getBasicBlock();
             Expression arrayExpr = getVarExpr(arrayVar);
-            Expression lengthExpr = Expressions.newArrayLength(arrayExpr, bb);
+            Expression lengthExpr = Expressions.newArrayLength(arrayExpr);
             addVarAssignExpr(resultVar, lengthExpr, blockStmt);
             return null;
         }
@@ -176,27 +172,26 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(AssignConstInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
-            BasicBlock bb = resultVar.getBasicBlock();
             Const _const = inst.getConst();
             Expression constExpr = null;
             if (_const instanceof IntConst) {
-                constExpr = Expressions.newIntExpr(((IntConst) _const).getValue(), bb);
+                constExpr = Expressions.newIntExpr(((IntConst) _const).getValue());
             } else if (_const instanceof LongConst) {
-                constExpr = Expressions.newLongExpr(((LongConst) _const).getValue(), bb);
+                constExpr = Expressions.newLongExpr(((LongConst) _const).getValue());
             } else if (_const instanceof ByteConst) {
-                constExpr = Expressions.newByteExpr(((ByteConst) _const).getValue(), bb);
+                constExpr = Expressions.newByteExpr(((ByteConst) _const).getValue());
             } else if (_const instanceof FloatConst) {
-                constExpr = Expressions.newFloatExpr(((FloatConst) _const).getValue(), bb);
+                constExpr = Expressions.newFloatExpr(((FloatConst) _const).getValue());
             } else if (_const instanceof DoubleConst) {
-                constExpr = Expressions.newDoubleExpr(((DoubleConst) _const).getValue(), bb);
+                constExpr = Expressions.newDoubleExpr(((DoubleConst) _const).getValue());
             } else if (_const instanceof ShortConst) {
-                constExpr = Expressions.newShortExpr(((ShortConst) _const).getValue(), bb);
+                constExpr = Expressions.newShortExpr(((ShortConst) _const).getValue());
             } else if (_const instanceof StringConst) {
-                constExpr = Expressions.newStringExpr(((StringConst) _const).getValue(), bb);
+                constExpr = Expressions.newStringExpr(((StringConst) _const).getValue());
             } else if (_const instanceof ClassConst) {
-                constExpr = Expressions.newClsExpr(((ClassConst) _const).getClassName(), bb);
+                constExpr = Expressions.newClsExpr(((ClassConst) _const).getClassName());
             } else if (_const instanceof NullConst) {
-                constExpr = Expressions.newNullExpr(bb);
+                constExpr = Expressions.newNullExpr();
             } else {
                 throw new InternalError();
             }
@@ -218,7 +213,6 @@ public class AbstractSyntaxTreeBuilder {
             Variable resultVar = inst.getResult();
             Variable leftVar = inst.getLeft();
             Variable rightVar = inst.getRight();
-            BasicBlock bb = resultVar.getBasicBlock();
             Expression leftExpr = getVarExpr(leftVar);
             Expression rightExpr = getVarExpr(rightVar);
             BinaryOperator op;
@@ -242,7 +236,7 @@ public class AbstractSyntaxTreeBuilder {
                 case XOR: op = BinaryOperator.XOR; break;
                 default: throw new InternalError();
             }
-            Expression binExpr = Expressions.newBinExpr(leftExpr, rightExpr, op, bb);
+            Expression binExpr = Expressions.newBinExpr(leftExpr, rightExpr, op);
             addVarAssignExpr(resultVar, binExpr, blockStmt);
             return null;
         }
@@ -267,7 +261,7 @@ public class AbstractSyntaxTreeBuilder {
             } else {
                 Expression callExpr
                         = Expressions.newMethodExpr(objExpr, inst.getSignature().getMethodName(),
-                                                    argsExpr, bb);
+                                                    argsExpr);
                 if (liveVariables.get(bb).contains(resultVar)) {
                     expressions.put(resultVar.getID(), callExpr);
                 } else {
@@ -286,10 +280,10 @@ public class AbstractSyntaxTreeBuilder {
                 argsExpr.add(getVarExpr(argVar));
             }
             Expression typeExpr
-                    = Expressions.newTypeExpr(JavaType.newRefType(inst.getScope()), bb);
+                    = Expressions.newTypeExpr(JavaType.newRefType(inst.getScope()));
             Expression callExpr
                     = Expressions.newMethodExpr(typeExpr, inst.getSignature().getMethodName(),
-                                                argsExpr, bb);
+                                                argsExpr);
             if (liveVariables.get(bb).contains(resultVar)) {
                 expressions.put(resultVar.getID(), callExpr);
             } else {
@@ -301,10 +295,9 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(CastInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
-            BasicBlock bb = resultVar.getBasicBlock();
             Variable var = inst.getVar();
             Expression expr = getVarExpr(var);
-            Expression castExpr = Expressions.newCastExpr(inst.getCastType(), expr, bb);
+            Expression castExpr = Expressions.newCastExpr(inst.getCastType(), expr);
             addVarAssignExpr(resultVar, castExpr, blockStmt);
             return null;
         }
@@ -312,14 +305,13 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(ConditionalInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
-            BasicBlock bb = resultVar.getBasicBlock();
             Variable condVar = inst.getCond();
             Variable thenVar = inst.getThen();
             Variable elseVar = inst.getElse();
             Expression condExpr = ExpressionInverter.invert(getVarExpr(condVar));
             Expression thenExpr = getVarExpr(thenVar);
             Expression elseExpr = getVarExpr(elseVar);
-            Expression ternExpr = Expressions.newCondExpr(condExpr, elseExpr, thenExpr, bb);
+            Expression ternExpr = Expressions.newCondExpr(condExpr, elseExpr, thenExpr);
             addVarAssignExpr(resultVar, ternExpr, blockStmt);
             return null;
         }
@@ -327,12 +319,11 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(GetArrayInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
-            BasicBlock bb = resultVar.getBasicBlock();
             Variable arrayVar = inst.getArray();
             Variable indexVar = inst.getIndex();
             Expression arrayExpr = getVarExpr(arrayVar);
             Expression indexExpr = getVarExpr(indexVar);
-            Expression accessExpr = Expressions.newArrayAccess(arrayExpr, indexExpr, bb);
+            Expression accessExpr = Expressions.newArrayAccess(arrayExpr, indexExpr);
             addVarAssignExpr(resultVar, accessExpr, blockStmt);
             return null;
         }
@@ -342,17 +333,16 @@ public class AbstractSyntaxTreeBuilder {
             Variable arrayVar = inst.getArray();
             Variable indexVar = inst.getIndex();
             Variable valueVar = inst.getValue();
-            BasicBlock bb = valueVar.getBasicBlock();
             Expression arrayExpr = getVarExpr(arrayVar);
             Expression indexExpr = getVarExpr(indexVar);
             Expression valueExpr = getVarExpr(valueVar);
             if (arrayExpr instanceof ArrayCreationExpression) {
                 ((ArrayCreationExpression) arrayExpr).addInitValue(valueExpr);
             } else {
-                Expression accessExpr = Expressions.newArrayAccess(arrayExpr, indexExpr, bb);
+                Expression accessExpr = Expressions.newArrayAccess(arrayExpr, indexExpr);
                 Expression assignExpr
                             = Expressions.newAssignExpr(accessExpr, valueExpr,
-                                                        AssignOperator.ASSIGN, bb);
+                                                        AssignOperator.ASSIGN);
                 blockStmt.add(new ExpressionStatement(assignExpr));
             }
             return null;
@@ -361,10 +351,9 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(GetFieldInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
-            BasicBlock bb = resultVar.getBasicBlock();
             Variable objVar = inst.getObject();
             Expression objExpr = getVarExpr(objVar);
-            Expression fieldExpr = Expressions.newFieldAccesExpr(objExpr, inst.getFieldName(), bb);
+            Expression fieldExpr = Expressions.newFieldAccesExpr(objExpr, inst.getFieldName());
             addVarAssignExpr(resultVar, fieldExpr, blockStmt);
             return null;
         }
@@ -372,14 +361,13 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(SetFieldInst inst, BlockStatement blockStmt) {
             Variable valueVar = inst.getValue();
-            BasicBlock bb = valueVar.getBasicBlock();
             Expression valueExpr = getVarExpr(valueVar);
             Variable objVar = inst.getObject();
             Expression objExpr = getVarExpr(objVar);
-            Expression fieldExpr = Expressions.newFieldAccesExpr(objExpr, inst.getFieldName(), bb);
+            Expression fieldExpr = Expressions.newFieldAccesExpr(objExpr, inst.getFieldName());
             Expression assignExpr
                     = Expressions.newAssignExpr(fieldExpr, valueExpr,
-                                                AssignOperator.ASSIGN, bb);
+                                                AssignOperator.ASSIGN);
             blockStmt.add(new ExpressionStatement(assignExpr));
             return null;
         }
@@ -407,11 +395,10 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(InstanceOfInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
-            BasicBlock bb = resultVar.getBasicBlock();
             Variable var = inst.getVar();
             Expression expr = getVarExpr(var);
-            Expression typeExpr = Expressions.newTypeExpr(inst.getType(), bb);
-            Expression instOfExpr = Expressions.newBinExpr(expr, typeExpr, BinaryOperator.INSTANCE_OF, bb);
+            Expression typeExpr = Expressions.newTypeExpr(inst.getType());
+            Expression instOfExpr = Expressions.newBinExpr(expr, typeExpr, BinaryOperator.INSTANCE_OF);
             addVarAssignExpr(resultVar, instOfExpr, blockStmt);
             return null;
         }
@@ -419,7 +406,6 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(MonitorEnterInst inst, BlockStatement blockStmt) {
             Variable objVar = inst.getObj();
-            BasicBlock bb = objVar.getBasicBlock();
             Expression objExpr = getVarExpr(objVar);
             blockStmt.add(new MonitorEnterStatement(objExpr));
             return null;
@@ -428,7 +414,6 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(MonitorExitInst inst, BlockStatement blockStmt) {
             Variable objVar = inst.getObj();
-            BasicBlock bb = objVar.getBasicBlock();
             Expression objExpr = getVarExpr(objVar);
             blockStmt.add(new MonitorExitStatement(objExpr));
             return null;
@@ -437,12 +422,11 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(NewArrayInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
-            BasicBlock bb = resultVar.getBasicBlock();
             List<Expression> dimExprs = new ArrayList<Expression>(inst.getDimensionCount());
             for (Variable dimVar : inst.getDimensions()) {
                 dimExprs.add(getVarExpr(dimVar));
             }
-            Expression newArrExpr = Expressions.newArrayCreatExpr(inst.getType(), dimExprs, bb);
+            Expression newArrExpr = Expressions.newArrayCreatExpr(inst.getType(), dimExprs);
             addVarAssignExpr(resultVar, newArrExpr, blockStmt);
             return null;
         }
@@ -450,12 +434,11 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(NewObjectInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
-            BasicBlock bb = resultVar.getBasicBlock();
             List<Expression> argExprs = new ArrayList<Expression>(inst.getArgumentCount());
             for (Variable argVar : inst.getArguments()) {
                 argExprs.add(getVarExpr(argVar));
             }
-            Expression newObjExpr = Expressions.newObjCreatExpr(inst.getType(), argExprs, bb);
+            Expression newObjExpr = Expressions.newObjCreatExpr(inst.getType(), argExprs);
             addVarAssignExpr(resultVar, newObjExpr, blockStmt);
             return null;
         }
@@ -492,7 +475,6 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(UnaryInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
-            BasicBlock bb = resultVar.getBasicBlock();
             Variable var = inst.getVar();
             Expression expr = getVarExpr(var);
             UnaryOperator op;
@@ -503,7 +485,7 @@ public class AbstractSyntaxTreeBuilder {
                 default:
                     throw new InternalError();
             }
-            Expression unaryExpr = Expressions.newUnaryExpr(expr, op, bb);
+            Expression unaryExpr = Expressions.newUnaryExpr(expr, op);
             addVarAssignExpr(resultVar, unaryExpr, blockStmt);
             return null;
         }
@@ -521,10 +503,9 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(GetStaticFieldInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
-            BasicBlock bb = resultVar.getBasicBlock();
             JavaType type = JavaType.newRefType(inst.getScope());
-            TypeExpression typeExpr = Expressions.newTypeExpr(type, bb);
-            Expression fieldExpr = Expressions.newFieldAccesExpr(typeExpr, inst.getFieldName(), bb);
+            TypeExpression typeExpr = Expressions.newTypeExpr(type);
+            Expression fieldExpr = Expressions.newFieldAccesExpr(typeExpr, inst.getFieldName());
             addVarAssignExpr(resultVar, fieldExpr, blockStmt);
             return null;
         }
@@ -532,14 +513,13 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(SetStaticFieldInst inst, BlockStatement blockStmt) {
             Variable valueVar = inst.getValue();
-            BasicBlock bb = valueVar.getBasicBlock();
             Expression valueExpr = getVarExpr(valueVar);
             JavaType type = JavaType.newRefType(inst.getScope());
-            TypeExpression typeExpr = Expressions.newTypeExpr(type, bb);
-            Expression fieldExpr = Expressions.newFieldAccesExpr(typeExpr, inst.getFieldName(), bb);
+            TypeExpression typeExpr = Expressions.newTypeExpr(type);
+            Expression fieldExpr = Expressions.newFieldAccesExpr(typeExpr, inst.getFieldName());
             Expression assignExpr
                     = Expressions.newAssignExpr(fieldExpr, valueExpr,
-                                                AssignOperator.ASSIGN, bb);
+                                                AssignOperator.ASSIGN);
             blockStmt.add(new ExpressionStatement(assignExpr));
             return null;
         }
@@ -610,8 +590,7 @@ public class AbstractSyntaxTreeBuilder {
                     conditionB = ExpressionInverter.invert(conditionB);
                 }
                 Expression condition
-                        = Expressions.newBinExpr(conditionA, conditionB,
-                                                 operator, conditionA.getBasicBlock());
+                        = Expressions.newBinExpr(conditionA, conditionB, operator);
                 blockStmt.add(new IfStatement(condition, ifStmtA.getThen(), ifStmtA.getElse()));
                 break;
             }
@@ -700,7 +679,7 @@ public class AbstractSyntaxTreeBuilder {
                         break;
 
                     case INFINITE:
-                        blockStmt.add(new WhileStatement(Expressions.newBooleanExpr(true, null), bodyBlockStmt));
+                        blockStmt.add(new WhileStatement(Expressions.newBooleanExpr(true), bodyBlockStmt));
                         break;
 
                     default:

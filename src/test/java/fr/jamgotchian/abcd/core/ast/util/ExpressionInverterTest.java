@@ -32,18 +32,15 @@ public class ExpressionInverterTest {
 
     @Test
     public void test1() {
-        BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newIntExpr(1, null),
-                                                        Expressions.newIntExpr(2, null),
-                                                        BinaryOperator.GT,
-                                                        null);
-        BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newIntExpr(2, null),
-                                                        Expressions.newIntExpr(3, null),
-                                                        BinaryOperator.NE,
-                                                        null);
+        BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newIntExpr(1),
+                                                        Expressions.newIntExpr(2),
+                                                        BinaryOperator.GT);
+        BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newIntExpr(2),
+                                                        Expressions.newIntExpr(3),
+                                                        BinaryOperator.NE);
         BinaryExpression expr3 = Expressions.newBinExpr(expr1,
                                                         expr2,
-                                                        BinaryOperator.AND,
-                                                        null);
+                                                        BinaryOperator.AND);
 
         Expression expr3Inv = ExpressionInverter.invert(expr3);
         Expression expr1Inv = ((BinaryExpression)expr3Inv).getLeft();

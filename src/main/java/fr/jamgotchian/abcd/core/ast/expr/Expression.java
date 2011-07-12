@@ -26,14 +26,10 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 public interface Expression {
 
     Expression getParent();
-    
+
     void setParent(Expression parent);
-    
+
     int getDepth();
-    
-    BasicBlock getBasicBlock();
-    
-    void setBasicBlock(BasicBlock block);
-    
+
     <R, A> R accept(ExpressionVisitor<R, A> visitor, A arg);
 }

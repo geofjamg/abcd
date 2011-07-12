@@ -52,7 +52,7 @@ public class StatementsTest {
 
     @Test
     public void oneStatementSourceBlockMoveTest() {
-        LocalVariable var = Expressions.newVarExpr(new VariableID(0), "v0", null);
+        LocalVariable var = Expressions.newVarExpr(new VariableID(0), "v0");
         Statement stmt = new LocalVariableDeclarationStatement(new LocalVariableDeclaration(var, JavaType.INT));
         sourceBlock.add(stmt);
         Assert.assertFalse(sourceBlock.isEmpty());

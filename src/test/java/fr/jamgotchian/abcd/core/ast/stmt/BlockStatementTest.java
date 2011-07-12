@@ -41,7 +41,7 @@ public class BlockStatementTest {
     }
 
     private static Statement newStmt(int index, JavaType type) {
-        LocalVariable var = Expressions.newVarExpr(new VariableID(index), "v" + index, null);
+        LocalVariable var = Expressions.newVarExpr(new VariableID(index), "v" + index);
         return new LocalVariableDeclarationStatement(new LocalVariableDeclaration(var, type));
     }
 

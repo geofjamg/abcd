@@ -698,6 +698,27 @@ public class Test {
         b();
     }
 
+    public void testContinue3(int j) {
+        for (int i = 0; i < 3; i++) {
+            System.out.println("a");
+            if (i == 1) {
+                System.out.println("b");
+                if (j == 4) {
+                    continue;
+                }
+                System.out.println("b");
+            } else {
+                System.out.println("d");
+                if (j == 5) {
+                    continue;
+                }
+                System.out.println("e");
+            }
+            System.out.println("f");
+        }
+        System.out.println("g");
+    }
+
     public void testContinueLabel() {
         TUTU: for (int i = 0; i < 3; i++) {
             a();

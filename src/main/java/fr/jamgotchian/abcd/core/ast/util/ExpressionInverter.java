@@ -38,18 +38,16 @@ public class ExpressionInverter extends ExpressionModifierVisitor {
     @Override
     public Expression visit(UnaryExpression expr, Void arg) {
         Expression newExpr = expr.getExpr().accept(this, arg);
-        return Expressions.newUnaryExpr(newExpr != null ? newExpr : expr.getExpr(), 
-                                        expr.getOperator().getInverse(),
-                                        expr.getBasicBlock());
+        return Expressions.newUnaryExpr(newExpr != null ? newExpr : expr.getExpr(),
+                                        expr.getOperator().getInverse());
     }
 
     @Override
     public Expression visit(BinaryExpression expr, Void arg) {
         Expression newLeft = expr.getLeft().accept(this, arg);
         Expression newRight = expr.getRight().accept(this, arg);
-        return Expressions.newBinExpr(newLeft != null ? newLeft : expr.getLeft(), 
-                                      newRight != null ? newRight : expr.getRight(), 
-                                      expr.getOperator().getInverse(),
-                                      expr.getBasicBlock());
+        return Expressions.newBinExpr(newLeft != null ? newLeft : expr.getLeft(),
+                                      newRight != null ? newRight : expr.getRight(),
+                                      expr.getOperator().getInverse());
     }
 }

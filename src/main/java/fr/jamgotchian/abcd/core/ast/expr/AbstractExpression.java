@@ -17,8 +17,6 @@
 
 package fr.jamgotchian.abcd.core.ast.expr;
 
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -26,8 +24,6 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 public abstract class AbstractExpression implements Expression {
 
     private Expression parent;
-    
-    private BasicBlock basicBlock;
 
     public Expression getParent() {
         return parent;
@@ -44,12 +40,4 @@ public abstract class AbstractExpression implements Expression {
         }
         return depth;
     }
-    
-    public BasicBlock getBasicBlock() {
-        return basicBlock;
-    }
-    
-    public void setBasicBlock(BasicBlock basicBlock) {
-        this.basicBlock = basicBlock;
-    }    
 }

@@ -72,12 +72,11 @@ public class Statements {
 
     public static <E extends Throwable> Statement
             createThrowErrorStmt(Class<E> excCls, String msg, ClassNameFactory factory) {
-        StringLiteralExpression msgExpr = Expressions.newStringExpr(msg, null);
+        StringLiteralExpression msgExpr = Expressions.newStringExpr(msg);
         JavaType type = JavaType.newRefType(factory.newClassName(excCls.getName()));
         ObjectCreationExpression objCreatExpr
                 = Expressions.newObjCreatExpr(type,
-                                              Collections.<Expression>singletonList(msgExpr),
-                                              null);
+                                              Collections.<Expression>singletonList(msgExpr));
         return new ThrowStatement(objCreatExpr);
     }
 

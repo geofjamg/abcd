@@ -237,7 +237,7 @@ public class ABCDContext {
                 localVarIndex++;
             }
             JavaType javaArgType = JavaType.newType(argType, importManager);
-            LocalVariable var = Expressions.newVarExpr(new VariableID(localVarIndex), "", null);
+            LocalVariable var = Expressions.newVarExpr(new VariableID(localVarIndex), "");
             arguments.add(new LocalVariableDeclaration(var, javaArgType));
         }
 

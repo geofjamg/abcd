@@ -35,34 +35,30 @@ public class ExpressionEqualityCheckerTest {
 
     @Test
     public void test1() {
-        StringLiteralExpression expr1 = Expressions.newStringExpr("a", null);
-        StringLiteralExpression expr2 = Expressions.newStringExpr("a", null);
+        StringLiteralExpression expr1 = Expressions.newStringExpr("a");
+        StringLiteralExpression expr2 = Expressions.newStringExpr("a");
         assertTrue(ExpressionEqualityChecker.equal(expr1, expr2));
     }
 
     @Test
     public void test2() {
-        BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newStringExpr("a", null), 
-                                                        Expressions.newStringExpr("b", null), 
-                                                        BinaryOperator.EQ,
-                                                        null);
-        BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newStringExpr("a", null), 
-                                                        Expressions.newStringExpr("b", null), 
-                                                        BinaryOperator.EQ,
-                                                        null);
+        BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newStringExpr("a"),
+                                                        Expressions.newStringExpr("b"),
+                                                        BinaryOperator.EQ);
+        BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newStringExpr("a"),
+                                                        Expressions.newStringExpr("b"),
+                                                        BinaryOperator.EQ);
         assertTrue(ExpressionEqualityChecker.equal(expr1, expr2));
     }
 
     @Test
     public void test3() {
-        BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newStringExpr("a", null), 
-                                                        Expressions.newStringExpr("b", null), 
-                                                        BinaryOperator.EQ,
-                                                        null);
-        BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newStringExpr("a", null), 
-                                                        Expressions.newStringExpr("c", null), 
-                                                        BinaryOperator.EQ,
-                                                        null);
+        BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newStringExpr("a"),
+                                                        Expressions.newStringExpr("b"),
+                                                        BinaryOperator.EQ);
+        BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newStringExpr("a"),
+                                                        Expressions.newStringExpr("c"),
+                                                        BinaryOperator.EQ);
         assertFalse(ExpressionEqualityChecker.equal(expr1, expr2));
     }
 
