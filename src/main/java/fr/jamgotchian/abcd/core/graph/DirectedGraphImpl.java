@@ -412,10 +412,10 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
     public DirectedGraphImpl<V, E> clone() {
         DirectedGraphImpl<V, E> clone = new DirectedGraphImpl<V, E>();
         for (V v : getVertices()) {
-            addVertex(v);
+            clone.addVertex(v);
         }
         for (E e : getEdges()) {
-            addEdge(getEdgeSource(e), getEdgeTarget(e), e);
+            clone.addEdge(getEdgeSource(e), getEdgeTarget(e), e);
         }
         return clone;
     }

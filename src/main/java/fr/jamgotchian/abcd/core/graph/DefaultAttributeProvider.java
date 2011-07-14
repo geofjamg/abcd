@@ -28,7 +28,7 @@ public class DefaultAttributeProvider<O> implements AttributeProvider<O> {
     public Map<String, String> getAttributes(O object) {
         Map<String, String> attrs = new HashMap<String, String>();
         attrs.put("color", "black");
-        attrs.put("label", "\"" + object == null ? "" : object.toString() + "\"");
+        attrs.put("label", "\"" + (object == null ? "" : object.toString()) + "\"");
         return attrs;
     }
 }
