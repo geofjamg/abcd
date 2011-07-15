@@ -44,9 +44,6 @@ public class CatchRegion {
         if (outgoingEdge == null) {
             throw new IllegalArgumentException("outgoingEdge == null");
         }
-        if (exceptionClassName == null) {
-            throw new IllegalArgumentException("exceptionClassName == null");
-        }
         this.region = region;
         this.incomingEdge = incomingEdge;
         this.outgoingEdge = outgoingEdge;

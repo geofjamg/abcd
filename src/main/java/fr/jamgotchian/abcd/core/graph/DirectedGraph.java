@@ -57,6 +57,8 @@ public interface DirectedGraph<V, E> {
 
     V getFirstSuccessorOf(V vertex);
 
+    boolean containsVertex(V vertex);
+
     Set<V> getVertices();
 
     int getVertexCount();
@@ -64,6 +66,10 @@ public interface DirectedGraph<V, E> {
     int getPredecessorCountOf(V vertex);
 
     int getSuccessorCountOf(V vertex);
+
+    Set<V> getEntries();
+
+    Set<V> getExits();
 
     void reversePostOrderDFS(V v, List<V> vertices, List<E> edges, boolean invert);
 

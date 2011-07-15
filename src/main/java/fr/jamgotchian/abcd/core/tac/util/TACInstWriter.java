@@ -25,7 +25,6 @@ import fr.jamgotchian.abcd.core.tac.model.CastInst;
 import fr.jamgotchian.abcd.core.tac.model.UnaryInst;
 import fr.jamgotchian.abcd.core.tac.model.AssignVarInst;
 import fr.jamgotchian.abcd.core.tac.model.ArrayLengthInst;
-import fr.jamgotchian.abcd.core.tac.model.GotoInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.ReturnInst;
 import fr.jamgotchian.abcd.core.tac.model.SetFieldInst;
@@ -36,7 +35,6 @@ import fr.jamgotchian.abcd.core.tac.model.MonitorEnterInst;
 import fr.jamgotchian.abcd.core.tac.model.ThrowInst;
 import fr.jamgotchian.abcd.core.tac.model.SetArrayInst;
 import fr.jamgotchian.abcd.core.tac.model.NewObjectInst;
-import fr.jamgotchian.abcd.core.tac.model.LabelInst;
 import fr.jamgotchian.abcd.core.tac.model.CallStaticMethodInst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
@@ -358,20 +356,9 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return null;
     }
 
-    public Void visit(GotoInst inst, Void arg) {
-        writer.writeKeyword("goto").writeSpace().writeLabel(inst.getLabel());
-        return null;
-    }
-
     public Void visit(JumpIfInst inst, Void arg) {
         writer.writeKeyword("jumpif").writeSpace()
-              .write(inst.getCond()).writeSpace()
-              .writeLabel(inst.getLabel());
-        return null;
-    }
-
-    public Void visit(LabelInst inst, Void arg) {
-        writer.writeLabel(inst.getLabel());
+              .write(inst.getCond());
         return null;
     }
 

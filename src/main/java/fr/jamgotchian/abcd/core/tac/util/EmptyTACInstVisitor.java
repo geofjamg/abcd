@@ -28,10 +28,8 @@ import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
 import fr.jamgotchian.abcd.core.tac.model.GetArrayInst;
 import fr.jamgotchian.abcd.core.tac.model.GetFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.GetStaticFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.GotoInst;
 import fr.jamgotchian.abcd.core.tac.model.InstanceOfInst;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
-import fr.jamgotchian.abcd.core.tac.model.LabelInst;
 import fr.jamgotchian.abcd.core.tac.model.MonitorEnterInst;
 import fr.jamgotchian.abcd.core.tac.model.MonitorExitInst;
 import fr.jamgotchian.abcd.core.tac.model.NewArrayInst;
@@ -109,15 +107,7 @@ public class EmptyTACInstVisitor<R, A> implements TACInstVisitor<R, A> {
         return null;
     }
 
-    public R visit(GotoInst inst, A arg) {
-        return null;
-    }
-
     public R visit(JumpIfInst inst, A arg) {
-        return null;
-    }
-
-    public R visit(LabelInst inst, A arg) {
         return null;
     }
 

@@ -89,20 +89,12 @@ public class TACInstFactory {
         return new GetStaticFieldInst(defID++, result, scope, fieldName, fieldType);
     }
 
-    public GotoInst newGoto(Label label) {
-        return new GotoInst(label);
-    }
-
     public InstanceOfInst newInstanceOf(Variable result, Variable var, JavaType type) {
         return new InstanceOfInst(defID++, result, var, type);
     }
 
-    public JumpIfInst newJumpIf(Variable cond, Label label) {
-        return new JumpIfInst(cond, label);
-    }
-
-    public LabelInst newLabel(Label label) {
-        return new LabelInst(label);
+    public JumpIfInst newJumpIf(Variable cond) {
+        return new JumpIfInst(cond);
     }
 
     public MonitorEnterInst newMonitorEnter(Variable var) {

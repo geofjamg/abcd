@@ -24,7 +24,6 @@ import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.tac.model.DefInst;
-import fr.jamgotchian.abcd.core.tac.model.GotoInst;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.PhiInst;
@@ -206,7 +205,7 @@ public class SSAFormConverter {
             insts.add(inst);
         } else {
             TACInst lastInst = insts.get(insts.size()-1);
-            if (lastInst instanceof GotoInst || lastInst instanceof JumpIfInst) {
+            if (lastInst instanceof JumpIfInst) {
                 insts.insertAt(insts.size()-1, inst);
             } else {
                 insts.add(inst);

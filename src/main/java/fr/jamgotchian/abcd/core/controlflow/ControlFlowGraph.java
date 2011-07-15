@@ -17,12 +17,12 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
-import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.util.Range;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.objectweb.asm.tree.InsnList;
@@ -126,4 +126,6 @@ public interface ControlFlowGraph {
     ExceptionTable getExceptionTable();
 
     void setExceptionTable(ExceptionTable exceptionTable);
+
+    List<DirectedGraph<BasicBlock, Edge>> getFinallySubgraphs();
 }

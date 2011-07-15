@@ -799,18 +799,12 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             }
         }
 
-        Label label = block.getGraph().getLabelManager().getLabel(node.label);
-
         if (tmpResult != null) {
-            addInst(block, instFactory.newJumpIf(tmpResult.clone(), label));
-        } else {
-            addInst(block, instFactory.newGoto(label));
+            addInst(block, instFactory.newJumpIf(tmpResult.clone()));
         }
     }
 
     public void visitLabel(BasicBlock block, int position, LabelNode node) {
-        Label label = block.getGraph().getLabelManager().getLabel(node);
-        addInst(block, instFactory.newLabel(label));
     }
 
     public void visitLdcInsn(BasicBlock block, int position, LdcInsnNode node) {

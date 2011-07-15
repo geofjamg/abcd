@@ -16,7 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import fr.jamgotchian.abcd.core.common.Label;
 import java.util.Collections;
 import java.util.Set;
 
@@ -28,19 +27,12 @@ public class JumpIfInst implements TACInst {
 
     private final Variable cond;
 
-    private final Label label;
-
-    JumpIfInst(Variable cond, Label label) {
+    JumpIfInst(Variable cond) {
         this.cond = cond;
-        this.label = label;
     }
 
     public Variable getCond() {
         return cond;
-    }
-
-    public Label getLabel() {
-        return label;
     }
 
     public Set<Variable> getUses() {

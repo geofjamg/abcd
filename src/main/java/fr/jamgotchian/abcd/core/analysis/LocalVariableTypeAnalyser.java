@@ -36,10 +36,8 @@ import fr.jamgotchian.abcd.core.tac.model.DefInst;
 import fr.jamgotchian.abcd.core.tac.model.GetArrayInst;
 import fr.jamgotchian.abcd.core.tac.model.GetFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.GetStaticFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.GotoInst;
 import fr.jamgotchian.abcd.core.tac.model.InstanceOfInst;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
-import fr.jamgotchian.abcd.core.tac.model.LabelInst;
 import fr.jamgotchian.abcd.core.tac.model.MethodSignature;
 import fr.jamgotchian.abcd.core.tac.model.MonitorEnterInst;
 import fr.jamgotchian.abcd.core.tac.model.MonitorExitInst;
@@ -339,18 +337,6 @@ public class LocalVariableTypeAnalyser {
             }
 
             return change;
-        }
-
-        @Override
-        public Boolean visit(GotoInst inst, Void arg) {
-            // no type info
-            return Boolean.FALSE;
-        }
-
-        @Override
-        public Boolean visit(LabelInst inst, Void arg) {
-            // no type info
-            return Boolean.FALSE;
         }
 
         @Override

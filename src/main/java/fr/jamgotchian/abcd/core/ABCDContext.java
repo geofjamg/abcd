@@ -29,15 +29,14 @@ import fr.jamgotchian.abcd.core.ast.stmt.CommentStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.Statements;
 import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
+import fr.jamgotchian.abcd.core.analysis.FinallyUninliner;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactorer;
-import fr.jamgotchian.abcd.core.analysis.LiveVariablesAnalysis;
 import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
 import fr.jamgotchian.abcd.core.analysis.Refactorer;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.LocalVariableTable;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
@@ -46,7 +45,6 @@ import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.VariableID;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
@@ -300,11 +298,14 @@ public class ABCDContext {
                 logger.log(Level.FINE, "////////// Build 3AC instructions of {0} //////////", methodSignature);
                 new TreeAddressCodeBuilder(graph, method, new ImportManager()).build();
 
-                handler.treeAddressCodeBuilt(graph);
-
                 // to remove empty basic blocks added tu remove critical edges
                 graph.compact();
                 graph.analyseLoops();
+
+                logger.log(Level.FINE, "////////// Uninline finally clauses of {0} //////////", methodSignature);
+                new FinallyUninliner(graph).uninline();
+
+                handler.treeAddressCodeBuilt(graph);
 
                 logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
                 DirectedGraph<Region, Edge> regionGraph = new StructuralAnalysis(graph).analyse();
@@ -318,8 +319,8 @@ public class ABCDContext {
                 Region rootRegion = rootRegions.iterator().next();
 
                 logger.log(Level.FINE, "////////// Build AST of {0} //////////", methodSignature);
-                Map<BasicBlock, Set<Variable>> liveVariables = new LiveVariablesAnalysis(graph).analyse();
-                new AbstractSyntaxTreeBuilder(importManager).build(rootRegion, method.getBody(), liveVariables);
+                new AbstractSyntaxTreeBuilder(graph, importManager,
+                                              rootRegion, method.getBody()).build();
 
                 // refactor AST
                 for (Refactorer refactorer : REFACTORERS) {

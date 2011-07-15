@@ -45,6 +45,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
 import fr.jamgotchian.abcd.core.region.BlockRegion;
 import fr.jamgotchian.abcd.core.region.CaseRegion;
@@ -75,11 +76,9 @@ import fr.jamgotchian.abcd.core.tac.model.FloatConst;
 import fr.jamgotchian.abcd.core.tac.model.GetArrayInst;
 import fr.jamgotchian.abcd.core.tac.model.GetFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.GetStaticFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.GotoInst;
 import fr.jamgotchian.abcd.core.tac.model.InstanceOfInst;
 import fr.jamgotchian.abcd.core.tac.model.IntConst;
 import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
-import fr.jamgotchian.abcd.core.tac.model.LabelInst;
 import fr.jamgotchian.abcd.core.tac.model.LongConst;
 import fr.jamgotchian.abcd.core.tac.model.MonitorEnterInst;
 import fr.jamgotchian.abcd.core.tac.model.MonitorExitInst;
@@ -121,7 +120,13 @@ public class AbstractSyntaxTreeBuilder {
         logger.setLevel(Level.FINER);
     }
 
+    private final ControlFlowGraph CFG;
+
     private final ImportManager importManager;
+
+    private final Region rootRegion;
+
+    private final BlockStatement methodBody;
 
     private Map<BasicBlock, Set<Variable>> liveVariables;
 
@@ -373,22 +378,10 @@ public class AbstractSyntaxTreeBuilder {
         }
 
         @Override
-        public Void visit(GotoInst inst, BlockStatement blockStmt) {
-            // nothing to do
-            return null;
-        }
-
-        @Override
         public Void visit(JumpIfInst inst, BlockStatement blockStmt) {
             Variable condVar = inst.getCond();
             Expression condExpr = getVarExpr(condVar);
             blockStmt.add(new IfStatement(condExpr));
-            return null;
-        }
-
-        @Override
-        public Void visit(LabelInst inst, BlockStatement blockStmt) {
-            // nothing to do
             return null;
         }
 
@@ -525,14 +518,17 @@ public class AbstractSyntaxTreeBuilder {
         }
     }
 
-    public AbstractSyntaxTreeBuilder(ImportManager importManager) {
+    public AbstractSyntaxTreeBuilder(ControlFlowGraph CFG, ImportManager importManager,
+                                     Region rootRegion, BlockStatement methodBody) {
+        this.CFG = CFG;
         this.importManager = importManager;
+        this.rootRegion = rootRegion;
+        this.methodBody = methodBody;
         expressions = new HashMap<VariableID, Expression>();
     }
 
-    public void build(Region rootRegion, BlockStatement methodBody,
-                      Map<BasicBlock, Set<Variable>> liveVariables) {
-        this.liveVariables = liveVariables;
+    public void build() {
+        this.liveVariables = new LiveVariablesAnalysis(CFG).analyse();
         buildAST(rootRegion, methodBody);
     }
 
@@ -729,23 +725,30 @@ public class AbstractSyntaxTreeBuilder {
                 }
 
                 List<CatchClause> catchs = new ArrayList<CatchClause>();
+                BlockStatement finallyBlockStmt = null;
                 for (CatchRegion catchRegion : tryCatchRegion.getCatchRegions()) {
 
-                    BlockStatement catchBlockStmt = new BlockStatement();
-                    buildAST(catchRegion.getRegion(), catchBlockStmt);
+                    if (catchRegion.getExceptionClassName() != null) {
+                        BlockStatement catchBlockStmt = new BlockStatement();
+                        buildAST(catchRegion.getRegion(), catchBlockStmt);
 
-                    ExpressionStatement exprStmt = (ExpressionStatement) catchBlockStmt.getFirst();
-                    exprStmt.remove();
-                    LocalVariable excVar = (LocalVariable) ((AssignExpression) exprStmt.getExpression()).getTarget();
+                        ExpressionStatement exprStmt = (ExpressionStatement) catchBlockStmt.getFirst();
+                        exprStmt.remove();
+                        LocalVariable excVar
+                                = (LocalVariable) ((AssignExpression) exprStmt.getExpression()).getTarget();
 
-                    ClassName exceptionClassName = importManager.newClassName(catchRegion.getExceptionClassName());
-                    JavaType exceptionType = JavaType.newRefType(exceptionClassName);
-                    LocalVariableDeclaration varDecl
-                            = new LocalVariableDeclaration(excVar, exceptionType);
-                    catchs.add(new CatchClause(catchBlockStmt, varDecl));
+                        ClassName exceptionClassName = importManager.newClassName(catchRegion.getExceptionClassName());
+                        JavaType exceptionType = JavaType.newRefType(exceptionClassName);
+                        LocalVariableDeclaration varDecl
+                                = new LocalVariableDeclaration(excVar, exceptionType);
+                        catchs.add(new CatchClause(catchBlockStmt, varDecl));
+                    } else {
+                        finallyBlockStmt = new BlockStatement();
+                        buildAST(catchRegion.getRegion(), finallyBlockStmt);
+                    }
                 }
                 TryCatchFinallyStatement tryCatchStmt
-                        = new TryCatchFinallyStatement(tryBlockStmt, catchs);
+                        = new TryCatchFinallyStatement(tryBlockStmt, catchs, finallyBlockStmt);
                 blockStmt.add(tryCatchStmt);
 
                 break;

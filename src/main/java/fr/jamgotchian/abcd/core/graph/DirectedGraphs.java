@@ -63,6 +63,10 @@ public class DirectedGraphs {
             return delegate.getVertices();
         }
 
+        public boolean containsVertex(V vertex) {
+            return delegate.containsVertex(vertex);
+        }
+
         public int getVertexCount() {
             return delegate.getVertexCount();
         }
@@ -133,6 +137,14 @@ public class DirectedGraphs {
 
         public boolean containsEdge(V source, V target) {
             return delegate.containsEdge(source, target);
+        }
+
+        public Set<V> getEntries() {
+            return delegate.getEntries();
+        }
+
+        public Set<V> getExits() {
+            return delegate.getExits();
         }
 
         public void writeDOT(Writer writer, String name) throws IOException {

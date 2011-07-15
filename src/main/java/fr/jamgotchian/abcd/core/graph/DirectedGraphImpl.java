@@ -128,6 +128,10 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return vertices.size();
     }
 
+    public boolean containsVertex(V vertex) {
+        return vertices.containsKey(vertex);
+    }
+
     public Set<E> getEdges() {
         return Collections.unmodifiableSet(edges.keySet());
     }
@@ -408,8 +412,62 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         writer.append("}");
     }
 
+    private void visitNeighbors(V current, Set<V> neighbors) {
+        neighbors.add(current);
+        for (V successor : getSuccessorsOf(current)) {
+            if (!neighbors.contains(successor)) {
+                visitNeighbors(successor, neighbors);
+            }
+        }
+        for (V predecessor : getPredecessorsOf(current)) {
+            if (!neighbors.contains(predecessor)) {
+                visitNeighbors(predecessor, neighbors);
+            }
+        }
+    }
+
+    public MutableDirectedGraph<V, E> getSubgraphContaining(V vertex) {
+        if (!vertices.containsKey(vertex)) {
+            throw new ABCDException("Vertex " + vertex + " not found");
+        }
+        DirectedGraphImpl<V, E> subgraph = new DirectedGraphImpl<V, E>();
+        Set<V> neighbors = new HashSet<V>(1);
+        visitNeighbors(vertex, neighbors);
+        for (V neighbor : neighbors) {
+            subgraph.addVertex(neighbor);
+        }
+        for (E e : getEdges()) {
+            V source = getEdgeSource(e);
+            V target = getEdgeTarget(e);
+            if (neighbors.contains(source) && neighbors.contains(target)) {
+                subgraph.addEdge(source, target, e);
+            }
+        }
+        return subgraph;
+    }
+
+    public Set<V> getEntries() {
+        Set<V> entries = new HashSet<V>();
+        for (V v : getVertices()) {
+            if (getPredecessorCountOf(v) == 0) {
+                entries.add(v);
+            }
+        }
+        return entries;
+    }
+
+    public Set<V> getExits() {
+        Set<V> exits = new HashSet<V>();
+        for (V v : getVertices()) {
+            if (getSuccessorCountOf(v) == 0) {
+                exits.add(v);
+            }
+        }
+        return exits;
+    }
+
     @Override
-    public DirectedGraphImpl<V, E> clone() {
+    public MutableDirectedGraph<V, E> clone() {
         DirectedGraphImpl<V, E> clone = new DirectedGraphImpl<V, E>();
         for (V v : getVertices()) {
             clone.addVertex(v);

@@ -48,11 +48,7 @@ public interface TACInstVisitor<R, A> {
 
     R visit(SetFieldInst inst, A arg);
 
-    R visit(GotoInst inst, A arg);
-
     R visit(JumpIfInst inst, A arg);
-
-    R visit(LabelInst inst, A arg);
 
     R visit(InstanceOfInst inst, A arg);
 

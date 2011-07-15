@@ -589,6 +589,51 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
        }
     }
 
+    public List<DirectedGraph<BasicBlock, Edge>> getFinallySubgraphs() {
+        // search for finally headers
+        Set<BasicBlock> finallyHeaders = new HashSet<BasicBlock>();
+        for (BasicBlock bb : graph.getVertices()) {
+            for (Edge incomingEdge : graph.getIncomingEdgesOf(bb)) {
+                if (incomingEdge.isExceptional()
+                        && incomingEdge.getValue() == null) {
+                    finallyHeaders.add(bb);
+                }
+            }
+        }
+
+        // remove unexceptional control flow from this.graph -> graph2
+        MutableDirectedGraph<BasicBlock, Edge> graph2 = graph.clone();
+        Set<BasicBlock> visited = new HashSet<BasicBlock>();
+        visited.addAll(finallyHeaders);
+        List<BasicBlock> blocks = new ArrayList<BasicBlock>();
+        graph2.reversePostOrderDFS(entryBlock, visited, blocks, null, false);
+        for (Edge e : graph.getEdges()) {
+            if (e.isExceptional()) {
+                graph2.removeEdge(e);
+            }
+        }
+        for (BasicBlock bb : blocks) {
+            graph2.removeVertex(bb);
+        }
+
+        // extract finally clauses subgraphs
+        List<DirectedGraph<BasicBlock, Edge>> finallySubgraphs
+                = new ArrayList<DirectedGraph<BasicBlock, Edge>>(finallyHeaders.size());
+        for (BasicBlock finallyHeader : finallyHeaders) {
+            DirectedGraph<BasicBlock, Edge> finallySubgraph
+                    = graph2.getSubgraphContaining(finallyHeader);
+            if (finallySubgraph.getEntries().size() != 1) {
+                throw new ABCDException("exceptionalGraph.getEntries().size() != 1");
+            }
+            if (finallySubgraph.getExits().size() != 1) {
+                throw new ABCDException("exceptionalGraph.getExits().size() != 1");
+            }
+            finallySubgraphs.add(finallySubgraph);
+        }
+
+        return finallySubgraphs;
+    }
+
     public String toString(Collection<Edge> edges) {
         return graph.toString(edges);
     }
