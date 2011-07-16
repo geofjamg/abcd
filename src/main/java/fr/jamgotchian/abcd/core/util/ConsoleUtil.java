@@ -25,6 +25,27 @@ import java.util.List;
  */
 public class ConsoleUtil {
 
+    private static final int SEPARATOR_WIDTH = 80;
+
+    private ConsoleUtil() {
+    }
+
+    public static String printTitledSeparator(String title, char separator) {
+        StringBuilder builder = new StringBuilder(SEPARATOR_WIDTH);
+        int remaining = SEPARATOR_WIDTH - title.length() - 2;
+        remaining = Math.max(remaining, 4);
+        int after = remaining / 2;
+        int before = after + remaining % 2;
+        for (int i = 0; i < before; i++) {
+            builder.append(separator);
+        }
+        builder.append(' ').append(title).append(' ');
+        for (int i = 0; i < after; i++) {
+            builder.append(separator);
+        }
+        return builder.toString();
+    }
+
     public static String printTable(List<String>... columns) {
         StringBuilder builder = new StringBuilder();
         printTable(builder, columns);

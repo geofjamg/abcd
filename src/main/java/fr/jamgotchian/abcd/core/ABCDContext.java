@@ -47,6 +47,7 @@ import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
 import fr.jamgotchian.abcd.core.tac.model.VariableID;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
+import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
 import fr.jamgotchian.abcd.core.util.SimplestFormatter;
 import java.io.File;
@@ -253,9 +254,8 @@ public class ABCDContext {
 
         Class _class = createClass(cn, importManager);
 
-        logger.fine("");
-        logger.log(Level.FINE, "########## Decompile class {0} ##########", _class.getQualifiedName());
-        logger.fine("");
+        logger.log(Level.FINE, "\n\n{0}\n",
+                ConsoleUtil.printTitledSeparator("Decompile class " + _class.getQualifiedName(), '#'));
 
         List<String> errorMsgs = new ArrayList<String>();
 
@@ -266,13 +266,13 @@ public class ABCDContext {
             String methodSignature = method.getSignature();
 
             try {
-                logger.log(Level.FINE, "");
-                logger.log(Level.FINE, "********** Decompile method {0} **********", methodSignature);
-                logger.log(Level.FINE, "");
+                logger.log(Level.FINE, "\n\n{0}\n",
+                        ConsoleUtil.printTitledSeparator("Decompile method " + methodSignature, '%'));
 
                 logger.log(Level.FINER, "Bytecode :\n{0}", OutputUtil.toText(mn.instructions));
 
-                logger.log(Level.FINE, "////////// Build Control flow graph of {0} //////////", methodSignature);
+                logger.log(Level.FINE, "\n{0}",
+                        ConsoleUtil.printTitledSeparator("Build Control flow graph of " + methodSignature, '='));
                 ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
 
                 StringBuilder builder = new StringBuilder();
@@ -288,26 +288,31 @@ public class ABCDContext {
                     decl.getVariable().setName(table.getName(decl.getVariable().getID().getIndex(), 0));
                 }
 
-                logger.log(Level.FINE, "////////// Analyse Control flow of {0} //////////", methodSignature);
+                logger.log(Level.FINE, "\n{0}",
+                        ConsoleUtil.printTitledSeparator("Analyse Control flow of " + methodSignature, '='));
                 graph.compact();
                 graph.removeCriticalEdges();
                 graph.analyseLoops();
 
                 handler.controlFlowGraphBuilt(graph);
 
-                logger.log(Level.FINE, "////////// Build 3AC instructions of {0} //////////", methodSignature);
+                logger.log(Level.FINE, "\n{0}",
+                        ConsoleUtil.printTitledSeparator("Build 3AC instructions of " + methodSignature, '='));
                 new TreeAddressCodeBuilder(graph, method, new ImportManager()).build();
 
                 // to remove empty basic blocks added tu remove critical edges
                 graph.compact();
                 graph.analyseLoops();
 
-                logger.log(Level.FINE, "////////// Uninline finally clauses of {0} //////////", methodSignature);
+                logger.log(Level.FINE, "\n{0}",
+                        ConsoleUtil.printTitledSeparator("Uninline finally clauses of " + methodSignature, '='));
                 new FinallyUninliner(graph).uninline();
 
                 handler.treeAddressCodeBuilt(graph);
 
-                logger.log(Level.FINE, "////////// Analyse structure of {0} //////////", methodSignature);
+
+                logger.log(Level.FINE, "\n{0}",
+                        ConsoleUtil.printTitledSeparator("Analyse structure of " + methodSignature, '='));
                 DirectedGraph<Region, Edge> regionGraph = new StructuralAnalysis(graph).analyse();
 
                 handler.regionGraphBuilt(DirectedGraphs.unmodifiableDirectedGraph(regionGraph));
@@ -318,7 +323,8 @@ public class ABCDContext {
                 }
                 Region rootRegion = rootRegions.iterator().next();
 
-                logger.log(Level.FINE, "////////// Build AST of {0} //////////", methodSignature);
+                logger.log(Level.FINE, "\n{0}",
+                        ConsoleUtil.printTitledSeparator("Build AST of " + methodSignature, '='));
                 new AbstractSyntaxTreeBuilder(graph, importManager,
                                               rootRegion, method.getBody()).build();
 
@@ -345,9 +351,8 @@ public class ABCDContext {
             }
         }
 
-        logger.fine("");
-        logger.log(Level.FINE, "########## Summary {0} ##########", cn.name.replace('/', '.'));
-        logger.fine("");
+        logger.log(Level.FINE, "\n\n{0}\n",
+                ConsoleUtil.printTitledSeparator("Summary " + _class.getQualifiedName(), '#'));
         logger.log(Level.FINE, "Succeed : {0}/{1}",
                 new Object[]{cn.methods.size() - errorMsgs.size(), cn.methods.size()});
         StringBuilder errorStr = new StringBuilder();
