@@ -305,6 +305,44 @@ public class Test {
         }
     }
 
+    public void testFinallyWithBreak0(int a) {
+        System.out.println("a");
+        for (int i = 0; i < 3; i++) {
+            try {
+                System.out.println("b");
+            }
+            finally {
+                System.out.println("c");
+                if (i == a) {
+                    System.out.println("d");
+                    break;
+                }
+                System.out.println("e");
+            }
+            System.out.println("f");
+        }
+        System.out.println("g");
+    }
+
+    public void testFinallyWithContinue0(int a) {
+        System.out.println("a");
+        for (int i = 0; i < 3; i++) {
+            try {
+                System.out.println("b");
+            }
+            finally {
+                System.out.println("c");
+                if (i == a) {
+                    System.out.println("d");
+                    break;
+                }
+                System.out.println("e");
+            }
+            System.out.println("f");
+        }
+        System.out.println("g");
+    }
+
     public void testFinallyWithBreak() {
         int v = 1;
         for (int i = 0; i < 3; i++) {
