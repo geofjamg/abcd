@@ -247,6 +247,14 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
     }
 
+    public void removeBasicBlock(BasicBlock block) {
+        block.setGraph(null);
+        graph.removeVertex(block);
+        if (block.getRange() != null) {
+            basicBlocks.remove(block.getRange());
+        }
+    }
+
     public BasicBlockSplit splitBasicBlockAt(int index) {
         if (index == Integer.MIN_VALUE) {
             throw new ABCDException("Can't split at index Integer.MIN_VALUE");

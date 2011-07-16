@@ -35,6 +35,8 @@ public interface ControlFlowGraph {
 
     void addBasicBlock(BasicBlock block);
 
+    void removeBasicBlock(BasicBlock block);
+
     Edge addEdge(BasicBlock source, BasicBlock target);
 
     Edge addEdge(BasicBlock source, BasicBlock target, boolean exceptional);
