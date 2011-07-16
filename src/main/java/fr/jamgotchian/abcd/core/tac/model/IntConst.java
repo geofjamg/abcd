@@ -47,6 +47,19 @@ public class IntConst implements Const {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof IntConst) {
+            return value == ((IntConst) obj).value;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return value;
+    }
+
+    @Override
     public String toString() {
         return Integer.toString(value);
     }

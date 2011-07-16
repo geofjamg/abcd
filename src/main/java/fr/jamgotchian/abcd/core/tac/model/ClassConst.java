@@ -46,6 +46,19 @@ public class ClassConst implements Const {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ClassConst) {
+            return className.equals(((ClassConst) obj).className);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return className.hashCode();
+    }
+
+    @Override
     public String toString() {
         return className.getQualifiedName() + ".class";
     }

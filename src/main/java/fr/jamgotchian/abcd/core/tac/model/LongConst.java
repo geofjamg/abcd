@@ -47,6 +47,19 @@ public class LongConst implements Const {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof LongConst) {
+            return value == ((LongConst) obj).value;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) value;
+    }
+
+    @Override
     public String toString() {
         return Long.toString(value);
     }

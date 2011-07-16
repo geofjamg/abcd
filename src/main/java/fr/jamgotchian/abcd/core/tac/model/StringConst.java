@@ -45,6 +45,19 @@ public class StringConst implements Const {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof StringConst) {
+            return value.equals(((StringConst) obj).value);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
+
+    @Override
     public String toString() {
         return "\"" + value + "\"";
     }

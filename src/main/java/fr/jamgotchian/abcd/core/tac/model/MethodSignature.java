@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.Iterator;
 import java.util.List;
@@ -52,6 +53,30 @@ public class MethodSignature {
 
     public boolean isConstructor() {
         return "<init>".equals(methodName) && returnType.equals(JavaType.VOID);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof MethodSignature)) {
+            return false;
+        }
+        MethodSignature other = (MethodSignature) obj;
+        if (!returnType.equals(other.returnType)
+                || !methodName.equals(other.methodName)
+                || argumentTypes.size() != other.argumentTypes.size()) {
+            return false;
+        }
+        for (int i = 0; i < argumentTypes.size(); i++) {
+            if (!argumentTypes.get(i).equals(other.argumentTypes.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(returnType, methodName, argumentTypes);
     }
 
     @Override

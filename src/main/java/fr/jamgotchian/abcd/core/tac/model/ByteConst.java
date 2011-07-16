@@ -48,6 +48,19 @@ public class ByteConst implements Const {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ByteConst) {
+            return value == ((ByteConst) obj).value;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return value;
+    }
+
+    @Override
     public String toString() {
         return Byte.toString(value);
     }

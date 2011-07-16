@@ -38,6 +38,16 @@ public class NullConst implements Const {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof NullConst);
+    }
+
+    @Override
+    public int hashCode() {
+        return 0;
+    }
+
+    @Override
     public String toString() {
         return "null";
     }

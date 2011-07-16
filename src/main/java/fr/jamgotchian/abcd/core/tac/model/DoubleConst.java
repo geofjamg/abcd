@@ -41,6 +41,19 @@ public class DoubleConst implements Const {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof DoubleConst) {
+            return value == ((DoubleConst) obj).value;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) value;
+    }
+
+    @Override
     public String toString() {
         return Double.toString(value);
     }
