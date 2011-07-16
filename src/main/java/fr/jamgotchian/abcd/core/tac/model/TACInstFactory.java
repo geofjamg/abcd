@@ -16,7 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import fr.jamgotchian.abcd.core.common.Label;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.List;
@@ -140,8 +139,8 @@ public class TACInstFactory {
         return new SetStaticFieldInst(scope, fieldName, fieldType, value);
     }
 
-    public SwitchInst newSwitch(Variable index, List<Label> labels) {
-        return new SwitchInst(index, labels);
+    public SwitchInst newSwitch(Variable index) {
+        return new SwitchInst(index);
     }
 
     public ThrowInst newThrow(Variable var) {

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import fr.jamgotchian.abcd.core.common.Label;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockVisitor;
@@ -827,12 +826,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
     }
 
     public void visitLookupSwitchInsn(BasicBlock block, int position, LookupSwitchInsnNode node) {
-        List<Label> labels = new ArrayList<Label>();
-        for (LabelNode labelNode : (List<LabelNode>) node.labels) {
-            labels.add(block.getGraph().getLabelManager().getLabel(labelNode));
-        }
-        labels.add(block.getGraph().getLabelManager().getLabel(node.dflt));
-        addInst(block, instFactory.newSwitch(stack.pop(), labels));
+        addInst(block, instFactory.newSwitch(stack.pop()));
     }
 
     public void visitMethodInsn(BasicBlock block, int position, MethodInsnNode node) {
@@ -891,12 +885,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
     }
 
     public void visitTableSwitchInsn(BasicBlock block, int position, TableSwitchInsnNode node) {
-        List<Label> labels = new ArrayList<Label>();
-        for (LabelNode labelNode : (List<LabelNode>) node.labels) {
-            labels.add(block.getGraph().getLabelManager().getLabel(labelNode));
-        }
-        labels.add(block.getGraph().getLabelManager().getLabel(node.dflt));
-        addInst(block, instFactory.newSwitch(stack.pop(), labels));
+        addInst(block, instFactory.newSwitch(stack.pop()));
     }
 
     public void visitTypeInsnInsn(BasicBlock block, int position, TypeInsnNode node) {

@@ -47,7 +47,6 @@ import fr.jamgotchian.abcd.core.tac.model.CallMethodInst;
 import fr.jamgotchian.abcd.core.tac.model.AssignConstInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.tac.model.StringConst;
-import fr.jamgotchian.abcd.core.common.Label;
 import fr.jamgotchian.abcd.core.output.CodeWriter;
 import fr.jamgotchian.abcd.core.output.CodeWriterFactory;
 import fr.jamgotchian.abcd.core.output.ColoredString;
@@ -415,14 +414,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
     }
 
     public Void visit(SwitchInst inst, Void arg) {
-        writer.writeKeyword("switch").writeSpace()
-              .write(inst.getIndex()).writeSpace();
-        for (Iterator<Label> it = inst.getLabels().iterator(); it.hasNext();) {
-            writer.writeLabel(it.next());
-            if (it.hasNext()) {
-                writer.writeSpace();
-            }
-        }
+        writer.writeKeyword("switch").writeSpace().write(inst.getIndex());
         return null;
     }
 

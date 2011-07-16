@@ -16,9 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
-import fr.jamgotchian.abcd.core.common.Label;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -29,19 +27,12 @@ public class SwitchInst implements TACInst {
 
     private final Variable index;
 
-    private final List<Label> labels;
-
-    SwitchInst(Variable index, List<Label> labels) {
+    SwitchInst(Variable index) {
         this.index = index;
-        this.labels = labels;
     }
 
     public Variable getIndex() {
         return index;
-    }
-
-    public List<Label> getLabels() {
-        return labels;
     }
 
     public Set<Variable> getUses() {
