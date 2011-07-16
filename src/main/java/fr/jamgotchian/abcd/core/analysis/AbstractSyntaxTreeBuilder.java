@@ -134,10 +134,7 @@ public class AbstractSyntaxTreeBuilder {
 
     private class RegionTACInstVisitor extends EmptyTACInstVisitor<Void, BlockStatement> {
 
-        private final Region region;
-
-        private RegionTACInstVisitor(Region region) {
-            this.region = region;
+        private RegionTACInstVisitor() {
         }
 
         private Expression getVarExpr(Variable var) {
@@ -540,7 +537,7 @@ public class AbstractSyntaxTreeBuilder {
             case BASIC_BLOCK: {
                 BasicBlockRegion basicBlockRegion = (BasicBlockRegion) region;
                 AnalysisData data = (AnalysisData) basicBlockRegion.getBasicBlock().getData();
-                RegionTACInstVisitor visitor = new RegionTACInstVisitor(region);
+                RegionTACInstVisitor visitor = new RegionTACInstVisitor();
                 data.getInstructions().accept(visitor, blockStmt);
                 break;
             }
