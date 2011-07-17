@@ -18,6 +18,8 @@
 package fr.jamgotchian.abcd.core.analysis;
 
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockData;
+import fr.jamgotchian.abcd.core.tac.model.DefInst;
+import fr.jamgotchian.abcd.core.tac.model.TACInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.tac.util.VariableStack;
 
@@ -42,7 +44,14 @@ public class AnalysisData implements BasicBlockData {
     }
 
     public int getInstructionCount() {
-        return instructions.size();
+        int count = 0;
+        for (TACInst inst : instructions) {
+            if (inst instanceof DefInst
+                    && !((DefInst) inst).getResult().isTemporary()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public VariableStack getInputStack() {

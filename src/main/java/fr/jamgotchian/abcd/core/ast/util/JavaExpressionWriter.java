@@ -125,6 +125,11 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
                 expr.getExpr().accept(this, blockStmt);
                 break;
 
+            case NEG:
+                writer.write("!");
+                expr.getExpr().accept(this, blockStmt);
+                break;
+
             default:
                 throw new AssertionError();
         }

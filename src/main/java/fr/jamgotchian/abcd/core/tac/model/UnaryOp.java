@@ -21,5 +21,6 @@ package fr.jamgotchian.abcd.core.tac.model;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public enum UnaryOp {
-    MINUS
+    MINUS,
+    NEG
 }

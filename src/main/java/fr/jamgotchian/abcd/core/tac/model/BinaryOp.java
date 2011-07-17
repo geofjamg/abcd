@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.tac.model;
 
+import fr.jamgotchian.abcd.core.common.ABCDException;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -37,5 +39,40 @@ public enum BinaryOp {
     LOGICAL_SHIFT_RIGHT,
     AND,
     OR,
-    XOR
+    XOR;
+
+    public static BinaryOp invert(BinaryOp op) {
+        switch (op) {
+            case PLUS:
+            case MINUS:
+            case MUL:
+            case DIV:
+            case REMAINDER:
+            case SHIFT_LEFT:
+            case SHIFT_RIGHT:
+                return op;
+            case LE:
+                return GT;
+            case LT:
+                return GE;
+            case GE:
+                return LT;
+            case GT:
+                return LE;
+            case EQ:
+                return NE;
+            case NE:
+                return EQ;
+            case AND:
+                return OR;
+            case OR:
+                return AND;
+            default:
+                throw new ABCDException("Impossible to invert " + op);
+        }
+    }
+
+    public BinaryOp invert() {
+        return invert(this);
+    }
 }

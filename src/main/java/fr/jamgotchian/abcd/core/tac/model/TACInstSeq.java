@@ -50,8 +50,16 @@ public class TACInstSeq implements Iterable<TACInst> {
         this.insts.addAll(index, insts);
     }
 
+    public void addAll(TACInstSeq other) {
+        this.insts.addAll(other.insts);
+    }
+
     public TACInst remove(int index) {
         return insts.remove(index);
+    }
+
+    public void clear() {
+        insts.clear();
     }
 
     public boolean removeIf(Predicate<TACInst> predicate) {

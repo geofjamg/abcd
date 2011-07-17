@@ -23,6 +23,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
+import fr.jamgotchian.abcd.core.controlflow.LocalVariableTable;
 import fr.jamgotchian.abcd.core.tac.model.ArrayLengthInst;
 import fr.jamgotchian.abcd.core.tac.model.AssignConstInst;
 import fr.jamgotchian.abcd.core.tac.model.AssignVarInst;
@@ -49,6 +50,7 @@ import fr.jamgotchian.abcd.core.tac.model.SetFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.SetStaticFieldInst;
 import fr.jamgotchian.abcd.core.tac.model.SwitchInst;
 import fr.jamgotchian.abcd.core.tac.model.TACInst;
+import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
 import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
 import fr.jamgotchian.abcd.core.tac.model.UnaryInst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
@@ -82,7 +84,9 @@ public class LocalVariableTypeAnalyser {
 
     private final Method method;
 
-    private final ClassNameFactory factory;
+    private final ClassNameFactory classNameFactory;
+
+    private final TACInstFactory instFactory;
 
     private final Map<VariableID, Set<JavaType>> possibleTypes
             = new HashMap<VariableID, Set<JavaType>>();
@@ -119,7 +123,7 @@ public class LocalVariableTypeAnalyser {
                         = fr.jamgotchian.abcd.core.util.Sets.intersection(possibleLeftTypes, possibleRightTypes);
                 if (newPossibleLeftTypes.isEmpty()) {
                     newPossibleLeftTypes
-                            = JavaType.widen(possibleLeftTypes, possibleRightTypes, factory);
+                            = JavaType.widen(possibleLeftTypes, possibleRightTypes, classNameFactory);
                 }
                 if (Collections3.sameContent(possibleLeftTypes, newPossibleLeftTypes)) {
                     return Boolean.FALSE;
@@ -419,10 +423,12 @@ public class LocalVariableTypeAnalyser {
     private final Visitor visitor = new Visitor();
 
     public LocalVariableTypeAnalyser(ControlFlowGraph graph, Method method,
-                                     ClassNameFactory factory) {
+                                     ClassNameFactory classNameFactory,
+                                     TACInstFactory instFactory) {
         this.graph = graph;
         this.method = method;
-        this.factory = factory;
+        this.classNameFactory = classNameFactory;
+        this.instFactory = instFactory;
     }
 
     private Set<JavaType> getPossibleTypes(VariableID ID) {
@@ -459,9 +465,39 @@ public class LocalVariableTypeAnalyser {
                 ConsoleUtil.printTable(indexColumn, typeColumn));
     }
 
+    private void printVariableName(Set<Variable> variables) {
+        List<String> indexColumn = new ArrayList<String>(1);
+        List<String> positionColumn = new ArrayList<String>(1);
+        List<String> nameColumn = new ArrayList<String>(1);
+        indexColumn.add("Index");
+        positionColumn.add("Position");
+        nameColumn.add("Name");
+        for (Variable v : variables) {
+            indexColumn.add(v.getID().toString());
+            positionColumn.add(Integer.toString(v.getPosition()));
+            nameColumn.add(v.getName() != null ? v.getName() : "<undefined>");
+        }
+        logger.log(Level.FINEST, "Variable names :\n{0}",
+                ConsoleUtil.printTable(indexColumn, positionColumn, nameColumn));
+    }
+
+
     public void analyse() {
+        graph.compact();
+        graph.removeCriticalEdges();
+        graph.analyseLoops();
+
+        for (BasicBlock block : graph.getBasicBlocks()) {
+            if (block.getData() == null) {
+                block.setData(new AnalysisData());
+            }
+        }
+
+        // convert to SSA form
+        new SSAFormConverter(graph, instFactory).convert();
+
         // find type of this
-        ClassName thisClassName = factory.newClassName(method.getClazz().getQualifiedName());
+        ClassName thisClassName = classNameFactory.newClassName(method.getClazz().getQualifiedName());
         getPossibleTypes(new VariableID(0)).add(JavaType.newRefType(thisClassName));
 
         // and types of method parameters
@@ -504,5 +540,32 @@ public class LocalVariableTypeAnalyser {
         }
 
         printTypeTable();
+
+        // assign a name to each variable
+        LocalVariableTable table = graph.getLocalVariableTable();
+        Set<Variable> variables = new HashSet<Variable>();
+        for (BasicBlock block : graph.getBasicBlocks()) {
+            for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
+                if (inst instanceof DefInst) {
+                    Variable def = ((DefInst) inst).getResult();
+                    if (!def.isTemporary()) {
+                        variables.add(def);
+                        def.setName(table.getName(def.getIndex(), def.getPosition()));
+                    }
+                }
+                for (Variable use : inst.getUses()) {
+                    if (!use.isTemporary()) {
+                        variables.add(use);
+                        use.setName(table.getName(use.getIndex(), use.getPosition()));
+                    }
+                }
+            }
+        }
+
+        printVariableName(variables);
+
+        // to remove empty basic blocks added tu remove critical edges
+        graph.compact();
+        graph.analyseLoops();
     }
 }

@@ -53,8 +53,6 @@ import fr.jamgotchian.abcd.core.region.CatchRegion;
 import fr.jamgotchian.abcd.core.region.IfThenBreakRegion;
 import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
 import fr.jamgotchian.abcd.core.region.IfThenRegion;
-import fr.jamgotchian.abcd.core.region.LogicalRegion;
-import fr.jamgotchian.abcd.core.region.LogicalType;
 import fr.jamgotchian.abcd.core.region.LoopRegion;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.SwitchCaseRegion;
@@ -472,6 +470,11 @@ public class AbstractSyntaxTreeBuilder {
                 case MINUS:
                     op = UnaryOperator.MINUS;
                     break;
+
+                case NEG:
+                    op = UnaryOperator.NEG;
+                    break;
+
                 default:
                     throw new InternalError();
             }
@@ -546,45 +549,6 @@ public class AbstractSyntaxTreeBuilder {
                 for (Region child : ((BlockRegion) region).getRegions()) {
                     buildAST(child, blockStmt);
                 }
-                break;
-            }
-
-            case LOGICAL: {
-                LogicalRegion logicalRegion = (LogicalRegion) region;
-
-                buildAST(logicalRegion.getRegionA(), blockStmt);
-                IfStatement ifStmtA = (IfStatement) blockStmt.getLast();
-                ifStmtA.remove();
-
-                BlockStatement tmpBlockStmt = new BlockStatement();
-                buildAST(logicalRegion.getRegionB(), tmpBlockStmt);
-                IfStatement ifStmtB = (IfStatement) tmpBlockStmt.getLast();
-
-                BinaryOperator operator = null;
-                switch (logicalRegion.getLogicalType()) {
-                    case AND:
-                    case AND_INVERT_B:
-                        operator = BinaryOperator.AND;
-                        break;
-
-                    case OR:
-                    case OR_INVERT_B:
-                        operator = BinaryOperator.OR;
-                        break;
-
-                    default:
-                        throw new AssertionError();
-                }
-
-                Expression conditionA = ifStmtA.getCondition();
-                Expression conditionB = ifStmtB.getCondition();
-                if (logicalRegion.getLogicalType() == LogicalType.AND_INVERT_B
-                        || logicalRegion.getLogicalType() == LogicalType.OR_INVERT_B) {
-                    conditionB = ExpressionInverter.invert(conditionB);
-                }
-                Expression condition
-                        = Expressions.newBinExpr(conditionA, conditionB, operator);
-                blockStmt.add(new IfStatement(condition, ifStmtA.getThen(), ifStmtA.getElse()));
                 break;
             }
 

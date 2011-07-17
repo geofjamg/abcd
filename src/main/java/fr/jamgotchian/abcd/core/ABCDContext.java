@@ -31,8 +31,11 @@ import fr.jamgotchian.abcd.core.ast.stmt.Statements;
 import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
 import fr.jamgotchian.abcd.core.analysis.FinallyUninliner;
 import fr.jamgotchian.abcd.core.analysis.ForLoopRefactorer;
+import fr.jamgotchian.abcd.core.analysis.LocalVariableTypeAnalyser;
+import fr.jamgotchian.abcd.core.analysis.LogicalOperatorBuilder;
 import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
 import fr.jamgotchian.abcd.core.analysis.Refactorer;
+import fr.jamgotchian.abcd.core.analysis.TernaryOperatorBuilder;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
@@ -45,6 +48,8 @@ import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
+import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
+import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.tac.model.VariableID;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
@@ -274,6 +279,8 @@ public class ABCDContext {
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build Control flow graph of " + methodSignature, '='));
                 ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
+                graph.compact();
+                graph.analyseLoops();
 
                 StringBuilder builder = new StringBuilder();
                 graph.getExceptionTable().print(builder);
@@ -288,28 +295,40 @@ public class ABCDContext {
                     decl.getVariable().setName(table.getName(decl.getVariable().getID().getIndex(), 0));
                 }
 
-                logger.log(Level.FINE, "\n{0}",
-                        ConsoleUtil.printTitledSeparator("Analyse Control flow of " + methodSignature, '='));
-                graph.compact();
-                graph.removeCriticalEdges();
-                graph.analyseLoops();
-
                 handler.controlFlowGraphBuilt(graph);
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build 3AC instructions of " + methodSignature, '='));
-                new TreeAddressCodeBuilder(graph, method, new ImportManager()).build();
 
-                // to remove empty basic blocks added tu remove critical edges
-                graph.compact();
-                graph.analyseLoops();
+                TemporaryVariableFactory tmpVarFactory = new TemporaryVariableFactory();
+                TACInstFactory instFactory = new TACInstFactory();
+
+                new TreeAddressCodeBuilder(graph, method, importManager,
+                                           tmpVarFactory, instFactory).build();
+
+                logger.log(Level.FINE, "\n{0}",
+                        ConsoleUtil.printTitledSeparator("Build complex logical operators " + methodSignature, '='));
+
+                new LogicalOperatorBuilder(graph, tmpVarFactory, instFactory).builder();
+
+                logger.log(Level.FINE, "\n{0}",
+                        ConsoleUtil.printTitledSeparator("Build ternary operators " + methodSignature, '='));
+
+                // must be done after complex logical operators building because
+                // of ternary operator with complex condition
+                new TernaryOperatorBuilder(graph, tmpVarFactory, instFactory).build();
+
+                // analyse local variables types
+                new LocalVariableTypeAnalyser(graph, method, importManager,
+                                              instFactory).analyse();
+
+//                new AbruptEdgeRemover(graph).remove();
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Uninline finally clauses of " + methodSignature, '='));
-                new FinallyUninliner(graph).uninline();
+//                new FinallyUninliner(graph).uninline();
 
                 handler.treeAddressCodeBuilt(graph);
-
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Analyse structure of " + methodSignature, '='));

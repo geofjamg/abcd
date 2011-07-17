@@ -62,7 +62,6 @@ public class StructuralAnalysis {
         this.graph = graph;
         recognizers = Collections.unmodifiableList(Arrays.asList(/* first, acyclic regions */
                                                                  new BlockRecognizer(true),
-                                                                 new LogicalRecognizer(),
                                                                  new IfThenElseRecognizer(),
                                                                  new SwitchCaseRecognizer(),
                                                                  /* then, cyclic regions */

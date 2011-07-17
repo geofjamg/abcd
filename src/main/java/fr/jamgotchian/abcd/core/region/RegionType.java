@@ -29,6 +29,5 @@ public enum RegionType {
     IF_THEN_BREAK,
     SWITCH_CASE,
     LOOP,
-    LOGICAL,
     TRY_CATCH
 }

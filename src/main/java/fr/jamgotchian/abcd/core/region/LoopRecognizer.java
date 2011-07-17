@@ -59,7 +59,7 @@ class LoopRecognizer implements RegionRecognizer {
                         BasicBlock loopHeadBlock = Regions.getDeepExitBasicBlock(graph, loopHeadRegion);
                         if (loopHeadBlock != null) {
                             BasicBlockData data = loopHeadBlock.getData();
-                            if (data.getInstructionCount() == 1) {
+                            if (data.getInstructionCount() == 0) {
                                 type = LoopType.WHILE;
                             }
                         }

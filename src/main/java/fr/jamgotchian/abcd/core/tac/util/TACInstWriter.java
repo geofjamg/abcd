@@ -430,6 +430,10 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
                 writer.write("-");
                 break;
 
+            case NEG:
+                writer.write("!");
+                break;
+                
             default:
                 throw new AssertionError();
         }
