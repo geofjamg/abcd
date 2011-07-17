@@ -319,6 +319,10 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return edge;
     }
 
+    public void removeEdge(Edge edge) {
+        graph.removeEdge(edge);
+    }
+
     public boolean removeEdge(BasicBlock source, BasicBlock target) {
         logger.log(Level.FINEST, "  Remove edge between {0} and {1}", new Object[]{source, target});
 
@@ -358,6 +362,14 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         logger.log(Level.FINER, "Analyse loops");
         dominatorInfo = DominatorInfo.create(graph, entryBlock, exitBlock, EDGE_FACTORY);
         performDepthFirstSearch();
+        for (Edge e : getEdges()) {
+            e.setCategory(null);
+            e.setLoopExit(false);
+            e.setSelfLoop(false);
+        }
+        for (BasicBlock bb : getBasicBlocks()) {
+            bb.setLoopLevel(0);
+        }
         analyseEdgeCategory();
         analyseNaturalLoops();
         analyseLoopLevel();

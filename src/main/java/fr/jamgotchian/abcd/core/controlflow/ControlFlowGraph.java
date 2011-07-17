@@ -111,6 +111,8 @@ public interface ControlFlowGraph {
 
     boolean isBasicBlockReachable(BasicBlock block);
 
+    void removeEdge(Edge edge);
+
     boolean removeEdge(BasicBlock source, BasicBlock target);
 
     BasicBlockSplit splitBasicBlockAt(int index);
