@@ -31,6 +31,7 @@ import fr.jamgotchian.abcd.core.controlflow.TACInst;
 import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
 import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
 import fr.jamgotchian.abcd.core.controlflow.VariableID;
+import fr.jamgotchian.abcd.core.util.Counter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -52,23 +53,6 @@ public class SSAFormConverter {
 
     static {
         logger.setLevel(Level.FINER);
-    }
-
-    private static class Counter {
-
-        private int count;
-
-        private Counter(int count) {
-            this.count = count;
-        }
-
-        public int getCount() {
-            return count;
-        }
-
-        public void increment() {
-            count++;
-        }
     }
 
     private final ControlFlowGraph graph;
