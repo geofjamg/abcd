@@ -17,7 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.expr;
 
-import fr.jamgotchian.abcd.core.tac.model.VariableID;
+import fr.jamgotchian.abcd.core.controlflow.VariableID;
 
 /**
  *

@@ -19,13 +19,13 @@ package fr.jamgotchian.abcd.core.analysis;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.tac.model.TACBinaryOperator;
-import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
-import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
-import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
-import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
-import fr.jamgotchian.abcd.core.tac.model.TACUnaryOperator;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
+import fr.jamgotchian.abcd.core.controlflow.TACBinaryOperator;
+import fr.jamgotchian.abcd.core.controlflow.JumpIfInst;
+import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
+import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
+import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.controlflow.TACUnaryOperator;
+import fr.jamgotchian.abcd.core.controlflow.Variable;
 
 /**
  *
@@ -49,10 +49,8 @@ public class LogicalOperatorBuilder {
 
     private void agregate(BasicBlock bb1, BasicBlock bb2, BasicBlock trueBB2,
                           BasicBlock falseBB2, TACBinaryOperator operator, boolean invert2) {
-        AnalysisData data1 = (AnalysisData) bb1.getData();
-        AnalysisData data2 = (AnalysisData) bb2.getData();
-        TACInstSeq seq1 = data1.getInstructions();
-        TACInstSeq seq2 = data2.getInstructions();
+        TACInstSeq seq1 = bb1.getInstructions();
+        TACInstSeq seq2 = bb2.getInstructions();
         JumpIfInst jumpInst1 = (JumpIfInst) seq1.getLast();
         JumpIfInst jumpInst2 = (JumpIfInst) seq2.getLast();
         seq1.remove(seq1.size()-1);
@@ -79,8 +77,7 @@ public class LogicalOperatorBuilder {
 
     private boolean checkAnd(BasicBlock bb1, Edge trueEdge1, Edge falseEdge1) {
         BasicBlock bb2 = CFG.getEdgeTarget(trueEdge1);
-        AnalysisData data2 = (AnalysisData) bb2.getData();
-        if (data2.getInstructions().getLast() instanceof JumpIfInst) {
+        if (bb2.getInstructions().getLast() instanceof JumpIfInst) {
             Edge trueEdge2 = null;
             Edge falseEdge2 = null;
             for (Edge e : CFG.getOutgoingEdgesOf(bb2)) {
@@ -106,8 +103,7 @@ public class LogicalOperatorBuilder {
 
     private boolean checkOr(BasicBlock bb1, Edge trueEdge1, Edge falseEdge1) {
         BasicBlock bb2 = CFG.getEdgeTarget(falseEdge1);
-        AnalysisData data2 = (AnalysisData) bb2.getData();
-        if (data2.getInstructions().getLast() instanceof JumpIfInst) {
+        if (bb2.getInstructions().getLast() instanceof JumpIfInst) {
             Edge trueEdge2 = null;
             Edge falseEdge2 = null;
             for (Edge e : CFG.getOutgoingEdgesOf(bb2)) {
@@ -137,8 +133,7 @@ public class LogicalOperatorBuilder {
         while (change) {
             change = false;
             for (BasicBlock bb1 : CFG.getDFST().getNodes()) {
-                AnalysisData data1 = (AnalysisData) bb1.getData();
-                if (data1.getInstructions().getLast() instanceof JumpIfInst) {
+                if (bb1.getInstructions().getLast() instanceof JumpIfInst) {
                     Edge trueEdge1 = null;
                     Edge falseEdge1 = null;
                     for (Edge e : CFG.getOutgoingEdgesOf(bb1)) {

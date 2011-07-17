@@ -17,7 +17,6 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlockData;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.Iterator;
@@ -58,10 +57,8 @@ class LoopRecognizer implements RegionRecognizer {
                     } else if (loopHeadRegion != null && loopHeadRegion.getType() == RegionType.IF_THEN_BREAK) {
                         BasicBlock loopHeadBlock = Regions.getDeepExitBasicBlock(graph, loopHeadRegion);
                         if (loopHeadBlock != null) {
-                            BasicBlockData data = loopHeadBlock.getData();
-                            if (data.getInstructionCount() == 0) {
-                                type = LoopType.WHILE;
-                            }
+                            // TODO : check that there is no instruction before the jump if
+                            type = LoopType.WHILE;
                         }
                     }
                     return new LoopRegion(type, outgoingEdge, loopRegion, currentLoopID++);

@@ -24,15 +24,15 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
-import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
-import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
-import fr.jamgotchian.abcd.core.tac.model.TACInst;
-import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
-import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
-import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
-import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
+import fr.jamgotchian.abcd.core.controlflow.ChoiceInst;
+import fr.jamgotchian.abcd.core.controlflow.ConditionalInst;
+import fr.jamgotchian.abcd.core.controlflow.JumpIfInst;
+import fr.jamgotchian.abcd.core.controlflow.TACInst;
+import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
+import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
+import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.controlflow.Variable;
+import fr.jamgotchian.abcd.core.controlflow.util.TACInstWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -67,7 +67,7 @@ public class TernaryOperatorBuilder {
 
     public void build() {
         for (BasicBlock joinBlock : CFG.getDFST()) {
-            TACInstSeq joinInsts = ((AnalysisData) joinBlock.getData()).getInstructions();
+            TACInstSeq joinInsts = joinBlock.getInstructions();
 
             for (int i = 0; i < joinInsts.size(); i++) {
                 TACInst inst = joinInsts.get(i);
@@ -119,8 +119,7 @@ public class TernaryOperatorBuilder {
                                 elseVar = var1;
                             }
                             if (thenVar != null && elseVar != null) {
-                                AnalysisData forkData = (AnalysisData) forkBlock.getData();
-                                JumpIfInst jumpIfInst = (JumpIfInst) forkData.getInstructions().getLast();
+                                JumpIfInst jumpIfInst = (JumpIfInst) forkBlock.getInstructions().getLast();
                                 choiceInst.getChoices().remove(thenVar);
                                 choiceInst.getChoices().remove(elseVar);
                                 Variable condVar = jumpIfInst.getCond().clone();

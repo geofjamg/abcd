@@ -24,7 +24,6 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FrameNode;
 import org.objectweb.asm.tree.IincInsnNode;
-import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
@@ -53,15 +52,20 @@ class BasicBlockImpl implements BasicBlock {
 
     private int loopLevel;
 
-    private ControlFlowGraph graph;
+    private final TACInstSeq instructions;
 
-    private BasicBlockData data;
+    private VariableStack inputStack;
+
+    private VariableStack outputStack;
+
+    private ControlFlowGraph graph;
 
     BasicBlockImpl(Range range, BasicBlockType type) {
         this.range = range;
         this.type = type;
         order = -1;
         loopLevel = 0;
+        instructions = new TACInstSeq();
     }
 
     BasicBlockImpl(int firstInstn, int lastInstn, BasicBlockType type) {
@@ -112,12 +116,24 @@ class BasicBlockImpl implements BasicBlock {
         this.loopLevel = loopLevel;
     }
 
-    public BasicBlockData getData() {
-        return data;
+    public TACInstSeq getInstructions() {
+        return instructions;
     }
 
-    public void setData(BasicBlockData data) {
-        this.data = data;
+    public VariableStack getInputStack() {
+        return inputStack;
+    }
+
+    public void setInputStack(VariableStack inputStack) {
+        this.inputStack = inputStack;
+    }
+
+    public VariableStack getOutputStack() {
+        return outputStack;
+    }
+
+    public void setOutputStack(VariableStack outputStack) {
+        this.outputStack = outputStack;
     }
 
     public void visit(BasicBlockVisitor visitor) {
@@ -125,10 +141,8 @@ class BasicBlockImpl implements BasicBlock {
         visitor.before(this);
 
         if (range != null) {
-            InsnList instructions = graph.getInstructions();
-
             for (int position : range) {
-                AbstractInsnNode abstractNode = instructions.get(position);
+                AbstractInsnNode abstractNode = graph.getInstructions().get(position);
 
                 switch (abstractNode.getType()) {
                     case FIELD_INSN: {

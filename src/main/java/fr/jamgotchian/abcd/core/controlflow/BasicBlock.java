@@ -45,7 +45,13 @@ public interface BasicBlock {
 
     void setOrder(int order);
 
-    BasicBlockData getData();
+    TACInstSeq getInstructions();
 
-    void setData(BasicBlockData data);
+    VariableStack getInputStack();
+
+    void setInputStack(VariableStack inputStack);
+
+    VariableStack getOutputStack();
+
+    void setOutputStack(VariableStack outputStack);
 }

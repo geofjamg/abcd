@@ -22,12 +22,12 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.tac.model.StringConst;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
-import fr.jamgotchian.abcd.core.tac.model.TACInst;
-import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
-import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
-import fr.jamgotchian.abcd.core.tac.util.VariableStack;
+import fr.jamgotchian.abcd.core.controlflow.StringConst;
+import fr.jamgotchian.abcd.core.controlflow.Variable;
+import fr.jamgotchian.abcd.core.controlflow.TACInst;
+import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
+import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.controlflow.VariableStack;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -73,8 +73,6 @@ public class TreeAddressCodeBuilder {
 
         logger.log(Level.FINER, "------ Process block {0} ------", block);
 
-        AnalysisData data = (AnalysisData) block.getData();
-
         VariableStack inputStack = null;
         if (inputStacks.isEmpty()) {
             inputStack = new VariableStack();
@@ -84,7 +82,7 @@ public class TreeAddressCodeBuilder {
             inputStack = mergeStacks(inputStacks, block);
         }
 
-        data.setInputStack(inputStack.clone());
+        block.setInputStack(inputStack.clone());
 
         VariableStack outputStack = inputStack.clone();
 
@@ -104,18 +102,18 @@ public class TreeAddressCodeBuilder {
             }
         }
 
-        if (data.getInputStack().size() > 0) {
-            logger.log(Level.FINEST, ">>> Input stack : {0}", data.getInputStack());
+        if (block.getInputStack().size() > 0) {
+            logger.log(Level.FINEST, ">>> Input stack : {0}", block.getInputStack());
         }
 
         BasicBlock3ACBuilder builder
                 = new BasicBlock3ACBuilder(classNameFactory, tmpVarFactory,
                                            outputStack, instFactory);
         block.visit(builder);
-        data.setOutputStack(outputStack);
+        block.setOutputStack(outputStack);
 
-        if (data.getOutputStack().size() > 0) {
-            logger.log(Level.FINEST, "<<< Output stack : {0}", data.getOutputStack());
+        if (block.getOutputStack().size() > 0) {
+            logger.log(Level.FINEST, "<<< Output stack : {0}", block.getOutputStack());
         }
     }
 
@@ -158,10 +156,6 @@ public class TreeAddressCodeBuilder {
     }
 
     public void build() {
-        for (BasicBlock block : graph.getBasicBlocks()) {
-            block.setData(new AnalysisData());
-        }
-
         List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(graph.getDFST().getNodes());
         while (blocksToProcess.size() > 0) {
             for (Iterator<BasicBlock> it = blocksToProcess.iterator(); it.hasNext();) {
@@ -173,8 +167,7 @@ public class TreeAddressCodeBuilder {
                         continue;
                     }
                     BasicBlock pred = graph.getEdgeSource(incomingEdge);
-                    AnalysisData data = (AnalysisData) pred.getData();
-                    inputStacks.add(data.getOutputStack().clone());
+                    inputStacks.add(pred.getOutputStack().clone());
                 }
 
                 processBlock(block, inputStacks);

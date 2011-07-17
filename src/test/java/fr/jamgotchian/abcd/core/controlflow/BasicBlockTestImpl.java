@@ -30,7 +30,11 @@ public class BasicBlockTestImpl extends Vertex implements BasicBlock {
 
     private int loopLevel;
 
-    private BasicBlockData data;
+    private final TACInstSeq instructions;
+
+    private VariableStack inputStack;
+
+    private VariableStack outputStack;
 
     public BasicBlockTestImpl(int id) {
         this(null, id);
@@ -40,6 +44,7 @@ public class BasicBlockTestImpl extends Vertex implements BasicBlock {
         super(prefix, id);
         order = -1;
         loopLevel = 0;
+        instructions = new TACInstSeq();
     }
 
     public Range getRange() {
@@ -79,11 +84,23 @@ public class BasicBlockTestImpl extends Vertex implements BasicBlock {
     public void visit(BasicBlockVisitor visitor) {
     }
 
-    public BasicBlockData getData() {
-        return data;
+    public TACInstSeq getInstructions() {
+        return instructions;
     }
 
-    public void setData(BasicBlockData data) {
-        this.data = data;
+    public VariableStack getInputStack() {
+        return inputStack;
+    }
+
+    public void setInputStack(VariableStack inputStack) {
+        this.inputStack = inputStack;
+    }
+
+    public VariableStack getOutputStack() {
+        return outputStack;
+    }
+
+    public void setOutputStack(VariableStack outputStack) {
+        this.outputStack = outputStack;
     }
 }

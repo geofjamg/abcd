@@ -24,9 +24,9 @@ import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphImpl;
 import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysisTest;
-import fr.jamgotchian.abcd.core.tac.model.IntConst;
-import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
+import fr.jamgotchian.abcd.core.controlflow.IntConst;
+import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
+import fr.jamgotchian.abcd.core.controlflow.Variable;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import fr.jamgotchian.abcd.core.util.SimplestFormatter;
 import java.util.Arrays;
@@ -88,11 +88,9 @@ public class SSAFormConverterTest {
 
     private BasicBlock newBasicBlock(int id, int... vars) {
         BasicBlock bb = new BasicBlockTestImpl("BB", id);
-        AnalysisData data = new AnalysisData();
-        bb.setData(data);
         for (int var : vars) {
-            data.getInstructions().add(instFactory.newAssignConst(new Variable(var, bb, -1),
-                                                                  new IntConst(0)));
+            bb.getInstructions().add(instFactory.newAssignConst(new Variable(var, bb, -1),
+                                                                new IntConst(0)));
         }
         return bb;
     }

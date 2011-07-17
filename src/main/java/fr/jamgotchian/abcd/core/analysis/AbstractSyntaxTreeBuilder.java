@@ -44,8 +44,6 @@ import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
 import fr.jamgotchian.abcd.core.region.BlockRegion;
 import fr.jamgotchian.abcd.core.region.CaseRegion;
@@ -57,45 +55,47 @@ import fr.jamgotchian.abcd.core.region.LoopRegion;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.SwitchCaseRegion;
 import fr.jamgotchian.abcd.core.region.TryCatchRegion;
-import fr.jamgotchian.abcd.core.tac.model.ArrayLengthInst;
-import fr.jamgotchian.abcd.core.tac.model.AssignConstInst;
-import fr.jamgotchian.abcd.core.tac.model.AssignVarInst;
-import fr.jamgotchian.abcd.core.tac.model.BinaryInst;
-import fr.jamgotchian.abcd.core.tac.model.ByteConst;
-import fr.jamgotchian.abcd.core.tac.model.CallMethodInst;
-import fr.jamgotchian.abcd.core.tac.model.CallStaticMethodInst;
-import fr.jamgotchian.abcd.core.tac.model.CastInst;
-import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
-import fr.jamgotchian.abcd.core.tac.model.ClassConst;
-import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
-import fr.jamgotchian.abcd.core.tac.model.Const;
-import fr.jamgotchian.abcd.core.tac.model.DoubleConst;
-import fr.jamgotchian.abcd.core.tac.model.FloatConst;
-import fr.jamgotchian.abcd.core.tac.model.GetArrayInst;
-import fr.jamgotchian.abcd.core.tac.model.GetFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.GetStaticFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.InstanceOfInst;
-import fr.jamgotchian.abcd.core.tac.model.IntConst;
-import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
-import fr.jamgotchian.abcd.core.tac.model.LongConst;
-import fr.jamgotchian.abcd.core.tac.model.MonitorEnterInst;
-import fr.jamgotchian.abcd.core.tac.model.MonitorExitInst;
-import fr.jamgotchian.abcd.core.tac.model.NewArrayInst;
-import fr.jamgotchian.abcd.core.tac.model.NewObjectInst;
-import fr.jamgotchian.abcd.core.tac.model.NullConst;
-import fr.jamgotchian.abcd.core.tac.model.PhiInst;
-import fr.jamgotchian.abcd.core.tac.model.ReturnInst;
-import fr.jamgotchian.abcd.core.tac.model.SetArrayInst;
-import fr.jamgotchian.abcd.core.tac.model.SetFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.SetStaticFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.ShortConst;
-import fr.jamgotchian.abcd.core.tac.model.StringConst;
-import fr.jamgotchian.abcd.core.tac.model.SwitchInst;
-import fr.jamgotchian.abcd.core.tac.model.ThrowInst;
-import fr.jamgotchian.abcd.core.tac.model.UnaryInst;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
-import fr.jamgotchian.abcd.core.tac.model.VariableID;
-import fr.jamgotchian.abcd.core.tac.util.EmptyTACInstVisitor;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
+import fr.jamgotchian.abcd.core.controlflow.ArrayLengthInst;
+import fr.jamgotchian.abcd.core.controlflow.AssignConstInst;
+import fr.jamgotchian.abcd.core.controlflow.AssignVarInst;
+import fr.jamgotchian.abcd.core.controlflow.BinaryInst;
+import fr.jamgotchian.abcd.core.controlflow.ByteConst;
+import fr.jamgotchian.abcd.core.controlflow.CallMethodInst;
+import fr.jamgotchian.abcd.core.controlflow.CallStaticMethodInst;
+import fr.jamgotchian.abcd.core.controlflow.CastInst;
+import fr.jamgotchian.abcd.core.controlflow.ChoiceInst;
+import fr.jamgotchian.abcd.core.controlflow.ClassConst;
+import fr.jamgotchian.abcd.core.controlflow.ConditionalInst;
+import fr.jamgotchian.abcd.core.controlflow.Const;
+import fr.jamgotchian.abcd.core.controlflow.DoubleConst;
+import fr.jamgotchian.abcd.core.controlflow.FloatConst;
+import fr.jamgotchian.abcd.core.controlflow.GetArrayInst;
+import fr.jamgotchian.abcd.core.controlflow.GetFieldInst;
+import fr.jamgotchian.abcd.core.controlflow.GetStaticFieldInst;
+import fr.jamgotchian.abcd.core.controlflow.InstanceOfInst;
+import fr.jamgotchian.abcd.core.controlflow.IntConst;
+import fr.jamgotchian.abcd.core.controlflow.JumpIfInst;
+import fr.jamgotchian.abcd.core.controlflow.LongConst;
+import fr.jamgotchian.abcd.core.controlflow.MonitorEnterInst;
+import fr.jamgotchian.abcd.core.controlflow.MonitorExitInst;
+import fr.jamgotchian.abcd.core.controlflow.NewArrayInst;
+import fr.jamgotchian.abcd.core.controlflow.NewObjectInst;
+import fr.jamgotchian.abcd.core.controlflow.NullConst;
+import fr.jamgotchian.abcd.core.controlflow.PhiInst;
+import fr.jamgotchian.abcd.core.controlflow.ReturnInst;
+import fr.jamgotchian.abcd.core.controlflow.SetArrayInst;
+import fr.jamgotchian.abcd.core.controlflow.SetFieldInst;
+import fr.jamgotchian.abcd.core.controlflow.SetStaticFieldInst;
+import fr.jamgotchian.abcd.core.controlflow.ShortConst;
+import fr.jamgotchian.abcd.core.controlflow.StringConst;
+import fr.jamgotchian.abcd.core.controlflow.SwitchInst;
+import fr.jamgotchian.abcd.core.controlflow.ThrowInst;
+import fr.jamgotchian.abcd.core.controlflow.UnaryInst;
+import fr.jamgotchian.abcd.core.controlflow.Variable;
+import fr.jamgotchian.abcd.core.controlflow.VariableID;
+import fr.jamgotchian.abcd.core.controlflow.util.EmptyTACInstVisitor;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
@@ -478,7 +478,7 @@ public class AbstractSyntaxTreeBuilder {
                 case NONE:
                     op = ASTUnaryOperator.NONE;
                     break;
-                    
+
                 default:
                     throw new InternalError();
             }
@@ -543,9 +543,9 @@ public class AbstractSyntaxTreeBuilder {
         switch (region.getType()) {
             case BASIC_BLOCK: {
                 BasicBlockRegion basicBlockRegion = (BasicBlockRegion) region;
-                AnalysisData data = (AnalysisData) basicBlockRegion.getBasicBlock().getData();
+                BasicBlock bb = basicBlockRegion.getBasicBlock();
                 RegionTACInstVisitor visitor = new RegionTACInstVisitor();
-                data.getInstructions().accept(visitor, blockStmt);
+                bb.getInstructions().accept(visitor, blockStmt);
                 break;
             }
 

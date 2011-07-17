@@ -24,38 +24,38 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.LocalVariableTable;
-import fr.jamgotchian.abcd.core.tac.model.ArrayLengthInst;
-import fr.jamgotchian.abcd.core.tac.model.AssignConstInst;
-import fr.jamgotchian.abcd.core.tac.model.AssignVarInst;
-import fr.jamgotchian.abcd.core.tac.model.BinaryInst;
-import fr.jamgotchian.abcd.core.tac.model.CallMethodInst;
-import fr.jamgotchian.abcd.core.tac.model.CallStaticMethodInst;
-import fr.jamgotchian.abcd.core.tac.model.CastInst;
-import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
-import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
-import fr.jamgotchian.abcd.core.tac.model.DefInst;
-import fr.jamgotchian.abcd.core.tac.model.GetArrayInst;
-import fr.jamgotchian.abcd.core.tac.model.GetFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.GetStaticFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.InstanceOfInst;
-import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
-import fr.jamgotchian.abcd.core.tac.model.MethodSignature;
-import fr.jamgotchian.abcd.core.tac.model.MonitorEnterInst;
-import fr.jamgotchian.abcd.core.tac.model.MonitorExitInst;
-import fr.jamgotchian.abcd.core.tac.model.NewArrayInst;
-import fr.jamgotchian.abcd.core.tac.model.NewObjectInst;
-import fr.jamgotchian.abcd.core.tac.model.ReturnInst;
-import fr.jamgotchian.abcd.core.tac.model.SetArrayInst;
-import fr.jamgotchian.abcd.core.tac.model.SetFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.SetStaticFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.SwitchInst;
-import fr.jamgotchian.abcd.core.tac.model.TACInst;
-import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
-import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
-import fr.jamgotchian.abcd.core.tac.model.UnaryInst;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
-import fr.jamgotchian.abcd.core.tac.model.VariableID;
-import fr.jamgotchian.abcd.core.tac.util.EmptyTACInstVisitor;
+import fr.jamgotchian.abcd.core.controlflow.ArrayLengthInst;
+import fr.jamgotchian.abcd.core.controlflow.AssignConstInst;
+import fr.jamgotchian.abcd.core.controlflow.AssignVarInst;
+import fr.jamgotchian.abcd.core.controlflow.BinaryInst;
+import fr.jamgotchian.abcd.core.controlflow.CallMethodInst;
+import fr.jamgotchian.abcd.core.controlflow.CallStaticMethodInst;
+import fr.jamgotchian.abcd.core.controlflow.CastInst;
+import fr.jamgotchian.abcd.core.controlflow.ChoiceInst;
+import fr.jamgotchian.abcd.core.controlflow.ConditionalInst;
+import fr.jamgotchian.abcd.core.controlflow.DefInst;
+import fr.jamgotchian.abcd.core.controlflow.GetArrayInst;
+import fr.jamgotchian.abcd.core.controlflow.GetFieldInst;
+import fr.jamgotchian.abcd.core.controlflow.GetStaticFieldInst;
+import fr.jamgotchian.abcd.core.controlflow.InstanceOfInst;
+import fr.jamgotchian.abcd.core.controlflow.JumpIfInst;
+import fr.jamgotchian.abcd.core.controlflow.MethodSignature;
+import fr.jamgotchian.abcd.core.controlflow.MonitorEnterInst;
+import fr.jamgotchian.abcd.core.controlflow.MonitorExitInst;
+import fr.jamgotchian.abcd.core.controlflow.NewArrayInst;
+import fr.jamgotchian.abcd.core.controlflow.NewObjectInst;
+import fr.jamgotchian.abcd.core.controlflow.ReturnInst;
+import fr.jamgotchian.abcd.core.controlflow.SetArrayInst;
+import fr.jamgotchian.abcd.core.controlflow.SetFieldInst;
+import fr.jamgotchian.abcd.core.controlflow.SetStaticFieldInst;
+import fr.jamgotchian.abcd.core.controlflow.SwitchInst;
+import fr.jamgotchian.abcd.core.controlflow.TACInst;
+import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
+import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
+import fr.jamgotchian.abcd.core.controlflow.UnaryInst;
+import fr.jamgotchian.abcd.core.controlflow.Variable;
+import fr.jamgotchian.abcd.core.controlflow.VariableID;
+import fr.jamgotchian.abcd.core.controlflow.util.EmptyTACInstVisitor;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -487,12 +487,6 @@ public class LocalVariableTypeAnalyser {
         graph.removeCriticalEdges();
         graph.analyseLoops();
 
-        for (BasicBlock block : graph.getBasicBlocks()) {
-            if (block.getData() == null) {
-                block.setData(new AnalysisData());
-            }
-        }
-
         // convert to SSA form
         new SSAFormConverter(graph, instFactory).convert();
 
@@ -510,8 +504,7 @@ public class LocalVariableTypeAnalyser {
         while (change) {
             change = false;
             for (BasicBlock block : graph.getBasicBlocks()) {
-                AnalysisData data = (AnalysisData) block.getData();
-                if (Boolean.TRUE.equals(data.getInstructions().accept(visitor, null))) {
+                if (Boolean.TRUE.equals(block.getInstructions().accept(visitor, null))) {
                     change = true;
                 }
             }
@@ -519,7 +512,7 @@ public class LocalVariableTypeAnalyser {
 
         // check that all variable have been types correctly
         for (BasicBlock bb : graph.getBasicBlocks()) {
-            for (TACInst inst : ((AnalysisData) bb.getData()).getInstructions()) {
+            for (TACInst inst : bb.getInstructions()) {
                 if (inst instanceof DefInst) {
                     Variable v = ((DefInst) inst).getResult();
                     assert v.getType() == null;
@@ -545,7 +538,7 @@ public class LocalVariableTypeAnalyser {
         LocalVariableTable table = graph.getLocalVariableTable();
         Set<Variable> variables = new HashSet<Variable>();
         for (BasicBlock block : graph.getBasicBlocks()) {
-            for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
+            for (TACInst inst : block.getInstructions()) {
                 if (inst instanceof DefInst) {
                     Variable def = ((DefInst) inst).getResult();
                     if (!def.isTemporary()) {

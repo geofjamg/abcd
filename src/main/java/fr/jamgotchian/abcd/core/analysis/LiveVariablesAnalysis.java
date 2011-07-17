@@ -21,9 +21,9 @@ import fr.jamgotchian.abcd.core.controlflow.BackwardDataFlowAnalysis;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.tac.model.DefInst;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
-import fr.jamgotchian.abcd.core.tac.model.TACInst;
+import fr.jamgotchian.abcd.core.controlflow.DefInst;
+import fr.jamgotchian.abcd.core.controlflow.Variable;
+import fr.jamgotchian.abcd.core.controlflow.TACInst;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.HashSet;
 import java.util.Map;
@@ -50,7 +50,7 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
 
     private static Set<Variable> getDefs(BasicBlock block) {
         Set<Variable> defs = new HashSet<Variable>();
-        for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
+        for (TACInst inst : block.getInstructions()) {
             if (inst instanceof DefInst) {
                 defs.add(((DefInst) inst).getResult());
             }
@@ -60,7 +60,7 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
 
     private static Set<Variable> getUses(BasicBlock block) {
         Set<Variable> uses = new HashSet<Variable>();
-        for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
+        for (TACInst inst : block.getInstructions()) {
             uses.addAll(inst.getUses());
         }
         return uses;

@@ -25,27 +25,27 @@ import java.util.logging.Logger;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockVisitor;
+import fr.jamgotchian.abcd.core.controlflow.TACBinaryOperator;
+import fr.jamgotchian.abcd.core.controlflow.ByteConst;
+import fr.jamgotchian.abcd.core.controlflow.ClassConst;
+import fr.jamgotchian.abcd.core.controlflow.DoubleConst;
+import fr.jamgotchian.abcd.core.controlflow.FloatConst;
+import fr.jamgotchian.abcd.core.controlflow.TACInst;
+import fr.jamgotchian.abcd.core.controlflow.IntConst;
+import fr.jamgotchian.abcd.core.controlflow.LongConst;
+import fr.jamgotchian.abcd.core.controlflow.MethodSignature;
+import fr.jamgotchian.abcd.core.controlflow.NullConst;
+import fr.jamgotchian.abcd.core.controlflow.ShortConst;
+import fr.jamgotchian.abcd.core.controlflow.StringConst;
+import fr.jamgotchian.abcd.core.controlflow.Variable;
+import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
+import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.controlflow.TACUnaryOperator;
+import fr.jamgotchian.abcd.core.controlflow.util.TACInstWriter;
+import fr.jamgotchian.abcd.core.controlflow.VariableStack;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.tac.model.TACBinaryOperator;
-import fr.jamgotchian.abcd.core.tac.model.ByteConst;
-import fr.jamgotchian.abcd.core.tac.model.ClassConst;
-import fr.jamgotchian.abcd.core.tac.model.DoubleConst;
-import fr.jamgotchian.abcd.core.tac.model.FloatConst;
-import fr.jamgotchian.abcd.core.tac.model.TACInst;
-import fr.jamgotchian.abcd.core.tac.model.IntConst;
-import fr.jamgotchian.abcd.core.tac.model.LongConst;
-import fr.jamgotchian.abcd.core.tac.model.MethodSignature;
-import fr.jamgotchian.abcd.core.tac.model.NullConst;
-import fr.jamgotchian.abcd.core.tac.model.ShortConst;
-import fr.jamgotchian.abcd.core.tac.model.StringConst;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
-import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
-import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
-import fr.jamgotchian.abcd.core.tac.model.TACUnaryOperator;
-import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
-import fr.jamgotchian.abcd.core.tac.util.VariableStack;
 import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.*;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -109,7 +109,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
     static void addInst(BasicBlock block, TACInst inst) {
         logger.log(Level.FINER, "Add inst : {0}", TACInstWriter.toText(inst));
-        ((AnalysisData) block.getData()).getInstructions().add(inst);
+        block.getInstructions().add(inst);
     }
 
     public void before(BasicBlock block) {

@@ -23,14 +23,14 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.tac.model.DefInst;
-import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
-import fr.jamgotchian.abcd.core.tac.model.PhiInst;
-import fr.jamgotchian.abcd.core.tac.model.TACInst;
-import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
-import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
-import fr.jamgotchian.abcd.core.tac.model.VariableID;
+import fr.jamgotchian.abcd.core.controlflow.DefInst;
+import fr.jamgotchian.abcd.core.controlflow.JumpIfInst;
+import fr.jamgotchian.abcd.core.controlflow.Variable;
+import fr.jamgotchian.abcd.core.controlflow.PhiInst;
+import fr.jamgotchian.abcd.core.controlflow.TACInst;
+import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
+import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
+import fr.jamgotchian.abcd.core.controlflow.VariableID;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -85,7 +85,7 @@ public class SSAFormConverter {
     }
 
     private static boolean containsDef(BasicBlock block, int defIndex) {
-        for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
+        for (TACInst inst : block.getInstructions()) {
             if (inst instanceof DefInst) {
                 Variable def = ((DefInst) inst).getResult();
                 if (def.getIndex() == defIndex) {
@@ -116,8 +116,8 @@ public class SSAFormConverter {
                         }
                         // is definition alive in basic block y ?
                         if (liveVariables.get(y).contains(defIndex)) {
-                            ((AnalysisData) y.getData()).getInstructions()
-                                    .insertAt(0, instFactory.newPhi(new Variable(defIndex, y, -1), args));
+                            y.getInstructions()
+                             .insertAt(0, instFactory.newPhi(new Variable(defIndex, y, -1), args));
                             logger.log(Level.FINEST, "  Add Phi function to {0} for var {1}",
                                     new Object[] {y, defIndex});
                         }
@@ -148,7 +148,7 @@ public class SSAFormConverter {
         // generated version in current block
         Set<Integer> generatedVersion = new HashSet<Integer>();
 
-        for (TACInst inst : ((AnalysisData) n.getData()).getInstructions()) {
+        for (TACInst inst : n.getInstructions()) {
             // for each use of the variable rename with the current version
             // (version on top of version stack)
             if (!(inst instanceof PhiInst)) {
@@ -175,7 +175,7 @@ public class SSAFormConverter {
 
         // fill in phi function parameters of successor blocks
         for (BasicBlock y : graph.getSuccessorsOf(n)) {
-            for (TACInst inst : ((AnalysisData) y.getData()).getInstructions()) {
+            for (TACInst inst : y.getInstructions()) {
                 if (inst instanceof PhiInst) {
                     int j = new ArrayList<BasicBlock>(graph.getPredecessorsOf(y)).indexOf(n);
                     int version = versionStack.peek();
@@ -200,7 +200,7 @@ public class SSAFormConverter {
     }
 
     private static void addInst(BasicBlock b, TACInst inst) {
-        TACInstSeq insts = ((AnalysisData) b.getData()).getInstructions();
+        TACInstSeq insts = b.getInstructions();
         if (insts.isEmpty()) {
             insts.add(inst);
         } else {
@@ -217,7 +217,7 @@ public class SSAFormConverter {
         for (BasicBlock b : graph.getBasicBlocks()) {
             List<BasicBlock> predecessors
                     = new ArrayList<BasicBlock>(graph.getPredecessorsOf(b));
-            TACInstSeq insts = ((AnalysisData) b.getData()).getInstructions();
+            TACInstSeq insts = b.getInstructions();
             for (Iterator<TACInst> it = insts.iterator(); it.hasNext();) {
                 TACInst inst = it.next();
                 if (inst instanceof PhiInst) {
@@ -256,7 +256,7 @@ public class SSAFormConverter {
         // fill map containing all definitions and its basic block
         defBlocks = HashMultimap.create();
         for (BasicBlock block : graph.getBasicBlocks()) {
-            for (TACInst inst : ((AnalysisData) block.getData()).getInstructions()) {
+            for (TACInst inst : block.getInstructions()) {
                 if (inst instanceof DefInst) {
                     Variable def = ((DefInst) inst).getResult();
                     defBlocks.put(def.getIndex(), block);

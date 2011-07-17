@@ -21,13 +21,13 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.util.TACInstWriter;
 import fr.jamgotchian.abcd.core.graph.AttributeProvider;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.RegionType;
-import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collections;
@@ -117,11 +117,10 @@ public class DOTUtil {
                 builder.append("<font color=\"black\">").append(block.getType())
                       .append("</font>");
             } else {
-                AnalysisData data = (AnalysisData) block.getData();
                 builder.append(TACInstWriter.toDOTHTMLLike(block.getRange(),
-                                                           data.getInstructions(),
-                                                           data.getInputStack(),
-                                                           data.getOutputStack()));
+                                                           block.getInstructions(),
+                                                           block.getInputStack(),
+                                                           block.getOutputStack()));
             }
             builder.append(" >");
             attrs.put("label", builder.toString());

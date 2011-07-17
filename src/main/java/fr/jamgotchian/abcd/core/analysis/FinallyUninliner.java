@@ -17,44 +17,44 @@
 package fr.jamgotchian.abcd.core.analysis;
 
 import com.google.common.base.Objects;
+import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-import fr.jamgotchian.abcd.core.tac.model.ArrayLengthInst;
-import fr.jamgotchian.abcd.core.tac.model.AssignConstInst;
-import fr.jamgotchian.abcd.core.tac.model.AssignVarInst;
-import fr.jamgotchian.abcd.core.tac.model.BinaryInst;
-import fr.jamgotchian.abcd.core.tac.model.CallMethodInst;
-import fr.jamgotchian.abcd.core.tac.model.CallStaticMethodInst;
-import fr.jamgotchian.abcd.core.tac.model.CastInst;
-import fr.jamgotchian.abcd.core.tac.model.ChoiceInst;
-import fr.jamgotchian.abcd.core.tac.model.ConditionalInst;
-import fr.jamgotchian.abcd.core.tac.model.DefInst;
-import fr.jamgotchian.abcd.core.tac.model.GetArrayInst;
-import fr.jamgotchian.abcd.core.tac.model.GetFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.GetStaticFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.InstanceOfInst;
-import fr.jamgotchian.abcd.core.tac.model.JumpIfInst;
-import fr.jamgotchian.abcd.core.tac.model.MonitorEnterInst;
-import fr.jamgotchian.abcd.core.tac.model.MonitorExitInst;
-import fr.jamgotchian.abcd.core.tac.model.NewArrayInst;
-import fr.jamgotchian.abcd.core.tac.model.NewObjectInst;
-import fr.jamgotchian.abcd.core.tac.model.PhiInst;
-import fr.jamgotchian.abcd.core.tac.model.ReturnInst;
-import fr.jamgotchian.abcd.core.tac.model.SetArrayInst;
-import fr.jamgotchian.abcd.core.tac.model.SetFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.SetStaticFieldInst;
-import fr.jamgotchian.abcd.core.tac.model.SwitchInst;
-import fr.jamgotchian.abcd.core.tac.model.TACInst;
-import fr.jamgotchian.abcd.core.tac.model.TACInstSeq;
-import fr.jamgotchian.abcd.core.tac.model.TACInstVisitor;
-import fr.jamgotchian.abcd.core.tac.model.ThrowInst;
-import fr.jamgotchian.abcd.core.tac.model.UnaryInst;
-import fr.jamgotchian.abcd.core.tac.model.Variable;
-import fr.jamgotchian.abcd.core.tac.model.VariableID;
-import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
+import fr.jamgotchian.abcd.core.controlflow.ArrayLengthInst;
+import fr.jamgotchian.abcd.core.controlflow.AssignConstInst;
+import fr.jamgotchian.abcd.core.controlflow.AssignVarInst;
+import fr.jamgotchian.abcd.core.controlflow.BinaryInst;
+import fr.jamgotchian.abcd.core.controlflow.CallMethodInst;
+import fr.jamgotchian.abcd.core.controlflow.CallStaticMethodInst;
+import fr.jamgotchian.abcd.core.controlflow.CastInst;
+import fr.jamgotchian.abcd.core.controlflow.ChoiceInst;
+import fr.jamgotchian.abcd.core.controlflow.ConditionalInst;
+import fr.jamgotchian.abcd.core.controlflow.DefInst;
+import fr.jamgotchian.abcd.core.controlflow.GetArrayInst;
+import fr.jamgotchian.abcd.core.controlflow.GetFieldInst;
+import fr.jamgotchian.abcd.core.controlflow.GetStaticFieldInst;
+import fr.jamgotchian.abcd.core.controlflow.InstanceOfInst;
+import fr.jamgotchian.abcd.core.controlflow.JumpIfInst;
+import fr.jamgotchian.abcd.core.controlflow.MonitorEnterInst;
+import fr.jamgotchian.abcd.core.controlflow.MonitorExitInst;
+import fr.jamgotchian.abcd.core.controlflow.NewArrayInst;
+import fr.jamgotchian.abcd.core.controlflow.NewObjectInst;
+import fr.jamgotchian.abcd.core.controlflow.PhiInst;
+import fr.jamgotchian.abcd.core.controlflow.ReturnInst;
+import fr.jamgotchian.abcd.core.controlflow.SetArrayInst;
+import fr.jamgotchian.abcd.core.controlflow.SetFieldInst;
+import fr.jamgotchian.abcd.core.controlflow.SetStaticFieldInst;
+import fr.jamgotchian.abcd.core.controlflow.SwitchInst;
+import fr.jamgotchian.abcd.core.controlflow.TACInst;
+import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
+import fr.jamgotchian.abcd.core.controlflow.TACInstVisitor;
+import fr.jamgotchian.abcd.core.controlflow.ThrowInst;
+import fr.jamgotchian.abcd.core.controlflow.UnaryInst;
+import fr.jamgotchian.abcd.core.controlflow.Variable;
+import fr.jamgotchian.abcd.core.controlflow.VariableID;
+import fr.jamgotchian.abcd.core.controlflow.util.TACInstWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -416,8 +416,7 @@ public class FinallyUninliner {
             logger.log(Level.FINEST, "Finally subgraph : entry={0}, exit={1}, vertices={2}",
                     new Object[] {finallyEntry, finallyExit, finallySubgraph.getVertices()});
 
-            AnalysisData data = (AnalysisData) finallyExit.getData();
-            TACInstSeq instructions = data.getInstructions();
+            TACInstSeq instructions = finallyExit.getInstructions();
             TACInst lastInst = instructions.getLast();
             if (!(lastInst instanceof ThrowInst)) {
                 throw new ABCDException("Last instruction of finally subgraph " +
@@ -432,7 +431,7 @@ public class FinallyUninliner {
                 Map<BasicBlock, Set<Variable>> liveVariables
                         = new LiveVariablesAnalysis(CFG).analyse();
                 for (BasicBlock bb : finallySubgraph.getVertices()) {
-                    for (Iterator<TACInst> it = ((AnalysisData) bb.getData()).getInstructions().iterator();
+                    for (Iterator<TACInst> it = bb.getInstructions().iterator();
                          it.hasNext();) {
                         TACInst inst = it.next();
                         if (inst instanceof AssignVarInst ||
@@ -493,8 +492,8 @@ public class FinallyUninliner {
     private boolean subgraphEquals(BasicBlock block, BasicBlock otherBlock,
                                    DirectedGraph<BasicBlock, Edge> otherSubgraph,
                                    Set<BasicBlock> subgraph, VariableComparator comparator) {
-        TACInstSeq seq1 = ((AnalysisData) block.getData()).getInstructions();
-        TACInstSeq seq2 = ((AnalysisData) otherBlock.getData()).getInstructions();
+        TACInstSeq seq1 = block.getInstructions();
+        TACInstSeq seq2 = otherBlock.getInstructions();
         Boolean equals = seq1.accept(new TACComparator(seq2, comparator), null);
         if (Boolean.FALSE.equals(equals)) {
             return false;
