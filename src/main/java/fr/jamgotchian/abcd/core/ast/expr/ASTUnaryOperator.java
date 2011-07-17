@@ -23,59 +23,33 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public enum BinaryOperator {
-    PLUS,
+public enum ASTUnaryOperator {
+    POST_INCREMENT,
+    POST_DECREMENT,
+    PRE_INCREMENT,
+    PRE_DECREMENT,
     MINUS,
-    MUL,
-    DIV,
-    LE,
-    LT,
-    GE,
-    GT,
-    EQ,
-    NE,
-    REMAINDER,
-    SHIFT_LEFT,
-    SHIFT_RIGHT,
-    LOGICAL_SHIFT_RIGHT,
-    AND,
-    OR,
-    XOR,
-    INSTANCE_OF;
+    NOT,
+    NONE; // needed to invert NOT operator
 
-    public static BinaryOperator getInverse(BinaryOperator op) {
+    public static ASTUnaryOperator getInverse(ASTUnaryOperator op) {
         switch (op) {
-            case PLUS:
+            case POST_INCREMENT:
+            case POST_DECREMENT:
+            case PRE_INCREMENT:
+            case PRE_DECREMENT:
             case MINUS:
-            case MUL:
-            case DIV:
-            case REMAINDER:
-            case SHIFT_LEFT:
-            case SHIFT_RIGHT:
-            case INSTANCE_OF:
                 return op;
-            case LE:
-                return GT;
-            case LT:
-                return GE;
-            case GE:
-                return LT;
-            case GT:
-                return LE;
-            case EQ:
-                return NE;
-            case NE:
-                return EQ;
-            case AND:
-                return OR;
-            case OR:
-                return AND;
+            case NOT:
+                return NONE;
+            case NONE:
+                return NOT;
             default:
                 throw new ABCDException("Impossible to invert " + op);
         }
     }
 
-    public BinaryOperator getInverse() {
+    public ASTUnaryOperator getInverse() {
         return getInverse(this);
     }
 }

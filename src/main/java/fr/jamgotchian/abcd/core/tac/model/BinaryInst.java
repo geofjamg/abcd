@@ -25,13 +25,13 @@ import java.util.Set;
  */
 public class BinaryInst extends DefInst {
 
-    private final BinaryOp operator;
+    private final TACBinaryOperator operator;
 
     private final Variable left;
 
     private final Variable right;
 
-    BinaryInst(int defID, Variable result, BinaryOp operator, Variable left,
+    BinaryInst(int defID, Variable result, TACBinaryOperator operator, Variable left,
                Variable right) {
         super(defID, result);
         this.operator = operator;
@@ -39,7 +39,7 @@ public class BinaryInst extends DefInst {
         this.right = right;
     }
 
-    public BinaryOp getOperator() {
+    public TACBinaryOperator getOperator() {
         return operator;
     }
 

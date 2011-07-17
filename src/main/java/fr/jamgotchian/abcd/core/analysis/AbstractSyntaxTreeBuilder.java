@@ -20,13 +20,13 @@ import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.expr.ArrayCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignOperator;
-import fr.jamgotchian.abcd.core.ast.expr.BinaryOperator;
+import fr.jamgotchian.abcd.core.ast.expr.ASTBinaryOperator;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.TypeExpression;
-import fr.jamgotchian.abcd.core.ast.expr.UnaryOperator;
+import fr.jamgotchian.abcd.core.ast.expr.ASTUnaryOperator;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.BreakStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.DoWhileStatement;
@@ -215,25 +215,25 @@ public class AbstractSyntaxTreeBuilder {
             Variable rightVar = inst.getRight();
             Expression leftExpr = getVarExpr(leftVar);
             Expression rightExpr = getVarExpr(rightVar);
-            BinaryOperator op;
+            ASTBinaryOperator op;
             switch (inst.getOperator()) {
-                case AND: op = BinaryOperator.AND; break;
-                case DIV: op = BinaryOperator.DIV; break;
-                case EQ: op = BinaryOperator.EQ; break;
-                case GE: op = BinaryOperator.GE; break;
-                case GT: op = BinaryOperator.GT; break;
-                case LE: op = BinaryOperator.LE; break;
-                case LOGICAL_SHIFT_RIGHT: op = BinaryOperator.LOGICAL_SHIFT_RIGHT; break;
-                case LT: op = BinaryOperator.LT; break;
-                case MINUS: op = BinaryOperator.MINUS; break;
-                case MUL: op = BinaryOperator.MUL; break;
-                case NE: op = BinaryOperator.NE; break;
-                case OR: op = BinaryOperator.OR; break;
-                case PLUS: op = BinaryOperator.PLUS; break;
-                case REMAINDER: op = BinaryOperator.REMAINDER; break;
-                case SHIFT_LEFT: op = BinaryOperator.SHIFT_LEFT; break;
-                case SHIFT_RIGHT: op = BinaryOperator.SHIFT_RIGHT; break;
-                case XOR: op = BinaryOperator.XOR; break;
+                case AND: op = ASTBinaryOperator.AND; break;
+                case DIV: op = ASTBinaryOperator.DIV; break;
+                case EQ: op = ASTBinaryOperator.EQ; break;
+                case GE: op = ASTBinaryOperator.GE; break;
+                case GT: op = ASTBinaryOperator.GT; break;
+                case LE: op = ASTBinaryOperator.LE; break;
+                case LOGICAL_SHIFT_RIGHT: op = ASTBinaryOperator.LOGICAL_SHIFT_RIGHT; break;
+                case LT: op = ASTBinaryOperator.LT; break;
+                case MINUS: op = ASTBinaryOperator.MINUS; break;
+                case MUL: op = ASTBinaryOperator.MUL; break;
+                case NE: op = ASTBinaryOperator.NE; break;
+                case OR: op = ASTBinaryOperator.OR; break;
+                case PLUS: op = ASTBinaryOperator.PLUS; break;
+                case REMAINDER: op = ASTBinaryOperator.REMAINDER; break;
+                case SHIFT_LEFT: op = ASTBinaryOperator.SHIFT_LEFT; break;
+                case SHIFT_RIGHT: op = ASTBinaryOperator.SHIFT_RIGHT; break;
+                case XOR: op = ASTBinaryOperator.XOR; break;
                 default: throw new InternalError();
             }
             Expression binExpr = Expressions.newBinExpr(leftExpr, rightExpr, op);
@@ -386,7 +386,7 @@ public class AbstractSyntaxTreeBuilder {
             Variable var = inst.getVar();
             Expression expr = getVarExpr(var);
             Expression typeExpr = Expressions.newTypeExpr(inst.getType());
-            Expression instOfExpr = Expressions.newBinExpr(expr, typeExpr, BinaryOperator.INSTANCE_OF);
+            Expression instOfExpr = Expressions.newBinExpr(expr, typeExpr, ASTBinaryOperator.INSTANCE_OF);
             addVarAssignExpr(resultVar, instOfExpr, blockStmt);
             return null;
         }
@@ -465,16 +465,20 @@ public class AbstractSyntaxTreeBuilder {
             Variable resultVar = inst.getResult();
             Variable var = inst.getVar();
             Expression expr = getVarExpr(var);
-            UnaryOperator op;
+            ASTUnaryOperator op;
             switch (inst.getOperator()) {
                 case MINUS:
-                    op = UnaryOperator.MINUS;
+                    op = ASTUnaryOperator.MINUS;
                     break;
 
-                case NEG:
-                    op = UnaryOperator.NEG;
+                case NOT:
+                    op = ASTUnaryOperator.NOT;
                     break;
 
+                case NONE:
+                    op = ASTUnaryOperator.NONE;
+                    break;
+                    
                 default:
                     throw new InternalError();
             }

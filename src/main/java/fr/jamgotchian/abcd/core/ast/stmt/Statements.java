@@ -24,7 +24,7 @@ import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.StringLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
-import fr.jamgotchian.abcd.core.ast.expr.UnaryOperator;
+import fr.jamgotchian.abcd.core.ast.expr.ASTUnaryOperator;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
@@ -109,10 +109,10 @@ public class Statements {
         } else if (exprStmt.getExpression() instanceof UnaryExpression) {
             UnaryExpression unaryExpr = (UnaryExpression) exprStmt.getExpression();
 
-            return unaryExpr.getOperator() == UnaryOperator.POST_INCREMENT
-                    || unaryExpr.getOperator() == UnaryOperator.POST_DECREMENT
-                    || unaryExpr.getOperator() == UnaryOperator.PRE_INCREMENT
-                    || unaryExpr.getOperator() == UnaryOperator.PRE_DECREMENT;
+            return unaryExpr.getOperator() == ASTUnaryOperator.POST_INCREMENT
+                    || unaryExpr.getOperator() == ASTUnaryOperator.POST_DECREMENT
+                    || unaryExpr.getOperator() == ASTUnaryOperator.PRE_INCREMENT
+                    || unaryExpr.getOperator() == ASTUnaryOperator.PRE_DECREMENT;
         } else {
             return false;
         }

@@ -19,7 +19,7 @@ package fr.jamgotchian.abcd.core.ast.util;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
-import fr.jamgotchian.abcd.core.ast.expr.BinaryOperator;
+import fr.jamgotchian.abcd.core.ast.expr.ASTBinaryOperator;
 import fr.jamgotchian.abcd.core.ast.expr.StringLiteralExpression;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -44,10 +44,10 @@ public class ExpressionEqualityCheckerTest {
     public void test2() {
         BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newStringExpr("a"),
                                                         Expressions.newStringExpr("b"),
-                                                        BinaryOperator.EQ);
+                                                        ASTBinaryOperator.EQ);
         BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newStringExpr("a"),
                                                         Expressions.newStringExpr("b"),
-                                                        BinaryOperator.EQ);
+                                                        ASTBinaryOperator.EQ);
         assertTrue(ExpressionEqualityChecker.equal(expr1, expr2));
     }
 
@@ -55,10 +55,10 @@ public class ExpressionEqualityCheckerTest {
     public void test3() {
         BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newStringExpr("a"),
                                                         Expressions.newStringExpr("b"),
-                                                        BinaryOperator.EQ);
+                                                        ASTBinaryOperator.EQ);
         BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newStringExpr("a"),
                                                         Expressions.newStringExpr("c"),
-                                                        BinaryOperator.EQ);
+                                                        ASTBinaryOperator.EQ);
         assertFalse(ExpressionEqualityChecker.equal(expr1, expr2));
     }
 

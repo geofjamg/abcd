@@ -45,7 +45,7 @@ public class Expressions {
         return new AssignExpression(target, value, operator);
     }
 
-    public static UnaryExpression newUnaryExpr(Expression expr, UnaryOperator operator) {
+    public static UnaryExpression newUnaryExpr(Expression expr, ASTUnaryOperator operator) {
         return new UnaryExpression(expr, operator);
     }
 
@@ -90,7 +90,7 @@ public class Expressions {
     }
 
     public static BinaryExpression newBinExpr(Expression left, Expression right,
-                                              BinaryOperator operator) {
+                                              ASTBinaryOperator operator) {
         return new BinaryExpression(left, right, operator);
     }
 

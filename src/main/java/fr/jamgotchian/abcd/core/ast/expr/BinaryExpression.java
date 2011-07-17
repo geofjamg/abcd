@@ -27,9 +27,9 @@ public class BinaryExpression extends AbstractExpression {
 
     private final Expression right;
 
-    private final BinaryOperator operator;
+    private final ASTBinaryOperator operator;
 
-    BinaryExpression(Expression left, Expression right, BinaryOperator operator) {
+    BinaryExpression(Expression left, Expression right, ASTBinaryOperator operator) {
         this.left = left;
         this.right = right;
         this.operator =  operator;
@@ -37,7 +37,7 @@ public class BinaryExpression extends AbstractExpression {
         right.setParent(this);
     }
 
-    public BinaryOperator getOperator() {
+    public ASTBinaryOperator getOperator() {
         return operator;
     }
 

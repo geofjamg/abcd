@@ -18,7 +18,7 @@
 package fr.jamgotchian.abcd.core.ast.util;
 
 import fr.jamgotchian.abcd.core.ast.expr.BinaryExpression;
-import fr.jamgotchian.abcd.core.ast.expr.BinaryOperator;
+import fr.jamgotchian.abcd.core.ast.expr.ASTBinaryOperator;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import org.junit.Assert;
@@ -34,19 +34,19 @@ public class ExpressionInverterTest {
     public void test1() {
         BinaryExpression expr1 = Expressions.newBinExpr(Expressions.newIntExpr(1),
                                                         Expressions.newIntExpr(2),
-                                                        BinaryOperator.GT);
+                                                        ASTBinaryOperator.GT);
         BinaryExpression expr2 = Expressions.newBinExpr(Expressions.newIntExpr(2),
                                                         Expressions.newIntExpr(3),
-                                                        BinaryOperator.NE);
+                                                        ASTBinaryOperator.NE);
         BinaryExpression expr3 = Expressions.newBinExpr(expr1,
                                                         expr2,
-                                                        BinaryOperator.AND);
+                                                        ASTBinaryOperator.AND);
 
         Expression expr3Inv = ExpressionInverter.invert(expr3);
         Expression expr1Inv = ((BinaryExpression)expr3Inv).getLeft();
         Expression expr2Inv = ((BinaryExpression)expr3Inv).getRight();
-        Assert.assertTrue(((BinaryExpression)expr3Inv).getOperator() == BinaryOperator.OR);
-        Assert.assertTrue(((BinaryExpression)expr1Inv).getOperator() == BinaryOperator.LE);
-        Assert.assertTrue(((BinaryExpression)expr2Inv).getOperator() == BinaryOperator.EQ);
+        Assert.assertTrue(((BinaryExpression)expr3Inv).getOperator() == ASTBinaryOperator.OR);
+        Assert.assertTrue(((BinaryExpression)expr1Inv).getOperator() == ASTBinaryOperator.LE);
+        Assert.assertTrue(((BinaryExpression)expr2Inv).getOperator() == ASTBinaryOperator.EQ);
     }
 }

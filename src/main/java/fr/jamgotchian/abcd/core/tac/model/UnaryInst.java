@@ -25,17 +25,17 @@ import java.util.Set;
  */
 public class UnaryInst extends DefInst {
 
-    private final UnaryOp operator;
+    private final TACUnaryOperator operator;
 
     private final Variable var;
 
-     UnaryInst(int defID, Variable result, UnaryOp operator, Variable var) {
+     UnaryInst(int defID, Variable result, TACUnaryOperator operator, Variable var) {
         super(defID, result);
         this.operator = operator;
         this.var = var;
     }
 
-    public UnaryOp getOperator() {
+    public TACUnaryOperator getOperator() {
         return operator;
     }
 

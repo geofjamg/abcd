@@ -28,7 +28,7 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlockVisitor;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.tac.model.BinaryOp;
+import fr.jamgotchian.abcd.core.tac.model.TACBinaryOperator;
 import fr.jamgotchian.abcd.core.tac.model.ByteConst;
 import fr.jamgotchian.abcd.core.tac.model.ClassConst;
 import fr.jamgotchian.abcd.core.tac.model.DoubleConst;
@@ -43,7 +43,7 @@ import fr.jamgotchian.abcd.core.tac.model.StringConst;
 import fr.jamgotchian.abcd.core.tac.model.Variable;
 import fr.jamgotchian.abcd.core.tac.model.TACInstFactory;
 import fr.jamgotchian.abcd.core.tac.model.TemporaryVariableFactory;
-import fr.jamgotchian.abcd.core.tac.model.UnaryOp;
+import fr.jamgotchian.abcd.core.tac.model.TACUnaryOperator;
 import fr.jamgotchian.abcd.core.tac.util.TACInstWriter;
 import fr.jamgotchian.abcd.core.tac.util.VariableStack;
 import org.objectweb.asm.Type;
@@ -158,7 +158,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
         Variable tmpValue = tmpVarFactory.create(block);
         addInst(block, instFactory.newAssignConst(tmpValue, new IntConst(Math.abs(node.incr))));
         Variable tmpResult = tmpVarFactory.create(block);
-        BinaryOp binOp = node.incr > 0 ? BinaryOp.PLUS : BinaryOp.MINUS;
+        TACBinaryOperator binOp = node.incr > 0 ? TACBinaryOperator.PLUS : TACBinaryOperator.MINUS;
         addInst(block, instFactory.newBinary(tmpResult, binOp, tmpVar, tmpValue));
         addInst(block, instFactory.newAssignVar(new Variable(node.var, block, position), tmpResult));
     }
@@ -348,7 +348,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.PLUS, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.PLUS, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -360,7 +360,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.MINUS, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.MINUS, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -372,7 +372,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.MUL, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.MUL, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -384,7 +384,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.DIV, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.DIV, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -396,7 +396,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.REMAINDER, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.REMAINDER, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -406,7 +406,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
             case FNEG:
             case DNEG: {
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newUnary(tmpResult, UnaryOp.MINUS, stack.pop()));
+                addInst(block, instFactory.newUnary(tmpResult, TACUnaryOperator.MINUS, stack.pop()));
                 stack.push(tmpResult);
                 break;
             }
@@ -416,7 +416,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.SHIFT_LEFT, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.SHIFT_LEFT, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -426,7 +426,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.SHIFT_RIGHT, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.SHIFT_RIGHT, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -436,7 +436,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.LOGICAL_SHIFT_RIGHT, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.LOGICAL_SHIFT_RIGHT, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -446,7 +446,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.AND, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.AND, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -456,7 +456,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.OR, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.OR, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -466,7 +466,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.XOR, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.XOR, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -598,7 +598,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable value2 = stack.pop();
                 Variable value1 = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.MINUS, value1, value2));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.MINUS, value1, value2));
                 stack.push(tmpResult);
                 break;
             }
@@ -665,7 +665,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable tmpZero = tmpVarFactory.create(block);
                 addInst(block, instFactory.newAssignConst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.EQ, stack.pop(), tmpZero));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, stack.pop(), tmpZero));
                 break;
             }
 
@@ -673,7 +673,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable tmpZero = tmpVarFactory.create(block);
                 addInst(block, instFactory.newAssignConst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.NE, stack.pop(), tmpZero));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.NE, stack.pop(), tmpZero));
                 break;
             }
 
@@ -681,7 +681,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable tmpZero = tmpVarFactory.create(block);
                 addInst(block, instFactory.newAssignConst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.LT, stack.pop(), tmpZero));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.LT, stack.pop(), tmpZero));
                 break;
             }
 
@@ -689,7 +689,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable tmpZero = tmpVarFactory.create(block);
                 addInst(block, instFactory.newAssignConst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.GE, stack.pop(), tmpZero));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.GE, stack.pop(), tmpZero));
                 break;
             }
 
@@ -697,7 +697,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable tmpZero = tmpVarFactory.create(block);
                 addInst(block, instFactory.newAssignConst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.GT, stack.pop(), tmpZero));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.GT, stack.pop(), tmpZero));
                 break;
             }
 
@@ -705,7 +705,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable tmpZero = tmpVarFactory.create(block);
                 addInst(block, instFactory.newAssignConst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.LE, stack.pop(), tmpZero));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.LE, stack.pop(), tmpZero));
                 break;
             }
 
@@ -713,7 +713,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.EQ, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, left, right));
                 break;
             }
 
@@ -721,7 +721,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.NE, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.NE, left, right));
                 break;
             }
 
@@ -729,7 +729,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.LT, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.LT, left, right));
                 break;
             }
 
@@ -737,7 +737,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.GE, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.GE, left, right));
                 break;
             }
 
@@ -745,7 +745,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.GT, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.GT, left, right));
                 break;
             }
 
@@ -753,7 +753,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.LE, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.LE, left, right));
                 break;
             }
 
@@ -761,7 +761,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.EQ, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, left, right));
                 break;
             }
 
@@ -769,7 +769,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.NE, left, right));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.NE, left, right));
                 break;
             }
 
@@ -784,7 +784,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 addInst(block, instFactory.newAssignConst(tmpNull, new NullConst(classNameFactory)));
                 stack.push(tmpNull);
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.EQ, stack.pop(), tmpNull));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, stack.pop(), tmpNull));
                 break;
             }
 
@@ -793,7 +793,7 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
                 addInst(block, instFactory.newAssignConst(tmpNull, new NullConst(classNameFactory)));
                 stack.push(tmpNull);
                 tmpResult = tmpVarFactory.create(block);
-                addInst(block, instFactory.newBinary(tmpResult, BinaryOp.NE, stack.pop(), tmpNull));
+                addInst(block, instFactory.newBinary(tmpResult, TACBinaryOperator.NE, stack.pop(), tmpNull));
                 break;
             }
         }

@@ -44,7 +44,7 @@ public class TACInstFactory {
         return new AssignVarInst(defID++, result, value);
     }
 
-    public BinaryInst newBinary(Variable result, BinaryOp operator,
+    public BinaryInst newBinary(Variable result, TACBinaryOperator operator,
                                 Variable var1, Variable var2) {
         return new BinaryInst(defID++, result, operator, var1, var2);
     }
@@ -147,7 +147,7 @@ public class TACInstFactory {
         return new ThrowInst(var);
     }
 
-    public UnaryInst newUnary(Variable result, UnaryOp operator, Variable var) {
+    public UnaryInst newUnary(Variable result, TACUnaryOperator operator, Variable var) {
         return new UnaryInst(defID++, result, operator, var);
     }
 }

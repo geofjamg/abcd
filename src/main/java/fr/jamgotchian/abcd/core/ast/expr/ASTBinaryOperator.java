@@ -23,28 +23,59 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public enum UnaryOperator {
-    POST_INCREMENT,
-    POST_DECREMENT,
-    PRE_INCREMENT,
-    PRE_DECREMENT,
+public enum ASTBinaryOperator {
+    PLUS,
     MINUS,
-    NEG;
+    MUL,
+    DIV,
+    LE,
+    LT,
+    GE,
+    GT,
+    EQ,
+    NE,
+    REMAINDER,
+    SHIFT_LEFT,
+    SHIFT_RIGHT,
+    LOGICAL_SHIFT_RIGHT,
+    AND,
+    OR,
+    XOR,
+    INSTANCE_OF;
 
-    public static UnaryOperator getInverse(UnaryOperator op) {
+    public static ASTBinaryOperator getInverse(ASTBinaryOperator op) {
         switch (op) {
-            case POST_INCREMENT:
-            case POST_DECREMENT:
-            case PRE_INCREMENT:
-            case PRE_DECREMENT:
+            case PLUS:
             case MINUS:
+            case MUL:
+            case DIV:
+            case REMAINDER:
+            case SHIFT_LEFT:
+            case SHIFT_RIGHT:
+            case INSTANCE_OF:
                 return op;
+            case LE:
+                return GT;
+            case LT:
+                return GE;
+            case GE:
+                return LT;
+            case GT:
+                return LE;
+            case EQ:
+                return NE;
+            case NE:
+                return EQ;
+            case AND:
+                return OR;
+            case OR:
+                return AND;
             default:
                 throw new ABCDException("Impossible to invert " + op);
         }
     }
 
-    public UnaryOperator getInverse() {
+    public ASTBinaryOperator getInverse() {
         return getInverse(this);
     }
 }
