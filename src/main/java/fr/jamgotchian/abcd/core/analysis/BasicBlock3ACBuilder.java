@@ -70,10 +70,6 @@ class BasicBlock3ACBuilder implements BasicBlockVisitor {
 
     private static final Logger logger = Logger.getLogger(BasicBlock3ACBuilder.class.getName());
 
-    static {
-        logger.setLevel(Level.FINEST);
-    }
-
     public static final JavaType[] ATYPES = {
         null,
         null,

@@ -32,10 +32,6 @@ public class AbruptEdgeRemover {
     private static final Logger logger
             = Logger.getLogger(AbruptEdgeRemover.class.getName());
 
-    static {
-        logger.setLevel(Level.FINEST);
-    }
-
     private final ControlFlowGraph CFG;
 
     public AbruptEdgeRemover(ControlFlowGraph CFG) {
@@ -48,7 +44,7 @@ public class AbruptEdgeRemover {
                 Set<BasicBlock> frontier
                         = CFG.getDominatorInfo().getDominanceFrontierOf2(bb);
                 if (frontier.size() > 1) {
-                    logger.log(Level.INFO, "Abrupt CFG {0} : {1}",
+                    logger.log(Level.FINER, "Abrupt CFG {0} : {1}",
                             new Object[] {CFG.getName(), bb});
                 }
             }

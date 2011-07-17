@@ -37,10 +37,6 @@ public class DominatorInfo<N, E> {
 
     private static final Logger logger = Logger.getLogger(DominatorInfo.class.getName());
 
-    static {
-        logger.setLevel(Level.FINE);
-    }
-
     private final DirectedGraph<N, E> graph;
 
     private final N entryNode;

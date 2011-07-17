@@ -45,10 +45,6 @@ public class ControlFlowGraphBuilder {
 
     private static final Logger logger = Logger.getLogger(ControlFlowGraphBuilder.class.getName());
 
-    static {
-        logger.setLevel(Level.FINEST);
-    }
-
     private Map<LabelNode, Integer> labelNodeIndex;
 
     private ControlFlowGraph graph;

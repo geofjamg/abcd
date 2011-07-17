@@ -39,11 +39,11 @@ import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.util.Refactorer;
 import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
-import fr.jamgotchian.abcd.core.analysis.FinallyUninliner;
 import fr.jamgotchian.abcd.core.analysis.LocalVariableTypeAnalyser;
 import fr.jamgotchian.abcd.core.analysis.LogicalOperatorBuilder;
 import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
 import fr.jamgotchian.abcd.core.analysis.TernaryOperatorBuilder;
+import fr.jamgotchian.abcd.core.analysis.AbruptEdgeRemover;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.type.ClassName;
@@ -54,7 +54,6 @@ import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
-import fr.jamgotchian.abcd.core.util.SimplestFormatter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -68,7 +67,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
@@ -89,24 +87,10 @@ public class ABCDContext {
 
     public static final boolean DEBUG = false;
 
-    private static final Logger logger;
+    private static final Logger logger = Logger.getLogger(ABCDContext.class.getName());
 
     private static List<Refactorer> REFACTORERS = Collections.unmodifiableList(
             Arrays.<Refactorer>asList(new ForLoopRefactorer()));
-
-    static {
-        // root logger configuration
-        Logger rootLogger = Logger.getLogger(ABCDContext.class.getPackage().getName());
-        ConsoleHandler handler = new ConsoleHandler();
-        handler.setFormatter(new SimplestFormatter());
-        handler.setLevel(Level.FINEST);
-        rootLogger.setLevel(Level.ALL);
-        rootLogger.addHandler(handler);
-        rootLogger.setUseParentHandlers(false);
-
-        logger = Logger.getLogger(ABCDContext.class.getName());
-        logger.setLevel(Level.FINER);
-    }
 
     public static void decompile(File classFile, OutputStream os) throws IOException {
         new ABCDContext().decompileFile(classFile, new DefaultOutputHandler(DEBUG, os));

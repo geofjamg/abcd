@@ -72,10 +72,6 @@ public class FinallyUninliner {
 
     private static final Logger logger = Logger.getLogger(FinallyUninliner.class.getName());
 
-    static {
-        logger.setLevel(Level.FINEST);
-    }
-
     private static class VariableComparator {
 
         /* Variable ID mapping between temporary variables of the 2 sequences */

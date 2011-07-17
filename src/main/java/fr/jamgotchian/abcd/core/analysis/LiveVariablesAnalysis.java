@@ -40,10 +40,6 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
     private static final Logger logger
             = Logger.getLogger(LiveVariablesAnalysis.class.getName());
 
-    static {
-        logger.setLevel(Level.FINE);
-    }
-
     public LiveVariablesAnalysis(ControlFlowGraph CFG) {
         super(CFG.getGraph(), CFG.getExitBlock());
     }

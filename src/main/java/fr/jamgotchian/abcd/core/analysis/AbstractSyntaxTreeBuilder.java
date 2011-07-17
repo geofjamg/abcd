@@ -114,10 +114,6 @@ public class AbstractSyntaxTreeBuilder {
 
     private static final Logger logger = Logger.getLogger(AbstractSyntaxTreeBuilder.class.getName());
 
-    static {
-        logger.setLevel(Level.FINER);
-    }
-
     private final ControlFlowGraph CFG;
 
     private final ImportManager importManager;

@@ -48,10 +48,6 @@ public class StructuralAnalysis {
     private final List<RegionRecognizer> recognizers;
     private final List<RegionRecognizer> recognizers2;
 
-    static {
-        logger.setLevel(Level.FINER);
-    }
-
     private final ControlFlowGraph graph;
 
     private MutableDirectedGraph<Region, Edge> regionGraph;

@@ -50,10 +50,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private static final Logger logger = Logger.getLogger(ControlFlowGraphImpl.class.getName());
 
-    static {
-        logger.setLevel(Level.FINER);
-    }
-
     private final String name;
 
     private InsnList instructions;

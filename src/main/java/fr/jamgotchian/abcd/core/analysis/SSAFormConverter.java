@@ -51,10 +51,6 @@ public class SSAFormConverter {
 
     private static final Logger logger = Logger.getLogger(SSAFormConverter.class.getName());
 
-    static {
-        logger.setLevel(Level.FINER);
-    }
-
     private final ControlFlowGraph graph;
 
     private final TACInstFactory instFactory;
