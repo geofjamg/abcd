@@ -50,8 +50,9 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
     }
 
     public boolean containsKey(Object key) {
-        if (key == null)
+        if (key == null) {
             throw new NullPointerException();
+        }
         K k = (K) key;
         Map.Entry<K, V> entry = map.get(k.getFirst());
         if (entry != null) {
@@ -71,8 +72,9 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
     }
 
     public V get(Object key) {
-        if (key == null)
+        if (key == null) {
             throw new NullPointerException();
+        }
         K k = (K) key;
         Map.Entry<K, V> entry = map.get(k.getFirst());
         if (entry != null && entry.getKey().equals(key)) {
@@ -83,25 +85,27 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
     }
 
     public V put(K key, V value) {
-        if (key == null)
+        if (key == null) {
             throw new NullPointerException();
-        K k = (K) key;
+        }
+        K k = key;
         V previousValue = findBeginningAt(k.getFirst());
         if (previousValue != null) {
-            map.put(key.getFirst(), new SimpleImmutableEntry(key, value));
+            map.put(key.getFirst(), new SimpleImmutableEntry<K, V>(key, value));
         } else {
             if (findContaining(k.getFirst()) != null) {
                 throw new IllegalArgumentException("Range overlapping");
             } else {
-                map.put(key.getFirst(), new SimpleImmutableEntry(key, value));
+                map.put(key.getFirst(), new SimpleImmutableEntry<K, V>(key, value));
             }
         }
         return previousValue;
     }
 
     public V remove(Object key) {
-        if (key == null)
+        if (key == null) {
             throw new NullPointerException();
+        }
         K k = (K) key;
         V value = get(k);
         if (value != null) {
@@ -164,23 +168,23 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
             }
         }
     }
-   
+
     public Collection<V> values(Range range) {
         List<V> values = new ArrayList<V>();
         for (Map.Entry<K, V> entry : map.values()) {
             if (range.contains(entry.getKey())) {
                 values.add(entry.getValue());
             }
-        }        
+        }
         return values;
     }
-    
+
     @Override
     public String toString() {
         Iterator<Entry<K,V>> i = map.values().iterator();
-        if (! i.hasNext())
+        if (! i.hasNext()) {
             return "{}";
-        
+        }
         StringBuilder sb = new StringBuilder();
         sb.append('{');
         for (;;) {
@@ -190,10 +194,11 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
             sb.append(key   == this ? "(this Map)" : key);
             sb.append('=');
             sb.append(value == this ? "(this Map)" : value);
-            if (! i.hasNext())
+            if (! i.hasNext()) {
                 return sb.append('}').toString();
+            }
             sb.append(", ");
         }
     }
-    
+
 }

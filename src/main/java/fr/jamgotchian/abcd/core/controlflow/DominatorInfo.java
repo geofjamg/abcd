@@ -201,7 +201,7 @@ public class DominatorInfo<N, E> {
         logger.log(Level.FINER, "Update dominator info");
 
         // find dominators
-        dominatorsOf = new DominatorsFinder(graph, entryNode).analyse();
+        dominatorsOf = new DominatorsFinder<N, E>(graph, entryNode).analyse();
         for (Map.Entry<N, Set<N>> entry : dominatorsOf.entrySet()) {
             logger.log(Level.FINEST, "Dominators of {0} : {1}",
                     new Object[] {entry.getKey(), entry.getValue()});
@@ -216,7 +216,7 @@ public class DominatorInfo<N, E> {
         computeDominanceFrontier();
 
         // find post-dominators
-        postDominatorsOf = new PostDominatorsFinder(graph, exitNode).analyse();
+        postDominatorsOf = new PostDominatorsFinder<N, E>(graph, exitNode).analyse();
         for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
             logger.log(Level.FINEST, "Post-dominators of {0} : {1}",
                     new Object[] {entry.getKey(), entry.getValue()});
