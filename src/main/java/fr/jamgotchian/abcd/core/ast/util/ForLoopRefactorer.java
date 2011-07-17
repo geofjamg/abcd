@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.analysis;
+package fr.jamgotchian.abcd.core.ast.util;
 
 import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
@@ -38,7 +38,7 @@ public class ForLoopRefactorer extends StatementModifierVisitor implements Refac
     public void refactor(BlockStatement blockStmt) {
         blockStmt.accept(this, null);
     }
-    
+
     @Override
     public Collection<Statement> visit(ExpressionStatement stmt, Void arg) {
         if (Statements.isAssignment(stmt)) {
@@ -48,7 +48,7 @@ public class ForLoopRefactorer extends StatementModifierVisitor implements Refac
                 Expression conditionExpr = whileStmt.getCondition();
                 if (!whileStmt.getBody().isEmpty() && Statements.isIncrement(whileStmt.getBody().getLast())) {
                     ExpressionStatement updateStmt = (ExpressionStatement) whileStmt.getBody().getLast();
-                    Expression updateExpr = (Expression) updateStmt.getExpression();
+                    Expression updateExpr = updateStmt.getExpression();
                     updateStmt.remove();
                     ForStatement forStmt = new ForStatement(initExpr, conditionExpr, updateExpr,
                                                             whileStmt.getBody());
