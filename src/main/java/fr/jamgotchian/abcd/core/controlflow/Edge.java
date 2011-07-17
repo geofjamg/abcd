@@ -34,10 +34,6 @@ public interface Edge {
     void setValue(Object value);
     
     boolean isExceptional();
-
-    int getStackSize();
-    
-    void setStackSize(int stackSize);
     
     boolean isLoopExit();
     

@@ -29,8 +29,6 @@ public class EdgeImpl implements Edge {
 
     private Object value;
 
-    private int stackSize;
-
     private boolean loopExit;
 
     private boolean selfLoop; 
@@ -50,7 +48,6 @@ public class EdgeImpl implements Edge {
     public EdgeImpl(boolean exceptional, Object value, boolean loopExit) {
         this.exceptional = exceptional;
         this.value = value;
-        stackSize = -1;
         this.loopExit = loopExit;
         selfLoop = false;
     }
@@ -59,7 +56,6 @@ public class EdgeImpl implements Edge {
         category = other.category;
         exceptional = other.exceptional;
         value = other.value;
-        stackSize = other.stackSize;
         loopExit = other.loopExit;
     }
 
@@ -85,14 +81,6 @@ public class EdgeImpl implements Edge {
 
     public void setValue(Object value) {
         this.value = value;
-    }
-
-    public int getStackSize() {
-        return stackSize;
-    }
-
-    public void setStackSize(int stackSize) {
-        this.stackSize = stackSize;
     }
 
     public boolean isLoopExit() {
