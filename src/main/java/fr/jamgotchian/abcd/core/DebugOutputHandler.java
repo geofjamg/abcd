@@ -65,8 +65,17 @@ public class DebugOutputHandler extends DefaultOutputHandler {
         baseName = outputDir.getPath() + "/" + graph.getName();
 
         try {
+            Writer writer = new FileWriter(baseName + "_DFST.dot");
+            try {
+                graph.getDFST()
+                        .writeDOT(writer, "DFST", DOTUtil.RANGE_ATTRIBUTE_PROVIDER,
+                                                  DOTUtil.EDGE_ATTRIBUTE_PROVIDER);
+            } finally {
+                writer.close();
+            }
+
             if (!drawRegions) {
-                Writer writer = new FileWriter(baseName + "_CFG.dot");
+                writer = new FileWriter(baseName + "_CFG.dot");
                 try {
                     DOTUtil.writeCFG(graph, null, writer, RANGE);
                 } finally {
@@ -81,7 +90,7 @@ public class DebugOutputHandler extends DefaultOutputHandler {
                 }
             }
 
-            Writer writer = new FileWriter(baseName + "_DT.dot");
+            writer = new FileWriter(baseName + "_DT.dot");
             try {
                 graph.getDominatorInfo().getDominatorsTree()
                         .writeDOT(writer, "DT", DOTUtil.RANGE_ATTRIBUTE_PROVIDER,
