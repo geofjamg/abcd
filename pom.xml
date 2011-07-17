@@ -12,7 +12,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <netbeans.hint.license>gpl30</netbeans.hint.license> 
+    <netbeans.hint.license>gpl30</netbeans.hint.license>
   </properties>
 
   <dependencies>
@@ -28,9 +28,9 @@
       <version>3.3</version>
     </dependency>
     <dependency>
-      <groupId>com.google.collections</groupId>
-      <artifactId>google-collections</artifactId>
-      <version>1.0</version>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>r09</version>
     </dependency>
   </dependencies>
 </project>
