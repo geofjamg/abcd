@@ -422,7 +422,7 @@ public class FinallyUninliner {
                 throw new ABCDException("Last instruction of finally subgraph " +
                         "exit should be a throw instruction");
             }
-            instructions.remove(instructions.size()-1);
+            instructions.removeLast();
 
             // remove dead variables
             boolean deadVar = true;

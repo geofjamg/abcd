@@ -53,8 +53,8 @@ public class LogicalOperatorBuilder {
         TACInstSeq seq2 = bb2.getInstructions();
         JumpIfInst jumpInst1 = (JumpIfInst) seq1.getLast();
         JumpIfInst jumpInst2 = (JumpIfInst) seq2.getLast();
-        seq1.remove(seq1.size()-1);
-        seq2.remove(seq2.size()-1);
+        seq1.removeLast();
+        seq2.removeLast();
         seq1.addAll(seq2);
         seq2.clear();
         Variable cond2;

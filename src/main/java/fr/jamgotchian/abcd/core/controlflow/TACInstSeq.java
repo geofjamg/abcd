@@ -58,6 +58,14 @@ public class TACInstSeq implements Iterable<TACInst> {
         return insts.remove(index);
     }
 
+    public TACInst removeLast() {
+        if (insts.isEmpty()) {
+            return null;
+        } else {
+            return insts.remove(insts.size()-1);
+        }
+    }
+
     public void clear() {
         insts.clear();
     }
