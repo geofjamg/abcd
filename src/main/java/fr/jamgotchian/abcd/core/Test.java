@@ -310,8 +310,7 @@ public class Test {
         for (int i = 0; i < 3; i++) {
             try {
                 System.out.println("b");
-            }
-            finally {
+            } finally {
                 System.out.println("c");
                 if (i == a) {
                     System.out.println("d");
@@ -329,12 +328,11 @@ public class Test {
         for (int i = 0; i < 3; i++) {
             try {
                 System.out.println("b");
-            }
-            finally {
+            } finally {
                 System.out.println("c");
                 if (i == a) {
                     System.out.println("d");
-                    break;
+                    continue;
                 }
                 System.out.println("e");
             }
@@ -765,9 +763,10 @@ public class Test {
                 if(j == 2) {
                     continue TUTU;
                 }
+                c();
             }
         }
-        c();
+        d();
     }
 
     public int foo(int i, int j) {

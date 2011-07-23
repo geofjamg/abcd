@@ -81,21 +81,25 @@ public class LogicalOperatorBuilder {
             Edge trueEdge2 = null;
             Edge falseEdge2 = null;
             for (Edge e : CFG.getOutgoingEdgesOf(bb2)) {
-                if (Boolean.TRUE.equals(e.getValue())) {
+                if (e.isLoopExit()) {
+                    break;
+                } else if (Boolean.TRUE.equals(e.getValue())) {
                     trueEdge2 = e;
                 } else if (Boolean.FALSE.equals(e.getValue())) {
                     falseEdge2 = e;
                 }
             }
-            BasicBlock falseBB1 = CFG.getEdgeTarget(falseEdge1);
-            BasicBlock trueBB2 = CFG.getEdgeTarget(trueEdge2);
-            BasicBlock falseBB2 = CFG.getEdgeTarget(falseEdge2);
-            if (falseBB2.equals(falseBB1)) {
-                agregate(bb1, bb2, trueBB2, falseBB2, TACBinaryOperator.AND, false);
-                return true;
-            } else if (trueBB2.equals(falseBB1)) {
-                agregate(bb1, bb2, trueBB2, falseBB2, TACBinaryOperator.AND, true);
-                return true;
+            if (trueEdge2 != null && falseEdge2 != null) {
+                BasicBlock falseBB1 = CFG.getEdgeTarget(falseEdge1);
+                BasicBlock trueBB2 = CFG.getEdgeTarget(trueEdge2);
+                BasicBlock falseBB2 = CFG.getEdgeTarget(falseEdge2);
+                if (falseBB2.equals(falseBB1)) {
+                    agregate(bb1, bb2, trueBB2, falseBB2, TACBinaryOperator.AND, false);
+                    return true;
+                } else if (trueBB2.equals(falseBB1)) {
+                    agregate(bb1, bb2, trueBB2, falseBB2, TACBinaryOperator.AND, true);
+                    return true;
+                }
             }
         }
         return false;
@@ -107,22 +111,25 @@ public class LogicalOperatorBuilder {
             Edge trueEdge2 = null;
             Edge falseEdge2 = null;
             for (Edge e : CFG.getOutgoingEdgesOf(bb2)) {
-                if (Boolean.TRUE.equals(e.getValue())) {
+                if (e.isLoopExit()) {
+                    break;
+                } else if (Boolean.TRUE.equals(e.getValue())) {
                     trueEdge2 = e;
                 } else if (Boolean.FALSE.equals(e.getValue())) {
                     falseEdge2 = e;
                 }
             }
-
-            BasicBlock trueBB1 = CFG.getEdgeTarget(trueEdge1);
-            BasicBlock trueBB2 = CFG.getEdgeTarget(trueEdge2);
-            BasicBlock falseBB2 = CFG.getEdgeTarget(falseEdge2);
-            if (trueBB2.equals(trueBB1)) {
-                agregate(bb1, bb2, trueBB2, falseBB2, TACBinaryOperator.OR, false);
-                return true;
-            } else if (falseBB2.equals(trueBB1)) {
-                agregate(bb1, bb2, trueBB2, falseBB2, TACBinaryOperator.OR, true);
-                return true;
+            if (trueEdge2 != null && falseEdge2 != null) {
+                BasicBlock trueBB1 = CFG.getEdgeTarget(trueEdge1);
+                BasicBlock trueBB2 = CFG.getEdgeTarget(trueEdge2);
+                BasicBlock falseBB2 = CFG.getEdgeTarget(falseEdge2);
+                if (trueBB2.equals(trueBB1)) {
+                    agregate(bb1, bb2, trueBB2, falseBB2, TACBinaryOperator.OR, false);
+                    return true;
+                } else if (falseBB2.equals(trueBB1)) {
+                    agregate(bb1, bb2, trueBB2, falseBB2, TACBinaryOperator.OR, true);
+                    return true;
+                }
             }
         }
         return false;
@@ -137,19 +144,23 @@ public class LogicalOperatorBuilder {
                     Edge trueEdge1 = null;
                     Edge falseEdge1 = null;
                     for (Edge e : CFG.getOutgoingEdgesOf(bb1)) {
-                        if (Boolean.TRUE.equals(e.getValue())) {
+                        if (e.isLoopExit()) {
+                            break;
+                        } else if (Boolean.TRUE.equals(e.getValue())) {
                             trueEdge1 = e;
                         } else if (Boolean.FALSE.equals(e.getValue())) {
                             falseEdge1 = e;
                         }
                     }
-                    if(checkAnd(bb1, trueEdge1, falseEdge1)) {
-                        change = true;
-                        break;
-                    }
-                    if (checkOr(bb1, trueEdge1, falseEdge1)) {
-                        change = true;
-                        break;
+                    if (trueEdge1 != null && falseEdge1 != null) {
+                        if(checkAnd(bb1, trueEdge1, falseEdge1)) {
+                            change = true;
+                            break;
+                        }
+                        if (checkOr(bb1, trueEdge1, falseEdge1)) {
+                            change = true;
+                            break;
+                        }
                     }
                 }
             }
