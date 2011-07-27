@@ -452,7 +452,7 @@ public class ABCDContext {
             } else {
                 ABCDContext.decompile(classFile, os);
             }
-        } catch (IOException exc) {
+        } catch (Throwable exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
     }
