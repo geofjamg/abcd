@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.graph.EdgeFactory;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.MutableTree;
@@ -142,6 +143,10 @@ public class DominatorInfo<N, E> {
                 Set<N> dominators = entry.getValue();
                 if (dominators.contains(parentNode)) {
                     if (tree.containsNode(node)) {
+                        if (tree.getSubTree(node).containsNode(parentNode)) {
+                            throw new ABCDException("Cycle detected during dominator tree building : " 
+                                    + node + " <-> " + parentNode);
+                        }
                         tree.setParent(node, parentNode);
                     } else {
                         tree.addNode(parentNode, node, factory.createEdge());
@@ -212,9 +217,6 @@ public class DominatorInfo<N, E> {
         buildTree(dominatorsOf, entryNode, dominatorsTree);
         logger.log(Level.FINEST, "Dominators tree :\n{0}", Trees.toString(dominatorsTree));
 
-        // compute dominance frontier
-        computeDominanceFrontier();
-
         // find post-dominators
         postDominatorsOf = new PostDominatorsFinder<N, E>(graph, exitNode).analyse();
         for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
@@ -226,6 +228,9 @@ public class DominatorInfo<N, E> {
         postDominatorsTree = Trees.newTree(exitNode);
         buildTree(postDominatorsOf, exitNode, postDominatorsTree);
         logger.log(Level.FINEST, "Post dominators tree :\n{0}", Trees.toString(postDominatorsTree));
+
+        // compute dominance frontier
+        computeDominanceFrontier();
 
         // compute post dominance frontier
         computePostDominanceFrontier();
