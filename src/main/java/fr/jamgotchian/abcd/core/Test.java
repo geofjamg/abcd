@@ -491,30 +491,30 @@ public class Test {
         }
     }
 
-//    public void testInfiniteLoop() {
-//        while(true) {
-//            a();
-//        }
-//    }
-//
-//    public void testInfiniteLoop2() {
-//        while(true) {
-//            a();
-//            while(true) {
-//                b();
-//            }
-//        }
-//    }
+    public void testInfiniteLoop() {
+        while(true) {
+            a();
+        }
+    }
 
-//    public void testInfiniteLoop3(int a) {
-//        for (int i = 0; i < a; i++) {
-//            a();
-//            while(true) {
-//                b();
-//            }
-//        }
-//        c();
-//    }
+    public void testInfiniteLoop2() {
+        while(true) {
+            a();
+            while(true) {
+                b();
+            }
+        }
+    }
+
+    public void testInfiniteLoop3(int a) {
+        for (int i = 0; i < a; i++) {
+            a();
+            while(true) {
+                b();
+            }
+        }
+        c();
+    }
 
     public void testFor() {
         for (int i = 0; i < 3; i++) {
@@ -900,16 +900,16 @@ public class Test {
         }
     }
 
-//    public void testSwitchInfiniteLoop(int a) {
-//        switch (a) {
-//            case 0:
-//                while(true);
-//
-//            case 1:
-//                System.out.println("b");
-//                break;
-//        }
-//    }
+    public void testSwitchInfiniteLoop(int a) {
+        switch (a) {
+            case 0:
+                while(true);
+
+            case 1:
+                System.out.println("b");
+                break;
+        }
+    }
 
     public void testSwitchWithEmptyDefaultCase(int a) {
         System.out.println("a");
@@ -1080,7 +1080,23 @@ public class Test {
         }
         System.out.println("d");
     }
+  
+    public void testThrow4(int a) {
+        if (a == 1) {
+            throw new IllegalArgumentException("hello");
+        } else {
+            System.out.println("a");
+        }
+    }
 
+    public void testThrow5(int a) {
+        if (a == 1) {
+            throw new IllegalArgumentException("hello");
+        } else {
+            throw new IllegalArgumentException("hello2");
+        }
+    }
+    
     public void testInstanceOf() {
         java.lang.String a = "sss";
         if (a instanceof java.lang.String) {
