@@ -23,6 +23,7 @@ import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.MutableTree;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -73,7 +74,7 @@ public class DominatorInfo<N, E> {
     }
 
     public Set<N> getDominatorsOf(N n) {
-        return dominatorsOf.get(n);
+        return Collections.unmodifiableSet(dominatorsOf.get(n));
     }
 
     public boolean dominate(N x, N y) {
@@ -89,11 +90,11 @@ public class DominatorInfo<N, E> {
     }
 
     public Tree<N, E> getDominatorsTree() {
-        return dominatorsTree;
+        return Trees.unmodifiableTree(dominatorsTree);
     }
 
     public Set<E> getDominanceFrontierOf(N n) {
-        return dominanceFrontierOf.get(n);
+        return Collections.unmodifiableSet(dominanceFrontierOf.get(n));
     }
 
     public Set<N> getDominanceFrontierOf2(N n) {
@@ -105,15 +106,15 @@ public class DominatorInfo<N, E> {
     }
 
     public Set<N> getPostDominatorsOf(N n) {
-        return postDominatorsOf.get(n);
+        return Collections.unmodifiableSet(postDominatorsOf.get(n));
     }
 
     public Tree<N, E> getPostDominatorsTree() {
-        return postDominatorsTree;
+        return Trees.unmodifiableTree(postDominatorsTree);
     }
 
     public Set<E> getPostDominanceFrontierOf(N n) {
-        return postDominanceFrontierOf.get(n);
+        return Collections.unmodifiableSet(postDominanceFrontierOf.get(n));
     }
 
     public Set<N> getPostDominanceFrontierOf2(N n) {
@@ -136,7 +137,8 @@ public class DominatorInfo<N, E> {
         return postDominatorsTree.getParent(n);
     }
 
-    private void buildTree(Map<N, Set<N>> dominatorsOf, N parentNode, MutableTree<N, E> tree) {
+    private static <N, E> void buildTree(Map<N, Set<N>> dominatorsOf, N parentNode, 
+                                         MutableTree<N, E> tree, EdgeFactory<E> factory) {
         for (Map.Entry<N, Set<N>> entry : dominatorsOf.entrySet()) {
             N node = entry.getKey();
             if (!node.equals(parentNode)) {
@@ -155,11 +157,11 @@ public class DominatorInfo<N, E> {
             }
         }
         for (N child : new HashSet<N>(tree.getChildren(parentNode))) {
-            buildTree(dominatorsOf, child, tree);
+            buildTree(dominatorsOf, child, tree, factory);
         }
     }
 
-    public void computeDominanceFrontier() {
+    private void computeDominanceFrontier() {
         dominanceFrontierOf = new HashMap<N, Set<E>>();
 
         // x dominate a predecessor of z (y) but do not strictly dominate z
@@ -181,7 +183,7 @@ public class DominatorInfo<N, E> {
        }
     }
 
-    public void computePostDominanceFrontier() {
+    private void computePostDominanceFrontier() {
         postDominanceFrontierOf = new HashMap<N, Set<E>>();
 
         for (N x : graph.getVertices()) {
@@ -214,7 +216,7 @@ public class DominatorInfo<N, E> {
 
         // build dominators tree
         dominatorsTree = Trees.newTree(entryNode);
-        buildTree(dominatorsOf, entryNode, dominatorsTree);
+        buildTree(dominatorsOf, entryNode, dominatorsTree, factory);
         logger.log(Level.FINEST, "Dominators tree :\n{0}", Trees.toString(dominatorsTree));
 
         // find post-dominators
@@ -226,7 +228,7 @@ public class DominatorInfo<N, E> {
 
         // build post-dominators tree
         postDominatorsTree = Trees.newTree(exitNode);
-        buildTree(postDominatorsOf, exitNode, postDominatorsTree);
+        buildTree(postDominatorsOf, exitNode, postDominatorsTree, factory);
         logger.log(Level.FINEST, "Post dominators tree :\n{0}", Trees.toString(postDominatorsTree));
 
         // compute dominance frontier
