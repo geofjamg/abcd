@@ -98,6 +98,12 @@ public class EdgeImpl implements Edge {
     public void setSelfLoop(boolean selfLoop) {
         this.selfLoop = selfLoop;
     }
+
+    public void resetState() {
+        category = null;
+        loopExit = false;
+        selfLoop = false;
+    }
     
     @Override
     public Edge clone() {

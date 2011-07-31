@@ -43,5 +43,7 @@ public interface Edge {
 
     void setSelfLoop(boolean selfLoop);
     
+    void resetState();
+    
     Edge clone();
 }

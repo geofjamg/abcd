@@ -360,15 +360,13 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public void analyseLoops() {
         logger.log(Level.FINER, "Analyse loops");
-        dominatorInfo = DominatorInfo.create(graph, entryBlock, exitBlock, EDGE_FACTORY);
         performDepthFirstSearch();
+        dominatorInfo = DominatorInfo.create(graph, entryBlock, exitBlock, EDGE_FACTORY);
         for (Edge e : getEdges()) {
-            e.setCategory(null);
-            e.setLoopExit(false);
-            e.setSelfLoop(false);
+            e.resetState();
         }
         for (BasicBlock bb : getBasicBlocks()) {
-            bb.setLoopLevel(0);
+            bb.resetState();
         }
         analyseEdgeCategory();
         analyseNaturalLoops();

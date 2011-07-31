@@ -103,4 +103,8 @@ public class BasicBlockTestImpl extends Vertex implements BasicBlock {
     public void setOutputStack(VariableStack outputStack) {
         this.outputStack = outputStack;
     }
+
+    public void resetState() {
+        loopLevel = 0;
+    }
 }

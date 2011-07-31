@@ -136,6 +136,10 @@ class BasicBlockImpl implements BasicBlock {
         this.outputStack = outputStack;
     }
 
+    public void resetState() {
+        loopLevel = 0;
+    }
+
     public void visit(BasicBlockVisitor visitor) {
 
         visitor.before(this);

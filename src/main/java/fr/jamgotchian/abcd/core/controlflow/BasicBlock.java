@@ -53,5 +53,7 @@ public interface BasicBlock {
 
     VariableStack getOutputStack();
 
+    void resetState();
+    
     void setOutputStack(VariableStack outputStack);
 }
