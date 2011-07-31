@@ -43,7 +43,6 @@ import fr.jamgotchian.abcd.core.analysis.LocalVariableTypeAnalyser;
 import fr.jamgotchian.abcd.core.analysis.LogicalOperatorBuilder;
 import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
 import fr.jamgotchian.abcd.core.analysis.TernaryOperatorBuilder;
-import fr.jamgotchian.abcd.core.analysis.AbruptEdgeRemover;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.type.ClassName;
@@ -305,8 +304,6 @@ public class ABCDContext {
                 // analyse local variables types
                 new LocalVariableTypeAnalyser(graph, method, importManager,
                                               instFactory).analyse();
-
-//                new AbruptEdgeRemover(graph).remove();
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Uninline finally clauses of " + methodSignature, '='));
