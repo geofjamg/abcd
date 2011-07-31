@@ -226,6 +226,34 @@ public class DominatorInfo<N, E> {
                     new Object[] {entry.getKey(), entry.getValue()});
         }
 
+        // check that exit node post dominate every other nodes
+        Set<N> notPostDominatedByExit = new HashSet<N>();
+        for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
+            if (!entry.getValue().contains(exitNode)) {
+                notPostDominatedByExit.add(entry.getKey());
+            }
+        }
+        if (notPostDominatedByExit.size() > 0) {
+            logger.log(Level.WARNING, "Exit node do not post-dominate every other nodes : {0}"
+                    , notPostDominatedByExit);
+        }
+
+        // check that there is not post domination cycle (example : node A post
+        // dominate node B and node B post dominate node A
+        for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
+            N node = entry.getKey();
+            for (N node2 : entry.getValue()) {
+                if (!node.equals(node2)) {
+                    if (postDominatorsOf.get(node2).contains(node)) {
+                        logger.log(Level.WARNING, 
+                                "Detect post-dominance cycle : {0} <-> {1}"
+                                , new Object[] {node, node2});
+
+                    }
+                }
+            }
+        }        
+        
         // build post-dominators tree
         postDominatorsTree = Trees.newTree(exitNode);
         buildTree(postDominatorsOf, exitNode, postDominatorsTree, factory);
