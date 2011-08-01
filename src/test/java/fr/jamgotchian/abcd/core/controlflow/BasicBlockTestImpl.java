@@ -30,7 +30,7 @@ public class BasicBlockTestImpl extends Vertex implements BasicBlock {
 
     private int loopLevel;
 
-    private final TACInstSeq instructions;
+    private TACInstSeq instructions;
 
     private VariableStack inputStack;
 
@@ -86,6 +86,10 @@ public class BasicBlockTestImpl extends Vertex implements BasicBlock {
 
     public TACInstSeq getInstructions() {
         return instructions;
+    }
+
+    public void setInstructions(TACInstSeq instructions) {
+        this.instructions = instructions;
     }
 
     public VariableStack getInputStack() {

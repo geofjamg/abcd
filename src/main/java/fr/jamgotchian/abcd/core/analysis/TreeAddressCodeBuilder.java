@@ -27,6 +27,7 @@ import fr.jamgotchian.abcd.core.controlflow.StringConst;
 import fr.jamgotchian.abcd.core.controlflow.Variable;
 import fr.jamgotchian.abcd.core.controlflow.TACInst;
 import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
+import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
 import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.controlflow.VariableStack;
 import fr.jamgotchian.abcd.core.type.ClassName;
@@ -73,6 +74,8 @@ public class TreeAddressCodeBuilder {
     private void processBlock(BasicBlock block, List<VariableStack> inputStacks) {
 
         logger.log(Level.FINER, "------ Process block {0} ------", block);
+        
+        block.setInstructions(new TACInstSeq());
 
         VariableStack inputStack = null;
         if (inputStacks.isEmpty()) {

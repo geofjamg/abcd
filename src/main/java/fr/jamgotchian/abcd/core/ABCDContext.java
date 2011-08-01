@@ -288,6 +288,9 @@ public class ABCDContext {
 
                 new TreeAddressCodeBuilder(graph, method, importManager,
                                            tmpVarFactory, instFactory).build();
+                
+                graph.compact();
+                graph.analyseLoops();
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build complex logical operators " + methodSignature, '='));

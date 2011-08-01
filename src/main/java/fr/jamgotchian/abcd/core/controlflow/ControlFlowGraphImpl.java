@@ -413,21 +413,26 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 graph.getOutgoingEdgesOf(block).size() == 1) {
                 Range range = block.getRange();
                 boolean remove = true;
-                if (range != null && range.size() > 0) {
-                    AbstractInsnNode node = instructions.get(range.getLast());
-                    if (node.getType() == AbstractInsnNode.JUMP_INSN &&
-                        node.getOpcode() == Opcodes.GOTO) {
-                        for (int i = range.getFirst(); i <= range.getLast()-1; i++) {
-                            node = instructions.get(i);
-                            if (node.getType() != AbstractInsnNode.FRAME &&
-                                node.getType() != AbstractInsnNode.LABEL &&
-                                node.getType() != AbstractInsnNode.LINE) {
-                                remove = false;
-                                break;
+                TACInstSeq tacInsts = block.getInstructions();
+                if (tacInsts != null) {
+                    remove = tacInsts.isEmpty();
+                } else {
+                    if (range != null && range.size() > 0) {
+                        AbstractInsnNode node = instructions.get(range.getLast());
+                        if (node.getType() == AbstractInsnNode.JUMP_INSN &&
+                            node.getOpcode() == Opcodes.GOTO) {
+                            for (int i = range.getFirst(); i <= range.getLast()-1; i++) {
+                                node = instructions.get(i);
+                                if (node.getType() != AbstractInsnNode.FRAME &&
+                                    node.getType() != AbstractInsnNode.LABEL &&
+                                    node.getType() != AbstractInsnNode.LINE) {
+                                    remove = false;
+                                    break;
+                                }
                             }
+                        } else {
+                            remove = false;
                         }
-                    } else {
-                        remove = false;
                     }
                 }
                 if (remove) {
@@ -479,6 +484,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             BasicBlock target = graph.getEdgeTarget(criticalEdge);
             graph.removeEdge(criticalEdge);
             BasicBlock emptyBlock = new BasicBlockImpl(BasicBlockType.EMPTY);
+            emptyBlock.setInstructions(new TACInstSeq());
             emptyBlock.setGraph(this);
             graph.addVertex(emptyBlock);
             graph.addEdge(source, emptyBlock, criticalEdge);

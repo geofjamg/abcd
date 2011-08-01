@@ -47,6 +47,8 @@ public interface BasicBlock {
 
     TACInstSeq getInstructions();
 
+    void setInstructions(TACInstSeq instructions);
+
     VariableStack getInputStack();
 
     void setInputStack(VariableStack inputStack);
