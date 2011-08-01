@@ -17,8 +17,6 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,23 +28,30 @@ public class NaturalLoop {
 
     private final BasicBlock head;
     
-    private final Set<BasicBlock> loop;
+    private final Set<BasicBlock> body;
 
-    public NaturalLoop(BasicBlock head, Collection<BasicBlock> loop) {
+    private final Set<Edge> exits;
+    
+    public NaturalLoop(BasicBlock head, Set<BasicBlock> body) {
         this.head = head;
-        this.loop = Collections.unmodifiableSet(new HashSet<BasicBlock>(loop));
+        this.body = body;
+        this.exits = new HashSet<Edge>();
     }
-
+    
     public BasicBlock getHead() {
         return head;
     }
 
-    public Set<BasicBlock> getLoop() {
-        return loop;
+    public Set<BasicBlock> getBody() {
+        return body;
     }
 
+    public Set<Edge> getExits() {
+        return exits;
+    }
+    
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "(head=" + head + ", body=" + loop + ")";
+        return getClass().getSimpleName() + "(head=" + head + ", body=" + body + ")";
     }
 }

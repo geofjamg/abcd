@@ -31,6 +31,7 @@ import fr.jamgotchian.abcd.core.util.RangeImpl;
 import fr.jamgotchian.abcd.core.util.RangeMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -551,10 +552,10 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                     BasicBlock v = graph.getEdgeSource(e);
                     Set<BasicBlock> visited = new HashSet<BasicBlock>();
                     visited.add(head);
-                    List<BasicBlock> loop = new ArrayList<BasicBlock>();
-                    loop.add(head);
-                    graph.reversePostOrderDFS(v, visited, loop, null, true);
-                    NaturalLoop nl = new NaturalLoop(head, loop);
+                    List<BasicBlock> body = new ArrayList<BasicBlock>();
+                    body.add(head);
+                    graph.reversePostOrderDFS(v, visited, body, null, true);
+                    NaturalLoop nl = new NaturalLoop(head, new HashSet<BasicBlock>(body));
                     naturalLoops.put(head, nl);
 
                     logger.log(Level.FINER, " Found natural loop : {0}", nl);
@@ -569,12 +570,16 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     private void analyseLoopLevel() {
+        Map<Integer, NaturalLoop> loopsByLevel = new HashMap<Integer, NaturalLoop>();
+        
         // from outermost to innermost loops
         for (BasicBlock loopHead : dfst.getNodes()) {
             NaturalLoop nl = naturalLoops.get(loopHead);
             if (nl != null) {
+                loopsByLevel.put(nl.getHead().getLoopLevel()+1, nl);
+                
                 // increase loop level for all blocks of the loop
-                for (BasicBlock block : nl.getLoop()) {
+                for (BasicBlock block : nl.getBody()) {
                     block.setLoopLevel(block.getLoopLevel()+1);
                 }
             }
@@ -584,6 +589,11 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         for (Edge edge : graph.getEdges()) {
             if (edge.isSelfLoop()) {
                 BasicBlock block = graph.getEdgeSource(edge);
+                
+                NaturalLoop nl = new NaturalLoop(block, Collections.singleton(block));
+                logger.log(Level.FINER, " Found self loop : {0}", nl);
+
+                loopsByLevel.put(block.getLoopLevel()+1, nl);
                 block.setLoopLevel(block.getLoopLevel()+1);
             }
         }
@@ -599,6 +609,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             if (target.getLoopLevel() < source.getLoopLevel()) {
                 logger.log(Level.FINEST, "Loop exit edge {0}", graph.toString(edge));
                 edge.setLoopExit(true);
+                loopsByLevel.get(source.getLoopLevel()).getExits().add(edge);
             }
        }
     }

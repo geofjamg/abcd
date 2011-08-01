@@ -214,8 +214,8 @@ public class ControlFlowGraphImplTest {
         printNaturalLoops(graph);
 
         assertTrue(Collections3.sameContent(naturalLoops.keySet(), Arrays.asList(b2, b5)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b2, b3, b5, b6, b7), naturalLoops.get(b2).getLoop()));
-        assertTrue(Collections3.sameContent(Arrays.asList(b5, b6), naturalLoops.get(b5).getLoop()));
+        assertTrue(Collections3.sameContent(Arrays.asList(b2, b3, b5, b6, b7), naturalLoops.get(b2).getBody()));
+        assertTrue(Collections3.sameContent(Arrays.asList(b5, b6), naturalLoops.get(b5).getBody()));
     }
 
 //    @Test
