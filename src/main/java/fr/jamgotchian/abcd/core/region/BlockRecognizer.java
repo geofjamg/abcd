@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -80,7 +81,7 @@ class BlockRecognizer implements RegionRecognizer {
             return false;
         }
         Edge edgeAB = Regions.getFirstOutgoingEdgeOf(graph, regionA, false);
-        if (edgeAB.isLoopExit()) {
+        if (edgeAB.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
             return false;
         }
         Region regionB = graph.getEdgeTarget(edgeAB);

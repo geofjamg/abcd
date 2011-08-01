@@ -18,6 +18,7 @@ package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.Iterator;
 
@@ -46,7 +47,7 @@ class LoopRecognizer implements RegionRecognizer {
             //
             if (Regions.getSuccessorCountOf(graph, loopRegion, false) == 1) {
                 Edge outgoingEdge = Regions.getFirstOutgoingEdgeOf(graph, loopRegion, false);
-                if (outgoingEdge.isLoopBack()
+                if (outgoingEdge.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)
                         && (outgoingEdge.equals(incomingEdge1) || outgoingEdge.equals(incomingEdge2))) {
                     LoopType type = LoopType.INFINITE;
                     Region loopTailRegion = Regions.getDeepExitRegion(graph, loopRegion);

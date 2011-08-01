@@ -27,21 +27,17 @@ public interface Edge {
     
     void setCategory(EdgeCategory category);
 
-    boolean isLoopBack();
-
     Object getValue();
     
     void setValue(Object value);
     
     boolean isExceptional();
-    
-    boolean isLoopExit();
-    
-    void setLoopExit(boolean loopExit);
-    
-    boolean isSelfLoop();
 
-    void setSelfLoop(boolean selfLoop);
+    void addAttribute(EdgeAttribute attr);
+    
+    boolean hasAttribute(EdgeAttribute attr);
+    
+    void resetAttributes();
     
     void resetState();
     

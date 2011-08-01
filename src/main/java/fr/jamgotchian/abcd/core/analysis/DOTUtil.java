@@ -21,6 +21,7 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.controlflow.util.TACInstWriter;
 import fr.jamgotchian.abcd.core.graph.AttributeProvider;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
@@ -132,9 +133,9 @@ public class DOTUtil {
 
         public Map<String, String> getAttributes(Edge edge) {
             Map<String, String> attrs = new HashMap<String, String>(3);
-            if (edge.isLoopBack()) {
+            if (edge.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
                 attrs.put("color", "red");
-            } else if (edge.isLoopExit()) {
+            } else if (edge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                 attrs.put("color", "green");
             } else {
                 attrs.put("color", "black");

@@ -17,6 +17,9 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -29,44 +32,37 @@ public class EdgeImpl implements Edge {
 
     private Object value;
 
-    private boolean loopExit;
-
-    private boolean selfLoop; 
+    private final Set<EdgeAttribute> attributes;
     
     public EdgeImpl() {
         this(false);
     }
     
     public EdgeImpl(boolean exceptional) {
-        this(exceptional, null, false);
+        this(exceptional, null);
     }
 
-    public EdgeImpl(Object value, boolean loopExit) {
-        this(false, value, loopExit);
+    public EdgeImpl(Object value) {
+        this(false, value);
     }
     
-    public EdgeImpl(boolean exceptional, Object value, boolean loopExit) {
+    public EdgeImpl(boolean exceptional, Object value) {
         this.exceptional = exceptional;
         this.value = value;
-        this.loopExit = loopExit;
-        selfLoop = false;
+        attributes = EnumSet.noneOf(EdgeAttribute.class);
     }
     
     private EdgeImpl(EdgeImpl other) {
         category = other.category;
         exceptional = other.exceptional;
         value = other.value;
-        loopExit = other.loopExit;
+        attributes = EnumSet.copyOf(other.attributes);
     }
 
     public EdgeCategory getCategory() {
         return category;
     }
 
-    public boolean isLoopBack() {
-        return selfLoop || (category != null && category == EdgeCategory.BACK);
-    }
-    
     public void setCategory(EdgeCategory category) {
         this.category = category;
     }
@@ -83,26 +79,21 @@ public class EdgeImpl implements Edge {
         this.value = value;
     }
 
-    public boolean isLoopExit() {
-        return loopExit;
+    public void addAttribute(EdgeAttribute attr) {
+        attributes.add(attr);
     }
 
-    public void setLoopExit(boolean loopExit) {
-        this.loopExit = loopExit;
+    public boolean hasAttribute(EdgeAttribute attr) {
+        return attributes.contains(attr);
     }
 
-    public boolean isSelfLoop() {
-        return selfLoop;
-    }
-
-    public void setSelfLoop(boolean selfLoop) {
-        this.selfLoop = selfLoop;
+    public void resetAttributes() {
+        attributes.clear();
     }
 
     public void resetState() {
         category = null;
-        loopExit = false;
-        selfLoop = false;
+        resetAttributes();
     }
     
     @Override
@@ -113,6 +104,6 @@ public class EdgeImpl implements Edge {
     @Override
     public String toString() {
         return  "Edge[value=" + value + ", category=" + category + 
-                ", isLoopExit=" + loopExit + ", isExceptional=" + exceptional + "]";
+                ", exceptional=" + exceptional + ", attrs=" + attributes + "]";
     }
 }

@@ -22,6 +22,7 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.controlflow.StringConst;
 import fr.jamgotchian.abcd.core.controlflow.Variable;
 import fr.jamgotchian.abcd.core.controlflow.TACInst;
@@ -163,7 +164,7 @@ public class TreeAddressCodeBuilder {
 
                 List<VariableStack> inputStacks = new ArrayList<VariableStack>();
                 for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
-                    if (incomingEdge.isLoopBack()) {
+                    if (incomingEdge.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
                         continue;
                     }
                     BasicBlock pred = graph.getEdgeSource(incomingEdge);

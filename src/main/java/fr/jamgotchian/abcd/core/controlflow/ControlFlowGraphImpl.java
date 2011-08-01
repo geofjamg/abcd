@@ -535,7 +535,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
             // self loop
             if (source.equals(target)) {
-                e.setSelfLoop(true);
+                e.addAttribute(EdgeAttribute.SELF_LOOP_EDGE);
+                e.addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
             }
 
             logger.log(Level.FINEST, "Edge Category of {0} -> {1} : {2}",
@@ -557,7 +558,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                     graph.reversePostOrderDFS(v, visited, body, null, true);
                     NaturalLoop nl = new NaturalLoop(head, new HashSet<BasicBlock>(body));
                     naturalLoops.put(head, nl);
-
+                    e.addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
                     logger.log(Level.FINER, " Found natural loop : {0}", nl);
                     break;
                 }
@@ -587,7 +588,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
         // self loop
         for (Edge edge : graph.getEdges()) {
-            if (edge.isSelfLoop()) {
+            if (edge.hasAttribute(EdgeAttribute.SELF_LOOP_EDGE)) {
                 BasicBlock block = graph.getEdgeSource(edge);
                 
                 NaturalLoop nl = new NaturalLoop(block, Collections.singleton(block));
@@ -608,7 +609,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             BasicBlock target = graph.getEdgeTarget(edge);
             if (target.getLoopLevel() < source.getLoopLevel()) {
                 logger.log(Level.FINEST, "Loop exit edge {0}", graph.toString(edge));
-                edge.setLoopExit(true);
+                edge.addAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
                 loopsByLevel.get(source.getLoopLevel()).getExits().add(edge);
             }
        }

@@ -32,6 +32,7 @@ import fr.jamgotchian.abcd.core.controlflow.CastInst;
 import fr.jamgotchian.abcd.core.controlflow.ChoiceInst;
 import fr.jamgotchian.abcd.core.controlflow.ConditionalInst;
 import fr.jamgotchian.abcd.core.controlflow.DefInst;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.controlflow.GetArrayInst;
 import fr.jamgotchian.abcd.core.controlflow.GetFieldInst;
 import fr.jamgotchian.abcd.core.controlflow.GetStaticFieldInst;
@@ -511,7 +512,8 @@ public class FinallyUninliner {
             boolean match = false;
             for (Edge otherOutgoingEdge : otherSubgraph.getOutgoingEdgesOf(otherBlock)) {
                 if (Objects.equal(outgoingEdge.getValue(), otherOutgoingEdge.getValue())
-                        && outgoingEdge.isLoopExit() == otherOutgoingEdge.isLoopExit()) {
+                        && outgoingEdge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE) 
+                        == otherOutgoingEdge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                     BasicBlock otherSuccessor = otherSubgraph.getEdgeTarget(otherOutgoingEdge);
                     if (subgraphEquals(successor, otherSuccessor, otherSubgraph,
                                        subgraph, comparator)) {

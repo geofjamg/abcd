@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.region;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.Collection;
 import java.util.Iterator;
@@ -144,7 +145,8 @@ class IfThenElseRecognizer implements RegionRecognizer {
         //   |   |
         //   F   G
         //
-        if (edgeAB.isLoopExit() && !edgeAC.isLoopExit()) {
+        if (edgeAB.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE) 
+                && !edgeAC.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
             boolean invertCond = Boolean.FALSE.equals(edgeAB.getValue());
             if (Regions.getSuccessorCountOf(graph, regionB, false) == 1
                     && Regions.getPredecessorCountOf(graph, regionB, false) == 1
@@ -171,7 +173,8 @@ class IfThenElseRecognizer implements RegionRecognizer {
             }
         }
 
-        if (!edgeAB.isLoopExit() && edgeAC.isLoopExit()) {
+        if (!edgeAB.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE) 
+                && edgeAC.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
             boolean invertCond = Boolean.FALSE.equals(edgeAC.getValue());
             if (Regions.getSuccessorCountOf(graph, regionC, false) == 1
                     && Regions.getPredecessorCountOf(graph, regionC, false) == 1
@@ -208,7 +211,7 @@ class IfThenElseRecognizer implements RegionRecognizer {
         if (Regions.getSuccessorCountOf(graph, regionB, false) == 1
                 && Regions.sameHandlers(graph, regionA, regionB)) {
             Edge edgeBD = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
-            if (edgeBD.isLoopExit()) {
+            if (edgeBD.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                 Region regionD = graph.getEdgeTarget(edgeBD);
                 if (Regions.getSuccessorCountOf(graph, regionD, false) == 1) {
                     Edge edgeDF = Regions.getFirstOutgoingEdgeOf(graph, regionD, false);
@@ -231,7 +234,7 @@ class IfThenElseRecognizer implements RegionRecognizer {
         if (Regions.getSuccessorCountOf(graph, regionC, false) == 1
                 && Regions.sameHandlers(graph, regionA, regionC)) {
             Edge edgeCE = Regions.getFirstOutgoingEdgeOf(graph, regionC, false);
-            if (edgeCE.isLoopExit()) {
+            if (edgeCE.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                 boolean invertCond = Boolean.FALSE.equals(edgeAC.getValue());
                 Region regionE = graph.getEdgeTarget(edgeCE);
                 if (Regions.getSuccessorCountOf(graph, regionE, false) == 1) {
@@ -274,7 +277,8 @@ class IfThenElseRecognizer implements RegionRecognizer {
         Region regionC = graph.getEdgeTarget(edgeAC);
 
         Region structuredRegion = null;
-        if (!edgeAB.isLoopExit() && !edgeAC.isLoopExit()) {
+        if (!edgeAB.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE) 
+                && !edgeAC.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
             structuredRegion = recognizeIfThenElse(graph, regionA, regionB, regionC, edgeAB, edgeAC);
         }
         if (structuredRegion == null) {

@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.analysis;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.controlflow.TACBinaryOperator;
 import fr.jamgotchian.abcd.core.controlflow.JumpIfInst;
 import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
@@ -81,7 +82,7 @@ public class LogicalOperatorBuilder {
             Edge trueEdge2 = null;
             Edge falseEdge2 = null;
             for (Edge e : CFG.getOutgoingEdgesOf(bb2)) {
-                if (e.isLoopExit()) {
+                if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                     break;
                 } else if (Boolean.TRUE.equals(e.getValue())) {
                     trueEdge2 = e;
@@ -111,7 +112,7 @@ public class LogicalOperatorBuilder {
             Edge trueEdge2 = null;
             Edge falseEdge2 = null;
             for (Edge e : CFG.getOutgoingEdgesOf(bb2)) {
-                if (e.isLoopExit()) {
+                if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                     break;
                 } else if (Boolean.TRUE.equals(e.getValue())) {
                     trueEdge2 = e;
@@ -144,7 +145,7 @@ public class LogicalOperatorBuilder {
                     Edge trueEdge1 = null;
                     Edge falseEdge1 = null;
                     for (Edge e : CFG.getOutgoingEdgesOf(bb1)) {
-                        if (e.isLoopExit()) {
+                        if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                             break;
                         } else if (Boolean.TRUE.equals(e.getValue())) {
                             trueEdge1 = e;
