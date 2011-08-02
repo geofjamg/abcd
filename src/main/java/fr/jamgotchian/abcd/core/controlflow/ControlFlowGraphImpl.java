@@ -545,8 +545,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 e.addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
             }
 
-            logger.log(Level.FINEST, "Edge Category of {0} -> {1} : {2}",
-                    new Object[] {source, target, e.getCategory()});
+            logger.log(Level.FINEST, "Edge Category of {0} : {1}",
+                    new Object[] {graph.toString(e), e.getCategory()});
         }
     }
 

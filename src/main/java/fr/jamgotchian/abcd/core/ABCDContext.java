@@ -286,8 +286,8 @@ public class ABCDContext {
                 TemporaryVariableFactory tmpVarFactory = new TemporaryVariableFactory();
                 TACInstFactory instFactory = new TACInstFactory();
 
-                new TreeAddressCodeBuilder(graph, method, importManager,
-                                           tmpVarFactory, instFactory).build();
+                new TreeAddressCodeBuilder(graph, importManager, tmpVarFactory, 
+                                           instFactory).build();
                 
                 graph.compact();
                 graph.analyseLoops();

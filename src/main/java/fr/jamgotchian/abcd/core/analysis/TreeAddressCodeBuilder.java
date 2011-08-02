@@ -16,7 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.analysis;
 
-import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
@@ -52,20 +51,17 @@ public class TreeAddressCodeBuilder {
 
     private final ControlFlowGraph graph;
 
-    private final Method method;
-
     private final ClassNameFactory classNameFactory;
 
     private final TemporaryVariableFactory tmpVarFactory;
 
     private final TACInstFactory instFactory;
 
-    public TreeAddressCodeBuilder(ControlFlowGraph graph, Method method,
+    public TreeAddressCodeBuilder(ControlFlowGraph graph,
                                   ClassNameFactory classNameFactory,
                                   TemporaryVariableFactory tmpVarFactory,
                                   TACInstFactory instFactory) {
         this.graph = graph;
-        this.method = method;
         this.classNameFactory = classNameFactory;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
