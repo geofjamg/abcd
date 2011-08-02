@@ -71,6 +71,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private DominatorInfo<BasicBlock, Edge> dominatorInfo;
 
+    private PostDominatorInfo<BasicBlock, Edge> postDominatorInfo;
+
     private LocalVariableTable localVariableTable;
 
     private ExceptionTable exceptionTable;
@@ -146,6 +148,10 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public DominatorInfo<BasicBlock, Edge> getDominatorInfo() {
         return dominatorInfo;
+    }
+
+    public PostDominatorInfo<BasicBlock, Edge> getPostDominatorInfo() {
+        return postDominatorInfo;
     }
 
     public Tree<BasicBlock, Edge> getDFST() {
@@ -362,7 +368,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     public void analyseLoops() {
         logger.log(Level.FINER, "Analyse loops");
         performDepthFirstSearch();
-        dominatorInfo = DominatorInfo.create(graph, entryBlock, exitBlock, EDGE_FACTORY);
+        dominatorInfo = DominatorInfo.create(graph, entryBlock, EDGE_FACTORY);
         for (Edge e : getEdges()) {
             e.resetState();
         }
@@ -598,6 +604,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 BasicBlock block = graph.getEdgeSource(edge);
                 
                 NaturalLoop nl = new NaturalLoop(block, Collections.singleton(block));
+                naturalLoops.put(nl.getHead(), nl);
                 logger.log(Level.FINER, " Found self loop : {0}", nl);
 
                 loopsByLevel.put(block.getLoopLevel()+1, nl);
@@ -621,6 +628,35 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
        }
     }
 
+    public void addFakeEdges() {
+        for (BasicBlock bb : getBasicBlocks()) {
+            if (bb.equals(entryBlock) || bb.equals(exitBlock)) {
+                continue;
+            }
+            TACInstSeq insts = bb.getInstructions();
+            if (insts == null) {
+                throw new ABCDException("insts == null");
+            }
+            if (graph.getSuccessorCountOf(bb) == 0 
+                    && insts.getLast() instanceof ThrowInst) {
+                Edge fakeEdge = EDGE_FACTORY.createEdge();
+                fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
+                graph.addEdge(bb, exitBlock, fakeEdge);
+                logger.log(Level.FINEST, "Add fake edge {0}", graph.toString(fakeEdge));
+            }
+        }
+        for (NaturalLoop loop : naturalLoops.values()) {
+            if (loop.getExits().isEmpty()) { // infinite loop
+                Edge fakeEdge = EDGE_FACTORY.createEdge();
+                fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
+                graph.addEdge(loop.getHead(), exitBlock, fakeEdge);                
+                logger.log(Level.FINEST, "Add fake edge {0}", graph.toString(fakeEdge));
+            }
+        }
+        
+        postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY);
+    }
+    
     public List<DirectedGraph<BasicBlock, Edge>> getFinallySubgraphs() {
         // search for finally headers
         Set<BasicBlock> finallyHeaders = new HashSet<BasicBlock>();

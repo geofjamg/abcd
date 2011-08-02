@@ -23,5 +23,6 @@ package fr.jamgotchian.abcd.core.controlflow;
 public enum EdgeAttribute {
     LOOP_BACK_EDGE,
     SELF_LOOP_EDGE,
-    LOOP_EXIT_EDGE
+    LOOP_EXIT_EDGE,
+    FAKE_EDGE
 }

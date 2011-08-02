@@ -93,7 +93,9 @@ public class EdgeImpl implements Edge {
 
     public void resetState() {
         category = null;
-        resetAttributes();
+        attributes.remove(EdgeAttribute.LOOP_BACK_EDGE);
+        attributes.remove(EdgeAttribute.LOOP_EXIT_EDGE);
+        attributes.remove(EdgeAttribute.SELF_LOOP_EDGE);
     }
     
     @Override

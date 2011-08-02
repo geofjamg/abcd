@@ -71,8 +71,6 @@ public class TreeAddressCodeBuilder {
 
         logger.log(Level.FINER, "------ Process block {0} ------", block);
         
-        block.setInstructions(new TACInstSeq());
-
         VariableStack inputStack = null;
         if (inputStacks.isEmpty()) {
             inputStack = new VariableStack();
@@ -156,6 +154,10 @@ public class TreeAddressCodeBuilder {
     }
 
     public void build() {
+        for (BasicBlock block : graph.getBasicBlocks()) {
+            block.setInstructions(new TACInstSeq());
+        }
+        
         List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(graph.getDFST().getNodes());
         while (blocksToProcess.size() > 0) {
             for (Iterator<BasicBlock> it = blocksToProcess.iterator(); it.hasNext();) {

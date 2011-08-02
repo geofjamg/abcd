@@ -291,7 +291,8 @@ public class ABCDContext {
                 
                 graph.compact();
                 graph.analyseLoops();
-
+                graph.addFakeEdges();
+                
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build complex logical operators " + methodSignature, '='));
 

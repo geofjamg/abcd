@@ -109,14 +109,14 @@ public class DebugOutputHandler extends DefaultOutputHandler {
                 writer.close();
             }
 
-            writer = new FileWriter(baseName + "_PDT.dot");
-            try {
-                graph.getDominatorInfo().getPostDominatorsTree()
-                        .writeDOT(writer, "PDT", DOTUtil.RANGE_ATTRIBUTE_PROVIDER,
-                                                 DOTUtil.EDGE_ATTRIBUTE_PROVIDER);
-            } finally {
-                writer.close();
-            }
+//            writer = new FileWriter(baseName + "_PDT.dot");
+//            try {
+//                graph.getPostDominatorInfo().getPostDominatorsTree()
+//                        .writeDOT(writer, "PDT", DOTUtil.RANGE_ATTRIBUTE_PROVIDER,
+//                                                 DOTUtil.EDGE_ATTRIBUTE_PROVIDER);
+//            } finally {
+//                writer.close();
+//            }
         } catch (IOException e) {
             logger.log(Level.SEVERE, e.toString(), e);
         }

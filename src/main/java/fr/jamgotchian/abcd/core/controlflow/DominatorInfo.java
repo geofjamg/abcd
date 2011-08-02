@@ -43,8 +43,6 @@ public class DominatorInfo<N, E> {
 
     private final N entryNode;
 
-    private final N exitNode;
-
     private final EdgeFactory<E> factory;
 
     private Map<N, Set<N>> dominatorsOf;
@@ -53,23 +51,16 @@ public class DominatorInfo<N, E> {
 
     private Map<N, Set<E>> dominanceFrontierOf;
 
-    private Map<N, Set<N>> postDominatorsOf;
-
-    private MutableTree<N, E> postDominatorsTree;
-
-    private Map<N, Set<E>> postDominanceFrontierOf;
-
-    public static <N, E> DominatorInfo<N, E> create(DirectedGraph<N, E> graph, N entryNode,
-                                                    N exitNode, EdgeFactory<E> factory) {
-        DominatorInfo<N, E> domInfo = new DominatorInfo<N, E>(graph, entryNode, exitNode, factory);
+    public static <N, E> DominatorInfo<N, E> 
+            create(DirectedGraph<N, E> graph, N entryNode, EdgeFactory<E> factory) {
+        DominatorInfo<N, E> domInfo = new DominatorInfo<N, E>(graph, entryNode, factory);
         domInfo.update();
         return domInfo;
     }
 
-    private DominatorInfo(DirectedGraph<N, E> graph, N entryNode, N exitNode, EdgeFactory<E> factory) {
+    private DominatorInfo(DirectedGraph<N, E> graph, N entryNode, EdgeFactory<E> factory) {
         this.graph = graph;
         this.entryNode = entryNode;
-        this.exitNode = exitNode;
         this.factory = factory;
     }
 
@@ -105,40 +96,8 @@ public class DominatorInfo<N, E> {
         return frontier;
     }
 
-    public Set<N> getPostDominatorsOf(N n) {
-        return Collections.unmodifiableSet(postDominatorsOf.get(n));
-    }
-
-    public Tree<N, E> getPostDominatorsTree() {
-        return Trees.unmodifiableTree(postDominatorsTree);
-    }
-
-    public Set<E> getPostDominanceFrontierOf(N n) {
-        return Collections.unmodifiableSet(postDominanceFrontierOf.get(n));
-    }
-
-    public Set<N> getPostDominanceFrontierOf2(N n) {
-        Set<N> frontier = new HashSet<N>();
-        for (E e : postDominanceFrontierOf.get(n)) {
-            frontier.add(graph.getEdgeSource(e));
-        }
-        return frontier;
-    }
-
-    public boolean postDominate(N x, N y) {
-        return postDominatorsOf.get(y).contains(x);
-    }
-
-    public boolean strictlyPostDominate(N x, N y) {
-        return !x.equals(y) && postDominate(x, y);
-    }
-
-    public N getImmediatePostDominatorOf(N n) {
-        return postDominatorsTree.getParent(n);
-    }
-
-    private static <N, E> void buildTree(Map<N, Set<N>> dominatorsOf, N parentNode, 
-                                         MutableTree<N, E> tree, EdgeFactory<E> factory) {
+    static <N, E> void buildTree(Map<N, Set<N>> dominatorsOf, N parentNode, 
+                                 MutableTree<N, E> tree, EdgeFactory<E> factory) {
         for (Map.Entry<N, Set<N>> entry : dominatorsOf.entrySet()) {
             N node = entry.getKey();
             if (!node.equals(parentNode)) {
@@ -167,12 +126,14 @@ public class DominatorInfo<N, E> {
         // x dominate a predecessor of z (y) but do not strictly dominate z
         for (N x : graph.getVertices()) {
             dominanceFrontierOf.put(x, new HashSet<E>());
-            for (N y : dominatorsTree.getSubTree(x).getNodes()) {
-                for (N z : graph.getSuccessorsOf(y)) {
-                    if (!z.equals(x)) {
-                        if (!strictlyDominate(x, z)) {
-                            E yz = graph.getEdge(y, z);
-                            dominanceFrontierOf.get(x).add(yz);
+            if (dominatorsTree.containsNode(x)) {
+                for (N y : dominatorsTree.getSubTree(x).getNodes()) {
+                    for (N z : graph.getSuccessorsOf(y)) {
+                        if (!z.equals(x)) {
+                            if (!strictlyDominate(x, z)) {
+                                E yz = graph.getEdge(y, z);
+                                dominanceFrontierOf.get(x).add(yz);
+                            }
                         }
                     }
                 }
@@ -180,27 +141,6 @@ public class DominatorInfo<N, E> {
 
             logger.log(Level.FINEST, "Dominance frontier of {0} : {1}",
                     new Object[] {x, graph.toString(dominanceFrontierOf.get(x))});
-       }
-    }
-
-    private void computePostDominanceFrontier() {
-        postDominanceFrontierOf = new HashMap<N, Set<E>>();
-
-        for (N x : graph.getVertices()) {
-            postDominanceFrontierOf.put(x, new HashSet<E>());
-            for (N y : postDominatorsTree.getSubTree(x).getNodes()) {
-                for (N z : graph.getPredecessorsOf(y)) {
-                    if (!z.equals(x)) {
-                        if (!strictlyPostDominate(x, z)) {
-                            E zy = graph.getEdge(z, y);
-                            postDominanceFrontierOf.get(x).add(zy);
-                        }
-                    }
-                }
-            }
-
-            logger.log(Level.FINEST, "Post dominance frontier of {0} : {1}",
-                    new Object[] {x, graph.toString(postDominanceFrontierOf.get(x))});
        }
     }
 
@@ -219,50 +159,7 @@ public class DominatorInfo<N, E> {
         buildTree(dominatorsOf, entryNode, dominatorsTree, factory);
         logger.log(Level.FINEST, "Dominators tree :\n{0}", Trees.toString(dominatorsTree));
 
-        // find post-dominators
-        postDominatorsOf = new PostDominatorsFinder<N, E>(graph, exitNode).analyse();
-        for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
-            logger.log(Level.FINEST, "Post-dominators of {0} : {1}",
-                    new Object[] {entry.getKey(), entry.getValue()});
-        }
-
-        // check that exit node post dominate every other nodes
-        Set<N> notPostDominatedByExit = new HashSet<N>();
-        for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
-            if (!entry.getValue().contains(exitNode)) {
-                notPostDominatedByExit.add(entry.getKey());
-            }
-        }
-        if (notPostDominatedByExit.size() > 0) {
-            logger.log(Level.WARNING, "Exit node do not post-dominate every other nodes : {0}"
-                    , notPostDominatedByExit);
-        }
-
-        // check that there is not post domination cycle (example : node A post
-        // dominate node B and node B post dominate node A
-        for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
-            N node = entry.getKey();
-            for (N node2 : entry.getValue()) {
-                if (!node.equals(node2)) {
-                    if (postDominatorsOf.get(node2).contains(node)) {
-                        logger.log(Level.WARNING, 
-                                "Detect post-dominance cycle : {0} <-> {1}"
-                                , new Object[] {node, node2});
-
-                    }
-                }
-            }
-        }        
-        
-        // build post-dominators tree
-        postDominatorsTree = Trees.newTree(exitNode);
-        buildTree(postDominatorsOf, exitNode, postDominatorsTree, factory);
-        logger.log(Level.FINEST, "Post dominators tree :\n{0}", Trees.toString(postDominatorsTree));
-
         // compute dominance frontier
         computeDominanceFrontier();
-
-        // compute post dominance frontier
-        computePostDominanceFrontier();
     }
 }

@@ -64,6 +64,8 @@ public interface ControlFlowGraph {
     Tree<BasicBlock, Edge> getDFST();
 
     DominatorInfo<BasicBlock, Edge> getDominatorInfo();
+    
+    PostDominatorInfo<BasicBlock, Edge> getPostDominatorInfo();
 
     Edge getEdge(BasicBlock source, BasicBlock target);
 
@@ -132,4 +134,6 @@ public interface ControlFlowGraph {
     void setExceptionTable(ExceptionTable exceptionTable);
 
     List<DirectedGraph<BasicBlock, Edge>> getFinallySubgraphs();
+    
+    void addFakeEdges();
 }

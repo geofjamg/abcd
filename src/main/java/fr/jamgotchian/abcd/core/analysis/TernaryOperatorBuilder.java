@@ -27,6 +27,7 @@ import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.ChoiceInst;
 import fr.jamgotchian.abcd.core.controlflow.ConditionalInst;
 import fr.jamgotchian.abcd.core.controlflow.JumpIfInst;
+import fr.jamgotchian.abcd.core.controlflow.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.TACInst;
 import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
 import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
@@ -68,7 +69,7 @@ public class TernaryOperatorBuilder {
     public void build() {
         for (BasicBlock joinBlock : CFG.getDFST()) {
             TACInstSeq joinInsts = joinBlock.getInstructions();
-
+            
             for (int i = 0; i < joinInsts.size(); i++) {
                 TACInst inst = joinInsts.get(i);
                 if (!(inst instanceof ChoiceInst)) {
@@ -104,9 +105,9 @@ public class TernaryOperatorBuilder {
 
                             BasicBlock block1 = var1.getBasicBlock();
                             BasicBlock block2 = var2.getBasicBlock();
-                            DominatorInfo<BasicBlock, Edge> dominatorInfo = forkBlock.getGraph().getDominatorInfo();
-                            Edge forkEdge1 = dominatorInfo.getPostDominanceFrontierOf(block1).iterator().next();
-                            Edge forkEdge2 = dominatorInfo.getPostDominanceFrontierOf(block2).iterator().next();
+                            PostDominatorInfo<BasicBlock, Edge> postDominatorInfo = forkBlock.getGraph().getPostDominatorInfo();
+                            Edge forkEdge1 = postDominatorInfo.getPostDominanceFrontierOf(block1).iterator().next();
+                            Edge forkEdge2 = postDominatorInfo.getPostDominanceFrontierOf(block2).iterator().next();
                             Variable thenVar = null;
                             Variable elseVar = null;
                             if (Boolean.TRUE.equals(forkEdge1.getValue())
