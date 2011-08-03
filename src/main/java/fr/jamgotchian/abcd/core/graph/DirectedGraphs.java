@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  *
@@ -34,7 +35,186 @@ public class DirectedGraphs {
 
     private DirectedGraphs() {
     }
+    
+    private static class ListenableDirectedGraphImpl<V ,E> implements ListenableDirectedGraph<V, E> {
 
+        private final MutableDirectedGraph<V, E> delegate;
+
+        private final List<DirectedGraphListener> listeners;
+        
+        public ListenableDirectedGraphImpl(MutableDirectedGraph<V, E> delegate) {
+            this.delegate = delegate;
+            listeners = new CopyOnWriteArrayList<DirectedGraphListener>();
+        }
+
+        public void addListener(DirectedGraphListener l) {
+            listeners.add(l);
+        }
+
+        public void removeListener(DirectedGraphListener l) {
+            listeners.remove(l);
+        }
+        
+        private void notifyListeners() {
+            for (DirectedGraphListener l : listeners) {
+                l.graphChanged();
+            }
+        }
+        
+        public void writeDOT(Writer writer, String name, AttributeProvider<V> vertexAttrs, 
+                             AttributeProvider<E> edgeAttrs) throws IOException {
+            delegate.writeDOT(writer, name, vertexAttrs, edgeAttrs);
+        }
+
+        public void writeDOT(Writer writer, String name) throws IOException {
+            delegate.writeDOT(writer, name);
+        }
+
+        public String toString(E edge) {
+            return delegate.toString(edge);
+        }
+
+        public String toString(Collection<E> edges) {
+            return delegate.toString(edges);
+        }
+
+        public void reversePostOrderDFS(V v, Set<V> visited, List<V> vertices, List<E> edges, boolean invert) {
+            delegate.reversePostOrderDFS(v, visited, vertices, edges, invert);
+        }
+
+        public void reversePostOrderDFS(V v, List<V> vertices, List<E> edges, boolean invert) {
+            delegate.reversePostOrderDFS(v, vertices, edges, invert);
+        }
+
+        public Set<V> getVertices() {
+            return delegate.getVertices();
+        }
+
+        public int getVertexCount() {
+            return delegate.getVertexCount();
+        }
+
+        public Set<V> getSuccessorsOf(V vertex) {
+            return delegate.getSuccessorsOf(vertex);
+        }
+
+        public int getSuccessorCountOf(V vertex) {
+            return delegate.getSuccessorCountOf(vertex);
+        }
+
+        public Tree<V, E> getReversePostOrderDFST(V root, boolean invert) {
+            return delegate.getReversePostOrderDFST(root, invert);
+        }
+
+        public Set<V> getPredecessorsOf(V vertex) {
+            return delegate.getPredecessorsOf(vertex);
+        }
+
+        public int getPredecessorCountOf(V vertex) {
+            return delegate.getPredecessorCountOf(vertex);
+        }
+
+        public Collection<E> getOutgoingEdgesOf(V vertex) {
+            return delegate.getOutgoingEdgesOf(vertex);
+        }
+
+        public Collection<E> getIncomingEdgesOf(V vertex) {
+            return delegate.getIncomingEdgesOf(vertex);
+        }
+
+        public V getFirstSuccessorOf(V vertex) {
+            return delegate.getFirstSuccessorOf(vertex);
+        }
+
+        public V getFirstPredecessorOf(V vertex) {
+            return delegate.getFirstPredecessorOf(vertex);
+        }
+
+        public E getFirstOutgoingEdgeOf(V vertex) {
+            return delegate.getFirstOutgoingEdgeOf(vertex);
+        }
+
+        public E getFirstIncomingEdgeOf(V vertex) {
+            return delegate.getFirstIncomingEdgeOf(vertex);
+        }
+
+        public Set<V> getExits() {
+            return delegate.getExits();
+        }
+
+        public Set<V> getEntries() {
+            return delegate.getEntries();
+        }
+
+        public Set<E> getEdges() {
+            return delegate.getEdges();
+        }
+
+        public V getEdgeTarget(E edge) {
+            return delegate.getEdgeTarget(edge);
+        }
+
+        public V getEdgeSource(E edge) {
+            return delegate.getEdgeSource(edge);
+        }
+
+        public int getEdgeCount() {
+            return delegate.getEdgeCount();
+        }
+
+        public E getEdge(V source, V target) {
+            return delegate.getEdge(source, target);
+        }
+
+        public boolean containsVertex(V vertex) {
+            return delegate.containsVertex(vertex);
+        }
+
+        public boolean containsEdge(V source, V target) {
+            return delegate.containsEdge(source, target);
+        }
+
+        public void splitVertex(V vertex, V newVertex) {
+            delegate.splitVertex(vertex, newVertex);
+            notifyListeners();
+        }
+
+        public void removeVertex(V vertex) {
+            delegate.removeVertex(vertex);
+            notifyListeners();
+        }
+
+        public boolean removeEdge(V source, V target) {
+            boolean removed = delegate.removeEdge(source, target);
+            notifyListeners();
+            return removed;
+        }
+
+        public void removeEdge(E edge) {
+            delegate.removeEdge(edge);
+            notifyListeners();
+        }
+
+        public MutableDirectedGraph<V, E> getSubgraphContaining(V vertex) {
+            return delegate.getSubgraphContaining(vertex);
+        }
+
+        @Override
+        public MutableDirectedGraph<V, E> clone() {
+            return delegate.clone();
+        }
+
+        public void addVertex(V vertex) {
+            delegate.addVertex(vertex);
+            notifyListeners();
+        }
+
+        public void addEdge(V source, V target, E edge) {
+            delegate.addEdge(source, target, edge);
+            notifyListeners();
+        }
+    }
+    
     private static class UnmodifiableDirectedGraph<V ,E> implements DirectedGraph<V, E> {
 
         private final DirectedGraph<V, E> delegate;
@@ -165,6 +345,10 @@ public class DirectedGraphs {
         return new UnmodifiableDirectedGraph<V, E>(graph);
     }
 
+    public static <V, E> MutableDirectedGraph<V, E> listenableDirectedGraph(MutableDirectedGraph<V, E> graph) {
+        return new ListenableDirectedGraphImpl<V, E>(graph);
+    }
+    
     public static <V, E> String toString(DirectedGraph<V, E> graph, V v) {
         StringBuilder builder = new StringBuilder();
         builder.append("Vertices :\n");

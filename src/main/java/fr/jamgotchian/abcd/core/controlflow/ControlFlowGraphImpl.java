@@ -158,14 +158,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return dfst;
     }
 
-    public void visit(ControlFlowGraphVisitor visitor) {
-        assert dfst != null;
-        visitor.visitBlock(this, entryBlock, null);
-        for (Edge e : dfst.getEdges()) {
-            visitor.visitBlock(this, graph.getEdgeTarget(e), e);
-        }
-    }
-
     public Map<BasicBlock, NaturalLoop> getNaturalLoops() {
         return naturalLoops;
     }
