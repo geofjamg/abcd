@@ -113,7 +113,8 @@ public class ControlFlowGraphBuilder {
 
             // link all blocks contained in the try range to the catch entry block
             for (BasicBlock block : graph.getBasicBlocksWithinRange(entry.getTryStart(), entry.getTryEnd() - 1)) {
-                graph.addEdge(block, catchEntryBlock, true).setValue(entry.getExceptionClassName());
+                ExceptionHandlerInfo info = new ExceptionHandlerInfo(entry.getExceptionClassName());
+                graph.addEdge(block, catchEntryBlock, true).setValue(info);
             }
         }
     }

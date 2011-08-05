@@ -24,6 +24,10 @@ import java.util.Set;
  */
 public interface TACInst {
 
+    boolean isIgnored();
+
+    void setIgnored(boolean ignored);
+
     Set<Variable> getUses();
 
     <R, A> R accept(TACInstVisitor<R, A> visitor, A arg);

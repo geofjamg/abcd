@@ -18,12 +18,10 @@ package fr.jamgotchian.abcd.core.analysis;
 
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.expr.ArrayCreationExpression;
-import fr.jamgotchian.abcd.core.ast.expr.AssignExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignOperator;
 import fr.jamgotchian.abcd.core.ast.expr.ASTBinaryOperator;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
-import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.TypeExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ASTUnaryOperator;
@@ -44,6 +42,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
+import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
 import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
 import fr.jamgotchian.abcd.core.region.BlockRegion;
 import fr.jamgotchian.abcd.core.region.CaseRegion;
@@ -70,6 +69,8 @@ import fr.jamgotchian.abcd.core.controlflow.ClassConst;
 import fr.jamgotchian.abcd.core.controlflow.ConditionalInst;
 import fr.jamgotchian.abcd.core.controlflow.Const;
 import fr.jamgotchian.abcd.core.controlflow.DoubleConst;
+import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.ExceptionHandlerInfo;
 import fr.jamgotchian.abcd.core.controlflow.FloatConst;
 import fr.jamgotchian.abcd.core.controlflow.GetArrayInst;
 import fr.jamgotchian.abcd.core.controlflow.GetFieldInst;
@@ -91,12 +92,12 @@ import fr.jamgotchian.abcd.core.controlflow.SetStaticFieldInst;
 import fr.jamgotchian.abcd.core.controlflow.ShortConst;
 import fr.jamgotchian.abcd.core.controlflow.StringConst;
 import fr.jamgotchian.abcd.core.controlflow.SwitchInst;
+import fr.jamgotchian.abcd.core.controlflow.TACInst;
 import fr.jamgotchian.abcd.core.controlflow.ThrowInst;
 import fr.jamgotchian.abcd.core.controlflow.UnaryInst;
 import fr.jamgotchian.abcd.core.controlflow.Variable;
 import fr.jamgotchian.abcd.core.controlflow.VariableID;
 import fr.jamgotchian.abcd.core.controlflow.util.EmptyTACInstVisitor;
-import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -153,6 +154,16 @@ public class AbstractSyntaxTreeBuilder {
                                                     AssignOperator.ASSIGN);
                 blockStmt.add(new ExpressionStatement(assignExpr));
             }
+        }
+
+        @Override
+        public Void visit(TACInstSeq seq, BlockStatement arg) {
+            for (TACInst inst : seq) {
+                if (!inst.isIgnored()) {
+                    inst.accept(this, arg);
+                }
+            }
+            return null;
         }
 
         @Override
@@ -688,20 +699,16 @@ public class AbstractSyntaxTreeBuilder {
                 List<CatchClause> catchs = new ArrayList<CatchClause>();
                 BlockStatement finallyBlockStmt = null;
                 for (CatchRegion catchRegion : tryCatchRegion.getCatchRegions()) {
-
-                    if (catchRegion.getExceptionClassName() != null) {
+                    ExceptionHandlerInfo info
+                            = (ExceptionHandlerInfo) catchRegion.getIncomingEdge().getValue();
+                    if (info.getClassName() != null) {
                         BlockStatement catchBlockStmt = new BlockStatement();
                         buildAST(catchRegion.getRegion(), catchBlockStmt);
 
-                        ExpressionStatement exprStmt = (ExpressionStatement) catchBlockStmt.getFirst();
-                        exprStmt.remove();
-                        LocalVariable excVar
-                                = (LocalVariable) ((AssignExpression) exprStmt.getExpression()).getTarget();
-
-                        ClassName exceptionClassName = importManager.newClassName(catchRegion.getExceptionClassName());
-                        JavaType exceptionType = JavaType.newRefType(exceptionClassName);
+                        Variable excVar = info.getVariable();
                         LocalVariableDeclaration varDecl
-                                = new LocalVariableDeclaration(excVar, exceptionType);
+                                = new LocalVariableDeclaration(Expressions.newVarExpr(excVar.getID(), excVar.getName()),
+                                                               excVar.getType());
                         catchs.add(new CatchClause(catchBlockStmt, varDecl));
                     } else {
                         finallyBlockStmt = new BlockStatement();

@@ -44,8 +44,7 @@ public class TryCatchRecognizer implements RegionRecognizer {
             }
             Edge edgeAC = graph.getEdge(regionA, regionC);
             Edge edgeCB = graph.getEdge(regionC, regionB);
-            String exceptionClassName = (String) edgeAC.getValue();
-            catchs.add(new CatchRegion(regionC, edgeAC, edgeCB, exceptionClassName));
+            catchs.add(new CatchRegion(regionC, edgeAC, edgeCB));
         }
 
         if (catchs.isEmpty()) {
@@ -72,8 +71,7 @@ public class TryCatchRecognizer implements RegionRecognizer {
             }
             Edge edgeAC = graph.getEdge(regionA, regionC);
             Edge edgeCD = graph.getEdge(regionC, regionD);
-            String exceptionClassName = (String) edgeAC.getValue();
-            catchs.add(new CatchRegion(regionC, edgeAC, edgeCD, exceptionClassName));
+            catchs.add(new CatchRegion(regionC, edgeAC, edgeCD));
         }
 
         if (catchs.isEmpty()) {

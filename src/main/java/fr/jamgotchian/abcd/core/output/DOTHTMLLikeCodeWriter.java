@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.output;
 
 import fr.jamgotchian.abcd.core.util.Colors;
+import java.awt.Color;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -84,7 +85,9 @@ public class DOTHTMLLikeCodeWriter extends HTMLCodeWriter {
     @Override
     public CodeWriter writeKeyword(String keyword) {
         try {
-            writer.write("<font color=\"blue\">");
+            writer.write("<font color=\"");
+            writer.write(getColorStr(Color.BLUE));
+            writer.write("\">");
         } catch(IOException exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }

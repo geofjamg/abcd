@@ -23,7 +23,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ReturnInst implements TACInst {
+public class ReturnInst extends TACInstImpl {
 
     private final Variable var;
 

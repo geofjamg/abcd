@@ -23,7 +23,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class MonitorEnterInst implements TACInst {
+public class MonitorEnterInst extends TACInstImpl {
 
     private final Variable obj;
 

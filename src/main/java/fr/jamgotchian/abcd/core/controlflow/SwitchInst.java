@@ -23,7 +23,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SwitchInst implements TACInst {
+public class SwitchInst extends TACInstImpl {
 
     private final Variable index;
 

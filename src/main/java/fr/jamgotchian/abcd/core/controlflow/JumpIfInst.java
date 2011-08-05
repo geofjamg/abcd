@@ -23,7 +23,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JumpIfInst implements TACInst {
+public class JumpIfInst extends TACInstImpl {
 
     private final Variable cond;
 

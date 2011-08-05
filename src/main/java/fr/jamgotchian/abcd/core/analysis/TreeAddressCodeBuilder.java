@@ -17,18 +17,24 @@
 package fr.jamgotchian.abcd.core.analysis;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.controlflow.AssignConstInst;
+import fr.jamgotchian.abcd.core.controlflow.AssignVarInst;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
+import fr.jamgotchian.abcd.core.controlflow.ExceptionHandlerInfo;
+import fr.jamgotchian.abcd.core.controlflow.NewObjectInst;
 import fr.jamgotchian.abcd.core.controlflow.StringConst;
 import fr.jamgotchian.abcd.core.controlflow.Variable;
 import fr.jamgotchian.abcd.core.controlflow.TACInst;
 import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
 import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
 import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.controlflow.ThrowInst;
 import fr.jamgotchian.abcd.core.controlflow.VariableStack;
+import fr.jamgotchian.abcd.core.controlflow.util.TACInstWriter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -49,6 +55,8 @@ public class TreeAddressCodeBuilder {
     private static final Logger logger
             = Logger.getLogger(TreeAddressCodeBuilder.class.getName());
 
+    private final StringConst magicString;
+
     private final ControlFlowGraph graph;
 
     private final ClassNameFactory classNameFactory;
@@ -56,6 +64,10 @@ public class TreeAddressCodeBuilder {
     private final TemporaryVariableFactory tmpVarFactory;
 
     private final TACInstFactory instFactory;
+
+    private final Set<Variable> finallyTmpVars;
+
+    private final Set<Variable> catchTmpVars;
 
     public TreeAddressCodeBuilder(ControlFlowGraph graph,
                                   ClassNameFactory classNameFactory,
@@ -65,12 +77,15 @@ public class TreeAddressCodeBuilder {
         this.classNameFactory = classNameFactory;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
+        finallyTmpVars = new HashSet<Variable>();
+        catchTmpVars = new HashSet<Variable>();
+        magicString = new StringConst("MAGIC", classNameFactory);
     }
 
     private void processBlock(BasicBlock block, List<VariableStack> inputStacks) {
 
         logger.log(Level.FINER, "------ Process block {0} ------", block);
-        
+
         VariableStack inputStack = null;
         if (inputStacks.isEmpty()) {
             inputStack = new VariableStack();
@@ -87,16 +102,19 @@ public class TreeAddressCodeBuilder {
         if (block.getType() != BasicBlockType.EMPTY) {
             Edge edge = graph.getFirstIncomingEdgeOf(block);
             if (edge != null && edge.isExceptional()) {
-                Variable tmpVar = tmpVarFactory.create(block);
+                Variable exceptionVar = tmpVarFactory.create(block);
                 TACInst tmpInst;
-                if (edge.getValue() == null) { // finally
-                    tmpInst = instFactory.newAssignConst(tmpVar, new StringConst("TMP", classNameFactory));
+                ExceptionHandlerInfo info = (ExceptionHandlerInfo) edge.getValue();
+                if (info.getClassName() == null) { // finally
+                    finallyTmpVars.add(exceptionVar);
+                    tmpInst = instFactory.newAssignConst(exceptionVar, magicString);
                 } else { // catch
-                    ClassName className = classNameFactory.newClassName((String) edge.getValue());
-                    tmpInst = instFactory.newNewObject(tmpVar, JavaType.newRefType(className));
+                    catchTmpVars.add(exceptionVar);
+                    ClassName className = classNameFactory.newClassName(info.getClassName());
+                    tmpInst = instFactory.newNewObject(exceptionVar, JavaType.newRefType(className));
                 }
                 BasicBlock3ACBuilder.addInst(block, tmpInst);
-                outputStack.push(tmpVar);
+                outputStack.push(exceptionVar);
             }
         }
 
@@ -153,11 +171,105 @@ public class TreeAddressCodeBuilder {
         return stacksMerge;
     }
 
-    public void build() {
-        for (BasicBlock block : graph.getBasicBlocks()) {
-            block.setInstructions(new TACInstSeq());
+    private void cleanupExceptionHandlers() {
+        Set<Variable> finallyVars = new HashSet<Variable>();
+
+        for (BasicBlock bb : graph.getBasicBlocks()) {
+
+            boolean isExceptionHandlerHead = true;
+            for (Edge incomingEdge : graph.getIncomingEdgesOf(bb)) {
+                if (!incomingEdge.isExceptional()) {
+                    isExceptionHandlerHead = false;
+                    break;
+                }
+            }
+            if (!isExceptionHandlerHead) {
+                continue;
+            }
+
+            TACInstSeq seq = bb.getInstructions();
+            for (int i = 0; i < seq.size()-1; i++) {
+                TACInst inst = seq.get(i);
+                TACInst inst2 = seq.get(i+1);
+
+                boolean remove = false;
+                Variable excVar = null;
+
+                if (inst instanceof AssignConstInst
+                        && inst2 instanceof AssignVarInst) {
+                    AssignConstInst assignCstInst = (AssignConstInst) inst;
+                    AssignVarInst assignVarInst = (AssignVarInst) inst2;
+                    if (finallyTmpVars.contains(assignCstInst.getResult())
+                            && assignCstInst.getConst() == magicString
+                            && !assignVarInst.getResult().isTemporary()
+                            && assignCstInst.getResult().equals(assignVarInst.getValue())) {
+                        excVar = assignVarInst.getResult();
+                        finallyVars.add(assignVarInst.getResult());
+                        remove = true;
+                    }
+                }
+                if (inst instanceof NewObjectInst
+                        && inst2 instanceof AssignVarInst) {
+                    NewObjectInst newObjInst = (NewObjectInst) inst;
+                    AssignVarInst assignVarInst = (AssignVarInst) inst2;
+                    if (catchTmpVars.contains(newObjInst.getResult())
+                            && !assignVarInst.getResult().isTemporary()
+                            && newObjInst.getResult().equals(assignVarInst.getValue())) {
+                        excVar = assignVarInst.getResult();
+                        remove = true;
+                    }
+                }
+
+                if (remove) {
+                    for (Edge incomingEdge : graph.getIncomingEdgesOf(bb)) {
+                        ((ExceptionHandlerInfo) incomingEdge.getValue()).setVariable(excVar);
+                    }
+                    logger.log(Level.FINEST, "Cleanup exception handler (bb={0}, excVar={1}) :",
+                            new Object[] {bb, excVar});
+                    logger.log(Level.FINEST, "  Remove inst : {0}", TACInstWriter.toText(inst));
+                    logger.log(Level.FINEST, "  Remove inst : {0}", TACInstWriter.toText(inst2));
+                    inst.setIgnored(true);
+                    inst2.setIgnored(true);
+                }
+            }
         }
-        
+
+        for (BasicBlock bb : graph.getBasicBlocks()) {
+            TACInstSeq seq = bb.getInstructions();
+            for (int i = 0; i < seq.size()-1; i++) {
+                TACInst inst = seq.get(i);
+                TACInst inst2 = seq.get(i+1);
+
+                boolean remove = false;
+
+                Variable excVar = null;
+                if (inst instanceof AssignVarInst
+                        && inst2 instanceof ThrowInst) {
+                    AssignVarInst assignVarInst = (AssignVarInst) inst;
+                    ThrowInst throwInst = (ThrowInst) inst2;
+                    if (finallyVars.contains(assignVarInst.getValue())
+                            && assignVarInst.getResult().equals(throwInst.getVar())) {
+                        excVar = assignVarInst.getValue();
+                        remove = true;
+                    }
+                }
+
+                if (remove) {
+                    logger.log(Level.FINEST, "Cleanup finally rethrow (excVar={0}) :", excVar);
+                    logger.log(Level.FINEST, "  Remove inst : {0}", TACInstWriter.toText(inst));
+                    logger.log(Level.FINEST, "  Remove inst : {0}", TACInstWriter.toText(inst2));
+                    inst.setIgnored(true);
+                    inst2.setIgnored(true);
+                }
+            }
+        }
+    }
+
+    public void build() {
+        for (BasicBlock bb : graph.getBasicBlocks()) {
+            bb.setInstructions(new TACInstSeq());
+        }
+
         List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(graph.getDFST().getNodes());
         while (blocksToProcess.size() > 0) {
             for (Iterator<BasicBlock> it = blocksToProcess.iterator(); it.hasNext();) {
@@ -176,5 +288,7 @@ public class TreeAddressCodeBuilder {
                 it.remove();
             }
         }
+
+        cleanupExceptionHandlers();
     }
 }

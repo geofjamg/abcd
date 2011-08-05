@@ -440,8 +440,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
 
         for (BasicBlock block : blocksToRemove) {
-            Edge incomingEdge = graph.getIncomingEdgesOf(block).iterator().next();
-            Edge outgoingEdge = graph.getOutgoingEdgesOf(block).iterator().next();
+            Edge incomingEdge = graph.getFirstIncomingEdgeOf(block);
+            Edge outgoingEdge = graph.getFirstOutgoingEdgeOf(block);
             BasicBlock predecessor = graph.getEdgeSource(incomingEdge);
             BasicBlock successor = graph.getEdgeTarget(outgoingEdge);
             graph.removeEdge(incomingEdge);
@@ -486,7 +486,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             emptyBlock.setGraph(this);
             graph.addVertex(emptyBlock);
             graph.addEdge(source, emptyBlock, criticalEdge);
-            graph.addEdge(emptyBlock, target, new EdgeImpl(criticalEdge.isExceptional()));
+            graph.addEdge(emptyBlock, target, EDGE_FACTORY.createEdge());
         }
     }
 
@@ -576,13 +576,13 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private void analyseLoopLevel() {
         Map<Integer, NaturalLoop> loopsByLevel = new HashMap<Integer, NaturalLoop>();
-        
+
         // from outermost to innermost loops
         for (BasicBlock loopHead : dfst.getNodes()) {
             NaturalLoop nl = naturalLoops.get(loopHead);
             if (nl != null) {
                 loopsByLevel.put(nl.getHead().getLoopLevel()+1, nl);
-                
+
                 // increase loop level for all blocks of the loop
                 for (BasicBlock block : nl.getBody()) {
                     block.setLoopLevel(block.getLoopLevel()+1);
@@ -594,7 +594,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         for (Edge edge : graph.getEdges()) {
             if (edge.hasAttribute(EdgeAttribute.SELF_LOOP_EDGE)) {
                 BasicBlock block = graph.getEdgeSource(edge);
-                
+
                 NaturalLoop nl = new NaturalLoop(block, Collections.singleton(block));
                 naturalLoops.put(nl.getHead(), nl);
                 logger.log(Level.FINER, " Found self loop : {0}", nl);
@@ -629,7 +629,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             if (insts == null) {
                 throw new ABCDException("insts == null");
             }
-            if (graph.getSuccessorCountOf(bb) == 0 
+            if (graph.getSuccessorCountOf(bb) == 0
                     && insts.getLast() instanceof ThrowInst) {
                 Edge fakeEdge = EDGE_FACTORY.createEdge();
                 fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
@@ -641,21 +641,21 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             if (loop.getExits().isEmpty()) { // infinite loop
                 Edge fakeEdge = EDGE_FACTORY.createEdge();
                 fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                graph.addEdge(loop.getHead(), exitBlock, fakeEdge);                
+                graph.addEdge(loop.getHead(), exitBlock, fakeEdge);
                 logger.log(Level.FINEST, "Add fake edge {0}", graph.toString(fakeEdge));
             }
         }
-        
+
         postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY);
     }
-    
+
     public List<DirectedGraph<BasicBlock, Edge>> getFinallySubgraphs() {
         // search for finally headers
         Set<BasicBlock> finallyHeaders = new HashSet<BasicBlock>();
         for (BasicBlock bb : graph.getVertices()) {
             for (Edge incomingEdge : graph.getIncomingEdgesOf(bb)) {
                 if (incomingEdge.isExceptional()
-                        && incomingEdge.getValue() == null) {
+                        && ((ExceptionHandlerInfo) incomingEdge.getValue()).getClassName() == null) {
                     finallyHeaders.add(bb);
                 }
             }

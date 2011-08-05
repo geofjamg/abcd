@@ -23,7 +23,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ThrowInst implements TACInst {
+public class ThrowInst extends TACInstImpl {
 
     private final Variable var;
 

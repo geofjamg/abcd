@@ -62,10 +62,38 @@ public class HTMLCodeWriter extends CodeWriter {
         return this;
     }
 
+    protected String getColorStr(Color color) {
+        return Colors.toString(enabled ? color : Color.LIGHT_GRAY);
+    }
+
+    @Override
+    public CodeWriter write(String str) {
+        if (enabled) {
+            super.write(str);
+        } else {
+            try {
+                writer.write("<font color=\"");
+                writer.write(Colors.toString(Color.LIGHT_GRAY));
+                writer.write("\">");
+            } catch(IOException exc) {
+                logger.log(Level.SEVERE, exc.toString(), exc);
+            }
+            super.write(str);
+            try {
+                writer.write("</font>");
+            } catch(IOException exc) {
+                logger.log(Level.SEVERE, exc.toString(), exc);
+            }
+        }
+        return this;
+    }
+
     @Override
     public CodeWriter writeLabel(Label label) {
         try {
-            writer.write("<font color=\"green\">");
+            writer.write("<font color=\"");
+            writer.write(getColorStr(Color.GREEN));
+            writer.write("\">");
         } catch(IOException exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
@@ -98,7 +126,7 @@ public class HTMLCodeWriter extends CodeWriter {
     public CodeWriter writeQuotedString(String str) {
         try {
             writer.write("<font color=\"");
-            writer.write(Colors.toString(Color.MAGENTA));
+            writer.write(getColorStr(Color.MAGENTA));
             writer.write("\">");
         } catch(IOException exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);

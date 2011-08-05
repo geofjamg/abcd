@@ -42,6 +42,8 @@ public abstract class CodeWriter {
 
     private boolean indentNeeded = false;
 
+    protected boolean enabled = true;
+
     public CodeWriter(Writer writer) {
         this(writer, DEFAULT_IDENT);
     }
@@ -49,6 +51,10 @@ public abstract class CodeWriter {
     public CodeWriter(Writer writer, int indentSpace) {
         this.writer = writer;
         this.indentSpaces = indentSpace;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public void decrIndent() {

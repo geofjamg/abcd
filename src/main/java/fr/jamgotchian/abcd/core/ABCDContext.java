@@ -275,7 +275,8 @@ public class ABCDContext {
 
                 LocalVariableTable table = graph.getLocalVariableTable();
                 for (LocalVariableDeclaration decl : method.getArguments()) {
-                    decl.getVariable().setName(table.getName(decl.getVariable().getID().getIndex(), 0));
+                    LocalVariable var = decl.getVariable();
+                    var.setName(table.getName(var.getID().getIndex(), 0));
                 }
 
                 handler.controlFlowGraphBuilt(graph);
@@ -286,13 +287,13 @@ public class ABCDContext {
                 TemporaryVariableFactory tmpVarFactory = new TemporaryVariableFactory();
                 TACInstFactory instFactory = new TACInstFactory();
 
-                new TreeAddressCodeBuilder(graph, importManager, tmpVarFactory, 
+                new TreeAddressCodeBuilder(graph, importManager, tmpVarFactory,
                                            instFactory).build();
-                
+
                 graph.compact();
                 graph.analyseLoops();
                 graph.addFakeEdges();
-                
+
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build complex logical operators " + methodSignature, '='));
 

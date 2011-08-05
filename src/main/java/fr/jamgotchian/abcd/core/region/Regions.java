@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.region;
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.ExceptionHandlerInfo;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.ArrayList;
@@ -160,11 +161,11 @@ public class Regions {
         }
         for (Edge edge1 : edges1) {
             Region handler1 = graph.getEdgeTarget(edge1);
-            String exceptionClassName1 = (String) edge1.getValue();
+            String exceptionClassName1 = ((ExceptionHandlerInfo) edge1.getValue()).getClassName();
             boolean found = false;
             for (Edge edge2 : edges2) {
                 Region handler2 = graph.getEdgeTarget(edge2);
-                String exceptionClassName2 = (String) edge2.getValue();
+                String exceptionClassName2 = ((ExceptionHandlerInfo) edge2.getValue()).getClassName();
                 if (handler1.equals(handler2)
                         && Objects.equal(exceptionClassName1, exceptionClassName2)) {
                     found = true;
@@ -221,7 +222,7 @@ public class Regions {
         }
     }
 
-    public static void moveUnexceptionalOutgoingEdges(MutableDirectedGraph<Region, Edge> graph, 
+    public static void moveUnexceptionalOutgoingEdges(MutableDirectedGraph<Region, Edge> graph,
                                                       Region from, Region to) {
         Collection<Edge> outgoingEdges = graph.getOutgoingEdgesOf(from);
         for (Edge outgoingEdge : new ArrayList<Edge>(outgoingEdges)) {
@@ -244,7 +245,7 @@ public class Regions {
             graph.removeEdge(edge);
         }
     }
-    
+
     public static Region getDeepEntryRegion(DirectedGraph<Region, Edge> graph, Region region) {
         Region entry = null;
         for (Region r = region; r.getType() != RegionType.BASIC_BLOCK; r = r.getEntryRegion()) {
@@ -260,7 +261,7 @@ public class Regions {
         }
         return entry;
     }
-    
+
     public static BasicBlock getDeepEntryBasicBlock(DirectedGraph<Region, Edge> graph, Region region) {
         Region r = null;
         for (r = region; r.getType() != RegionType.BASIC_BLOCK; r = r.getEntryRegion()) {

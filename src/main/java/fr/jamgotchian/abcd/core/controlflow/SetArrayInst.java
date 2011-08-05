@@ -23,7 +23,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SetArrayInst implements TACInst {
+public class SetArrayInst extends TACInstImpl {
 
     private final Variable array;
 

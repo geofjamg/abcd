@@ -426,6 +426,16 @@ public class Test {
         }
     }
 
+    public void testCatch2() {
+        try {
+            a();
+        } catch(Exception exc) {
+            System.out.println(exc);
+            exc = null;
+            System.out.println(exc);
+        }
+    }
+
     public void testDoubleCatch() {
         try {
             a();
@@ -1080,7 +1090,7 @@ public class Test {
         }
         System.out.println("d");
     }
-  
+
     public void testThrow4(int a) {
         if (a == 1) {
             throw new IllegalArgumentException("hello");
@@ -1096,7 +1106,7 @@ public class Test {
             throw new IllegalArgumentException("hello2");
         }
     }
-    
+
     public void testInstanceOf() {
         java.lang.String a = "sss";
         if (a instanceof java.lang.String) {

@@ -20,7 +20,7 @@ package fr.jamgotchian.abcd.core.controlflow;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class DefInst implements TACInst {
+public abstract class DefInst extends TACInstImpl {
 
     private final int defID;
 

@@ -143,12 +143,13 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
     public Void visit(TACInstSeq insts, Void arg) {
         for (Iterator<TACInst> it = insts.iterator(); it.hasNext();) {
             TACInst inst = it.next();
-//            if (inst instanceof DefInst) {
-//                writer.write("d")
-//                        .write(Integer.toString(((DefInst) inst).getDefID()))
-//                        .write(":").writeSpace();
-//            }
+            if (inst.isIgnored()) {
+                writer.setEnabled(false);
+            }
             inst.accept(this, arg);
+            if (inst.isIgnored()) {
+                writer.setEnabled(true);
+            }
             if (it.hasNext()) {
                 writer.newLine();
             }
