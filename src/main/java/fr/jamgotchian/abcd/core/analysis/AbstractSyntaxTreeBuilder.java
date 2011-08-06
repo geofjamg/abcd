@@ -47,13 +47,11 @@ import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
 import fr.jamgotchian.abcd.core.region.BlockRegion;
 import fr.jamgotchian.abcd.core.region.CaseRegion;
 import fr.jamgotchian.abcd.core.region.CatchRegion;
-import fr.jamgotchian.abcd.core.region.IfThenBreakRegion;
-import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
 import fr.jamgotchian.abcd.core.region.IfThenRegion;
 import fr.jamgotchian.abcd.core.region.LoopRegion;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.SwitchCaseRegion;
-import fr.jamgotchian.abcd.core.region.TryCatchRegion;
+import fr.jamgotchian.abcd.core.region.TryCatchFinallyRegion;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.ArrayLengthInst;
@@ -69,7 +67,6 @@ import fr.jamgotchian.abcd.core.controlflow.ClassConst;
 import fr.jamgotchian.abcd.core.controlflow.ConditionalInst;
 import fr.jamgotchian.abcd.core.controlflow.Const;
 import fr.jamgotchian.abcd.core.controlflow.DoubleConst;
-import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.ExceptionHandlerInfo;
 import fr.jamgotchian.abcd.core.controlflow.FloatConst;
 import fr.jamgotchian.abcd.core.controlflow.GetArrayInst;
@@ -98,6 +95,7 @@ import fr.jamgotchian.abcd.core.controlflow.UnaryInst;
 import fr.jamgotchian.abcd.core.controlflow.Variable;
 import fr.jamgotchian.abcd.core.controlflow.VariableID;
 import fr.jamgotchian.abcd.core.controlflow.util.EmptyTACInstVisitor;
+import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -549,32 +547,34 @@ public class AbstractSyntaxTreeBuilder {
 
         switch (region.getType()) {
             case BASIC_BLOCK: {
-                BasicBlockRegion basicBlockRegion = (BasicBlockRegion) region;
-                BasicBlock bb = basicBlockRegion.getBasicBlock();
+                BasicBlockRegion region2 = (BasicBlockRegion) region;
+                BasicBlock bb = region2.getBasicBlock();
                 RegionTACInstVisitor visitor = new RegionTACInstVisitor();
                 bb.getInstructions().accept(visitor, blockStmt);
                 break;
             }
 
             case BLOCK: {
-                for (Region child : ((BlockRegion) region).getRegions()) {
+                BlockRegion region2 = (BlockRegion) region;
+                for (Region child : region2.getRegions()) {
                     buildAST(child, blockStmt);
                 }
                 break;
             }
 
-            case IF_THEN_ELSE: {
-                IfThenElseRegion ifThenElseRegion = (IfThenElseRegion) region;
+            case IF_THEN_ELSE_JOIN:
+            case IF_THEN_RETURN_ELSE_RETURN: {
+                IfThenElseRegion region2 = (IfThenElseRegion) region;
 
-                buildAST(ifThenElseRegion.getIfRegion(), blockStmt);
+                buildAST(region2.getIfRegion(), blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
                 ifStmt.invertCondition();
                 BlockStatement thenBlockStmt = new BlockStatement();
                 ifStmt.setThen(thenBlockStmt);
                 BlockStatement elseBlockStmt = new BlockStatement();
                 ifStmt.setElse(elseBlockStmt);
-                buildAST(ifThenElseRegion.getThenRegion(), elseBlockStmt);
-                buildAST(ifThenElseRegion.getElseRegion(), thenBlockStmt);
+                buildAST(region2.getThenRegion(), elseBlockStmt);
+                buildAST(region2.getElseRegion(), thenBlockStmt);
                 if (ifStmt.getThen().isEmpty() && ifStmt.getElse().isEmpty()) {
                     ifStmt.remove();
                 }
@@ -582,55 +582,29 @@ public class AbstractSyntaxTreeBuilder {
             }
 
             case IF_THEN: {
-                IfThenRegion ifThenRegion = (IfThenRegion) region;
+                IfThenRegion region2 = (IfThenRegion) region;
 
-                buildAST(ifThenRegion.getIfRegion(), blockStmt);
+                buildAST(region2.getIfRegion(), blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
-                if (ifThenRegion.mustInvertCondition()) {
+                if (region2.mustInvertCondition()) {
                     ifStmt.invertCondition();
                 }
                 BlockStatement thenBlockStmt = new BlockStatement();
                 ifStmt.setThen(thenBlockStmt);
-                buildAST(ifThenRegion.getThenRegion(), thenBlockStmt);
+                buildAST(region2.getThenRegion(), thenBlockStmt);
                 if (ifStmt.getThen().isEmpty()) {
                     ifStmt.remove();
                 }
                 break;
             }
 
-            case IF_THEN_BREAK: {
-                IfThenBreakRegion ifThenBreakRegion = (IfThenBreakRegion) region;
-                buildAST(ifThenBreakRegion.getIfRegion(), blockStmt);
-                IfStatement ifStmt = (IfStatement) blockStmt.getLast();
-                if (ifThenBreakRegion.mustInvertCondition()) {
-                    ifStmt.invertCondition();
-                }
-                BlockStatement thenBlockStmt = new BlockStatement();
-                ifStmt.setThen(thenBlockStmt);
-                if (ifThenBreakRegion.getBeforeThenRegion() != null) {
-                    buildAST(ifThenBreakRegion.getBeforeThenRegion(), thenBlockStmt);
-                }
-                if (ifThenBreakRegion.getAfterThenRegion() != null) {
-                    buildAST(ifThenBreakRegion.getAfterThenRegion(), thenBlockStmt);
-                }
-                Statement lastStmt = thenBlockStmt.getLast();
-                if (!(lastStmt instanceof ReturnStatement)
-                        && !(lastStmt instanceof ThrowStatement)) {
-//                    thenBlockStmt.add(new CommentStatement("Loop ID : "
-//                            + ifBreak.getBreakTargetRegion().getBreakLoopID()));
-                    thenBlockStmt.add(new BreakStatement());
-                }
-                break;
-            }
-
             case LOOP: {
-                LoopRegion loopRegion = (LoopRegion) region;
+                LoopRegion region2 = (LoopRegion) region;
 
                 BlockStatement bodyBlockStmt = new BlockStatement();
-                buildAST(loopRegion.getLoopRegion(), bodyBlockStmt);
+                buildAST(region2.getLoopRegion(), bodyBlockStmt);
 
-//                blockStmt.add(new CommentStatement("Loop ID : " + loopRegion.getLoopID()));
-                switch (loopRegion.getLoopType()) {
+                switch (region2.getLoopType()) {
                     case WHILE: {
                         IfStatement ifStmt = (IfStatement) bodyBlockStmt.getFirst();
                         ifStmt.remove();
@@ -657,13 +631,13 @@ public class AbstractSyntaxTreeBuilder {
             }
 
             case SWITCH_CASE: {
-                SwitchCaseRegion switchCaseRegion = (SwitchCaseRegion) region;
+                SwitchCaseRegion region2 = (SwitchCaseRegion) region;
 
-                buildAST(switchCaseRegion.getSwitchRegion(), blockStmt);
+                buildAST(region2.getSwitchRegion(), blockStmt);
                 SwitchCaseStatement switchStmt
                         = (SwitchCaseStatement) blockStmt.getLast();
 
-                for (CaseRegion caseRegion : switchCaseRegion.getCaseRegions()) {
+                for (CaseRegion caseRegion : region2.getCaseRegions()) {
                     List<Statement> caseStmts = new ArrayList<Statement>();
 
                     if (caseRegion.getRegion() != null) {
@@ -686,37 +660,34 @@ public class AbstractSyntaxTreeBuilder {
                 break;
             }
 
-            case TRY_CATCH: {
-                TryCatchRegion tryCatchRegion = (TryCatchRegion) region;
+            case TRY_CATCH_FINALLY: {
+                TryCatchFinallyRegion region2 = (TryCatchFinallyRegion) region;
 
                 BlockStatement tryBlockStmt = new BlockStatement();
-                buildAST(tryCatchRegion.getTryRegion1(), tryBlockStmt);
+                buildAST(region2.getTryRegion1(), tryBlockStmt);
 
-                if (tryCatchRegion.getTryRegion2() != null) {
-                    buildAST(tryCatchRegion.getTryRegion2(), tryBlockStmt);
-                }
-
-                List<CatchClause> catchs = new ArrayList<CatchClause>();
+                List<CatchClause> catchClauses = new ArrayList<CatchClause>();
                 BlockStatement finallyBlockStmt = null;
-                for (CatchRegion catchRegion : tryCatchRegion.getCatchRegions()) {
+
+                for (CatchRegion catchRegion : region2.getCatchRegions()) {
+                    BlockStatement catchBlockStmt = new BlockStatement();
+                    buildAST(catchRegion.getRegion(), catchBlockStmt);
+
                     ExceptionHandlerInfo info
                             = (ExceptionHandlerInfo) catchRegion.getIncomingEdge().getValue();
-                    if (info.getClassName() != null) {
-                        BlockStatement catchBlockStmt = new BlockStatement();
-                        buildAST(catchRegion.getRegion(), catchBlockStmt);
-
-                        Variable excVar = info.getVariable();
-                        LocalVariableDeclaration varDecl
-                                = new LocalVariableDeclaration(Expressions.newVarExpr(excVar.getID(), excVar.getName()),
-                                                               excVar.getType());
-                        catchs.add(new CatchClause(catchBlockStmt, varDecl));
-                    } else {
-                        finallyBlockStmt = new BlockStatement();
-                        buildAST(catchRegion.getRegion(), finallyBlockStmt);
-                    }
+                    Variable excVar = info.getVariable();
+                    LocalVariableDeclaration varDecl
+                            = new LocalVariableDeclaration(Expressions.newVarExpr(excVar.getID(), excVar.getName()),
+                                                           excVar.getType());
+                    catchClauses.add(new CatchClause(catchBlockStmt, varDecl));
                 }
+                if (region2.getFinallyRegion() != null) {
+                    finallyBlockStmt = new BlockStatement();
+                    buildAST(region2.getFinallyRegion().getRegion(), finallyBlockStmt);
+                }
+
                 TryCatchFinallyStatement tryCatchStmt
-                        = new TryCatchFinallyStatement(tryBlockStmt, catchs, finallyBlockStmt);
+                        = new TryCatchFinallyStatement(tryBlockStmt, catchClauses, finallyBlockStmt);
                 blockStmt.add(tryCatchStmt);
 
                 break;

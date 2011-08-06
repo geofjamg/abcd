@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.ExceptionHandlerInfo;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,11 +28,11 @@ import java.util.List;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TryCatchRecognizer implements RegionRecognizer {
+public class TryCatchFinallyRecognizer implements RegionRecognizer {
 
-    public TryCatchRegion recognizeForm1(DirectedGraph<Region, Edge> graph, Region regionA,
-                                         Collection<Region> handlersOfA, Region regionB) {
-        List<CatchRegion> catchs = new ArrayList<CatchRegion>();
+    public TryCatchFinallyRegion recognizeTryCatch(DirectedGraph<Region, Edge> graph, Region regionA,
+                                                   Collection<Region> handlersOfA, Region regionB) {
+        List<CatchRegion> catchRegions = new ArrayList<CatchRegion>();
 
         for (Region regionC : handlersOfA) {
             Collection<Region> successorsOfC = Regions.getSuccessorsOf(graph, regionC, false);
@@ -44,21 +45,26 @@ public class TryCatchRecognizer implements RegionRecognizer {
             }
             Edge edgeAC = graph.getEdge(regionA, regionC);
             Edge edgeCB = graph.getEdge(regionC, regionB);
-            catchs.add(new CatchRegion(regionC, edgeAC, edgeCB));
+//            if (!Regions.sameHandlers(graph, regionA, regionC)) {
+//                return null;
+//            }
+            catchRegions.add(new CatchRegion(regionC, edgeAC, edgeCB));
         }
 
-        if (catchs.isEmpty()) {
+        if (catchRegions.isEmpty()) {
             return null;
         }
 
         Edge edgeAB = graph.getEdge(regionA, regionB);
 
-        return new TryCatchRegion(regionA, edgeAB, null, null, catchs);
+        return new TryCatchFinallyRegion(regionA, edgeAB, null, null, catchRegions, null);
     }
 
-    public TryCatchRegion recognizeForm2(DirectedGraph<Region, Edge> graph, Region regionA,
-                                         Collection<Region> handlersOfA, Region regionB, Region regionD) {
-        List<CatchRegion> catchs = new ArrayList<CatchRegion>();
+    public TryCatchFinallyRegion recognizeTryCatchFinally(DirectedGraph<Region, Edge> graph,
+                                                   Region regionA, Collection<Region> handlersOfA,
+                                                   Region regionB, Region regionD) {
+        List<CatchRegion> catchRegions = new ArrayList<CatchRegion>();
+        CatchRegion finallyRegion = null;
 
         for (Region regionC : handlersOfA) {
             Collection<Region> successorsOfC = Regions.getSuccessorsOf(graph, regionC, false);
@@ -71,32 +77,54 @@ public class TryCatchRecognizer implements RegionRecognizer {
             }
             Edge edgeAC = graph.getEdge(regionA, regionC);
             Edge edgeCD = graph.getEdge(regionC, regionD);
-            catchs.add(new CatchRegion(regionC, edgeAC, edgeCD));
+
+            CatchRegion catchRegion = new CatchRegion(regionC, edgeAC, edgeCD);
+
+            ExceptionHandlerInfo handlerInfo = (ExceptionHandlerInfo) edgeAC.getValue();
+            if (handlerInfo.getClassName() == null) {
+                // should not have more than one finally clause
+                if (finallyRegion != null) {
+                    return null;
+                }
+//                if (!Regions.sameHandlers(graph, regionB, regionC)) {
+//                    return null;
+//                }
+                if (!Regions.sameInstructions(regionB, regionC)) {
+                    return null;
+                }
+                finallyRegion = catchRegion;
+            } else {
+//                if (!Regions.sameHandlers(graph, regionA, regionC)) {
+//                    return null;
+//                }
+                catchRegions.add(catchRegion);
+            }
         }
 
-        if (catchs.isEmpty()) {
+        if (catchRegions.isEmpty() && finallyRegion == null) {
             return null;
         }
 
         Edge edgeAB = graph.getEdge(regionA, regionB);
         Edge edgeBD = graph.getEdge(regionB, regionD);
 
-        return new TryCatchRegion(regionA, edgeAB, regionB, edgeBD, catchs);
+        return new TryCatchFinallyRegion(regionA, edgeAB, regionB, edgeBD, catchRegions,
+                                  finallyRegion);
     }
 
     public Region recognize(DirectedGraph<Region, Edge> graph, Region regionA) {
         Collection<Region> successorsOfA = Regions.getSuccessorsOf(graph, regionA, false);
-        Collection<Region> handlersOfA = Regions.getSuccessorsOf(graph, regionA, true);
         if (successorsOfA.size() != 1) {
             return null;
         }
+        Collection<Region> handlersOfA = Regions.getSuccessorsOf(graph, regionA, true);
         if (handlersOfA.isEmpty()) {
             return null;
         }
         Region regionB = successorsOfA.iterator().next();
 
         //
-        // check for try catch region form 1
+        // check for try catch region
         //
         //     A
         //     |  \  \
@@ -104,13 +132,13 @@ public class TryCatchRecognizer implements RegionRecognizer {
         //     |  /  /
         //     B
         //
-        TryCatchRegion structuredRegion = recognizeForm1(graph, regionA, handlersOfA, regionB);
+        TryCatchFinallyRegion structuredRegion = recognizeTryCatch(graph, regionA, handlersOfA, regionB);
         if (structuredRegion != null) {
             return structuredRegion;
         }
 
         //
-        // check for try catch region form 2
+        // check for try (catch) finally region
         //
         //     A
         //     |  \  \
@@ -124,12 +152,7 @@ public class TryCatchRecognizer implements RegionRecognizer {
         }
         Region regionD = Regions.getFirstSuccessorOf(graph, regionB, false);
 
-        structuredRegion = recognizeForm2(graph, regionA, handlersOfA, regionB, regionD);
-        if (structuredRegion != null) {
-            return structuredRegion;
-        }
-
-        return null;
+        return recognizeTryCatchFinally(graph, regionA, handlersOfA, regionB, regionD);
     }
 
 }

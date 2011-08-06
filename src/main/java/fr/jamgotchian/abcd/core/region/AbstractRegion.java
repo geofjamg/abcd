@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.region;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -28,15 +29,12 @@ import java.util.Set;
  */
 abstract class AbstractRegion implements Region {
 
-    private BreakTargetStatus breakTargetStatus;
-
-    private int breakLoopID;
-
     private Region parent;
 
+    private final Set<RegionAttribute> attributes;
+
     AbstractRegion() {
-        breakTargetStatus = BreakTargetStatus.NONE;
-        breakLoopID = -1;
+        attributes = EnumSet.noneOf(RegionAttribute.class);
     }
 
     public String getTypeName() {
@@ -58,26 +56,6 @@ abstract class AbstractRegion implements Region {
         }
     }
 
-    public BreakTargetStatus getBreakTargetStatus() {
-        return breakTargetStatus;
-    }
-
-    public int getBreakLoopID() {
-        return breakLoopID;
-    }
-
-    public void setBreakLoopID(int breakLoopID) {
-        this.breakLoopID = breakLoopID;
-    }
-
-    public void setBreakTargetStatus(BreakTargetStatus breakTargetStatus) {
-//        if (breakTargetStatus.ordinal() < this.breakTargetStatus.ordinal()) {
-//            throw new ABCDException("Cannot change break target status from "
-//                    + this.breakTargetStatus + " to " + breakTargetStatus);
-//        }
-        this.breakTargetStatus = breakTargetStatus;
-    }
-
     public Region getParent() {
         return parent;
     }
@@ -95,6 +73,14 @@ abstract class AbstractRegion implements Region {
         } else {
             return parent.getAncestor(types);
         }
+    }
+
+    public void addAttribute(RegionAttribute attr) {
+        attributes.add(attr);
+    }
+
+    public boolean hasAttribute(RegionAttribute attr) {
+        return attributes.contains(attr);
     }
 
     public RegionName getName() {

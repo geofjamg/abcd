@@ -407,13 +407,18 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     private void removeUnnecessaryBlock() {
         Set<BasicBlock> blocksToRemove = new HashSet<BasicBlock>();
         for (BasicBlock block : graph.getVertices()) {
-            if (graph.getIncomingEdgesOf(block).size() == 1 &&
+            if (graph.getIncomingEdgesOf(block).size() > 0 &&
                 graph.getOutgoingEdgesOf(block).size() == 1) {
                 Range range = block.getRange();
                 boolean remove = true;
                 TACInstSeq tacInsts = block.getInstructions();
                 if (tacInsts != null) {
-                    remove = tacInsts.isEmpty();
+                    for (TACInst inst : tacInsts) {
+                        if (!inst.isIgnored()) {
+                            remove = false;
+                            break;
+                        }
+                    }
                 } else {
                     if (range != null && range.size() > 0) {
                         AbstractInsnNode node = instructions.get(range.getLast());
@@ -440,14 +445,16 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
 
         for (BasicBlock block : blocksToRemove) {
-            Edge incomingEdge = graph.getFirstIncomingEdgeOf(block);
             Edge outgoingEdge = graph.getFirstOutgoingEdgeOf(block);
-            BasicBlock predecessor = graph.getEdgeSource(incomingEdge);
             BasicBlock successor = graph.getEdgeTarget(outgoingEdge);
-            graph.removeEdge(incomingEdge);
+            Collection<Edge> incomingEdges = graph.getIncomingEdgesOf(block);
+            for (Edge incomingEdge : new ArrayList<Edge>(incomingEdges)) {
+                BasicBlock predecessor = graph.getEdgeSource(incomingEdge);
+                graph.removeEdge(incomingEdge);
+                graph.addEdge(predecessor, successor, incomingEdge);
+            }
             graph.removeEdge(outgoingEdge);
             graph.removeVertex(block);
-            graph.addEdge(predecessor, successor, incomingEdge);
 
             logger.log(Level.FINER, "Remove unnecessary block {0}", block);
         }
@@ -647,51 +654,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
 
         postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY);
-    }
-
-    public List<DirectedGraph<BasicBlock, Edge>> getFinallySubgraphs() {
-        // search for finally headers
-        Set<BasicBlock> finallyHeaders = new HashSet<BasicBlock>();
-        for (BasicBlock bb : graph.getVertices()) {
-            for (Edge incomingEdge : graph.getIncomingEdgesOf(bb)) {
-                if (incomingEdge.isExceptional()
-                        && ((ExceptionHandlerInfo) incomingEdge.getValue()).getClassName() == null) {
-                    finallyHeaders.add(bb);
-                }
-            }
-        }
-
-        // remove unexceptional control flow from this.graph -> graph2
-        MutableDirectedGraph<BasicBlock, Edge> graph2 = graph.clone();
-        Set<BasicBlock> visited = new HashSet<BasicBlock>();
-        visited.addAll(finallyHeaders);
-        List<BasicBlock> blocks = new ArrayList<BasicBlock>();
-        graph2.reversePostOrderDFS(entryBlock, visited, blocks, null, false);
-        for (Edge e : graph.getEdges()) {
-            if (e.isExceptional()) {
-                graph2.removeEdge(e);
-            }
-        }
-        for (BasicBlock bb : blocks) {
-            graph2.removeVertex(bb);
-        }
-
-        // extract finally clauses subgraphs
-        List<DirectedGraph<BasicBlock, Edge>> finallySubgraphs
-                = new ArrayList<DirectedGraph<BasicBlock, Edge>>(finallyHeaders.size());
-        for (BasicBlock finallyHeader : finallyHeaders) {
-            DirectedGraph<BasicBlock, Edge> finallySubgraph
-                    = graph2.getSubgraphContaining(finallyHeader);
-            if (finallySubgraph.getEntries().size() != 1) {
-                throw new ABCDException("exceptionalGraph.getEntries().size() != 1");
-            }
-            if (finallySubgraph.getExits().size() != 1) {
-                throw new ABCDException("exceptionalGraph.getExits().size() != 1");
-            }
-            finallySubgraphs.add(finallySubgraph);
-        }
-
-        return finallySubgraphs;
     }
 
     public String toString(Collection<Edge> edges) {

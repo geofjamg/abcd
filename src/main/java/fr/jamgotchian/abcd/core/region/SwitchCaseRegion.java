@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.region;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -75,8 +76,8 @@ public class SwitchCaseRegion extends AbstractRegion {
         return caseRegions;
     }
 
-    public Collection<Region> getChildRegions() {
-        Set<Region> regions = new HashSet<Region>();
+    public List<Region> getChildRegions() {
+        List<Region> regions = new ArrayList<Region>();
         regions.add(switchRegion);
         for (CaseRegion _case : caseRegions) {
             if (_case.getRegion() != null) {

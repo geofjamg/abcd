@@ -310,10 +310,6 @@ public class ABCDContext {
                 new LocalVariableTypeAnalyser(graph, method, importManager,
                                               instFactory).analyse();
 
-                logger.log(Level.FINE, "\n{0}",
-                        ConsoleUtil.printTitledSeparator("Uninline finally clauses of " + methodSignature, '='));
-//                new FinallyUninliner(graph).uninline();
-
                 handler.treeAddressCodeBuilt(graph);
 
                 logger.log(Level.FINE, "\n{0}",

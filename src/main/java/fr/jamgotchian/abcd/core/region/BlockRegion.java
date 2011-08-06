@@ -66,7 +66,7 @@ public class BlockRegion extends AbstractRegion {
         return regions;
     }
 
-    public Collection<Region> getChildRegions() {
+    public List<Region> getChildRegions() {
         return regions;
     }
 

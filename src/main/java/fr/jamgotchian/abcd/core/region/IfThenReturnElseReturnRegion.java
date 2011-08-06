@@ -17,45 +17,39 @@
 
 package fr.jamgotchian.abcd.core.region;
 
+import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Region {
+public class IfThenReturnElseReturnRegion extends IfThenElseRegion {
 
-    RegionName getName();
+    IfThenReturnElseReturnRegion(Edge thenEdge, Edge elseEdge, Region ifRegion,
+                                 Region thenRegion, Region elseRegion) {
+        super(thenEdge, elseEdge, ifRegion, thenRegion, elseRegion);
+    }
 
-    RegionType getType();
+    public RegionType getType() {
+        return RegionType.IF_THEN_RETURN_ELSE_RETURN;
+    }
 
-    String getTypeName();
+    public Collection<Edge> getChildEdges() {
+        return Sets.newHashSet(thenEdge, elseEdge);
+    }
 
-    Region getParent();
-
-    void setParent(Region parent);
-
-    Region getAncestor(Set<RegionType> types);
-
-    Region getEntryRegion();
-
-    Region getExitRegion();
-
-    List<Region> getChildRegions();
-
-    Collection<Edge> getChildEdges();
-
-    <T> Collection<T> getChildRegions(Class<T> clazz);
-
-    <T> void addChildRegions(Collection<T> regions, Class<T> clazz);
-
-    void addAttribute(RegionAttribute attr);
-
-    boolean hasAttribute(RegionAttribute attr);
-
-    void collapse(MutableDirectedGraph<Region, Edge> graph);
+    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+        graph.addVertex(this);
+        Regions.moveHandlers(graph, ifRegion, this);
+        Regions.moveIncomingEdges(graph, ifRegion, this);
+        graph.removeEdge(thenEdge);
+        graph.removeEdge(elseEdge);
+        graph.removeVertex(ifRegion);
+        graph.removeVertex(thenRegion);
+        graph.removeVertex(elseRegion);
+        addAttribute(RegionAttribute.RETURN);
+    }
 }

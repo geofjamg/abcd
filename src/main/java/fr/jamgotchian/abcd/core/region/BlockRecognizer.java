@@ -35,7 +35,7 @@ class BlockRecognizer implements RegionRecognizer {
     public BlockRecognizer(boolean doNotCollapseExitRegion) {
         this.doNotCollapseExitRegion = doNotCollapseExitRegion;
     }
-    
+
     private BlockRegion checkForward(DirectedGraph<Region, Edge> graph, Region regionA) {
         if (Regions.getSuccessorCountOf(graph, regionA, false) != 1) {
             return null;
@@ -85,9 +85,6 @@ class BlockRecognizer implements RegionRecognizer {
             return false;
         }
         Region regionB = graph.getEdgeTarget(edgeAB);
-        if (regionB.getBreakTargetStatus() == BreakTargetStatus.UNASSIGNED) {
-            return false;
-        }
         if (Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
             return false;
         }
@@ -98,9 +95,6 @@ class BlockRecognizer implements RegionRecognizer {
     }
 
     private boolean isBlockBackward(DirectedGraph<Region, Edge> graph, Region regionA) {
-        if (regionA.getBreakTargetStatus() == BreakTargetStatus.UNASSIGNED) {
-            return false;
-        }
         if (Regions.getPredecessorCountOf(graph, regionA, false) != 1) {
             return false;
         }

@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.region;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
@@ -63,7 +64,7 @@ public class StructuralAnalysis {
                                                                  /* then, cyclic regions */
                                                                  new LoopRecognizer(),
                                                                  /* try catch regions */
-                                                                 new TryCatchRecognizer()));
+                                                                 new TryCatchFinallyRecognizer()));
 
         recognizers2 = Collections.<RegionRecognizer>unmodifiableList(Arrays.asList(new BlockRecognizer(false)));
     }
@@ -81,19 +82,6 @@ public class StructuralAnalysis {
                 regionGraph.toString(structuredRegion.getChildEdges()));
 
         structuredRegion.collapse(regionGraph);
-
-        switch (structuredRegion.getType()) {
-            case IF_THEN_BREAK:
-                logger.log(Level.FINER, "  Break target : {0}",
-                        ((IfThenBreakRegion) structuredRegion).getBreakTargetRegion());
-                break;
-            case LOOP: {
-                logger.log(Level.FINER, "  Loop type : {0}", ((LoopRegion) structuredRegion).getLoopType());
-                logger.log(Level.FINER, "  Natural exit : {0}",
-                        regionGraph.getFirstSuccessorOf(structuredRegion));
-                break;
-            }
-        }
 
         if (structuredRegion.getEntryRegion().equals(entryRegion)) {
             logger.log(Level.FINEST, "  New entry region : {0}", structuredRegion);
@@ -146,7 +134,23 @@ public class StructuralAnalysis {
         exitRegion = block2region.get(graph.getExitBlock());
     }
 
+    private void openRegionGraph() {
+        // first, try to open exit region
+        if (exitRegion != null) {
+            for (Edge incomingEdge : regionGraph.getIncomingEdgesOf(exitRegion)) {
+                if (incomingEdge.hasAttribute(EdgeAttribute.FAKE_EDGE)) {
+                    // do nothing
+                } else {
+                    regionGraph.getEdgeSource(incomingEdge).addAttribute(RegionAttribute.RETURN);
+                }
+            }
+            regionGraph.removeVertex(exitRegion);
+            exitRegion = null;
+        }
+    }
+
     private void reduceRegionGraph() {
+        openRegionGraph();
         boolean failed = false;
         while (regionGraph.getVertexCount() > 1 && !failed) {
             Tree<Region, Edge> dfst = regionGraph.getReversePostOrderDFST(entryRegion, false);

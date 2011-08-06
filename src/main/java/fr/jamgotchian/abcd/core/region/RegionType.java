@@ -25,9 +25,10 @@ public enum RegionType {
     BASIC_BLOCK,
     BLOCK,
     IF_THEN,
-    IF_THEN_ELSE,
-    IF_THEN_BREAK,
+    IF_THEN_ELSE_JOIN,
+    IF_THEN_RETURN_ELSE_RETURN,
     SWITCH_CASE,
     LOOP,
-    TRY_CATCH
+    TRY_CATCH_FINALLY,
+    EXIT
 }

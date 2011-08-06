@@ -21,12 +21,16 @@ import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.ExceptionHandlerInfo;
+import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
+import fr.jamgotchian.abcd.core.controlflow.util.TACInstComparator;
+import fr.jamgotchian.abcd.core.controlflow.util.VariableMapping;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -153,7 +157,8 @@ public class Regions {
         return count;
     }
 
-    public static boolean sameHandlers(DirectedGraph<Region, Edge> graph, Region region1, Region region2) {
+    public static boolean sameHandlers(DirectedGraph<Region, Edge> graph,
+                                       Region region1, Region region2) {
         Collection<Edge> edges1 = getOutgoingEdgesOf(graph, region1, true);
         Collection<Edge> edges2 = getOutgoingEdgesOf(graph, region2, true);
         if (edges1.size() != edges2.size()) {
@@ -276,5 +281,34 @@ public class Regions {
             // nothing
         }
         return r == null ? null : ((BasicBlockRegion) r).getBasicBlock();
+    }
+
+    public static boolean sameInstructions(Region region1, Region region2) {
+        return sameInstructions(region1, region2, new VariableMapping());
+    }
+
+    private static boolean sameInstructions(Region region1, Region region2, VariableMapping mapping) {
+        if (region1.getType() != region2.getType()) {
+            return false;
+        }
+        if (region1.getType() == RegionType.BASIC_BLOCK) {
+            BasicBlock bb1 = ((BasicBlockRegion) region1).getBasicBlock();
+            BasicBlock bb2 = ((BasicBlockRegion) region2).getBasicBlock();
+            TACInstSeq seq1 = bb1.getInstructions();
+            TACInstSeq seq2 = bb2.getInstructions();
+            return seq1.accept(new TACInstComparator(seq2, mapping), null);
+        } else {
+            List<Region> children1 = region1.getChildRegions();
+            List<Region> children2 = region2.getChildRegions();
+            if (children1.size() != children2.size()) {
+                return false;
+            }
+            for (int i = 0; i < children1.size(); i++) {
+                if (!sameInstructions(children1.get(i), children2.get(i), mapping)) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }

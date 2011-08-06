@@ -23,6 +23,7 @@ import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  *
@@ -55,7 +56,7 @@ public class BasicBlockRegion extends AbstractRegion {
         return null;
     }
 
-    public Collection<Region> getChildRegions() {
+    public List<Region> getChildRegions() {
         return Collections.emptyList();
     }
 

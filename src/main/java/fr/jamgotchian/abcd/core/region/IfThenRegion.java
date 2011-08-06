@@ -23,6 +23,7 @@ import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 /**
  *
@@ -93,7 +94,7 @@ public class IfThenRegion extends AbstractRegion {
         return mustInvertCondition;
     }
 
-    public Collection<Region> getChildRegions() {
+    public List<Region> getChildRegions() {
         return Arrays.asList(ifRegion, thenRegion);
     }
 

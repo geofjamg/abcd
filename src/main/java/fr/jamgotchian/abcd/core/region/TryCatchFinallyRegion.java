@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TryCatchRegion extends AbstractRegion {
+public class TryCatchFinallyRegion extends AbstractRegion {
 
     private final Region tryRegion1;
 
@@ -39,8 +39,10 @@ public class TryCatchRegion extends AbstractRegion {
 
     private final Collection<CatchRegion> catchRegions;
 
-    TryCatchRegion(Region tryRegion1, Edge tryEdge1, Region tryRegion2, Edge tryEdge2,
-                   Collection<CatchRegion> catchRegions) {
+    private final CatchRegion finallyRegion;
+
+    TryCatchFinallyRegion(Region tryRegion1, Edge tryEdge1, Region tryRegion2, Edge tryEdge2,
+                   Collection<CatchRegion> catchRegions, CatchRegion finallyRegion) {
         if (tryRegion1 == null) {
             throw new IllegalArgumentException("tryRegion1 == null");
         }
@@ -50,14 +52,12 @@ public class TryCatchRegion extends AbstractRegion {
         if (catchRegions == null) {
             throw new IllegalArgumentException("catchRegions == null");
         }
-        if (catchRegions.isEmpty()) {
-            throw new IllegalArgumentException("catchRegions.isEmpty()");
-        }
         this.tryRegion1 = tryRegion1;
         this.tryEdge1 = tryEdge1;
         this.tryRegion2 = tryRegion2;
         this.tryEdge2 = tryEdge2;
         this.catchRegions = catchRegions;
+        this.finallyRegion = finallyRegion;
         tryRegion1.setParent(this);
         if (tryRegion2 != null) {
             tryRegion2.setParent(this);
@@ -84,8 +84,12 @@ public class TryCatchRegion extends AbstractRegion {
         return catchRegions;
     }
 
+    public CatchRegion getFinallyRegion() {
+        return finallyRegion;
+    }
+
     public RegionType getType() {
-        return RegionType.TRY_CATCH;
+        return RegionType.TRY_CATCH_FINALLY;
     }
 
     public Region getEntryRegion() {
@@ -96,7 +100,7 @@ public class TryCatchRegion extends AbstractRegion {
         return null;
     }
 
-    public Collection<Region> getChildRegions() {
+    public List<Region> getChildRegions() {
         List<Region> regions = new ArrayList<Region>();
         regions.add(tryRegion1);
         if (tryRegion2 != null) {
@@ -123,8 +127,7 @@ public class TryCatchRegion extends AbstractRegion {
 
     public void collapse(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
-        CatchRegion firstCatch = catchRegions.iterator().next();
-        Regions.moveHandlers(graph, firstCatch.getRegion(), this);
+        Regions.moveHandlers(graph, tryRegion1, this);
         Regions.moveIncomingEdges(graph, tryRegion1, this);
         Edge exitEdge = tryEdge2 != null ? tryEdge2 : tryEdge1;
         Region exitRegion = graph.getEdgeTarget(exitEdge);
@@ -138,10 +141,15 @@ public class TryCatchRegion extends AbstractRegion {
         } else {
             Regions.moveUnexceptionalOutgoingEdges(graph, tryRegion1, this);
         }
-        for (CatchRegion _catch : catchRegions) {
-            graph.removeEdge(_catch.getIncomingEdge());
-            graph.removeEdge(_catch.getOutgoingEdge());
-            graph.removeVertex(_catch.getRegion());
+        for (CatchRegion catchRegion : catchRegions) {
+            graph.removeEdge(catchRegion.getIncomingEdge());
+            graph.removeEdge(catchRegion.getOutgoingEdge());
+            graph.removeVertex(catchRegion.getRegion());
+        }
+        if (finallyRegion != null) {
+            graph.removeEdge(finallyRegion.getIncomingEdge());
+            graph.removeEdge(finallyRegion.getOutgoingEdge());
+            graph.removeVertex(finallyRegion.getRegion());
         }
         graph.removeVertex(tryRegion1);
         if (tryRegion2 != null) {
