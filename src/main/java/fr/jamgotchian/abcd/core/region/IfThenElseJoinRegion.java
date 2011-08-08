@@ -56,7 +56,7 @@ public class IfThenElseJoinRegion extends IfThenElseRegion {
                                joinElseEdge);
     }
 
-    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
         Regions.moveHandlers(graph, ifRegion, this);
         Regions.moveIncomingEdges(graph, ifRegion, this);

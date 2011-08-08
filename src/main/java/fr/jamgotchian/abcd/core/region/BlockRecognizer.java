@@ -20,9 +20,7 @@ import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -30,10 +28,7 @@ import java.util.Set;
  */
 class BlockRecognizer implements RegionRecognizer {
 
-    private final boolean doNotCollapseExitRegion;
-
-    public BlockRecognizer(boolean doNotCollapseExitRegion) {
-        this.doNotCollapseExitRegion = doNotCollapseExitRegion;
+    public BlockRecognizer() {
     }
 
     private BlockRegion checkForward(DirectedGraph<Region, Edge> graph, Region regionA) {
@@ -47,7 +42,7 @@ class BlockRecognizer implements RegionRecognizer {
         }
         internalRegions.add(r);
         if (internalRegions.size() > 1) {
-            Set<Edge> internalEdges = new HashSet<Edge>();
+            List<Edge> internalEdges = new ArrayList<Edge>();
             for (int i = 0; i < internalRegions.size() - 1; i++) {
                 internalEdges.add(graph.getEdge(internalRegions.get(i), internalRegions.get(i + 1)));
             }
@@ -67,7 +62,7 @@ class BlockRecognizer implements RegionRecognizer {
         }
         internalRegions.add(0, r);
         if (internalRegions.size() > 1) {
-            Set<Edge> internalEdges = new HashSet<Edge>();
+        List<Edge> internalEdges = new ArrayList<Edge>();
             for (int i = 0; i < internalRegions.size() - 1; i++) {
                 internalEdges.add(graph.getEdge(internalRegions.get(i), internalRegions.get(i + 1)));
             }
@@ -88,17 +83,11 @@ class BlockRecognizer implements RegionRecognizer {
         if (Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
             return false;
         }
-        if (doNotCollapseExitRegion && Regions.getSuccessorCountOf(graph, regionB, false) == 0) {
-            return false;
-        }
         return Regions.sameHandlers(graph, regionA, regionB);
     }
 
     private boolean isBlockBackward(DirectedGraph<Region, Edge> graph, Region regionA) {
         if (Regions.getPredecessorCountOf(graph, regionA, false) != 1) {
-            return false;
-        }
-        if (doNotCollapseExitRegion && Regions.getSuccessorCountOf(graph, regionA, false) == 0) {
             return false;
         }
         Edge edgeBA = Regions.getFirstIncomingEdgeOf(graph, regionA, false);

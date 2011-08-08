@@ -98,7 +98,7 @@ public class SwitchCaseRegion extends AbstractRegion {
         return edges;
     }
 
-    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
         Regions.moveHandlers(graph, switchRegion, this);
         Region switchExitRegion = null;

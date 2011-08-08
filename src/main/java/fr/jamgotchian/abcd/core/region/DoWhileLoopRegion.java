@@ -20,65 +20,69 @@ package fr.jamgotchian.abcd.core.region;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BlockRegion extends AbstractRegion {
+public class DoWhileLoopRegion extends AbstractRegion {
 
-    private final List<Edge> edges;
+    private final Region loopRegion;
 
-    private final List<Region> regions;
+    private final Edge backEdge;
 
-    BlockRegion(List<Edge> edges, List<Region> regions) {
-        if (edges == null) {
-            throw new IllegalArgumentException("edges == null");
+    private final Edge exitEdge;
+
+    public DoWhileLoopRegion(Edge backEdge, Region loopRegion, Edge exitEdge) {
+        if (backEdge == null) {
+            throw new IllegalArgumentException("backEdge == null");
         }
-        if (regions == null) {
-            throw new IllegalArgumentException("regions == null");
+        if (loopRegion == null) {
+            throw new IllegalArgumentException("loopRegion == null");
         }
-        if (regions.size() < 2) {
-            throw new IllegalArgumentException("regions < 2");
+        if (exitEdge == null) {
+            throw new IllegalArgumentException("exitEdge == null");
         }
-        this.edges = edges;
-        this.regions = regions;
-        for (Region r : regions) {
-            r.setParent(this);
-        }
+        this.backEdge = backEdge;
+        this.loopRegion = loopRegion;
+        this.exitEdge = exitEdge;
+        loopRegion.setParent(this);
     }
 
     public RegionType getType() {
-        return RegionType.BLOCK;
+        return RegionType.DO_WHILE_LOOP;
     }
 
     public Region getEntryRegion() {
-        return regions.get(0);
+        return loopRegion;
     }
 
     public Region getExitRegion() {
-        return regions.get(regions.size()-1);
+        return loopRegion;
     }
 
-    public List<Region> getRegions() {
-        return regions;
+    public Region getLoopRegion() {
+        return loopRegion;
     }
 
     public List<Region> getChildRegions() {
-        return regions;
+        return Collections.singletonList(loopRegion);
     }
 
     public Collection<Edge> getChildEdges() {
-        return edges;
+        return Collections.singleton(backEdge);
     }
 
     public void reduce(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
-        Regions.moveHandlers(graph, regions.get(0), this);
-        Regions.moveIncomingEdges(graph, regions.get(0), this);
-        Regions.moveUnexceptionalOutgoingEdges(graph, regions.get(regions.size()-1), this);
-        Regions.removeEdges(graph, edges);
-        Regions.removeRegions(graph, regions);
+        Regions.moveHandlers(graph, loopRegion, this);
+        graph.removeEdge(backEdge);
+        Regions.moveIncomingEdges(graph, loopRegion, this);
+        exitEdge.setValue(null);
+        Region exitRegion = graph.getEdgeTarget(exitEdge);
+        graph.removeVertex(loopRegion);
+        graph.addEdge(this, exitRegion, exitEdge);
     }
 }

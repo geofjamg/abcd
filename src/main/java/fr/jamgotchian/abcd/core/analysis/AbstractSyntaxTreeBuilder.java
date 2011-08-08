@@ -30,6 +30,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.BreakStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.DoWhileStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.MonitorEnterStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
@@ -48,7 +49,7 @@ import fr.jamgotchian.abcd.core.region.BlockRegion;
 import fr.jamgotchian.abcd.core.region.CaseRegion;
 import fr.jamgotchian.abcd.core.region.CatchRegion;
 import fr.jamgotchian.abcd.core.region.IfThenRegion;
-import fr.jamgotchian.abcd.core.region.LoopRegion;
+import fr.jamgotchian.abcd.core.region.InfiniteLoopRegion;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.SwitchCaseRegion;
 import fr.jamgotchian.abcd.core.region.TryCatchFinallyRegion;
@@ -95,7 +96,10 @@ import fr.jamgotchian.abcd.core.controlflow.UnaryInst;
 import fr.jamgotchian.abcd.core.controlflow.Variable;
 import fr.jamgotchian.abcd.core.controlflow.VariableID;
 import fr.jamgotchian.abcd.core.controlflow.util.EmptyTACInstVisitor;
+import fr.jamgotchian.abcd.core.region.DoWhileLoopRegion;
 import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
+import fr.jamgotchian.abcd.core.region.LabeledRegion;
+import fr.jamgotchian.abcd.core.region.WhileLoopRegion;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -546,6 +550,9 @@ public class AbstractSyntaxTreeBuilder {
                 new Object[] {region, region.getTypeName()});
 
         switch (region.getType()) {
+            case EMPTY:
+                break;
+
             case BASIC_BLOCK: {
                 BasicBlockRegion region2 = (BasicBlockRegion) region;
                 BasicBlock bb = region2.getBasicBlock();
@@ -598,35 +605,55 @@ public class AbstractSyntaxTreeBuilder {
                 break;
             }
 
-            case LOOP: {
-                LoopRegion region2 = (LoopRegion) region;
+            case LABELED: {
+                LabeledRegion region2 = (LabeledRegion) region;
+
+                BlockStatement bodyBlockStmt = new BlockStatement();
+                buildAST(region2.getBodyRegion(), bodyBlockStmt);
+
+                blockStmt.add(new LabeledStatement("LABEL", bodyBlockStmt));
+
+                break;
+            }
+
+            case INFINITE_LOOP: {
+                InfiniteLoopRegion region2 = (InfiniteLoopRegion) region;
 
                 BlockStatement bodyBlockStmt = new BlockStatement();
                 buildAST(region2.getLoopRegion(), bodyBlockStmt);
 
-                switch (region2.getLoopType()) {
-                    case WHILE: {
-                        IfStatement ifStmt = (IfStatement) bodyBlockStmt.getFirst();
-                        ifStmt.remove();
-                        Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
-                        blockStmt.add(new WhileStatement(condition, bodyBlockStmt));
-                        break;
-                    }
+                blockStmt.add(new WhileStatement(Expressions.newBooleanExpr(true), bodyBlockStmt));
 
-                    case DO_WHILE:
-                        IfStatement ifStmt = (IfStatement) bodyBlockStmt.getLast();
-                        ifStmt.remove();
-                        Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
-                        blockStmt.add(new DoWhileStatement(bodyBlockStmt, condition));
-                        break;
+                break;
+            }
 
-                    case INFINITE:
-                        blockStmt.add(new WhileStatement(Expressions.newBooleanExpr(true), bodyBlockStmt));
-                        break;
+            case DO_WHILE_LOOP: {
+                DoWhileLoopRegion region2 = (DoWhileLoopRegion) region;
 
-                    default:
-                        throw new AssertionError();
-                }
+                BlockStatement bodyBlockStmt = new BlockStatement();
+                buildAST(region2.getLoopRegion(), bodyBlockStmt);
+
+                IfStatement ifStmt = (IfStatement) bodyBlockStmt.getLast();
+                ifStmt.remove();
+                Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
+                blockStmt.add(new DoWhileStatement(bodyBlockStmt, condition));
+
+                break;
+            }
+
+            case WHILE_LOOP: {
+                WhileLoopRegion region2 = (WhileLoopRegion) region;
+
+                BlockStatement bodyBlockStmt = new BlockStatement();
+                buildAST(region2.getIfRegion(), bodyBlockStmt);
+                IfStatement ifStmt = (IfStatement) bodyBlockStmt.getFirst();
+                ifStmt.remove();
+                Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
+
+                buildAST(region2.getLoopRegion(), bodyBlockStmt);
+
+                blockStmt.add(new WhileStatement(condition, bodyBlockStmt));
+
                 break;
             }
 

@@ -17,9 +17,7 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,57 +27,63 @@ import java.util.List;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class IfThenRegion extends AbstractRegion {
+public class WhileLoopRegion extends AbstractRegion {
 
-    private final Edge beforeThenEdge;
-
-    private final Edge afterThenEdge;
-
-    private final Edge jumpEdge;
+    private final Edge backEdge;
 
     private final Region ifRegion;
 
+    private final Edge thenEdge;
+
     private final Region thenRegion;
 
-    private final boolean mustInvertCondition;
+    private final Edge loopEdge;
 
-    IfThenRegion(Edge beforeThenEdge, Edge afterThenEdge, Edge jumpEdge,
-                 Region ifRegion, Region thenRegion, boolean mustInvertCondition) {
-        if (beforeThenEdge == null) {
-            throw new IllegalArgumentException("beforeThenEdge == null");
-        }
-        if (afterThenEdge == null) {
-            throw new IllegalArgumentException("afterThenEdge == null");
-        }
-        if (jumpEdge == null) {
-            throw new IllegalArgumentException("jumpEdge == null");
+    private final Region loopRegion;
+
+    public WhileLoopRegion(Edge backEdge, Region ifRegion, Edge thenEdge,
+                           Region thenRegion, Edge loopEdge, Region loopRegion) {
+        if (backEdge == null) {
+            throw new IllegalArgumentException("backEdge == null");
         }
         if (ifRegion == null) {
             throw new IllegalArgumentException("ifRegion == null");
         }
+        if (thenEdge == null) {
+            throw new IllegalArgumentException("thenEdge == null");
+        }
         if (thenRegion == null) {
             throw new IllegalArgumentException("thenRegion == null");
         }
-        this.beforeThenEdge = beforeThenEdge;
-        this.afterThenEdge = afterThenEdge;
-        this.jumpEdge = jumpEdge;
+        if (loopEdge == null) {
+            throw new IllegalArgumentException("loopEdge == null");
+        }
+        if (loopRegion == null) {
+            throw new IllegalArgumentException("loopRegion == null");
+        }
+        this.backEdge = backEdge;
         this.ifRegion = ifRegion;
+        this.thenEdge = thenEdge;
         this.thenRegion = thenRegion;
-        this.mustInvertCondition = mustInvertCondition;
-        ifRegion.setParent(this);
-        thenRegion.setParent(this);
+        this.loopEdge = loopEdge;
+        this.loopRegion = loopRegion;
+        loopRegion.setParent(this);
     }
 
     public RegionType getType() {
-        return RegionType.IF_THEN;
+        return RegionType.DO_WHILE_LOOP;
     }
 
     public Region getEntryRegion() {
-         return ifRegion;
+        return loopRegion;
     }
 
     public Region getExitRegion() {
-        return null;
+        return loopRegion;
+    }
+
+    public Region getLoopRegion() {
+        return loopRegion;
     }
 
     public Region getIfRegion() {
@@ -90,27 +94,23 @@ public class IfThenRegion extends AbstractRegion {
         return thenRegion;
     }
 
-    public boolean mustInvertCondition() {
-        return mustInvertCondition;
-    }
-
     public List<Region> getChildRegions() {
-        return Arrays.asList(ifRegion, thenRegion);
+        return Arrays.asList(ifRegion, thenRegion, loopRegion);
     }
 
     public Collection<Edge> getChildEdges() {
-        return Sets.newHashSet(beforeThenEdge, afterThenEdge, jumpEdge);
+        return Arrays.asList(backEdge, thenEdge, loopEdge);
     }
 
     public void reduce(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
-        Regions.moveHandlers(graph, ifRegion, this);
-        Regions.moveIncomingEdges(graph, ifRegion, this);
-        graph.addEdge(this, graph.getEdgeTarget(afterThenEdge), new EdgeImpl());
-        graph.removeEdge(beforeThenEdge);
-        graph.removeEdge(afterThenEdge);
-        graph.removeEdge(jumpEdge);
-        graph.removeVertex(ifRegion);
-        graph.removeVertex(thenRegion);
+        Regions.moveHandlers(graph, loopRegion, this);
+        graph.removeEdge(backEdge);
+        graph.removeEdge(thenEdge);
+        graph.removeEdge(loopEdge);
+        Regions.moveIncomingEdges(graph, loopRegion, this);
+        graph.removeVertex(loopRegion);
+        thenEdge.setValue(null);
+        graph.addEdge(this, thenRegion, thenEdge);
     }
 }

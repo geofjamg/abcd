@@ -35,13 +35,13 @@ public class DirectedGraphs {
 
     private DirectedGraphs() {
     }
-    
+
     private static class ListenableDirectedGraphImpl<V ,E> implements ListenableDirectedGraph<V, E> {
 
         private final MutableDirectedGraph<V, E> delegate;
 
         private final List<DirectedGraphListener> listeners;
-        
+
         public ListenableDirectedGraphImpl(MutableDirectedGraph<V, E> delegate) {
             this.delegate = delegate;
             listeners = new CopyOnWriteArrayList<DirectedGraphListener>();
@@ -54,14 +54,14 @@ public class DirectedGraphs {
         public void removeListener(DirectedGraphListener l) {
             listeners.remove(l);
         }
-        
+
         private void notifyListeners() {
             for (DirectedGraphListener l : listeners) {
                 l.graphChanged();
             }
         }
-        
-        public void writeDOT(Writer writer, String name, AttributeProvider<V> vertexAttrs, 
+
+        public void writeDOT(Writer writer, String name, AttributeProvider<V> vertexAttrs,
                              AttributeProvider<E> edgeAttrs) throws IOException {
             delegate.writeDOT(writer, name, vertexAttrs, edgeAttrs);
         }
@@ -100,6 +100,10 @@ public class DirectedGraphs {
 
         public int getSuccessorCountOf(V vertex) {
             return delegate.getSuccessorCountOf(vertex);
+        }
+
+        public Tree<V, E> getReversePostOrderDFST(V root, Set<V> visited, boolean invert) {
+            return delegate.getReversePostOrderDFST(root, visited, invert);
         }
 
         public Tree<V, E> getReversePostOrderDFST(V root, boolean invert) {
@@ -214,7 +218,7 @@ public class DirectedGraphs {
             notifyListeners();
         }
     }
-    
+
     private static class UnmodifiableDirectedGraph<V ,E> implements DirectedGraph<V, E> {
 
         private final DirectedGraph<V, E> delegate;
@@ -257,6 +261,10 @@ public class DirectedGraphs {
 
         public int getSuccessorCountOf(V vertex) {
             return delegate.getSuccessorCountOf(vertex);
+        }
+
+        public Tree<V, E> getReversePostOrderDFST(V root, Set<V> visited, boolean invert) {
+            return delegate.getReversePostOrderDFST(root, visited, invert);
         }
 
         public Tree<V, E> getReversePostOrderDFST(V root, boolean invert) {
@@ -348,7 +356,7 @@ public class DirectedGraphs {
     public static <V, E> MutableDirectedGraph<V, E> listenableDirectedGraph(MutableDirectedGraph<V, E> graph) {
         return new ListenableDirectedGraphImpl<V, E>(graph);
     }
-    
+
     public static <V, E> String toString(DirectedGraph<V, E> graph, V v) {
         StringBuilder builder = new StringBuilder();
         builder.append("Vertices :\n");

@@ -125,7 +125,7 @@ public class TryCatchFinallyRegion extends AbstractRegion {
         return edges;
     }
 
-    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
         Regions.moveHandlers(graph, tryRegion1, this);
         Regions.moveIncomingEdges(graph, tryRegion1, this);

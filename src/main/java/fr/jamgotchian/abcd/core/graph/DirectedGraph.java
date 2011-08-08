@@ -75,6 +75,8 @@ public interface DirectedGraph<V, E> {
 
     void reversePostOrderDFS(V v, Set<V> visited, List<V> vertices, List<E> edges, boolean invert);
 
+    Tree<V, E> getReversePostOrderDFST(V root, Set<V> visited, boolean invert);
+
     Tree<V, E> getReversePostOrderDFST(V root, boolean invert);
 
     void writeDOT(Writer writer, String name) throws IOException;

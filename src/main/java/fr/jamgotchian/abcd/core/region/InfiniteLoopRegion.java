@@ -27,39 +27,26 @@ import java.util.List;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LoopRegion extends AbstractRegion {
-
-    private final LoopType loopType;
+public class InfiniteLoopRegion extends AbstractRegion {
 
     private final Region loopRegion;
 
     private final Edge backEdge;
 
-    private final int loopID;
-
-    public LoopRegion(LoopType loopType, Edge backEdge, Region loopRegion, int loopID) {
-        if (loopType == null) {
-            throw new IllegalArgumentException("loopType == null");
-        }
+    public InfiniteLoopRegion(Edge backEdge, Region loopRegion) {
         if (backEdge == null) {
             throw new IllegalArgumentException("backEdge == null");
         }
         if (loopRegion == null) {
             throw new IllegalArgumentException("loopRegion == null");
         }
-        this.loopType = loopType;
         this.backEdge = backEdge;
         this.loopRegion = loopRegion;
-        this.loopID = loopID;
         loopRegion.setParent(this);
     }
 
     public RegionType getType() {
-        return RegionType.LOOP;
-    }
-
-    public LoopType getLoopType() {
-        return loopType;
+        return RegionType.INFINITE_LOOP;
     }
 
     public Region getEntryRegion() {
@@ -74,14 +61,6 @@ public class LoopRegion extends AbstractRegion {
         return loopRegion;
     }
 
-    public Edge getBackEdge() {
-        return backEdge;
-    }
-
-    public int getLoopID() {
-        return loopID;
-    }
-
     public List<Region> getChildRegions() {
         return Collections.singletonList(loopRegion);
     }
@@ -90,11 +69,11 @@ public class LoopRegion extends AbstractRegion {
         return Collections.singleton(backEdge);
     }
 
-    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
         Regions.moveHandlers(graph, loopRegion, this);
-        Regions.moveIncomingEdges(graph, loopRegion, this);
         graph.removeEdge(backEdge);
+        Regions.moveIncomingEdges(graph, loopRegion, this);
         graph.removeVertex(loopRegion);
     }
 }

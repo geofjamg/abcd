@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.region;
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.controlflow.ExceptionHandlerInfo;
 import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
 import fr.jamgotchian.abcd.core.controlflow.util.TACInstComparator;
@@ -206,6 +207,14 @@ public class Regions {
             Region handler = graph.getEdgeTarget(edge);
             graph.removeEdge(edge);
             graph.addEdge(region2, handler, edge);
+        }
+    }
+
+    public static void copyHandlers(MutableDirectedGraph<Region, Edge> graph, Region region1, Region region2) {
+        Collection<Edge> exceptionalEdges = getOutgoingEdgesOf(graph, region1, true);
+        for (Edge edge : exceptionalEdges) {
+            Region handler = graph.getEdgeTarget(edge);
+            graph.addEdge(region2, handler, new EdgeImpl(true));
         }
     }
 

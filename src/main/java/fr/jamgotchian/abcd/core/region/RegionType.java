@@ -28,7 +28,10 @@ public enum RegionType {
     IF_THEN_ELSE_JOIN,
     IF_THEN_RETURN_ELSE_RETURN,
     SWITCH_CASE,
-    LOOP,
+    INFINITE_LOOP,
+    DO_WHILE_LOOP,
+    WHILE_LOOP,
     TRY_CATCH_FINALLY,
-    EXIT
+    LABELED,
+    EMPTY
 }

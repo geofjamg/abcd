@@ -41,7 +41,7 @@ public class IfThenReturnElseReturnRegion extends IfThenElseRegion {
         return Sets.newHashSet(thenEdge, elseEdge);
     }
 
-    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
         Regions.moveHandlers(graph, ifRegion, this);
         Regions.moveIncomingEdges(graph, ifRegion, this);
@@ -50,6 +50,6 @@ public class IfThenReturnElseReturnRegion extends IfThenElseRegion {
         graph.removeVertex(ifRegion);
         graph.removeVertex(thenRegion);
         graph.removeVertex(elseRegion);
-        addAttribute(RegionAttribute.RETURN);
+        setBreak(true);
     }
 }

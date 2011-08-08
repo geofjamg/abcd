@@ -77,13 +77,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private ExceptionTable exceptionTable;
 
-    private static class EdgeFactoryImpl implements EdgeFactory<Edge> {
-
-        public Edge createEdge() {
-            return new EdgeImpl();
-        }
-    }
-
     private static final EdgeFactory<Edge> EDGE_FACTORY = new EdgeFactoryImpl();
 
     public ControlFlowGraphImpl(String name, InsnList instructions) {

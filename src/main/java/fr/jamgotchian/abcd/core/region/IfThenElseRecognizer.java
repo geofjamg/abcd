@@ -66,12 +66,12 @@ class IfThenElseRecognizer implements RegionRecognizer {
         //
         //         A
         //    /         \
-        //   B (return)  C (return)
+        //   B (break)  C (break)
         //
         if (Regions.getSuccessorCountOf(graph, regionB, false) == 0
                 && Regions.getSuccessorCountOf(graph, regionC, false) == 0
-                && regionB.hasAttribute(RegionAttribute.RETURN)
-                && regionC.hasAttribute(RegionAttribute.RETURN)) {
+                && regionB.isBreak()
+                && regionC.isBreak()) {
             return new IfThenReturnElseReturnRegion(edgeAB, edgeAC, regionA, regionB, regionC);
         }
 

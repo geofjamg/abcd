@@ -24,15 +24,15 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class RegionName {
-    
+
     private final BasicBlock block;
 
     private int index;
-    
+
     public RegionName(BasicBlock block) {
         this(block, 0);
     }
-    
+
     private RegionName(BasicBlock block, int index) {
         this.block = block;
         this.index = index;
@@ -41,13 +41,17 @@ public class RegionName {
     public RegionName getParent() {
         return new RegionName(block, index + 1);
     }
-    
+
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder(block.toString());
-        if (index > 0) {
-            builder.append("-").append((char)('a' + index-1));
+        if (block == null) {
+            return "[]";
+        } else {
+            StringBuilder builder = new StringBuilder(block.toString());
+            if (index > 0) {
+                builder.append("-").append((char)('a' + index-1));
+            }
+            return builder.toString();
         }
-        return builder.toString();
     }
 }

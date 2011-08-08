@@ -69,7 +69,7 @@ public class BasicBlockRegion extends AbstractRegion {
         return new RegionName(block);
     }
 
-    public void collapse(MutableDirectedGraph<Region, Edge> graph) {
+    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
         throw new ABCDException("Cannot reduce a basic block region");
     }
 }

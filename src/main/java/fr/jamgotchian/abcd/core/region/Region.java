@@ -53,9 +53,9 @@ public interface Region {
 
     <T> void addChildRegions(Collection<T> regions, Class<T> clazz);
 
-    void addAttribute(RegionAttribute attr);
+    boolean isBreak();
 
-    boolean hasAttribute(RegionAttribute attr);
+    void setBreak(boolean _break);
 
-    void collapse(MutableDirectedGraph<Region, Edge> graph);
+    void reduce(MutableDirectedGraph<Region, Edge> graph);
 }

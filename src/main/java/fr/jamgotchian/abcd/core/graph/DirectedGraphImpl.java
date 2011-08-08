@@ -361,16 +361,20 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
     }
 
     public Tree<V, E> getReversePostOrderDFST(V root, boolean invert) {
+        return getReversePostOrderDFST(root, new HashSet<V>(), invert);
+    }
+
+    public Tree<V, E> getReversePostOrderDFST(V root, Set<V> visited, boolean invert) {
         List<V> dfstBlocks = new ArrayList<V>();
         List<E> dfstEdges = new ArrayList<E>();
-        reversePostOrderDFS(root, dfstBlocks, dfstEdges, invert);
+        reversePostOrderDFS(root, visited, dfstBlocks, dfstEdges, invert);
 
         // build depth first spanning Tree
         MutableTree<V, E> dfst = new TreeImpl<V, E>(root);
         for (int i = 0; i < dfstEdges.size(); i++) {
             E edge = dfstEdges.get(i);
-            V parent = getEdgeSource(edge);
-            V node = getEdgeTarget(edge);
+            V parent = invert ? getEdgeTarget(edge) : getEdgeSource(edge);
+            V node = invert ? getEdgeSource(edge) : getEdgeTarget(edge);
             dfst.addNode(parent, node, edge);
         }
 
