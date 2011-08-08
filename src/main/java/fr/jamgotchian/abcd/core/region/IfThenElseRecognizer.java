@@ -72,7 +72,7 @@ class IfThenElseRecognizer implements RegionRecognizer {
                 && Regions.getSuccessorCountOf(graph, regionC, false) == 0
                 && regionB.isBreak()
                 && regionC.isBreak()) {
-            return new IfThenReturnElseReturnRegion(edgeAB, edgeAC, regionA, regionB, regionC);
+            return new IfThenBreakElseBreakRegion(edgeAB, edgeAC, regionA, regionB, regionC);
         }
 
         Region structuredRegion = null;

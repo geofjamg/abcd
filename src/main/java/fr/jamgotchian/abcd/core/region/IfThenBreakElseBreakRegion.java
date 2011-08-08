@@ -26,15 +26,15 @@ import java.util.Collection;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class IfThenReturnElseReturnRegion extends IfThenElseRegion {
+public class IfThenBreakElseBreakRegion extends IfThenElseRegion {
 
-    IfThenReturnElseReturnRegion(Edge thenEdge, Edge elseEdge, Region ifRegion,
+    IfThenBreakElseBreakRegion(Edge thenEdge, Edge elseEdge, Region ifRegion,
                                  Region thenRegion, Region elseRegion) {
         super(thenEdge, elseEdge, ifRegion, thenRegion, elseRegion);
     }
 
     public RegionType getType() {
-        return RegionType.IF_THEN_RETURN_ELSE_RETURN;
+        return RegionType.IF_THEN_BREAK_ELSE_BREAK;
     }
 
     public Collection<Edge> getChildEdges() {

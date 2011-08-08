@@ -570,7 +570,7 @@ public class AbstractSyntaxTreeBuilder {
             }
 
             case IF_THEN_ELSE_JOIN:
-            case IF_THEN_RETURN_ELSE_RETURN: {
+            case IF_THEN_BREAK_ELSE_BREAK: {
                 IfThenElseRegion region2 = (IfThenElseRegion) region;
 
                 buildAST(region2.getIfRegion(), blockStmt);
