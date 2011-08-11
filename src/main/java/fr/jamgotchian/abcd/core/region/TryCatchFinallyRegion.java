@@ -106,8 +106,11 @@ public class TryCatchFinallyRegion extends AbstractRegion {
         if (tryRegion2 != null) {
             regions.add(tryRegion2);
         }
-        for (CatchRegion _catch : catchRegions) {
-            regions.add(_catch.getRegion());
+        for (CatchRegion catchRegion : catchRegions) {
+            regions.add(catchRegion.getRegion());
+        }
+        if (finallyRegion != null) {
+            regions.add(finallyRegion.getRegion());
         }
         return regions;
     }
@@ -118,9 +121,13 @@ public class TryCatchFinallyRegion extends AbstractRegion {
         if (tryEdge2 != null) {
             edges.add(tryEdge2);
         }
-        for (CatchRegion _catch : catchRegions) {
-            edges.add(_catch.getIncomingEdge());
-            edges.add(_catch.getOutgoingEdge());
+        for (CatchRegion catchRegion : catchRegions) {
+            edges.add(catchRegion.getIncomingEdge());
+            edges.add(catchRegion.getOutgoingEdge());
+        }
+        if (finallyRegion != null) {
+            edges.add(finallyRegion.getIncomingEdge());
+            edges.add(finallyRegion.getOutgoingEdge());
         }
         return edges;
     }

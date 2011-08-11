@@ -137,6 +137,8 @@ public class DOTUtil {
                 attrs.put("color", "red");
             } else if (edge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                 attrs.put("color", "green");
+            } else if (edge.hasAttribute(EdgeAttribute.FAKE_EDGE)) {
+                attrs.put("color", "yellow");
             } else {
                 attrs.put("color", "black");
             }

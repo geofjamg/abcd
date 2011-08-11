@@ -37,7 +37,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,6 +61,7 @@ public class StructuralAnalysis {
                                                          /* then, cyclic regions */
                                                          new LoopRecognizer(),
                                                          /* try catch regions */
+                                                         new InlinedFinallyBreakRecognizer(),
                                                          new TryCatchFinallyRecognizer()));
 
     private final ControlFlowGraph CFG;
@@ -163,33 +163,40 @@ public class StructuralAnalysis {
     }
 
     private List<Region> getSubgraphRegions(Region entryRegion, Region exitRegion, boolean invert) {
+        Region region1 = invert ? exitRegion : entryRegion;
+        Region region2 = invert ? entryRegion : exitRegion;
         Tree<Region, Edge> DFST
-            = regionGraph.getReversePostOrderDFST(invert ? exitRegion : entryRegion,
-                                                  Sets.newHashSet(invert ? entryRegion : exitRegion),
-                                                  invert);
-        return new ArrayList<Region>(DFST.getNodes());
+            = regionGraph.getReversePostOrderDFST(region1, Sets.newHashSet(region2), invert);
+        List<Region> regions = new ArrayList<Region>(DFST.getNodes().size()+1);
+        regions.addAll(DFST.getNodes());
+        regions.add(region2);
+        return regions;
     }
 
     private boolean reduceRegionSubGraph(Region entryRegion, Region exitRegion) {
         logger.log(Level.FINER, "Try to reduce subgraph ({0},{1})",
                 new Object[] {entryRegion, exitRegion});
 
-//        logger.log(Level.FINEST, "  Subgraph regions : {0}", rRegions);
-
-        // remove incoming edges of exit region
-
         Collection<Edge> incomingEdgesOfExit = regionGraph.getIncomingEdgesOf(exitRegion);
         logger.log(Level.FINEST, "  Cut incoming edges of {0} : {1}",
                 new Object[] {exitRegion, regionGraph.toString(incomingEdgesOfExit)});
 
         for (Edge incomingEdge : new ArrayList<Edge>(incomingEdgesOfExit)) {
+            if (incomingEdge.hasAttribute(EdgeAttribute.FAKE_EDGE)) {
+                continue;
+            }
             Region sourceRegion = regionGraph.getEdgeSource(incomingEdge);
-            regionGraph.removeEdge(incomingEdge);
-            if (!incomingEdge.hasAttribute(EdgeAttribute.FAKE_EDGE)
-                    && incomingEdge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+            if (Regions.getSuccessorCountOf(regionGraph, sourceRegion, false) == 1) {
+                incomingEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
+                sourceRegion.setBreak(true);
+            } else {
+                regionGraph.removeEdge(incomingEdge);
                 Region emptyRegion = new EmptyRegion();
                 regionGraph.addVertex(emptyRegion);
                 regionGraph.addEdge(sourceRegion, emptyRegion, incomingEdge);
+                Edge fakeEdge = EDGE_FACTORY.createEdge();
+                fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
+                regionGraph.addEdge(emptyRegion, exitRegion, fakeEdge);
                 Regions.copyHandlers(regionGraph, sourceRegion, emptyRegion);
                 emptyRegion.setBreak(true);
             }
@@ -200,7 +207,7 @@ public class StructuralAnalysis {
         while (!reduced && !failed) {
             List<Region> regions = getSubgraphRegions(entryRegion, exitRegion, false);
 
-            if (regions.size() == 1) {
+            if (regions.size() == 2) {
                 reduced = true;
             } else {
                 // check regions in reverse order
@@ -214,21 +221,9 @@ public class StructuralAnalysis {
                     logger.log(Level.FINEST, "Fail to reduce regions in subgraph ({0},{1})",
                             new Object[] {entryRegion, exitRegion});
 
-                    Set<Edge> addedEdges = new HashSet<Edge>();
-                    for (Region region : regions) {
-                        Edge e = EDGE_FACTORY.createEdge();
-                        regionGraph.addEdge(region, exitRegion, e);
-                        addedEdges.add(e);
-                    }
+                    List<Region> regions2 = getSubgraphRegions(entryRegion, exitRegion, true);
 
-                    List<Region> rRegions = getSubgraphRegions(entryRegion, exitRegion, true);
-                    rRegions.add(entryRegion);
-
-                    for (Edge e : addedEdges) {
-                        regionGraph.removeEdge(e);
-                    }
-
-                    for (Region joinRegion : rRegions) {
+                    for (Region joinRegion : regions2) {
                         boolean loopExitFound = false;
                         for (Edge edge : regionGraph.getIncomingEdgesOf(joinRegion)) {
                             if (edge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
@@ -241,7 +236,10 @@ public class StructuralAnalysis {
                                     = DominatorInfo.create(regionGraph, entryRegion, EDGE_FACTORY);
                             Region forkRegion = dominatorInfo.getDominatorsTree().getParent(joinRegion);
 
-                            failed = reduceRegionSubGraph(forkRegion, joinRegion);
+                            if (!forkRegion.equals(entryRegion)
+                                    && !joinRegion.equals(exitRegion)) {
+                                failed = reduceRegionSubGraph(forkRegion, joinRegion);
+                            }
                             break;
                         }
                     }
@@ -261,8 +259,8 @@ public class StructuralAnalysis {
         }
 
         if (reduced) {
-            Edge exitEdge = EDGE_FACTORY.createEdge();
-            regionGraph.addEdge(entryRegion, exitRegion, exitEdge);
+            Edge exitEdge = regionGraph.getEdge(entryRegion, exitRegion);
+            exitEdge.removeAttribute(EdgeAttribute.FAKE_EDGE);
             Region labeledRegion = new LabeledRegion(entryRegion);
             entryRegion = reduceRegion(labeledRegion, entryRegion);
             BlockRegion blockRegion = new BlockRegion(Collections.singletonList(exitEdge),

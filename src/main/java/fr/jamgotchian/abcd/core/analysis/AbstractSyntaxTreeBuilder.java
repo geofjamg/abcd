@@ -98,6 +98,7 @@ import fr.jamgotchian.abcd.core.controlflow.VariableID;
 import fr.jamgotchian.abcd.core.controlflow.util.EmptyTACInstVisitor;
 import fr.jamgotchian.abcd.core.region.DoWhileLoopRegion;
 import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
+import fr.jamgotchian.abcd.core.region.InlinedFinallyBreakRegion;
 import fr.jamgotchian.abcd.core.region.LabeledRegion;
 import fr.jamgotchian.abcd.core.region.RegionType;
 import fr.jamgotchian.abcd.core.region.WhileLoopRegion;
@@ -688,6 +689,14 @@ public class AbstractSyntaxTreeBuilder {
 
                     switchStmt.addCase(new CaseStatement(caseRegion.getValues(), caseStmts));
                 }
+
+                break;
+            }
+
+            case INLINED_FINALLY_BREAK: {
+                InlinedFinallyBreakRegion region2 = (InlinedFinallyBreakRegion) region;
+
+                buildAST(region2.getTryRegion(), blockStmt);
 
                 break;
             }

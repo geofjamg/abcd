@@ -33,6 +33,7 @@ public enum RegionType {
     DO_WHILE_LOOP,
     WHILE_LOOP,
     TRY_CATCH_FINALLY,
+    INLINED_FINALLY_BREAK,
     LABELED,
     EMPTY
 }

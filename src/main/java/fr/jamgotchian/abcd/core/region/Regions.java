@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.region;
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.controlflow.ExceptionHandlerInfo;
 import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
@@ -31,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -42,12 +42,16 @@ public class Regions {
     private Regions() {
     }
 
+    private static boolean keepEdge(Edge edge, boolean exceptional) {
+        return !edge.hasAttribute(EdgeAttribute.FAKE_EDGE)
+                && edge.isExceptional() == exceptional;
+    }
+
     public static Collection<Edge> getOutgoingEdgesOf(DirectedGraph<Region, Edge> graph,
                                                       Region region, boolean exceptional) {
         List<Edge> outgoingEdges = new ArrayList<Edge>();
         for (Edge edge : graph.getOutgoingEdgesOf(region)) {
-            if ((exceptional && edge.isExceptional())
-                    || (!exceptional && !edge.isExceptional())) {
+            if (keepEdge(edge, exceptional)) {
                 outgoingEdges.add(edge);
             }
         }
@@ -58,8 +62,7 @@ public class Regions {
                                                       Region region, boolean exceptional) {
         List<Edge> incomingEdges = new ArrayList<Edge>();
         for (Edge edge : graph.getIncomingEdgesOf(region)) {
-            if ((exceptional && edge.isExceptional())
-                    || (!exceptional && !edge.isExceptional())) {
+            if (keepEdge(edge, exceptional)) {
                 incomingEdges.add(edge);
             }
         }
@@ -70,8 +73,7 @@ public class Regions {
                                                      Region region, boolean exceptional) {
         List<Region> successors = new ArrayList<Region>();
         for (Edge edge : graph.getOutgoingEdgesOf(region)) {
-            if ((exceptional && edge.isExceptional())
-                    || (!exceptional && !edge.isExceptional())) {
+            if (keepEdge(edge, exceptional)) {
                 successors.add(graph.getEdgeTarget(edge));
             }
         }
@@ -82,8 +84,7 @@ public class Regions {
                                                        Region region, boolean exceptional) {
         List<Region> predecessors = new ArrayList<Region>();
         for (Edge edge : graph.getIncomingEdgesOf(region)) {
-            if ((exceptional && edge.isExceptional())
-                    || (!exceptional && !edge.isExceptional())) {
+            if (keepEdge(edge, exceptional)) {
                 predecessors.add(graph.getEdgeSource(edge));
             }
         }
@@ -93,8 +94,7 @@ public class Regions {
     public static Edge getFirstOutgoingEdgeOf(DirectedGraph<Region, Edge> graph,
                                               Region region, boolean exceptional) {
         for (Edge edge : graph.getOutgoingEdgesOf(region)) {
-            if ((exceptional && edge.isExceptional())
-                    || (!exceptional && !edge.isExceptional())) {
+            if (keepEdge(edge, exceptional)) {
                 return edge;
             }
         }
@@ -104,8 +104,7 @@ public class Regions {
     public static Edge getFirstIncomingEdgeOf(DirectedGraph<Region, Edge> graph,
                                               Region region, boolean exceptional) {
         for (Edge edge : graph.getIncomingEdgesOf(region)) {
-            if ((exceptional && edge.isExceptional())
-                    || (!exceptional && !edge.isExceptional())) {
+            if (keepEdge(edge, exceptional)) {
                 return edge;
             }
         }
@@ -115,8 +114,7 @@ public class Regions {
     public static Region getFirstSuccessorOf(DirectedGraph<Region, Edge> graph,
                                              Region region, boolean exceptional) {
         for (Edge edge : graph.getOutgoingEdgesOf(region)) {
-            if ((exceptional && edge.isExceptional())
-                    || (!exceptional && !edge.isExceptional())) {
+            if (keepEdge(edge, exceptional)) {
                 return graph.getEdgeTarget(edge);
             }
         }
@@ -126,8 +124,7 @@ public class Regions {
     public static Region getFirstPredecessorOf(DirectedGraph<Region, Edge> graph,
                                                Region region, boolean exceptional) {
         for (Edge edge : graph.getIncomingEdgesOf(region)) {
-            if ((exceptional && edge.isExceptional())
-                    || (!exceptional && !edge.isExceptional())) {
+            if (keepEdge(edge, exceptional)) {
                 return graph.getEdgeSource(edge);
             }
         }
@@ -138,8 +135,7 @@ public class Regions {
                                           Region region, boolean exceptional) {
         int count = 0;
         for (Edge edge : graph.getOutgoingEdgesOf(region)) {
-            if ((exceptional && edge.isExceptional())
-                    || (!exceptional && !edge.isExceptional())) {
+            if (keepEdge(edge, exceptional)) {
                 count++;
             }
         }
@@ -150,8 +146,7 @@ public class Regions {
                                             Region region, boolean exceptional) {
         int count = 0;
         for (Edge edge : graph.getIncomingEdgesOf(region)) {
-            if ((exceptional && edge.isExceptional())
-                    || (!exceptional && !edge.isExceptional())) {
+            if (keepEdge(edge, exceptional)) {
                 count++;
             }
         }
