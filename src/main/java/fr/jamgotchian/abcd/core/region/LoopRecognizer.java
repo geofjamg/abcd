@@ -131,9 +131,6 @@ class LoopRecognizer implements RegionRecognizer {
             }
             Region regionB = graph.getEdgeTarget(edgeAB);
             Region regionC = graph.getEdgeTarget(edgeAC);
-            if (!regionC.isBreak()) {
-                return null;
-            }
             if (graph.getPredecessorCountOf(regionB) != 1
                     || graph.getPredecessorCountOf(regionC) != 1) {
                 return null;

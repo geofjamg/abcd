@@ -18,6 +18,8 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
+import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,15 +73,15 @@ public class WhileLoopRegion extends AbstractRegion {
     }
 
     public RegionType getType() {
-        return RegionType.DO_WHILE_LOOP;
+        return RegionType.WHILE_LOOP;
     }
 
     public Region getEntryRegion() {
-        return loopRegion;
+        return ifRegion;
     }
 
     public Region getExitRegion() {
-        return loopRegion;
+        return thenRegion;
     }
 
     public Region getLoopRegion() {
@@ -90,12 +92,8 @@ public class WhileLoopRegion extends AbstractRegion {
         return ifRegion;
     }
 
-    public Region getThenRegion() {
-        return thenRegion;
-    }
-
     public List<Region> getChildRegions() {
-        return Arrays.asList(ifRegion, thenRegion, loopRegion);
+        return Arrays.asList(ifRegion, loopRegion);
     }
 
     public Collection<Edge> getChildEdges() {
@@ -104,13 +102,13 @@ public class WhileLoopRegion extends AbstractRegion {
 
     public void reduce(MutableDirectedGraph<Region, Edge> graph) {
         graph.addVertex(this);
-        Regions.moveHandlers(graph, loopRegion, this);
+        Regions.moveHandlers(graph, ifRegion, this);
         graph.removeEdge(backEdge);
         graph.removeEdge(thenEdge);
         graph.removeEdge(loopEdge);
-        Regions.moveIncomingEdges(graph, loopRegion, this);
+        Regions.moveIncomingEdges(graph, ifRegion, this);
+        graph.removeVertex(ifRegion);
         graph.removeVertex(loopRegion);
-        thenEdge.setValue(null);
-        graph.addEdge(this, thenRegion, thenEdge);
+        graph.addEdge(this, thenRegion, new EdgeImpl());
     }
 }

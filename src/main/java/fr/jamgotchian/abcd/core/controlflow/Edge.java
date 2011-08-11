@@ -24,22 +24,24 @@ package fr.jamgotchian.abcd.core.controlflow;
 public interface Edge {
 
     EdgeCategory getCategory();
-    
+
     void setCategory(EdgeCategory category);
 
     Object getValue();
-    
+
     void setValue(Object value);
-    
+
     boolean isExceptional();
 
     void addAttribute(EdgeAttribute attr);
-    
+
     boolean hasAttribute(EdgeAttribute attr);
-    
+
+    void removeAttribute(EdgeAttribute attr);
+
     void resetAttributes();
-    
+
     void resetState();
-    
+
     Edge clone();
 }

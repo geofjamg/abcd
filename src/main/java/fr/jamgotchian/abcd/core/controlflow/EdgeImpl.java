@@ -33,11 +33,11 @@ public class EdgeImpl implements Edge {
     private Object value;
 
     private final Set<EdgeAttribute> attributes;
-    
+
     public EdgeImpl() {
         this(false);
     }
-    
+
     public EdgeImpl(boolean exceptional) {
         this(exceptional, null);
     }
@@ -45,13 +45,13 @@ public class EdgeImpl implements Edge {
     public EdgeImpl(Object value) {
         this(false, value);
     }
-    
+
     public EdgeImpl(boolean exceptional, Object value) {
         this.exceptional = exceptional;
         this.value = value;
         attributes = EnumSet.noneOf(EdgeAttribute.class);
     }
-    
+
     private EdgeImpl(EdgeImpl other) {
         category = other.category;
         exceptional = other.exceptional;
@@ -87,6 +87,10 @@ public class EdgeImpl implements Edge {
         return attributes.contains(attr);
     }
 
+    public void removeAttribute(EdgeAttribute attr) {
+        attributes.remove(attr);
+    }
+
     public void resetAttributes() {
         attributes.clear();
     }
@@ -97,7 +101,7 @@ public class EdgeImpl implements Edge {
         attributes.remove(EdgeAttribute.LOOP_EXIT_EDGE);
         attributes.remove(EdgeAttribute.SELF_LOOP_EDGE);
     }
-    
+
     @Override
     public Edge clone() {
         return new EdgeImpl(this);
@@ -105,7 +109,7 @@ public class EdgeImpl implements Edge {
 
     @Override
     public String toString() {
-        return  "Edge[value=" + value + ", category=" + category + 
+        return  "Edge[value=" + value + ", category=" + category +
                 ", exceptional=" + exceptional + ", attrs=" + attributes + "]";
     }
 }

@@ -119,9 +119,9 @@ class BlockRecognizer implements RegionRecognizer {
         //   |
         //   A
         //
-        if (structuredRegion == null) {
-            structuredRegion = checkBackward(graph, regionA);
-        }
+//        if (structuredRegion == null) {
+//            structuredRegion = checkBackward(graph, regionA);
+//        }
 
         return structuredRegion;
     }

@@ -24,7 +24,8 @@ package fr.jamgotchian.abcd.core.region;
 public enum RegionType {
     BASIC_BLOCK,
     BLOCK,
-    IF_THEN,
+    IF_THEN_JOIN,
+    IF_THEN_BREAK,
     IF_THEN_ELSE_JOIN,
     IF_THEN_BREAK_ELSE_BREAK,
     SWITCH_CASE,

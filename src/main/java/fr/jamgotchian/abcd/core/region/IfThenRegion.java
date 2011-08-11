@@ -17,42 +17,33 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class IfThenRegion extends AbstractRegion {
+public abstract class IfThenRegion extends AbstractRegion {
 
-    private final Edge beforeThenEdge;
+    protected final Edge thenEdge;
 
-    private final Edge afterThenEdge;
+    protected final Edge elseEdge;
 
-    private final Edge jumpEdge;
+    protected final Region ifRegion;
 
-    private final Region ifRegion;
+    protected final Region thenRegion;
 
-    private final Region thenRegion;
+    protected final boolean mustInvertCondition;
 
-    private final boolean mustInvertCondition;
-
-    IfThenRegion(Edge beforeThenEdge, Edge afterThenEdge, Edge jumpEdge,
-                 Region ifRegion, Region thenRegion, boolean mustInvertCondition) {
-        if (beforeThenEdge == null) {
-            throw new IllegalArgumentException("beforeThenEdge == null");
+    IfThenRegion(Edge thenEdge, Edge elseEdge, Region ifRegion, Region thenRegion,
+                 boolean mustInvertCondition) {
+        if (thenEdge == null) {
+            throw new IllegalArgumentException("thenEdge == null");
         }
-        if (afterThenEdge == null) {
-            throw new IllegalArgumentException("afterThenEdge == null");
-        }
-        if (jumpEdge == null) {
-            throw new IllegalArgumentException("jumpEdge == null");
+        if (elseEdge == null) {
+            throw new IllegalArgumentException("elseEdge == null");
         }
         if (ifRegion == null) {
             throw new IllegalArgumentException("ifRegion == null");
@@ -60,18 +51,13 @@ public class IfThenRegion extends AbstractRegion {
         if (thenRegion == null) {
             throw new IllegalArgumentException("thenRegion == null");
         }
-        this.beforeThenEdge = beforeThenEdge;
-        this.afterThenEdge = afterThenEdge;
-        this.jumpEdge = jumpEdge;
+        this.thenEdge = thenEdge;
+        this.elseEdge = elseEdge;
         this.ifRegion = ifRegion;
         this.thenRegion = thenRegion;
         this.mustInvertCondition = mustInvertCondition;
         ifRegion.setParent(this);
         thenRegion.setParent(this);
-    }
-
-    public RegionType getType() {
-        return RegionType.IF_THEN;
     }
 
     public Region getEntryRegion() {
@@ -96,21 +82,5 @@ public class IfThenRegion extends AbstractRegion {
 
     public List<Region> getChildRegions() {
         return Arrays.asList(ifRegion, thenRegion);
-    }
-
-    public Collection<Edge> getChildEdges() {
-        return Sets.newHashSet(beforeThenEdge, afterThenEdge, jumpEdge);
-    }
-
-    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
-        graph.addVertex(this);
-        Regions.moveHandlers(graph, ifRegion, this);
-        Regions.moveIncomingEdges(graph, ifRegion, this);
-        graph.addEdge(this, graph.getEdgeTarget(afterThenEdge), new EdgeImpl());
-        graph.removeEdge(beforeThenEdge);
-        graph.removeEdge(afterThenEdge);
-        graph.removeEdge(jumpEdge);
-        graph.removeVertex(ifRegion);
-        graph.removeVertex(thenRegion);
     }
 }

@@ -34,6 +34,7 @@ import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -103,20 +104,22 @@ public class StructuralAnalysis {
     }
 
     private Region reduceRegion(Region structuredRegion, Region entryRegion) {
-        logger.log(Level.FINER, "Find {0} region : {1} => {2}",
+        logger.log(Level.FINER, "  Find {0} region : {1} => {2}",
                 new Object[] {structuredRegion.getTypeName(),
                     structuredRegion.getChildRegions().toString(), structuredRegion});
+//        logger.log(Level.FINER, "  ENTRY " + entryRegion);
 
-        logger.log(Level.FINEST, "  Internal edges : {0}",
-                regionGraph.toString(structuredRegion.getChildEdges()));
+//        logger.log(Level.FINEST, "  Internal edges : {0}",
+//                regionGraph.toString(structuredRegion.getChildEdges()));
 
         structuredRegion.reduce(regionGraph);
 
         if (structuredRegion.getEntryRegion().equals(entryRegion)) {
-            logger.log(Level.FINEST, "  New entry region : {0}", structuredRegion);
-            entryRegion = structuredRegion;
+            logger.log(Level.FINEST, "    New entry region : {0}", structuredRegion);
+            return structuredRegion;
+        } else {
+            return entryRegion;
         }
-        return structuredRegion;
     }
 
     private CheckResult checkRegions(List<Region> regions, Region entryRegion) {
@@ -160,43 +163,35 @@ public class StructuralAnalysis {
     }
 
     private List<Region> getSubgraphRegions(Region entryRegion, Region exitRegion, boolean invert) {
-        Tree<Region, Edge> rdfst
+        Tree<Region, Edge> DFST
             = regionGraph.getReversePostOrderDFST(invert ? exitRegion : entryRegion,
                                                   Sets.newHashSet(invert ? entryRegion : exitRegion),
                                                   invert);
-        List<Region> nodes = new ArrayList<Region>(rdfst.getNodes());
-        nodes.add(invert ? entryRegion : exitRegion);
-        return nodes;
+        return new ArrayList<Region>(DFST.getNodes());
     }
 
     private boolean reduceRegionSubGraph(Region entryRegion, Region exitRegion) {
         logger.log(Level.FINER, "Try to reduce subgraph ({0},{1})",
                 new Object[] {entryRegion, exitRegion});
 
-        List<Region> rRegions = getSubgraphRegions(entryRegion, exitRegion, true);
-
-        logger.log(Level.FINEST, "  Subgraph regions : {0}", rRegions);
+//        logger.log(Level.FINEST, "  Subgraph regions : {0}", rRegions);
 
         // remove incoming edges of exit region
-        Set<Edge> edgesToRemove = new HashSet<Edge>();
-        for (Edge incomingEdge : new ArrayList<Edge>(regionGraph.getIncomingEdgesOf(exitRegion))) {
-            if (!incomingEdge.hasAttribute(EdgeAttribute.FAKE_EDGE)) {
-                regionGraph.getEdgeSource(incomingEdge).setBreak(true);
-            }
-            edgesToRemove.add(incomingEdge);
-        }
 
+        Collection<Edge> incomingEdgesOfExit = regionGraph.getIncomingEdgesOf(exitRegion);
         logger.log(Level.FINEST, "  Cut incoming edges of {0} : {1}",
-                new Object[] {exitRegion, regionGraph.toString(edgesToRemove)});
+                new Object[] {exitRegion, regionGraph.toString(incomingEdgesOfExit)});
 
-        for (Edge edge : edgesToRemove) {
-            Region sourceRegion = regionGraph.getEdgeSource(edge);
-            regionGraph.removeEdge(edge);
-            if (edge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+        for (Edge incomingEdge : new ArrayList<Edge>(incomingEdgesOfExit)) {
+            Region sourceRegion = regionGraph.getEdgeSource(incomingEdge);
+            regionGraph.removeEdge(incomingEdge);
+            if (!incomingEdge.hasAttribute(EdgeAttribute.FAKE_EDGE)
+                    && incomingEdge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                 Region emptyRegion = new EmptyRegion();
                 regionGraph.addVertex(emptyRegion);
-                regionGraph.addEdge(sourceRegion, emptyRegion, edge);
+                regionGraph.addEdge(sourceRegion, emptyRegion, incomingEdge);
                 Regions.copyHandlers(regionGraph, sourceRegion, emptyRegion);
+                emptyRegion.setBreak(true);
             }
         }
 
@@ -218,6 +213,20 @@ public class StructuralAnalysis {
                 if (failed) {
                     logger.log(Level.FINEST, "Fail to reduce regions in subgraph ({0},{1})",
                             new Object[] {entryRegion, exitRegion});
+
+                    Set<Edge> addedEdges = new HashSet<Edge>();
+                    for (Region region : regions) {
+                        Edge e = EDGE_FACTORY.createEdge();
+                        regionGraph.addEdge(region, exitRegion, e);
+                        addedEdges.add(e);
+                    }
+
+                    List<Region> rRegions = getSubgraphRegions(entryRegion, exitRegion, true);
+                    rRegions.add(entryRegion);
+
+                    for (Edge e : addedEdges) {
+                        regionGraph.removeEdge(e);
+                    }
 
                     for (Region joinRegion : rRegions) {
                         boolean loopExitFound = false;
@@ -255,10 +264,14 @@ public class StructuralAnalysis {
             Edge exitEdge = EDGE_FACTORY.createEdge();
             regionGraph.addEdge(entryRegion, exitRegion, exitEdge);
             Region labeledRegion = new LabeledRegion(entryRegion);
-            reduceRegion(labeledRegion, entryRegion);
+            entryRegion = reduceRegion(labeledRegion, entryRegion);
             BlockRegion blockRegion = new BlockRegion(Collections.singletonList(exitEdge),
                                                       Arrays.asList(labeledRegion, exitRegion));
-            reduceRegion(blockRegion, entryRegion);
+            entryRegion = reduceRegion(blockRegion, entryRegion);
+
+            logger.log(Level.FINEST, "Subgraph ({0},{1}) reduced",
+                    new Object[] {entryRegion, exitRegion});
+
             return false;
         } else {
             logger.log(Level.FINEST, "Fail to recognize subgraph in subgraph ({0},{1})",

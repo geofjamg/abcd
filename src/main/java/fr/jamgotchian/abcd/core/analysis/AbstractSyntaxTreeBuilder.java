@@ -99,6 +99,7 @@ import fr.jamgotchian.abcd.core.controlflow.util.EmptyTACInstVisitor;
 import fr.jamgotchian.abcd.core.region.DoWhileLoopRegion;
 import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
 import fr.jamgotchian.abcd.core.region.LabeledRegion;
+import fr.jamgotchian.abcd.core.region.RegionType;
 import fr.jamgotchian.abcd.core.region.WhileLoopRegion;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
@@ -588,7 +589,8 @@ public class AbstractSyntaxTreeBuilder {
                 break;
             }
 
-            case IF_THEN: {
+            case IF_THEN_JOIN:
+            case IF_THEN_BREAK: {
                 IfThenRegion region2 = (IfThenRegion) region;
 
                 buildAST(region2.getIfRegion(), blockStmt);
@@ -599,6 +601,9 @@ public class AbstractSyntaxTreeBuilder {
                 BlockStatement thenBlockStmt = new BlockStatement();
                 ifStmt.setThen(thenBlockStmt);
                 buildAST(region2.getThenRegion(), thenBlockStmt);
+                if (region.getType() == RegionType.IF_THEN_BREAK) {
+                    thenBlockStmt.add(new BreakStatement());
+                }
                 if (ifStmt.getThen().isEmpty()) {
                     ifStmt.remove();
                 }

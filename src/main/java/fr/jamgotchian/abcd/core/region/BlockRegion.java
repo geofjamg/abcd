@@ -80,5 +80,9 @@ public class BlockRegion extends AbstractRegion {
         Regions.moveUnexceptionalOutgoingEdges(graph, regions.get(regions.size()-1), this);
         Regions.removeEdges(graph, edges);
         Regions.removeRegions(graph, regions);
+        Region lastRegion = regions.get(regions.size()-1);
+        if (lastRegion.isBreak()) {
+            setBreak(true);
+        }
     }
 }

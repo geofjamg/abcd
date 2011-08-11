@@ -27,32 +27,25 @@ import java.util.Collection;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class IfThenElseJoinRegion extends IfThenElseRegion {
+public class IfThenJoinRegion extends IfThenRegion {
 
     private final Edge joinThenEdge;
 
-    private final Edge joinElseEdge;
-
-    IfThenElseJoinRegion(Edge thenEdge, Edge joinThenEdge, Edge elseEdge, Edge joinElseEdge,
-                         Region ifRegion, Region thenRegion, Region elseRegion) {
-        super(thenEdge, elseEdge, ifRegion, thenRegion, elseRegion);
+    IfThenJoinRegion(Edge thenEdge, Edge joinThenEdge, Edge elseEdge,
+                     Region ifRegion, Region thenRegion, boolean mustInvertCondition) {
+        super(thenEdge, elseEdge, ifRegion, thenRegion, mustInvertCondition);
         if (joinThenEdge == null) {
             throw new IllegalArgumentException("joinThenEdge == null");
         }
-        if (joinElseEdge == null) {
-            throw new IllegalArgumentException("joinElseEdge == null");
-        }
         this.joinThenEdge = joinThenEdge;
-        this.joinElseEdge = joinElseEdge;
     }
 
     public RegionType getType() {
-        return RegionType.IF_THEN_ELSE_JOIN;
+        return RegionType.IF_THEN_JOIN;
     }
 
     public Collection<Edge> getChildEdges() {
-        return Sets.newHashSet(thenEdge, joinThenEdge, elseEdge,
-                               joinElseEdge);
+        return Sets.newHashSet(thenEdge, joinThenEdge, elseEdge);
     }
 
     public void reduce(MutableDirectedGraph<Region, Edge> graph) {
@@ -61,11 +54,9 @@ public class IfThenElseJoinRegion extends IfThenElseRegion {
         Regions.moveIncomingEdges(graph, ifRegion, this);
         graph.addEdge(this, graph.getEdgeTarget(joinThenEdge), new EdgeImpl());
         graph.removeEdge(thenEdge);
-        graph.removeEdge(elseEdge);
         graph.removeEdge(joinThenEdge);
-        graph.removeEdge(joinElseEdge);
+        graph.removeEdge(elseEdge);
         graph.removeVertex(ifRegion);
         graph.removeVertex(thenRegion);
-        graph.removeVertex(elseRegion);
     }
 }

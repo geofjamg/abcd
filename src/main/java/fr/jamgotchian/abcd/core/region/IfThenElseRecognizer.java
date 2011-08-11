@@ -57,12 +57,12 @@ class IfThenElseRecognizer implements RegionRecognizer {
         Region regionC = graph.getEdgeTarget(edgeAC);
 
         if (edgeAB.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)
-                || edgeAC.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+                && edgeAC.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
             return null;
         }
 
         //
-        // check if-return-then-return region
+        // check if-then-break-else-break region
         //
         //         A
         //    /         \
@@ -70,9 +70,46 @@ class IfThenElseRecognizer implements RegionRecognizer {
         //
         if (Regions.getSuccessorCountOf(graph, regionB, false) == 0
                 && Regions.getSuccessorCountOf(graph, regionC, false) == 0
+                && Regions.getPredecessorCountOf(graph, regionB, false) == 1
+                && Regions.getPredecessorCountOf(graph, regionC, false) == 1
                 && regionB.isBreak()
                 && regionC.isBreak()) {
             return new IfThenBreakElseBreakRegion(edgeAB, edgeAC, regionA, regionB, regionC);
+        }
+
+        //
+        // check if-then-break region
+        //
+        //       A
+        //    /     \
+        //   B      C
+        // (break)
+        //
+        //       A
+        //    /      \
+        //   B       C
+        //         (break)
+        //
+        boolean regionAHasBackEdge = false;
+        for (Edge e : Regions.getIncomingEdgesOf(graph, regionA, false)) {
+            if (e.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
+                regionAHasBackEdge = true;
+            }
+        }
+
+        if (Regions.getSuccessorCountOf(graph, regionB, false) == 0
+                && Regions.getPredecessorCountOf(graph, regionB, false) == 1
+                && Regions.getPredecessorCountOf(graph, regionC, false) == 1
+                && regionB.isBreak()
+                && !regionAHasBackEdge) {
+            return new IfThenBreakRegion(edgeAB, edgeAC, regionA, regionB, true);
+        }
+        if (Regions.getSuccessorCountOf(graph, regionC, false) == 0
+                && Regions.getPredecessorCountOf(graph, regionB, false) == 1
+                && Regions.getPredecessorCountOf(graph, regionC, false) == 1
+                && regionC.isBreak()
+                && !regionAHasBackEdge) {
+            return new IfThenBreakRegion(edgeAC, edgeAB, regionA, regionC, true);
         }
 
         Region structuredRegion = null;
@@ -143,7 +180,7 @@ class IfThenElseRecognizer implements RegionRecognizer {
                     if (Regions.sameHandlers(graph, regionA, regionC)) {
                         boolean invertCondition = Boolean.TRUE.equals(edgeAB.getValue())
                                 && Boolean.FALSE.equals(edgeAC.getValue());
-                        structuredRegion = new IfThenRegion(edgeAC, edgeCD, edgeAB,
+                        structuredRegion = new IfThenJoinRegion(edgeAC, edgeCD, edgeAB,
                                 regionA, regionC, invertCondition);
                     }
                 }
@@ -165,7 +202,7 @@ class IfThenElseRecognizer implements RegionRecognizer {
                     if (Regions.sameHandlers(graph, regionA, regionB)) {
                         boolean invertCondition = Boolean.TRUE.equals(edgeAC.getValue())
                                 && Boolean.FALSE.equals(edgeAB.getValue());
-                        structuredRegion = new IfThenRegion(edgeAB, edgeBD, edgeAC,
+                        structuredRegion = new IfThenJoinRegion(edgeAB, edgeBD, edgeAC,
                                 regionA, regionB, invertCondition);
                     }
                 }
