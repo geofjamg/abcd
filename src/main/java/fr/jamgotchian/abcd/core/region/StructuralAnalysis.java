@@ -250,7 +250,10 @@ public class StructuralAnalysis {
 //                                    = DominatorInfo.create(regionGraph, entryRegion, EDGE_FACTORY);
 //                            Region forkRegion = dominatorInfo.getDominatorsTree().getParent(joinRegion);
 //
-//                            failed = reduceRegionSubGraph(forkRegion, joinRegion);
+//                            if (!forkRegion.equals(entryRegion)
+//                                    && !joinRegion.equals(exitRegion)) {
+//                                failed = reduceRegionSubGraph(forkRegion, joinRegion);
+//                            }
 //                            break;
 //                        }
 //                    }
@@ -260,7 +263,12 @@ public class StructuralAnalysis {
 
         if (reduced) {
             Edge exitEdge = regionGraph.getEdge(entryRegion, exitRegion);
-            exitEdge.removeAttribute(EdgeAttribute.FAKE_EDGE);
+            if (exitEdge == null) {
+                exitEdge = EDGE_FACTORY.createEdge();
+                regionGraph.addEdge(entryRegion, exitRegion, exitEdge);
+            } else {
+                exitEdge.removeAttribute(EdgeAttribute.FAKE_EDGE);
+            }
             Region labeledRegion = new LabeledRegion(entryRegion);
             entryRegion = reduceRegion(labeledRegion, entryRegion);
             BlockRegion blockRegion = new BlockRegion(Collections.singletonList(exitEdge),

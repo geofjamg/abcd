@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
 import java.util.Collections;
@@ -84,5 +85,6 @@ public class DoWhileLoopRegion extends AbstractRegion {
         Region exitRegion = graph.getEdgeTarget(exitEdge);
         graph.removeVertex(loopRegion);
         graph.addEdge(this, exitRegion, exitEdge);
+        exitEdge.removeAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
     }
 }

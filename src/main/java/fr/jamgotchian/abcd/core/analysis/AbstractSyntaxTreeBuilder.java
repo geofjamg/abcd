@@ -652,13 +652,30 @@ public class AbstractSyntaxTreeBuilder {
 
                 BlockStatement bodyBlockStmt = new BlockStatement();
                 buildAST(region2.getIfRegion(), bodyBlockStmt);
-                IfStatement ifStmt = (IfStatement) bodyBlockStmt.getFirst();
-                ifStmt.remove();
-                Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
 
-                buildAST(region2.getLoopRegion(), bodyBlockStmt);
+                if (bodyBlockStmt.getFirst() instanceof IfStatement) {
+                    IfStatement ifStmt = (IfStatement) bodyBlockStmt.getFirst();
+                    ifStmt.remove();
+                    Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
 
-                blockStmt.add(new WhileStatement(condition, bodyBlockStmt));
+                    buildAST(region2.getLoopRegion(), bodyBlockStmt);
+
+                    blockStmt.add(new WhileStatement(condition, bodyBlockStmt));
+                } else {
+                    for (Statement stmt : bodyBlockStmt) {
+                        if (stmt instanceof IfStatement) {
+                            BlockStatement thenBlockStmt = new BlockStatement();
+                            thenBlockStmt.add(new BreakStatement());
+                            IfStatement ifStmt = ((IfStatement) stmt);
+                            ifStmt.invertCondition();
+                            ifStmt.setThen(thenBlockStmt);
+                        }
+                    }
+
+                    buildAST(region2.getLoopRegion(), bodyBlockStmt);
+
+                    blockStmt.add(new WhileStatement(Expressions.newBooleanExpr(true), bodyBlockStmt));
+                }
 
                 break;
             }
