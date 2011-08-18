@@ -32,6 +32,8 @@ public interface Tree<N, E> extends Iterable<N> {
 
     Set<N> getChildren(N node);
 
+    int getChildrenCount(N node);
+
     int getDepthFromRoot(N node);
 
     N getEdgeSource(E edge);
@@ -47,6 +49,8 @@ public interface Tree<N, E> extends Iterable<N> {
     Set<N> getNodes();
 
     N getParent(N node);
+
+    Set<N> getAncestors(N node);
 
     N getRoot();
 

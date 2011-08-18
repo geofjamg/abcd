@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -149,6 +150,20 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         return neighbors.getParentNode();
     }
 
+    private void getAncestors(N node, Set<N> ancestors) {
+        N parent = getParent(node);
+        if (parent != null) {
+            ancestors.add(parent);
+            getAncestors(parent, ancestors);
+        }
+    }
+
+    public Set<N> getAncestors(N node) {
+        Set<N> ancestors = new LinkedHashSet<N>();
+        getAncestors(node, ancestors);
+        return ancestors;
+    }
+
     public E getIncomingEdge(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
@@ -184,6 +199,14 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             throw new ABCDException("Node " + node + " not found");
         }
         return neighbors.getChildren().keySet();
+    }
+
+    public int getChildrenCount(N node) {
+        Neighbors<N,E> neighbors = nodes.get(node);
+        if (neighbors == null) {
+            throw new ABCDException("Node " + node + " not found");
+        }
+        return neighbors.getChildren().size();
     }
 
     public N getEdgeSource(E edge) {

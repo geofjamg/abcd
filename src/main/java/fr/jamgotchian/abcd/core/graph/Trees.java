@@ -51,6 +51,10 @@ public class Trees {
             return delegate.getParent(node);
         }
 
+        public Set<N> getAncestors(N node) {
+            return delegate.getAncestors(node);
+        }
+
         public Set<N> getNodes() {
             return delegate.getNodes();
         }
@@ -81,6 +85,10 @@ public class Trees {
 
         public Set<N> getChildren(N node) {
             return delegate.getChildren(node);
+        }
+
+        public int getChildrenCount(N node) {
+            return delegate.getChildrenCount(node);
         }
 
         public boolean containsNode(N node) {
