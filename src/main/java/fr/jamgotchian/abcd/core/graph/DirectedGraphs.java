@@ -35,14 +35,14 @@ public class DirectedGraphs {
 
     private DirectedGraphs() {
     }
-    
+
     private static class ListenableDirectedGraphImpl<V ,E> implements ListenableDirectedGraph<V, E> {
 
         private final MutableDirectedGraph<V, E> delegate;
 
         private final List<DirectedGraphListener> listeners;
-        
-        public ListenableDirectedGraphImpl(MutableDirectedGraph<V, E> delegate) {
+
+        private ListenableDirectedGraphImpl(MutableDirectedGraph<V, E> delegate) {
             this.delegate = delegate;
             listeners = new CopyOnWriteArrayList<DirectedGraphListener>();
         }
@@ -54,16 +54,16 @@ public class DirectedGraphs {
         public void removeListener(DirectedGraphListener l) {
             listeners.remove(l);
         }
-        
+
         private void notifyListeners() {
             for (DirectedGraphListener l : listeners) {
                 l.graphChanged();
             }
         }
-        
-        public void writeDOT(Writer writer, String name, AttributeProvider<V> vertexAttrs, 
-                             AttributeProvider<E> edgeAttrs) throws IOException {
-            delegate.writeDOT(writer, name, vertexAttrs, edgeAttrs);
+
+        public void writeDOT(Writer writer, String name, DOTAttributeFactory<V> vertexAttrFactory,
+                             DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
+            delegate.writeDOT(writer, name, vertexAttrFactory, edgeAttrFactory);
         }
 
         public void writeDOT(Writer writer, String name) throws IOException {
@@ -214,7 +214,7 @@ public class DirectedGraphs {
             notifyListeners();
         }
     }
-    
+
     private static class UnmodifiableDirectedGraph<V ,E> implements DirectedGraph<V, E> {
 
         private final DirectedGraph<V, E> delegate;
@@ -331,9 +331,9 @@ public class DirectedGraphs {
             delegate.writeDOT(writer, name);
         }
 
-        public void writeDOT(Writer writer, String name, AttributeProvider<V> vertexAttrs,
-                AttributeProvider<E> edgeAttrs) throws IOException {
-            delegate.writeDOT(writer, name, vertexAttrs, edgeAttrs);
+        public void writeDOT(Writer writer, String name, DOTAttributeFactory<V> vertexAttrFactory,
+                DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
+            delegate.writeDOT(writer, name, vertexAttrFactory, edgeAttrFactory);
         }
     }
 
@@ -348,7 +348,7 @@ public class DirectedGraphs {
     public static <V, E> MutableDirectedGraph<V, E> listenableDirectedGraph(MutableDirectedGraph<V, E> graph) {
         return new ListenableDirectedGraphImpl<V, E>(graph);
     }
-    
+
     public static <V, E> String toString(DirectedGraph<V, E> graph, V v) {
         StringBuilder builder = new StringBuilder();
         builder.append("Vertices :\n");
@@ -371,7 +371,7 @@ public class DirectedGraphs {
     }
 
     public static <V, E> void writeEdgeDOT(Writer writer, E edge, V source, V target,
-                                           AttributeProvider<E> edgeAttrs) throws IOException {
+                                           DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
         int sourceHashCode = System.identityHashCode(source);
         int targetHashCode = System.identityHashCode(target);
         writer.append("  ")
@@ -380,7 +380,7 @@ public class DirectedGraphs {
                 .append(Integer.toString(targetHashCode))
                 .append(" [");
         for (Iterator<Map.Entry<String, String>>
-                it = edgeAttrs.getAttributes(edge).entrySet().iterator();
+                it = edgeAttrFactory.getAttributes(edge).entrySet().iterator();
              it.hasNext();) {
             Map.Entry<String, String> entry = it.next();
             String propName = entry.getKey();
@@ -395,13 +395,13 @@ public class DirectedGraphs {
     }
 
     public static <V, E> void writeVertexDOT(Writer writer, V vertex,
-                                             AttributeProvider<V> vertexAttrs) throws IOException {
+                                             DOTAttributeFactory<V> vertexAttrFactory) throws IOException {
         int hashCode = System.identityHashCode(vertex);
         writer.append("  ")
                 .append(Integer.toString(hashCode))
                 .append(" [");
         for (Iterator<Map.Entry<String, String>> it
-                = vertexAttrs.getAttributes(vertex).entrySet().iterator();
+                = vertexAttrFactory.getAttributes(vertex).entrySet().iterator();
              it.hasNext();) {
             Map.Entry<String, String> entry = it.next();
             String propName = entry.getKey();

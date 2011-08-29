@@ -23,7 +23,7 @@ import java.util.Map;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DefaultAttributeProvider<O> implements AttributeProvider<O> {
+public class DefaultDOTAttributeFactory<O> implements DOTAttributeFactory<O> {
 
     public Map<String, String> getAttributes(O object) {
         Map<String, String> attrs = new HashMap<String, String>();

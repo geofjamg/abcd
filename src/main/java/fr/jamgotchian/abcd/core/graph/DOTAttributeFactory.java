@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface AttributeProvider<O> {
+public interface DOTAttributeFactory<O> {
 
     Map<String, String> getAttributes(O object);
 }

@@ -394,20 +394,20 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
     }
 
     public void writeDOT(Writer writer, String name) throws IOException {
-        writeDOT(writer, name, new DefaultAttributeProvider<V>(),
-                new DefaultAttributeProvider<E>());
+        writeDOT(writer, name, new DefaultDOTAttributeFactory<V>(),
+                new DefaultDOTAttributeFactory<E>());
     }
 
-    public void writeDOT(Writer writer, String name, AttributeProvider<V> vertexAttrs,
-                         AttributeProvider<E> edgeAttrs) throws IOException {
+    public void writeDOT(Writer writer, String name, DOTAttributeFactory<V> vertexAttrFactory,
+                         DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
         writer.append("digraph ").append(name).append(" {\n");
         for (E edge : getEdges()) {
             V source = getEdgeSource(edge);
             V target = getEdgeTarget(edge);
-            DirectedGraphs.writeEdgeDOT(writer, edge, source, target, edgeAttrs);
+            DirectedGraphs.writeEdgeDOT(writer, edge, source, target, edgeAttrFactory);
         }
         for (V vertex : getVertices()) {
-            DirectedGraphs.writeVertexDOT(writer, vertex, vertexAttrs);
+            DirectedGraphs.writeVertexDOT(writer, vertex, vertexAttrFactory);
         }
         writer.append("}");
     }

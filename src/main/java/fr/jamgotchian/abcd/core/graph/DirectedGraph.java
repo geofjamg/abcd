@@ -79,8 +79,8 @@ public interface DirectedGraph<V, E> {
 
     void writeDOT(Writer writer, String name) throws IOException;
 
-    void writeDOT(Writer writer, String name, AttributeProvider<V> vertexAttrs,
-            AttributeProvider<E> edgeAttrs) throws IOException;
+    void writeDOT(Writer writer, String name, DOTAttributeFactory<V> vertexAttrFactory,
+                  DOTAttributeFactory<E> edgeAttrFactory) throws IOException;
 
     String toString(Collection<E> edges);
 

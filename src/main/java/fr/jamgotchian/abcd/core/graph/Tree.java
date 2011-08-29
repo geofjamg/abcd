@@ -56,6 +56,6 @@ public interface Tree<N, E> extends Iterable<N> {
 
     void writeDOT(Writer writer, String name) throws IOException;
 
-    void writeDOT(Writer writer, String name, AttributeProvider<N> nodeAttrs,
-                  AttributeProvider<E> edgeAttrs) throws IOException;
+    void writeDOT(Writer writer, String name, DOTAttributeFactory<N> nodeAttrFactory,
+                  DOTAttributeFactory<E> edgeAttrFactory) throws IOException;
 }
