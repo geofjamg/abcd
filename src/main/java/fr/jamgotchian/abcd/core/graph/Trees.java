@@ -99,8 +99,9 @@ public class Trees {
             delegate.writeDOT(writer, name);
         }
 
-        public void writeDOT(Writer writer, String name, DOTAttributeFactory<N> nodeAttrFactory,
-                DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
+        public void writeDOT(Writer writer, String name,
+                             DOTAttributeFactory<N> nodeAttrFactory,
+                             DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
             delegate.writeDOT(writer, name, nodeAttrFactory, edgeAttrFactory);
         }
     }

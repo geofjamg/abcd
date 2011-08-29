@@ -245,10 +245,11 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     public void writeDOT(Writer writer, String name) throws IOException {
         writeDOT(writer, name, new DefaultDOTAttributeFactory<N>(),
-                 new DefaultDOTAttributeFactory<E>());
+                               new DefaultDOTAttributeFactory<E>());
     }
 
-     public void writeDOT(Writer writer, String name, DOTAttributeFactory<N> nodeAttrFactory,
+     public void writeDOT(Writer writer, String name,
+                          DOTAttributeFactory<N> nodeAttrFactory,
                           DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
         writer.append("digraph ").append(name).append(" {\n");
         for (E edge : getEdges()) {

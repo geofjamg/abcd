@@ -395,10 +395,11 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     public void writeDOT(Writer writer, String name) throws IOException {
         writeDOT(writer, name, new DefaultDOTAttributeFactory<V>(),
-                new DefaultDOTAttributeFactory<E>());
+                               new DefaultDOTAttributeFactory<E>());
     }
 
-    public void writeDOT(Writer writer, String name, DOTAttributeFactory<V> vertexAttrFactory,
+    public void writeDOT(Writer writer, String name,
+                         DOTAttributeFactory<V> vertexAttrFactory,
                          DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
         writer.append("digraph ").append(name).append(" {\n");
         for (E edge : getEdges()) {
