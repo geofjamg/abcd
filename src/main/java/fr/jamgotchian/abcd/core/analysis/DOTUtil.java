@@ -23,7 +23,7 @@ import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.controlflow.util.TACInstWriter;
-import fr.jamgotchian.abcd.core.graph.AttributeProvider;
+import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.output.OutputUtil;
 import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
@@ -46,7 +46,7 @@ public class DOTUtil {
     private DOTUtil() {
     }
 
-    private static class RegionAttributeProvider implements AttributeProvider<Region> {
+    private static class RegionAttributeFactory implements DOTAttributeFactory<Region> {
 
         public Map<String, String> getAttributes(Region region) {
             Map<String, String> attrs = new HashMap<String, String>(1);
@@ -55,7 +55,7 @@ public class DOTUtil {
         }
     }
 
-    private static class RangeAttributeProvider implements AttributeProvider<BasicBlock> {
+    private static class RangeAttributeFactory implements DOTAttributeFactory<BasicBlock> {
 
         public Map<String, String> getAttributes(BasicBlock block) {
             Map<String, String> attrs = new HashMap<String, String>(4);
@@ -94,7 +94,7 @@ public class DOTUtil {
         }
     }
 
-    private static class BytecodeAttributeProvider implements AttributeProvider<BasicBlock> {
+    private static class BytecodeAttributeFactory implements DOTAttributeFactory<BasicBlock> {
 
         public Map<String, String> getAttributes(BasicBlock block) {
             Map<String, String> attrs = new HashMap<String, String>(3);
@@ -105,7 +105,7 @@ public class DOTUtil {
         }
     }
 
-    private static class TACAttributeProvider implements AttributeProvider<BasicBlock> {
+    private static class TACAttributeFactory implements DOTAttributeFactory<BasicBlock> {
 
         public Map<String, String> getAttributes(BasicBlock block) {
             Map<String, String> attrs = new HashMap<String, String>(3);
@@ -129,7 +129,7 @@ public class DOTUtil {
         }
     }
 
-    private static class EdgeAttributeProvider implements AttributeProvider<Edge> {
+    private static class EdgeAttributeFactory implements DOTAttributeFactory<Edge> {
 
         public Map<String, String> getAttributes(Edge edge) {
             Map<String, String> attrs = new HashMap<String, String>(3);
@@ -158,41 +158,41 @@ public class DOTUtil {
         TAC
     }
 
-    private static final Map<DisplayMode, AttributeProvider<BasicBlock>>
-            BASIC_BLOCK_ATTRIBUTE_PROVIDERS;
+    private static final Map<DisplayMode, DOTAttributeFactory<BasicBlock>>
+            DOT_ATTRIBUTE_FACTORIES;
 
-    public static final AttributeProvider<Edge> EDGE_ATTRIBUTE_PROVIDER
-            = new EdgeAttributeProvider();
+    public static final DOTAttributeFactory<Edge> EDGE_ATTRIBUTE_FACTORY
+            = new EdgeAttributeFactory();
 
-    public static final AttributeProvider<Region> REGION_ATTRIBUTE_PROVIDER
-            = new RegionAttributeProvider();
+    public static final DOTAttributeFactory<Region> REGION_ATTRIBUTE_FACTORY
+            = new RegionAttributeFactory();
 
-    public static final AttributeProvider<BasicBlock> RANGE_ATTRIBUTE_PROVIDER
-            = new RangeAttributeProvider();
+    public static final DOTAttributeFactory<BasicBlock> RANGE_ATTRIBUTE_FACTORY
+            = new RangeAttributeFactory();
 
-    public static final AttributeProvider<BasicBlock> BYTECODE_ATTRIBUTE_PROVIDER
-            = new BytecodeAttributeProvider();
+    public static final DOTAttributeFactory<BasicBlock> BYTECODE_ATTRIBUTE_FACTORY
+            = new BytecodeAttributeFactory();
 
-    public static final AttributeProvider<BasicBlock> TAC_ATTRIBUTE_PROVIDER
-            = new TACAttributeProvider();
+    public static final DOTAttributeFactory<BasicBlock> TAC_ATTRIBUTE_PROVIDER
+            = new TACAttributeFactory();
 
     static {
-        Map<DisplayMode, AttributeProvider<BasicBlock>> providers
-                = new EnumMap<DisplayMode, AttributeProvider<BasicBlock>>(DisplayMode.class);
-        providers.put(DisplayMode.RANGE, RANGE_ATTRIBUTE_PROVIDER);
-        providers.put(DisplayMode.BYTECODE, BYTECODE_ATTRIBUTE_PROVIDER);
-        providers.put(DisplayMode.TAC, TAC_ATTRIBUTE_PROVIDER);
-        BASIC_BLOCK_ATTRIBUTE_PROVIDERS = Collections.unmodifiableMap(providers);
+        Map<DisplayMode, DOTAttributeFactory<BasicBlock>> factories
+                = new EnumMap<DisplayMode, DOTAttributeFactory<BasicBlock>>(DisplayMode.class);
+        factories.put(DisplayMode.RANGE, RANGE_ATTRIBUTE_FACTORY);
+        factories.put(DisplayMode.BYTECODE, BYTECODE_ATTRIBUTE_FACTORY);
+        factories.put(DisplayMode.TAC, TAC_ATTRIBUTE_PROVIDER);
+        DOT_ATTRIBUTE_FACTORIES = Collections.unmodifiableMap(factories);
     }
 
     private static void writeBasicBlock(Writer writer, BasicBlock block,
                                         DisplayMode mode) throws IOException {
-        DirectedGraphs.writeVertexDOT(writer, block, BASIC_BLOCK_ATTRIBUTE_PROVIDERS.get(mode));
+        DirectedGraphs.writeVertexDOT(writer, block, DOT_ATTRIBUTE_FACTORIES.get(mode));
     }
 
     private static void writeEdge(Writer writer, Edge edge, BasicBlock source,
                                   BasicBlock target) throws IOException {
-        DirectedGraphs.writeEdgeDOT(writer, edge, source, target, EDGE_ATTRIBUTE_PROVIDER);
+        DirectedGraphs.writeEdgeDOT(writer, edge, source, target, EDGE_ATTRIBUTE_FACTORY);
     }
 
     private static void writeIndent(Writer writer, int indent) throws IOException {

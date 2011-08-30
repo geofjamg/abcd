@@ -78,8 +78,8 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             Writer writer = new FileWriter(baseName + "_DFST.dot");
             try {
                 graph.getDFST()
-                        .writeDOT(writer, "DFST", DOTUtil.RANGE_ATTRIBUTE_PROVIDER,
-                                                  DOTUtil.EDGE_ATTRIBUTE_PROVIDER);
+                        .writeDOT(writer, "DFST", DOTUtil.RANGE_ATTRIBUTE_FACTORY,
+                                                  DOTUtil.EDGE_ATTRIBUTE_FACTORY);
             } finally {
                 writer.close();
             }
@@ -103,8 +103,8 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             writer = new FileWriter(baseName + "_DT.dot");
             try {
                 graph.getDominatorInfo().getDominatorsTree()
-                        .writeDOT(writer, "DT", DOTUtil.RANGE_ATTRIBUTE_PROVIDER,
-                                                DOTUtil.EDGE_ATTRIBUTE_PROVIDER);
+                        .writeDOT(writer, "DT", DOTUtil.RANGE_ATTRIBUTE_FACTORY,
+                                                DOTUtil.EDGE_ATTRIBUTE_FACTORY);
             } finally {
                 writer.close();
             }
@@ -166,8 +166,8 @@ public class DebugOutputHandler extends DefaultOutputHandler {
 
             Writer writer = new FileWriter(baseName + "_RG.dot");
             try {
-                regionGraph.writeDOT(writer, "RG", DOTUtil.REGION_ATTRIBUTE_PROVIDER,
-                                                   DOTUtil.EDGE_ATTRIBUTE_PROVIDER);
+                regionGraph.writeDOT(writer, "RG", DOTUtil.REGION_ATTRIBUTE_FACTORY,
+                                                   DOTUtil.EDGE_ATTRIBUTE_FACTORY);
             } finally {
                 writer.close();
             }
