@@ -61,14 +61,14 @@ public class DirectedGraphs {
             }
         }
 
-        public void writeDOT(Writer writer, String name,
-                             DOTAttributeFactory<V> vertexAttrFactory,
-                             DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
-            delegate.writeDOT(writer, name, vertexAttrFactory, edgeAttrFactory);
+        public void export(ExportType type, Writer writer, String name,
+                           AttributeFactory<V> vertexAttrFactory,
+                           AttributeFactory<E> edgeAttrFactory) throws IOException {
+            delegate.export(type, writer, name, vertexAttrFactory, edgeAttrFactory);
         }
 
-        public void writeDOT(Writer writer, String name) throws IOException {
-            delegate.writeDOT(writer, name);
+        public void export(ExportType type, Writer writer, String name) throws IOException {
+            delegate.export(type, writer, name);
         }
 
         public String toString(E edge) {
@@ -336,14 +336,14 @@ public class DirectedGraphs {
             return delegate.getExits();
         }
 
-        public void writeDOT(Writer writer, String name) throws IOException {
-            delegate.writeDOT(writer, name);
+        public void export(ExportType type, Writer writer, String name) throws IOException {
+            delegate.export(type, writer, name);
         }
 
-        public void writeDOT(Writer writer, String name,
-                             DOTAttributeFactory<V> vertexAttrFactory,
-                             DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
-            delegate.writeDOT(writer, name, vertexAttrFactory, edgeAttrFactory);
+        public void export(ExportType type, Writer writer, String name,
+                           AttributeFactory<V> vertexAttrFactory,
+                           AttributeFactory<E> edgeAttrFactory) throws IOException {
+            delegate.export(type, writer, name, vertexAttrFactory, edgeAttrFactory);
         }
     }
 
@@ -380,8 +380,8 @@ public class DirectedGraphs {
         return builder.toString();
     }
 
-    public static <V, E> void writeEdgeDOT(Writer writer, E edge, V source, V target,
-                                           DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
+    public static <V, E> void writeGraphvizEdge(Writer writer, E edge, V source, V target,
+                                                AttributeFactory<E> edgeAttrFactory) throws IOException {
         int sourceHashCode = System.identityHashCode(source);
         int targetHashCode = System.identityHashCode(target);
         writer.append("  ")
@@ -404,8 +404,8 @@ public class DirectedGraphs {
               .append("\n");
     }
 
-    public static <V, E> void writeVertexDOT(Writer writer, V vertex,
-                                             DOTAttributeFactory<V> vertexAttrFactory) throws IOException {
+    public static <V, E> void writeGraphvizVertex(Writer writer, V vertex,
+                                                  AttributeFactory<V> vertexAttrFactory) throws IOException {
         int hashCode = System.identityHashCode(vertex);
         writer.append("  ")
                 .append(Integer.toString(hashCode))

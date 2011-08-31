@@ -266,22 +266,22 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         return iterator(root);
     }
 
-    public void writeDOT(Writer writer, String name) throws IOException {
-        writeDOT(writer, name, new DefaultDOTAttributeFactory<N>(),
-                               new DefaultDOTAttributeFactory<E>());
+    public void export(ExportType type, Writer writer, String name) throws IOException {
+        export(type, writer, name, new DefaultAttributeFactory<N>(),
+                                   new DefaultAttributeFactory<E>());
     }
 
-     public void writeDOT(Writer writer, String name,
-                          DOTAttributeFactory<N> nodeAttrFactory,
-                          DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
+    public void export(ExportType type, Writer writer, String name,
+                       AttributeFactory<N> nodeAttrFactory,
+                       AttributeFactory<E> edgeAttrFactory) throws IOException {
         writer.append("digraph ").append(name).append(" {\n");
         for (E edge : getEdges()) {
             N source = getEdgeSource(edge);
             N target = getEdgeTarget(edge);
-            DirectedGraphs.writeEdgeDOT(writer, edge, source, target, edgeAttrFactory);
+            DirectedGraphs.writeGraphvizEdge(writer, edge, source, target, edgeAttrFactory);
         }
         for (N node : getNodes()) {
-            DirectedGraphs.writeVertexDOT(writer, node, nodeAttrFactory);
+            DirectedGraphs.writeGraphvizVertex(writer, node, nodeAttrFactory);
         }
         writer.append("}");
     }

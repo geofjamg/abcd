@@ -16,12 +16,13 @@
  */
 package fr.jamgotchian.abcd.core;
 
-import fr.jamgotchian.abcd.core.analysis.DOTUtil;
-import static fr.jamgotchian.abcd.core.analysis.DOTUtil.DisplayMode.*;
+import fr.jamgotchian.abcd.core.analysis.GraphvizUtil;
+import static fr.jamgotchian.abcd.core.analysis.GraphvizUtil.DisplayMode.*;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
+import fr.jamgotchian.abcd.core.graph.ExportType;
 import fr.jamgotchian.abcd.core.region.Region;
 import java.io.File;
 import java.io.FileWriter;
@@ -78,8 +79,9 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             Writer writer = new FileWriter(baseName + "_DFST.dot");
             try {
                 graph.getDFST()
-                        .writeDOT(writer, "DFST", DOTUtil.RANGE_ATTRIBUTE_FACTORY,
-                                                  DOTUtil.EDGE_ATTRIBUTE_FACTORY);
+                        .export(ExportType.GRAPHVIZ, writer, "DFST",
+                                GraphvizUtil.RANGE_ATTRIBUTE_FACTORY,
+                                GraphvizUtil.EDGE_ATTRIBUTE_FACTORY);
             } finally {
                 writer.close();
             }
@@ -87,14 +89,14 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             if (!drawRegions) {
                 writer = new FileWriter(baseName + "_CFG.dot");
                 try {
-                    DOTUtil.writeCFG(graph, null, writer, RANGE);
+                    GraphvizUtil.writeCFG(graph, null, writer, RANGE);
                 } finally {
                     writer.close();
                 }
 
                 writer = new FileWriter(baseName + "_BC.dot");
                 try {
-                    DOTUtil.writeCFG(graph, null, writer, BYTECODE);
+                    GraphvizUtil.writeCFG(graph, null, writer, BYTECODE);
                 } finally {
                     writer.close();
                 }
@@ -103,8 +105,9 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             writer = new FileWriter(baseName + "_DT.dot");
             try {
                 graph.getDominatorInfo().getDominatorsTree()
-                        .writeDOT(writer, "DT", DOTUtil.RANGE_ATTRIBUTE_FACTORY,
-                                                DOTUtil.EDGE_ATTRIBUTE_FACTORY);
+                        .export(ExportType.GRAPHVIZ, writer, "DT",
+                                GraphvizUtil.RANGE_ATTRIBUTE_FACTORY,
+                                GraphvizUtil.EDGE_ATTRIBUTE_FACTORY);
             } finally {
                 writer.close();
             }
@@ -127,7 +130,7 @@ public class DebugOutputHandler extends DefaultOutputHandler {
         try {
             Writer writer = new FileWriter(baseName + "_TAC.dot");
             try {
-                DOTUtil.writeCFG(graph, null, writer, TAC);
+                GraphvizUtil.writeCFG(graph, null, writer, TAC);
             } finally {
                 writer.close();
             }
@@ -144,21 +147,21 @@ public class DebugOutputHandler extends DefaultOutputHandler {
 
                 Writer writer = new FileWriter(baseName + "_CFG.dot");
                 try {
-                    DOTUtil.writeCFG(graph, rootRegions, writer, RANGE);
+                    GraphvizUtil.writeCFG(graph, rootRegions, writer, RANGE);
                 } finally {
                     writer.close();
                 }
 
                 writer = new FileWriter(baseName + "_BC.dot");
                 try {
-                    DOTUtil.writeCFG(graph, rootRegions, writer, BYTECODE);
+                    GraphvizUtil.writeCFG(graph, rootRegions, writer, BYTECODE);
                 } finally {
                     writer.close();
                 }
 
                 writer = new FileWriter(baseName + "_TAC.dot");
                 try {
-                    DOTUtil.writeCFG(graph, rootRegions, writer, TAC);
+                    GraphvizUtil.writeCFG(graph, rootRegions, writer, TAC);
                 } finally {
                     writer.close();
                 }
@@ -166,8 +169,9 @@ public class DebugOutputHandler extends DefaultOutputHandler {
 
             Writer writer = new FileWriter(baseName + "_RG.dot");
             try {
-                regionGraph.writeDOT(writer, "RG", DOTUtil.REGION_ATTRIBUTE_FACTORY,
-                                                   DOTUtil.EDGE_ATTRIBUTE_FACTORY);
+                regionGraph.export(ExportType.GRAPHVIZ, writer, "RG",
+                                   GraphvizUtil.REGION_ATTRIBUTE_FACTORY,
+                                   GraphvizUtil.EDGE_ATTRIBUTE_FACTORY);
             } finally {
                 writer.close();
             }

@@ -19,9 +19,10 @@ package fr.jamgotchian.abcd.core.region;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
-import fr.jamgotchian.abcd.core.graph.DOTExportable;
+import fr.jamgotchian.abcd.core.graph.AttributeFactory;
+import fr.jamgotchian.abcd.core.graph.Exportable;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
+import fr.jamgotchian.abcd.core.graph.ExportType;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.io.IOException;
 import java.io.Writer;
@@ -34,7 +35,7 @@ import java.util.Map;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class RegionGraph implements DOTExportable<Region, Edge> {
+public class RegionGraph implements Exportable<Region, Edge> {
 
     private final MutableDirectedGraph<Region, Edge> graph;
 
@@ -123,10 +124,10 @@ public class RegionGraph implements DOTExportable<Region, Edge> {
         return graph.getSuccessorCountOf(r);
     }
 
-    public void writeDOT(Writer writer, String name,
-                         DOTAttributeFactory<Region> vertexAttrFactory,
-                         DOTAttributeFactory<Edge> edgeAttrFactory) throws IOException {
-        graph.writeDOT(writer, name, vertexAttrFactory, edgeAttrFactory);
+    public void export(ExportType type, Writer writer, String name,
+                       AttributeFactory<Region> vertexAttrFactory,
+                       AttributeFactory<Edge> edgeAttrFactory) throws IOException {
+        graph.export(type, writer, name, vertexAttrFactory, edgeAttrFactory);
     }
 
     @Override

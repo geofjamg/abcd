@@ -16,13 +16,16 @@
  */
 package fr.jamgotchian.abcd.core.graph;
 
-import java.util.Map;
+import java.io.IOException;
+import java.io.Writer;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface DOTAttributeFactory<O> {
+public interface Exportable<V, E> {
 
-    Map<String, String> getAttributes(O object);
+    void export(ExportType type, Writer writer, String name,
+                AttributeFactory<V> vertexAttrFactory,
+                AttributeFactory<E> edgeAttrFactory) throws IOException;
 }

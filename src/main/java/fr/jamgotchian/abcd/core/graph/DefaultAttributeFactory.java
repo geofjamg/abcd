@@ -16,16 +16,19 @@
  */
 package fr.jamgotchian.abcd.core.graph;
 
-import java.io.IOException;
-import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface DOTExportable<V, E> {
+public class DefaultAttributeFactory<O> implements AttributeFactory<O> {
 
-    void writeDOT(Writer writer, String name,
-                  DOTAttributeFactory<V> vertexAttrFactory,
-                  DOTAttributeFactory<E> edgeAttrFactory) throws IOException;
+    public Map<String, String> getAttributes(O object) {
+        Map<String, String> attrs = new HashMap<String, String>();
+        attrs.put("color", "black");
+        attrs.put("label", "\"" + (object == null ? "" : object.toString()) + "\"");
+        return attrs;
+    }
 }

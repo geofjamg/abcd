@@ -14,49 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package fr.jamgotchian.abcd.core.graph;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.Map;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Tree<N, E> extends Iterable<N>, Exportable<N, E> {
+public interface AttributeFactory<O> {
 
-    boolean containsNode(N node);
-
-    Set<N> getChildren(N node);
-
-    int getChildrenCount(N node);
-
-    int getDepthFromRoot(N node);
-
-    N getEdgeSource(E edge);
-
-    N getEdgeTarget(E edge);
-
-    Set<E> getEdges();
-
-    E getIncomingEdge(N node);
-
-    int getNodeCount();
-
-    Set<N> getNodes();
-
-    N getParent(N node);
-
-    Set<N> getAncestors(N node);
-
-    N getRoot();
-
-    Tree<N, E> getSubTree(N node);
-
-    Iterator<N> iterator(N node);
-
-    void export(ExportType type, Writer writer, String name) throws IOException;
+    Map<String, String> getAttributes(O object);
 }

@@ -103,14 +103,14 @@ public class Trees {
             return delegate.iterator();
         }
 
-        public void writeDOT(Writer writer, String name) throws IOException {
-            delegate.writeDOT(writer, name);
+        public void export(ExportType type, Writer writer, String name) throws IOException {
+            delegate.export(type, writer, name);
         }
 
-        public void writeDOT(Writer writer, String name,
-                             DOTAttributeFactory<N> nodeAttrFactory,
-                             DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
-            delegate.writeDOT(writer, name, nodeAttrFactory, edgeAttrFactory);
+        public void export(ExportType type, Writer writer, String name,
+                           AttributeFactory<N> nodeAttrFactory,
+                           AttributeFactory<E> edgeAttrFactory) throws IOException {
+            delegate.export(type, writer, name, nodeAttrFactory, edgeAttrFactory);
         }
     }
 

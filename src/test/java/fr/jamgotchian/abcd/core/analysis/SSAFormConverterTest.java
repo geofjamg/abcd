@@ -153,16 +153,5 @@ public class SSAFormConverterTest {
 
         TACInstFactory factory = new TACInstFactory();
         new SSAFormConverter(graph, factory).convert();
-//
-//        try {
-//            Writer writer = new FileWriter("/tmp/a.dot");
-//            try {
-//                DOTUtil.writeCFG(graph, null, writer, DOTUtil.DisplayMode.TAC);
-//            } finally {
-//                writer.close();
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 }
