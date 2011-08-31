@@ -109,7 +109,7 @@ public class EdgeImpl implements Edge {
 
     @Override
     public String toString() {
-        return  "Edge[value=" + value + ", category=" + category +
-                ", exceptional=" + exceptional + ", attrs=" + attributes + "]";
+        return "Edge[value=" + value + ", exceptional=" + exceptional
+                + ", attrs=" + attributes + "]";
     }
 }
