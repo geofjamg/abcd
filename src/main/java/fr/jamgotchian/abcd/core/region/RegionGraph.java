@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.region;
 
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import fr.jamgotchian.abcd.core.graph.DOTExportable;
@@ -24,6 +26,8 @@ import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represent a single entry, single exit region.
@@ -40,6 +44,23 @@ public class RegionGraph implements DOTExportable<Region, Edge> {
 
     public RegionGraph() {
         graph = DirectedGraphs.newDirectedGraph();
+    }
+
+    public RegionGraph(ControlFlowGraph cfg) {
+        this();
+        Map<BasicBlock, Region> bb2r = new HashMap<BasicBlock, Region>();
+        for (BasicBlock bb : cfg.getBasicBlocks()) {
+            Region r = new BasicBlockRegion(bb);
+            bb2r.put(bb, r);
+            graph.addVertex(r);
+        }
+        for (Edge edge : cfg.getEdges()) {
+            BasicBlock source = cfg.getEdgeSource(edge);
+            BasicBlock target = cfg.getEdgeTarget(edge);
+            graph.addEdge(bb2r.get(source), bb2r.get(target), edge);
+        }
+        entry = bb2r.get(cfg.getEntryBlock());
+        exit = bb2r.get(cfg.getExitBlock());
     }
 
     public Region getEntry() {
@@ -74,9 +95,42 @@ public class RegionGraph implements DOTExportable<Region, Edge> {
         return graph.getEdges();
     }
 
+    public Region getSource(Edge e) {
+        return graph.getEdgeSource(e);
+    }
+
+    public Region getTarget(Edge e) {
+        return graph.getEdgeTarget(e);
+    }
+
+    public Edge getEdge(Region source, Region target) {
+        return graph.getEdge(source, target);
+    }
+
+    public Collection<Edge> getIncomingEdgesOf(Region r) {
+        return graph.getIncomingEdgesOf(r);
+    }
+
+    public Collection<Edge> getOutgoingEdgesOf(Region r) {
+        return graph.getOutgoingEdgesOf(r);
+    }
+
+    public int getPredecessorCountOf(Region r) {
+        return graph.getPredecessorCountOf(r);
+    }
+
+    public int getSuccessorCountOf(Region r) {
+        return graph.getSuccessorCountOf(r);
+    }
+
     public void writeDOT(Writer writer, String name,
                          DOTAttributeFactory<Region> vertexAttrFactory,
                          DOTAttributeFactory<Edge> edgeAttrFactory) throws IOException {
         graph.writeDOT(writer, name, vertexAttrFactory, edgeAttrFactory);
+    }
+
+    @Override
+    public String toString() {
+        return graph.toString(graph.getEdges());
     }
 }
