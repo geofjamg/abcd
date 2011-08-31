@@ -22,8 +22,6 @@ import de.hpi.bpt.graph.abs.IDirectedEdge;
 import de.hpi.bpt.graph.algo.rpst.RPST;
 import de.hpi.bpt.graph.algo.rpst.RPSTNode;
 import de.hpi.bpt.hypergraph.abs.Vertex;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.graph.MutableTree;
 import fr.jamgotchian.abcd.core.graph.Trees;
@@ -31,44 +29,44 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Build a refined program tree structure from a control flow graph.
+ * Build a refined program tree structure from a region graph.
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class RPSTBuilder {
 
-    private final ControlFlowGraph cfg;
+    private final RegionGraph rg;
 
-    public RPSTBuilder(ControlFlowGraph cfg) {
-        this.cfg = cfg;
+    public RPSTBuilder(RegionGraph rg) {
+        this.rg = rg;
     }
 
     public MutableTree<RegionGraph, Object> build() {
-        // convert abcd CFG to jbpt CFG
-        MultiDirectedGraph cfg2 = convertCFG(cfg);
+        // convert abcd graph to jbpt graph
+        MultiDirectedGraph rg2 = convertRG(rg);
 
         // build RPST with jbpt library
-        RPST<DirectedEdge, Vertex> rpst = new RPST<DirectedEdge, Vertex>(cfg2);
+        RPST<DirectedEdge, Vertex> rpst = new RPST<DirectedEdge, Vertex>(rg2);
 
         // convert jbpt RPST to abcd RPST
         return convertRPST(rpst);
     }
 
-    private static MultiDirectedGraph convertCFG(ControlFlowGraph cfg) {
-        MultiDirectedGraph cfg2 = new MultiDirectedGraph();
-        Map<BasicBlock, Vertex> bb2v = new HashMap<BasicBlock, Vertex>();
-        for (BasicBlock bb : cfg.getBasicBlocks()) {
+    private static MultiDirectedGraph convertRG(RegionGraph rg) {
+        MultiDirectedGraph rg2 = new MultiDirectedGraph();
+        Map<Region, Vertex> r2v = new HashMap<Region, Vertex>();
+        for (Region r : rg.getRegions()) {
             Vertex v = new Vertex();
-            v.setTag(bb);
-            cfg2.addVertex(v);
-            bb2v.put(bb, v);
+            v.setTag(r);
+            rg2.addVertex(v);
+            r2v.put(r, v);
         }
-        for (Edge e : cfg.getEdges()) {
-            BasicBlock source = cfg.getEdgeSource(e);
-            BasicBlock target = cfg.getEdgeTarget(e);
-            cfg2.addEdge(bb2v.get(source), bb2v.get(target));
+        for (Edge e : rg.getEdges()) {
+            Region source = rg.getSource(e);
+            Region target = rg.getTarget(e);
+            rg2.addEdge(r2v.get(source), r2v.get(target));
         }
-        return cfg2;
+        return rg2;
     }
 
     private MutableTree<RegionGraph, Object> convertRPST(RPST<DirectedEdge, Vertex> rpst) {
@@ -93,11 +91,8 @@ public class RPSTBuilder {
 
     private RegionGraph convertFragment(RPSTNode<DirectedEdge, Vertex> node) {
         RegionGraph fragment = new RegionGraph();
-        Map<BasicBlock, Region> bb2r = new HashMap<BasicBlock, Region>();
         for (Vertex v : node.getFragment().getVertices()) {
-            BasicBlock bb = (BasicBlock) v.getTag();
-            Region r = new BasicBlockRegion(bb);
-            bb2r.put(bb, r);
+            Region r = (Region) v.getTag();
             fragment.addRegion(r);
             if (v.equals(node.getEntry())) {
                 fragment.setEntry(r);
@@ -107,10 +102,9 @@ public class RPSTBuilder {
             }
         }
         for (IDirectedEdge<Vertex> e : node.getFragmentEdges()) {
-            BasicBlock source = (BasicBlock) e.getSource().getTag();
-            BasicBlock target = (BasicBlock) e.getTarget().getTag();
-            fragment.addEdge(bb2r.get(source), bb2r.get(target),
-                             cfg.getEdge(source, target));
+            Region source = (Region) e.getSource().getTag();
+            Region target = (Region) e.getTarget().getTag();
+            fragment.addEdge(source, target, rg.getEdge(source, target));
         }
         return fragment;
     }
