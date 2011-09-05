@@ -23,9 +23,12 @@ import java.io.Writer;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Exportable<V, E> {
+public interface GraphvizDigraph<V, E> {
 
-    void export(ExportType type, Writer writer, String name,
+    String getClusterID();
+
+    void export(Writer writer, String name,
                 AttributeFactory<V> vertexAttrFactory,
-                AttributeFactory<E> edgeAttrFactory) throws IOException;
+                AttributeFactory<E> edgeAttrFactory,
+                boolean isSubgraph) throws IOException;
 }

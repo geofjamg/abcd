@@ -17,29 +17,19 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import com.google.common.collect.Sets;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.controlflow.EdgeFactoryImpl;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.graph.EdgeFactory;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import fr.jamgotchian.abcd.core.graph.MutableTree;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -64,36 +54,148 @@ public class StructuralAnalysis {
                                                          new InlinedFinallyBreakRecognizer(),
                                                          new TryCatchFinallyRecognizer()));
 
-    private final ControlFlowGraph CFG;
+    private final ControlFlowGraph cfg;
 
-    private MutableDirectedGraph<Region, Edge> regionGraph;
+    public StructuralAnalysis(ControlFlowGraph cfg) {
+        this.cfg = cfg;
+    }
 
-    private static class CheckResult {
-
-        private final boolean failed;
-
-        private final Region entryRegion;
-
-        private CheckResult(boolean failed, Region entryRegion) {
-            this.failed = failed;
-            this.entryRegion = entryRegion;
+    private boolean checkRegions(RegionGraph graph) {
+        boolean failed = true;
+        Tree<Region, Edge>  dfst = graph.getReversePostOrderDFST(graph.getEntry());
+        List<Region> regions = new ArrayList<Region>(dfst.getNodes());
+        Collections.reverse(regions);
+        for (Region region : regions) {
+            Region structuredRegion = null;
+            for (RegionRecognizer recognizer : RECOGNIZERS) {
+//                logger.log(Level.FINEST, "Check for region with {0} at {1}",
+//                        new Object[] {recognizer.getClass().getSimpleName(), region});
+                structuredRegion = recognizer.recognize(graph, region);
+                if (structuredRegion != null) {
+                    break;
+                }
+            }
+            if (structuredRegion != null) {
+                graph.reduceRegion(structuredRegion);
+                failed = false;
+                break;
+            }
         }
+        return failed;
+    }
 
-        private boolean hasFailed() {
-            return failed;
+    private void cutEdge(RegionGraph graph, Edge edge) {
+        if (edge.hasAttribute(EdgeAttribute.FAKE_EDGE)) {
+            return;
         }
-
-        private Region getEntryRegion() {
-            return entryRegion;
+        logger.log(Level.FINEST, "  Cut incoming edge {0}", graph.toString(edge));
+        Region sourceRegion = graph.getEdgeSource(edge);
+//        Region targetRegion = graph.getEdgeSource(edge);
+        if (graph.getSuccessorCountOf(sourceRegion, false) == 1) {
+            graph.removeEdge(edge);
+//            edge.addAttribute(EdgeAttribute.FAKE_EDGE);
+            sourceRegion.setBreak(true);
+        } else {
+            graph.removeEdge(edge);
+            Region emptyRegion = new EmptyRegion();
+            graph.addRegion(emptyRegion);
+            graph.addEdge(sourceRegion, emptyRegion, edge);
+//            Edge fakeEdge = EDGE_FACTORY.createEdge();
+//            fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
+//            graph.addEdge(emptyRegion, targetRegion, fakeEdge);
+            Regions.copyHandlers(graph, sourceRegion, emptyRegion);
+            emptyRegion.setBreak(true);
         }
     }
 
-    public StructuralAnalysis(ControlFlowGraph CFG) {
-        this.CFG = CFG;
-    }
+    private boolean reduceRegionGraph(RegionGraph graph) {
+        logger.log(Level.FINER, "Try to reduce region graph {0}", graph);
 
-    public DirectedGraph<Region, Edge> getRegionGraph() {
-        return DirectedGraphs.unmodifiableDirectedGraph(regionGraph);
+        boolean failed = false;
+        while (!failed) {
+            failed = checkRegions(graph);
+//
+//            if (failed && graph.getRegions().size() > 1) {
+//                logger.log(Level.FINER, "Failed to recognize regions in {0}", graph);
+//
+//                RegionGraph breakSubgraph = null;
+//
+//                Tree<RegionGraph, Object> rpst = new RPSTBuilder(graph).build();
+//                List<RegionGraph> fragments = new ArrayList<RegionGraph>(rpst.getNodes());
+//                Collections.reverse(fragments);
+//                TOTO : for (RegionGraph fragment : fragments) {
+//                    if (fragment.getPredecessorCountOf(fragment.getExit()) > 1) {
+//                        for (Edge edge : fragment.getIncomingEdgesOf(fragment.getExit())) {
+//                            if (edge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+//                                logger.log(Level.FINER, "Found break region ({0},{1})",
+//                                        new Object[] {fragment.getEntry(), fragment.getExit()});
+//
+//                                // create break subgraph and remove it from parent
+//                                // graph
+//                                breakSubgraph = new RegionGraph();
+//                                Region newEntry = new EmptyRegion();
+//                                Region newExit = new EmptyRegion();
+//                                breakSubgraph.addRegion(newEntry);
+//                                breakSubgraph.addRegion(newExit);
+//                                breakSubgraph.setEntry(newEntry);
+//                                breakSubgraph.setExit(newExit);
+//                                for (Region r : fragment.getRegions()) {
+//                                    if (!r.equals(fragment.getEntry()) &&
+//                                            !r.equals(fragment.getExit())) {
+//                                        breakSubgraph.addRegion(r);
+//                                    }
+//                                }
+//                                for (Edge e : fragment.getEdges()) {
+//                                    Region s = fragment.getEdgeSource(e);
+//                                    Region t = fragment.getEdgeTarget(e);
+//                                    if (s.equals(fragment.getEntry())) {
+//                                        s = newEntry;
+//                                    } else if (s.equals(fragment.getExit())) {
+//                                        s = newExit;
+//                                    }
+//                                    if (t.equals(fragment.getEntry())) {
+//                                        t = newEntry;
+//                                    } else if (t.equals(fragment.getExit())) {
+//                                        t = newExit;
+//                                    }
+//                                    breakSubgraph.addEdge(s, t, e);
+//                                }
+//                                for (Edge e : breakSubgraph.getEdges()) {
+//                                    graph.removeEdge(e);
+//                                }
+//                                for (Region r : breakSubgraph.getRegions()) {
+//                                    if (!r.equals(newEntry) && !r.equals(newExit)) {
+//                                        graph.removeRegion(r);
+//                                    }
+//                                }
+//                                for (Edge e : new ArrayList<Edge>(breakSubgraph.getIncomingEdgesOf(newExit))) {
+//                                    if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+//                                        breakSubgraph.removeEdge(e);
+//                                    }
+//                                }
+//                                if (breakSubgraph.getPredecessorCountOf(newExit) == 0) {
+//                                    breakSubgraph.removeRegion(newExit);
+//                                }
+//                                logger.info(DirectedGraphs.toString(breakSubgraph.getGraph(), breakSubgraph.getEntry()));
+//
+//                                failed = reduceRegionGraph(breakSubgraph);
+//                                if (!failed) {
+//                                    LabeledRegion labRegion = new LabeledRegion(breakSubgraph.getRegions().iterator().next());
+//                                    graph.addRegion(labRegion);
+//                                    graph.addEdge(fragment.getEntry(), labRegion, new EdgeImpl());
+//                                    graph.addEdge(labRegion, fragment.getExit(), new EdgeImpl());
+//                                }
+//                                break TOTO;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+        }
+
+        failed = graph.getRegions().size() > 1;
+
+        return failed;
     }
 
     private static void buildControlTree(Region parentRegion, MutableTree<Region, Edge> controlTree) {
@@ -103,201 +205,50 @@ public class StructuralAnalysis {
         }
     }
 
-    private Region reduceRegion(Region structuredRegion, Region entryRegion) {
-        logger.log(Level.FINER, "  Find {0} region : {1} => {2}",
-                new Object[] {structuredRegion.getTypeName(),
-                    structuredRegion.getChildRegions().toString(), structuredRegion});
-//        logger.log(Level.FINER, "  ENTRY " + entryRegion);
-
-//        logger.log(Level.FINEST, "  Internal edges : {0}",
-//                regionGraph.toString(structuredRegion.getChildEdges()));
-
-        structuredRegion.reduce(regionGraph);
-
-        if (structuredRegion.getEntryRegion().equals(entryRegion)) {
-            logger.log(Level.FINEST, "    New entry region : {0}", structuredRegion);
-            return structuredRegion;
-        } else {
-            return entryRegion;
-        }
-    }
-
-    private CheckResult checkRegions(List<Region> regions, Region entryRegion) {
-        boolean failed = true;
-        for (Region region : regions) {
-            Region structuredRegion = null;
-            for (RegionRecognizer recognizer : RECOGNIZERS) {
-//                logger.log(Level.FINEST, "Check for region with {0} at {1}",
-//                        new Object[] {recognizer.getClass().getSimpleName(), region});
-                structuredRegion = recognizer.recognize(regionGraph, region);
-                if (structuredRegion != null) {
-                    break;
-                }
-            }
-            if (structuredRegion != null) {
-                entryRegion = reduceRegion(structuredRegion, entryRegion);
-                failed = false;
-                break;
-            }
-        }
-        return new CheckResult(failed, entryRegion);
-    }
-
-    private void reduceRegionGraph() {
-        Map<BasicBlock, Region> block2region = new HashMap<BasicBlock, Region>();
-        regionGraph = DirectedGraphs.newDirectedGraph();
-        for (BasicBlock block : CFG.getBasicBlocks()) {
-            Region region = new BasicBlockRegion(block);
-            block2region.put(block, region);
-            regionGraph.addVertex(region);
-        }
-        for (Edge edge : CFG.getEdges()) {
-            BasicBlock source = CFG.getEdgeSource(edge);
-            BasicBlock target = CFG.getEdgeTarget(edge);
-            regionGraph.addEdge(block2region.get(source), block2region.get(target), edge);
-        }
-        Region entryRegion = block2region.get(CFG.getEntryBlock());
-        Region exitRegion = block2region.get(CFG.getExitBlock());
-
-        reduceRegionSubGraph(entryRegion, exitRegion);
-    }
-
-    private List<Region> getSubgraphRegions(Region entryRegion, Region exitRegion, boolean invert) {
-        Region region1 = invert ? exitRegion : entryRegion;
-        Region region2 = invert ? entryRegion : exitRegion;
-        Tree<Region, Edge> DFST
-            = regionGraph.getReversePostOrderDFST(region1, Sets.newHashSet(region2), invert);
-        List<Region> regions = new ArrayList<Region>(DFST.getNodes().size()+1);
-        regions.addAll(DFST.getNodes());
-        regions.add(region2);
-        return regions;
-    }
-
-    private boolean reduceRegionSubGraph(Region entryRegion, Region exitRegion) {
-        logger.log(Level.FINER, "Try to reduce subgraph ({0},{1})",
-                new Object[] {entryRegion, exitRegion});
-
-        Collection<Edge> incomingEdgesOfExit = regionGraph.getIncomingEdgesOf(exitRegion);
-        logger.log(Level.FINEST, "  Cut incoming edges of {0} : {1}",
-                new Object[] {exitRegion, regionGraph.toString(incomingEdgesOfExit)});
-
-        for (Edge incomingEdge : new ArrayList<Edge>(incomingEdgesOfExit)) {
-            if (incomingEdge.hasAttribute(EdgeAttribute.FAKE_EDGE)) {
-                continue;
-            }
-            Region sourceRegion = regionGraph.getEdgeSource(incomingEdge);
-            if (Regions.getSuccessorCountOf(regionGraph, sourceRegion, false) == 1) {
-                incomingEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                sourceRegion.setBreak(true);
-            } else {
-                regionGraph.removeEdge(incomingEdge);
-                Region emptyRegion = new EmptyRegion();
-                regionGraph.addVertex(emptyRegion);
-                regionGraph.addEdge(sourceRegion, emptyRegion, incomingEdge);
-                Edge fakeEdge = EDGE_FACTORY.createEdge();
-                fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                regionGraph.addEdge(emptyRegion, exitRegion, fakeEdge);
-                Regions.copyHandlers(regionGraph, sourceRegion, emptyRegion);
-                emptyRegion.setBreak(true);
-            }
-        }
-
-        boolean reduced = false;
-        boolean failed = false;
-        while (!reduced && !failed) {
-            List<Region> regions = getSubgraphRegions(entryRegion, exitRegion, false);
-
-            if (regions.size() == 2) {
-                reduced = true;
-            } else {
-                // check regions in reverse order
-                Collections.reverse(regions);
-
-                CheckResult result = checkRegions(regions, entryRegion);
-                failed = result.hasFailed();
-                entryRegion = result.getEntryRegion();
-
-                if (failed) {
-                    logger.log(Level.FINEST, "Fail to reduce regions in subgraph ({0},{1})",
-                            new Object[] {entryRegion, exitRegion});
-
-                    List<Region> regions2 = getSubgraphRegions(entryRegion, exitRegion, true);
-
-                    for (Region joinRegion : regions2) {
-                        boolean loopExitFound = false;
-                        for (Edge edge : regionGraph.getIncomingEdgesOf(joinRegion)) {
-                            if (edge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
-                                loopExitFound = true;
-                                break;
-                            }
-                        }
-                        if (loopExitFound) {
-                            DominatorInfo<Region, Edge> dominatorInfo
-                                    = DominatorInfo.create(regionGraph, entryRegion, EDGE_FACTORY);
-                            Region forkRegion = dominatorInfo.getDominatorsTree().getParent(joinRegion);
-
-                            if (!forkRegion.equals(entryRegion)
-                                    && !joinRegion.equals(exitRegion)) {
-                                failed = reduceRegionSubGraph(forkRegion, joinRegion);
-                            }
-                            break;
-                        }
-                    }
-
-//                    for (Region joinRegion : regions) {
-//                        if (regionGraph.getPredecessorCountOf(joinRegion) > 1) {
-//                            DominatorInfo<Region, Edge> dominatorInfo
-//                                    = DominatorInfo.create(regionGraph, entryRegion, EDGE_FACTORY);
-//                            Region forkRegion = dominatorInfo.getDominatorsTree().getParent(joinRegion);
-//
-//                            if (!forkRegion.equals(entryRegion)
-//                                    && !joinRegion.equals(exitRegion)) {
-//                                failed = reduceRegionSubGraph(forkRegion, joinRegion);
-//                            }
-//                            break;
-//                        }
-//                    }
-                }
-            }
-        }
-
-        if (reduced) {
-            Edge exitEdge = regionGraph.getEdge(entryRegion, exitRegion);
-            if (exitEdge == null) {
-                exitEdge = EDGE_FACTORY.createEdge();
-                regionGraph.addEdge(entryRegion, exitRegion, exitEdge);
-            } else {
-                exitEdge.removeAttribute(EdgeAttribute.FAKE_EDGE);
-            }
-            Region labeledRegion = new LabeledRegion(entryRegion);
-            entryRegion = reduceRegion(labeledRegion, entryRegion);
-            BlockRegion blockRegion = new BlockRegion(Collections.singletonList(exitEdge),
-                                                      Arrays.asList(labeledRegion, exitRegion));
-            entryRegion = reduceRegion(blockRegion, entryRegion);
-
-            logger.log(Level.FINEST, "Subgraph ({0},{1}) reduced",
-                    new Object[] {entryRegion, exitRegion});
-
-            return false;
-        } else {
-            logger.log(Level.FINEST, "Fail to recognize subgraph in subgraph ({0},{1})",
-                    new Object[] {entryRegion, exitRegion});
-
-            return true;
-        }
-    }
-
-    public DirectedGraph<Region, Edge> analyse() {
-        // reduce the region graph
-        reduceRegionGraph();
-
-        Set<Region> rootRegions = regionGraph.getVertices();
-        if (rootRegions.size() == 1) {
-            Region rootRegion = rootRegions.iterator().next();
+    private void printControlTree(RegionGraph graph) {
+        if (graph.getRegions().size() == 1) {
+            Region rootRegion = graph.getRegions().iterator().next();
             MutableTree<Region, Edge> controlTree = Trees.newTree(rootRegion);
             buildControlTree(rootRegion, controlTree);
             logger.log(Level.FINEST, "Control tree :\n{0}", Trees.toString(controlTree));
         }
-        return regionGraph;
+    }
+
+    public RegionGraph analyse() {
+        RegionGraph graph = new RegionGraph(cfg);
+
+        boolean failed = reduceRegionGraph(graph);
+
+//        if (failed) {
+//            // try to cut return edges
+//            Region exitRegion = graph.getExit();
+//            for (Edge edge : new ArrayList<Edge>(graph.getIncomingEdgesOf(exitRegion))) {
+//                if (edge.hasAttribute(EdgeAttribute.RETURN_EDGE)) {
+//                    cutEdge(graph, edge);
+//                }
+//            }
+//            if (graph.getPredecessorCountOf(exitRegion) == 0) {
+//                graph.removeRegion(exitRegion);
+//
+//                // reduce the region graph
+//                failed = reduceRegionGraph(graph);
+//                if (!failed) {
+//                    Region rootRegion = graph.getRegions().iterator().next();
+//                    Edge exitEdge = new EdgeImpl();
+//                    graph.addRegion(exitRegion);
+//                    graph.addEdge(rootRegion, exitRegion, exitEdge);
+//                    BlockRegion blockRegion = new BlockRegion(Arrays.asList(exitEdge),
+//                                                              Arrays.asList(rootRegion, exitRegion));
+//                    blockRegion.reduce(graph);
+//
+//                    // print control tree
+//                    printControlTree(graph);
+//                }
+//            } else {
+//                failed = reduceRegionGraph(graph);
+//            }
+//        }
+
+        return graph;
     }
 }

@@ -17,11 +17,8 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
-import java.util.Collection;
 
 /**
  *
@@ -50,13 +47,8 @@ public class IfThenElseJoinRegion extends IfThenElseRegion {
         return RegionType.IF_THEN_ELSE_JOIN;
     }
 
-    public Collection<Edge> getChildEdges() {
-        return Sets.newHashSet(thenEdge, joinThenEdge, elseEdge,
-                               joinElseEdge);
-    }
-
-    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
-        graph.addVertex(this);
+    public void reduce(RegionGraph graph) {
+        graph.addRegion(this);
         Regions.moveHandlers(graph, ifRegion, this);
         Regions.moveIncomingEdges(graph, ifRegion, this);
         graph.addEdge(this, graph.getEdgeTarget(joinThenEdge), new EdgeImpl());
@@ -64,8 +56,8 @@ public class IfThenElseJoinRegion extends IfThenElseRegion {
         graph.removeEdge(elseEdge);
         graph.removeEdge(joinThenEdge);
         graph.removeEdge(joinElseEdge);
-        graph.removeVertex(ifRegion);
-        graph.removeVertex(thenRegion);
-        graph.removeVertex(elseRegion);
+        graph.removeRegion(ifRegion);
+        graph.removeRegion(thenRegion);
+        graph.removeRegion(elseRegion);
     }
 }

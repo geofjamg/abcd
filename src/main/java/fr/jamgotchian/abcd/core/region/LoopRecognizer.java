@@ -18,7 +18,6 @@ package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -28,11 +27,11 @@ import java.util.Iterator;
  */
 class LoopRecognizer implements RegionRecognizer {
 
-    public Region recognize(DirectedGraph<Region, Edge> graph, Region regionA) {
-        if (Regions.getPredecessorCountOf(graph, regionA, false) != 2) {
+    public Region recognize(RegionGraph graph, Region regionA) {
+        if (graph.getPredecessorCountOf(regionA, false) != 2) {
             return null;
         }
-        Iterator<Edge> itI = Regions.getIncomingEdgesOf(graph, regionA, false).iterator();
+        Iterator<Edge> itI = graph.getIncomingEdgesOf(regionA, false).iterator();
         Edge incomingEdge1 = itI.next();
         Edge incomingEdge2 = itI.next();
 
@@ -59,14 +58,14 @@ class LoopRecognizer implements RegionRecognizer {
         //      A   |
         //      +---+
         //
-        if (Regions.getSuccessorCountOf(graph, regionA, false) == 1) {
-            Edge outgoingEdge = Regions.getFirstOutgoingEdgeOf(graph, regionA, false);
+        if (graph.getSuccessorCountOf(regionA, false) == 1) {
+            Edge outgoingEdge = graph.getFirstOutgoingEdgeOf(regionA, false);
             if (outgoingEdge.equals(loopBackEdge)) {
                 return new InfiniteLoopRegion(outgoingEdge, regionA);
             }
         }
 
-        if (Regions.getSuccessorCountOf(graph, regionA, false) == 2) {
+        if (graph.getSuccessorCountOf(regionA, false) == 2) {
             //
             // check for a do while loop region
             //
@@ -78,7 +77,7 @@ class LoopRecognizer implements RegionRecognizer {
             //      |
             //      | t/f
             //
-            Collection<Edge> outgoingEdges = Regions.getOutgoingEdgesOf(graph, regionA, false);
+            Collection<Edge> outgoingEdges = graph.getOutgoingEdgesOf(regionA, false);
             Iterator<Edge> itO = outgoingEdges.iterator();
             Edge outgoingEdge1 = itO.next();
             Edge outgoingEdge2 = itO.next();
@@ -138,10 +137,10 @@ class LoopRecognizer implements RegionRecognizer {
             if (!Regions.sameHandlers(graph, regionA, regionB/*, regionC*/)) {
                 return null;
             }
-            if (Regions.getSuccessorCountOf(graph, regionB, false) != 1) {
+            if (graph.getSuccessorCountOf(regionB, false) != 1) {
                 return null;
             }
-            Edge edgeBX = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
+            Edge edgeBX = graph.getFirstOutgoingEdgeOf(regionB, false);
             if (!edgeBX.equals(loopBackEdge)) {
                 return null;
             }

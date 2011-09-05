@@ -397,24 +397,57 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return builder.toString();
     }
 
-    public void export(ExportType type, Writer writer, String name) throws IOException {
-        export(type, writer, name, new DefaultAttributeFactory<V>(),
-                                   new DefaultAttributeFactory<E>());
+    public String getClusterID() {
+        return Integer.toString(System.identityHashCode(this));
     }
 
-    public void export(ExportType type, Writer writer, String name,
-                       AttributeFactory<V> vertexAttrFactory,
+    public void export(Writer writer, String name) throws IOException {
+        export(writer, name, new DefaultAttributeFactory<V>(),
+                             new DefaultAttributeFactory<E>());
+    }
+
+    public void export(Writer writer, String name,
+                       AttributeFactory<V> nodeAttrFactory,
                        AttributeFactory<E> edgeAttrFactory) throws IOException {
-        writer.append("digraph ").append(name).append(" {\n");
+        export(writer, name, nodeAttrFactory, edgeAttrFactory, false);
+    }
+
+    public void export(Writer writer, String name,
+                       AttributeFactory<V> vertexAttrFactory,
+                       AttributeFactory<E> edgeAttrFactory,
+                       boolean isSubgraph) throws IOException {
+        if (isSubgraph) {
+            String clusterName = DirectedGraphs.getClusterID(this);
+            writer.append("subgraph ").append(clusterName).append(" {\n");
+            writer.append("label=\"").append(name).append("\";\n");
+        } else {
+            writer.append("digraph ").append(name).append(" {\n");
+        }
+        for (V node : getVertices()) {
+            if (node instanceof GraphvizDigraph) {
+                @SuppressWarnings("unchecked")
+                GraphvizDigraph<V, E> subgraph = ((GraphvizDigraph<V, E>) node);
+                subgraph.export(writer, node.toString(), vertexAttrFactory,
+                                  edgeAttrFactory, true);
+            } else {
+                writer.append("  ")
+                        .append(DirectedGraphs.getSimpleVertexName(this, node))
+                        .append(" ");
+                DirectedGraphs.writeAttributes(writer, vertexAttrFactory.getAttributes(node));
+                writer.append("\n");
+            }
+        }
         for (E edge : getEdges()) {
             V source = getEdgeSource(edge);
             V target = getEdgeTarget(edge);
-            DirectedGraphs.writeGraphvizEdge(writer, edge, source, target, edgeAttrFactory);
+            writer.append("  ")
+                    .append(DirectedGraphs.getVertexName(this, source))
+                    .append(" -> ")
+                    .append(DirectedGraphs.getVertexName(this, target));
+            DirectedGraphs.writeAttributes(writer, edgeAttrFactory.getAttributes(edge));
+            writer.append("\n");
         }
-        for (V vertex : getVertices()) {
-            DirectedGraphs.writeGraphvizVertex(writer, vertex, vertexAttrFactory);
-        }
-        writer.append("}");
+        writer.append("}\n");
     }
 
     private void visitNeighbors(V current, Set<V> neighbors) {

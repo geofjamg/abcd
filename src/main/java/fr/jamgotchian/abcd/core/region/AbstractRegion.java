@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.region;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -32,8 +33,11 @@ abstract class AbstractRegion implements Region {
 
     private boolean _break;
 
+    private final Set<RegionAttribute> attributes;
+
     AbstractRegion() {
         _break = false;
+        attributes = EnumSet.noneOf(RegionAttribute.class);
     }
 
     public String getTypeName() {
@@ -80,6 +84,14 @@ abstract class AbstractRegion implements Region {
 
     public void setBreak(boolean _break) {
         this._break = _break;
+    }
+
+    public Set<RegionAttribute> getAttributes() {
+        return attributes;
+    }
+
+    public void addAttribute(RegionAttribute attr) {
+        attributes.add(attr);
     }
 
     public RegionName getName() {

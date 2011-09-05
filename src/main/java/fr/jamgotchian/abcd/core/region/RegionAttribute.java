@@ -14,12 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.graph;
+package fr.jamgotchian.abcd.core.region;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public enum ExportType {
-    GRAPHVIZ
+public enum RegionAttribute {
+    LOOP_EXIT_REGION,
+    RETURN_REGION
 }

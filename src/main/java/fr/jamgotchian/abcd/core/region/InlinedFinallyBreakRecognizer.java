@@ -17,7 +17,6 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 
 /**
  *
@@ -25,22 +24,22 @@ import fr.jamgotchian.abcd.core.graph.DirectedGraph;
  */
 public class InlinedFinallyBreakRecognizer implements RegionRecognizer {
 
-    public Region recognize(DirectedGraph<Region, Edge> graph, Region regionA) {
-        if (Regions.getSuccessorCountOf(graph, regionA, false) != 1) {
+    public Region recognize(RegionGraph graph, Region regionA) {
+        if (graph.getSuccessorCountOf(regionA, false) != 1) {
             return null;
         }
-        Edge edgeAB = Regions.getFirstOutgoingEdgeOf(graph, regionA, false);
+        Edge edgeAB = graph.getFirstOutgoingEdgeOf(regionA, false);
         Region regionB = graph.getEdgeTarget(edgeAB);
-        if (Regions.getSuccessorCountOf(graph, regionB, false) != 0) {
+        if (graph.getSuccessorCountOf(regionB, false) != 0) {
             return null;
         }
-        if (Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
+        if (graph.getPredecessorCountOf(regionB, false) != 1) {
             return null;
         }
         if (!regionB.isBreak()) {
             return null;
         }
-        for (Region regionC : Regions.getSuccessorsOf(graph, regionA, true)) {
+        for (Region regionC : graph.getSuccessorsOf(regionA, true)) {
             if (Regions.sameInstructions(regionB, regionC)) {
                 return new InlinedFinallyBreakRegion(regionA, edgeAB, regionB);
             }

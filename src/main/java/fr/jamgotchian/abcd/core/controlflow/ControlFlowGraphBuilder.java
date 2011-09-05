@@ -330,7 +330,8 @@ public class ControlFlowGraphBuilder {
                             if (remainingBlock != null) {
                                 graph.removeEdge(returnBlock, remainingBlock);
                             }
-                            graph.addEdge(returnBlock, graph.getExitBlock());
+                            graph.addEdge(returnBlock, graph.getExitBlock())
+                                    .addAttribute(EdgeAttribute.RETURN_EDGE);
 
                             returnBlock.setType(BasicBlockType.RETURN);
 

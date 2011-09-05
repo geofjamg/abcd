@@ -21,6 +21,8 @@ import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.util.Range;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -131,4 +133,10 @@ public interface ControlFlowGraph {
     void setExceptionTable(ExceptionTable exceptionTable);
 
     void addFakeEdges();
+
+    void export(Writer writer) throws IOException;
+
+    void exportBytecode(Writer writer) throws IOException;
+
+    void exportTAC(Writer writer) throws IOException;
 }

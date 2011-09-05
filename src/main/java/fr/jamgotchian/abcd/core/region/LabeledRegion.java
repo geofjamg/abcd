@@ -16,11 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.region;
 
-import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -55,15 +51,11 @@ public class LabeledRegion extends AbstractRegion {
         return Arrays.asList(bodyRegion);
     }
 
-    public Collection<Edge> getChildEdges() {
-        return Collections.emptySet();
-    }
-
-    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
-        graph.addVertex(this);
+    public void reduce(RegionGraph graph) {
+        graph.addRegion(this);
         Regions.moveIncomingEdges(graph, bodyRegion, this);
         Regions.moveOutgoingEdges(graph, bodyRegion, this);
-        graph.removeVertex(bodyRegion);
+        graph.removeRegion(bodyRegion);
     }
 
 }

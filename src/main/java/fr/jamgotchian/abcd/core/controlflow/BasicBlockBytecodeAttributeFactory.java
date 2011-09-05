@@ -14,23 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core;
+package fr.jamgotchian.abcd.core.controlflow;
 
-import fr.jamgotchian.abcd.core.ast.CompilationUnit;
-import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.region.RegionGraph;
+import fr.jamgotchian.abcd.core.graph.AttributeFactory;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface OutputHandler {
+public class BasicBlockBytecodeAttributeFactory implements AttributeFactory<BasicBlock> {
 
-    void controlFlowGraphBuilt(ControlFlowGraph graph);
-
-    void treeAddressCodeBuilt(ControlFlowGraph graph);
-
-    void regionGraphBuilt(RegionGraph regionGraph);
-
-    void abstractSyntaxTreeBuilt(CompilationUnit compilUnit);
+    public Map<String, String> getAttributes(BasicBlock block) {
+        Map<String, String> attrs = new HashMap<String, String>(3);
+        attrs.put("shape", "box");
+        attrs.put("color", "black");
+        attrs.put("label", "< " + OutputUtil.toDOTHTMLLike(block) + " >");
+        return attrs;
+    }
 }

@@ -27,7 +27,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface DirectedGraph<V, E> extends Exportable<V, E> {
+public interface DirectedGraph<V, E> extends GraphvizDigraph<V, E> {
 
     boolean containsEdge(V source, V target);
 
@@ -79,7 +79,11 @@ public interface DirectedGraph<V, E> extends Exportable<V, E> {
 
     Tree<V, E> getReversePostOrderDFST(V root, boolean invert);
 
-    void export(ExportType type, Writer writer, String name) throws IOException;
+    void export(Writer writer, String name,
+                AttributeFactory<V> nodeAttrFactory,
+                AttributeFactory<E> edgeAttrFactory) throws IOException;
+
+    void export(Writer writer, String name) throws IOException;
 
     String toString(Collection<E> edges);
 

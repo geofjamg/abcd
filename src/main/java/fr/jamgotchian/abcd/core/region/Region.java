@@ -17,8 +17,6 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -47,8 +45,6 @@ public interface Region {
 
     List<Region> getChildRegions();
 
-    Collection<Edge> getChildEdges();
-
     <T> Collection<T> getChildRegions(Class<T> clazz);
 
     <T> void addChildRegions(Collection<T> regions, Class<T> clazz);
@@ -57,5 +53,9 @@ public interface Region {
 
     void setBreak(boolean _break);
 
-    void reduce(MutableDirectedGraph<Region, Edge> graph);
+    Set<RegionAttribute> getAttributes();
+
+    void addAttribute(RegionAttribute attr);
+
+    void reduce(RegionGraph graph);
 }

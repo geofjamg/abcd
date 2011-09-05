@@ -30,7 +30,7 @@ import java.util.Iterator;
  */
 class IfThenElseRecognizer implements RegionRecognizer {
 
-    public Region recognize(DirectedGraph<Region, Edge> graph, Region regionA) {
+    public Region recognize(RegionGraph graph, Region regionA) {
         //
         // check for if-then or if-then-else region
         //
@@ -45,11 +45,11 @@ class IfThenElseRecognizer implements RegionRecognizer {
             return null;
         }
 
-        if (Regions.getSuccessorCountOf(graph, regionA, false) != 2) {
+        if (graph.getSuccessorCountOf(regionA, false) != 2) {
             return null;
         }
 
-        Collection<Edge> outgoingEdges = Regions.getOutgoingEdgesOf(graph, regionA, false);
+        Collection<Edge> outgoingEdges = graph.getOutgoingEdgesOf(regionA, false);
         Iterator<Edge> itE = outgoingEdges.iterator();
         Edge edgeAB = itE.next();
         Edge edgeAC = itE.next();
@@ -68,10 +68,10 @@ class IfThenElseRecognizer implements RegionRecognizer {
         //    /         \
         //   B (break)  C (break)
         //
-        if (Regions.getSuccessorCountOf(graph, regionB, false) == 0
-                && Regions.getSuccessorCountOf(graph, regionC, false) == 0
-                && Regions.getPredecessorCountOf(graph, regionB, false) == 1
-                && Regions.getPredecessorCountOf(graph, regionC, false) == 1
+        if (graph.getSuccessorCountOf(regionB, false) == 0
+                && graph.getSuccessorCountOf(regionC, false) == 0
+                && graph.getPredecessorCountOf(regionB, false) == 1
+                && graph.getPredecessorCountOf(regionC, false) == 1
                 && regionB.isBreak()
                 && regionC.isBreak()) {
             return new IfThenBreakElseBreakRegion(edgeAB, edgeAC, regionA, regionB, regionC);
@@ -91,22 +91,22 @@ class IfThenElseRecognizer implements RegionRecognizer {
         //         (break)
         //
         boolean regionAHasBackEdge = false;
-        for (Edge e : Regions.getIncomingEdgesOf(graph, regionA, false)) {
+        for (Edge e : graph.getIncomingEdgesOf(regionA, false)) {
             if (e.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
                 regionAHasBackEdge = true;
             }
         }
 
-        if (Regions.getSuccessorCountOf(graph, regionB, false) == 0
-                && Regions.getPredecessorCountOf(graph, regionB, false) == 1
-                && Regions.getPredecessorCountOf(graph, regionC, false) == 1
+        if (graph.getSuccessorCountOf(regionB, false) == 0
+                && graph.getPredecessorCountOf(regionB, false) == 1
+                && graph.getPredecessorCountOf(regionC, false) == 1
                 && regionB.isBreak()
                 && !regionAHasBackEdge) {
             return new IfThenBreakRegion(edgeAB, edgeAC, regionA, regionB, true);
         }
-        if (Regions.getSuccessorCountOf(graph, regionC, false) == 0
-                && Regions.getPredecessorCountOf(graph, regionB, false) == 1
-                && Regions.getPredecessorCountOf(graph, regionC, false) == 1
+        if (graph.getSuccessorCountOf(regionC, false) == 0
+                && graph.getPredecessorCountOf(regionB, false) == 1
+                && graph.getPredecessorCountOf(regionC, false) == 1
                 && regionC.isBreak()
                 && !regionAHasBackEdge) {
             return new IfThenBreakRegion(edgeAC, edgeAB, regionA, regionC, true);
@@ -123,8 +123,8 @@ class IfThenElseRecognizer implements RegionRecognizer {
         //  /     \
         // D_B    D_C
         //
-        Edge edgeBD = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
-        Edge edgeCD = Regions.getFirstOutgoingEdgeOf(graph, regionC, false);
+        Edge edgeBD = graph.getFirstOutgoingEdgeOf(regionB, false);
+        Edge edgeCD = graph.getFirstOutgoingEdgeOf(regionC, false);
         Region regionD_B = null;
         Region regionD_C = null;
         if (edgeBD != null) {
@@ -144,10 +144,10 @@ class IfThenElseRecognizer implements RegionRecognizer {
         //
         if (regionD_B != null && regionD_C != null && regionD_B.equals(regionD_C)) {
             // if-then-else region
-            if (Regions.getPredecessorCountOf(graph, regionB, false) == 1
-                    && Regions.getPredecessorCountOf(graph, regionC, false) == 1
-                    && Regions.getSuccessorCountOf(graph, regionB, false) == 1
-                    && Regions.getSuccessorCountOf(graph, regionC, false) == 1) {
+            if (graph.getPredecessorCountOf(regionB, false) == 1
+                    && graph.getPredecessorCountOf(regionC, false) == 1
+                    && graph.getSuccessorCountOf(regionB, false) == 1
+                    && graph.getSuccessorCountOf(regionC, false) == 1) {
 
                 if (Boolean.TRUE.equals(edgeAB.getValue())
                         && Boolean.FALSE.equals(edgeAC.getValue())) {
@@ -173,8 +173,8 @@ class IfThenElseRecognizer implements RegionRecognizer {
             //    \ /
             //     D
             //
-            if (Regions.getPredecessorCountOf(graph, regionC, false) == 1
-                    && Regions.getSuccessorCountOf(graph, regionC, false) == 1) {
+            if (graph.getPredecessorCountOf(regionC, false) == 1
+                    && graph.getSuccessorCountOf(regionC, false) == 1) {
                 if ((Boolean.TRUE.equals(edgeAB.getValue()) && Boolean.FALSE.equals(edgeAC.getValue()))
                         || (Boolean.FALSE.equals(edgeAB.getValue()) && Boolean.TRUE.equals(edgeAC.getValue()))) {
                     if (Regions.sameHandlers(graph, regionA, regionC)) {
@@ -195,8 +195,8 @@ class IfThenElseRecognizer implements RegionRecognizer {
             //    \ /
             //    D_B
             //
-            if (Regions.getPredecessorCountOf(graph, regionB, false) == 1
-                    && Regions.getSuccessorCountOf(graph, regionB, false) == 1) {
+            if (graph.getPredecessorCountOf(regionB, false) == 1
+                    && graph.getSuccessorCountOf(regionB, false) == 1) {
                 if ((Boolean.TRUE.equals(edgeAB.getValue()) && Boolean.FALSE.equals(edgeAC.getValue()))
                         || (Boolean.FALSE.equals(edgeAB.getValue()) && Boolean.TRUE.equals(edgeAC.getValue()))) {
                     if (Regions.sameHandlers(graph, regionA, regionB)) {

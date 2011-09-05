@@ -61,14 +61,25 @@ public class DirectedGraphs {
             }
         }
 
-        public void export(ExportType type, Writer writer, String name,
-                           AttributeFactory<V> vertexAttrFactory,
-                           AttributeFactory<E> edgeAttrFactory) throws IOException {
-            delegate.export(type, writer, name, vertexAttrFactory, edgeAttrFactory);
+        public String getClusterID() {
+            return delegate.getClusterID();
         }
 
-        public void export(ExportType type, Writer writer, String name) throws IOException {
-            delegate.export(type, writer, name);
+        public void export(Writer writer, String name,
+                           AttributeFactory<V> nodeAttrFactory,
+                           AttributeFactory<E> edgeAttrFactory) throws IOException {
+            delegate.export(writer, name, nodeAttrFactory, edgeAttrFactory);
+        }
+
+        public void export(Writer writer, String name,
+                           AttributeFactory<V> vertexAttrFactory,
+                           AttributeFactory<E> edgeAttrFactory,
+                           boolean isSubgraph) throws IOException {
+            delegate.export(writer, name, vertexAttrFactory, edgeAttrFactory, isSubgraph);
+        }
+
+        public void export(Writer writer, String name) throws IOException {
+            delegate.export(writer, name);
         }
 
         public String toString(E edge) {
@@ -336,14 +347,25 @@ public class DirectedGraphs {
             return delegate.getExits();
         }
 
-        public void export(ExportType type, Writer writer, String name) throws IOException {
-            delegate.export(type, writer, name);
+        public String getClusterID() {
+            return delegate.getClusterID();
         }
 
-        public void export(ExportType type, Writer writer, String name,
-                           AttributeFactory<V> vertexAttrFactory,
+        public void export(Writer writer, String name) throws IOException {
+            delegate.export(writer, name);
+        }
+
+        public void export(Writer writer, String name,
+                           AttributeFactory<V> nodeAttrFactory,
                            AttributeFactory<E> edgeAttrFactory) throws IOException {
-            delegate.export(type, writer, name, vertexAttrFactory, edgeAttrFactory);
+            delegate.export(writer, name, nodeAttrFactory, edgeAttrFactory);
+        }
+
+        public void export(Writer writer, String name,
+                           AttributeFactory<V> vertexAttrFactory,
+                           AttributeFactory<E> edgeAttrFactory,
+                           boolean isSubgraph) throws IOException {
+            delegate.export(writer, name, vertexAttrFactory, edgeAttrFactory, isSubgraph);
         }
     }
 
@@ -380,38 +402,27 @@ public class DirectedGraphs {
         return builder.toString();
     }
 
-    public static <V, E> void writeGraphvizEdge(Writer writer, E edge, V source, V target,
-                                                AttributeFactory<E> edgeAttrFactory) throws IOException {
-        int sourceHashCode = System.identityHashCode(source);
-        int targetHashCode = System.identityHashCode(target);
-        writer.append("  ")
-                .append(Integer.toString(sourceHashCode))
-                .append(" -> ")
-                .append(Integer.toString(targetHashCode))
-                .append(" [");
-        for (Iterator<Map.Entry<String, String>>
-                it = edgeAttrFactory.getAttributes(edge).entrySet().iterator();
-             it.hasNext();) {
-            Map.Entry<String, String> entry = it.next();
-            String propName = entry.getKey();
-            String propValue = entry.getValue();
-            writer.append(propName).append("=").append(propValue);
-            if (it.hasNext()) {
-                writer.append(", ");
-            }
+    @SuppressWarnings("unchecked")
+    public static <V, E> String getVertexName(GraphvizDigraph<V, E> exportable, V vertex) {
+        if (vertex instanceof GraphvizDigraph) {
+            return getClusterID((GraphvizDigraph<V, E>) vertex);
+        } else {
+            return getSimpleVertexName(exportable, vertex);
         }
-        writer.append("]")
-              .append("\n");
     }
 
-    public static <V, E> void writeGraphvizVertex(Writer writer, V vertex,
-                                                  AttributeFactory<V> vertexAttrFactory) throws IOException {
-        int hashCode = System.identityHashCode(vertex);
-        writer.append("  ")
-                .append(Integer.toString(hashCode))
-                .append(" [");
-        for (Iterator<Map.Entry<String, String>> it
-                = vertexAttrFactory.getAttributes(vertex).entrySet().iterator();
+    public static <V, E> String getClusterID(GraphvizDigraph<V, E> subgraph) {
+        return "cluster_" + subgraph.getClusterID();
+    }
+
+    public static <V, E> String getSimpleVertexName(GraphvizDigraph<V, E> exportable, V vertex) {
+        return Integer.toString(System.identityHashCode(exportable))
+                + Integer.toString(System.identityHashCode(vertex));
+    }
+
+    public static <V, E> void writeAttributes(Writer writer, Map<String, String> attributes) throws IOException {
+        writer.append(" [");
+        for (Iterator<Map.Entry<String, String>> it = attributes.entrySet().iterator();
              it.hasNext();) {
             Map.Entry<String, String> entry = it.next();
             String propName = entry.getKey();
@@ -421,6 +432,6 @@ public class DirectedGraphs {
                 writer.append(", ");
             }
         }
-        writer.append("]\n");
+        writer.append("]");
     }
 }

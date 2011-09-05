@@ -29,6 +29,8 @@ import fr.jamgotchian.abcd.core.graph.EdgeFactory;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
 import fr.jamgotchian.abcd.core.util.RangeMap;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -647,6 +649,24 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
 
         postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY);
+    }
+
+    public void export(Writer writer) throws IOException {
+        graph.export(writer, "\"" + name + "\"",
+                     new BasicBlockRangeAttributeFactory(),
+                     new EdgeAttributeFactory());
+    }
+
+    public void exportBytecode(Writer writer) throws IOException {
+        graph.export(writer, "\"" + name + "\"",
+                     new BasicBlockBytecodeAttributeFactory(),
+                     new EdgeAttributeFactory());
+    }
+
+    public void exportTAC(Writer writer) throws IOException {
+        graph.export(writer, "\"" + name + "\"",
+                     new BasicBlockTACAttributeFactory(),
+                     new EdgeAttributeFactory());
     }
 
     public String toString(Collection<Edge> edges) {

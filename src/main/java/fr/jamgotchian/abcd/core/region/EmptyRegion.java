@@ -17,9 +17,6 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,16 +42,12 @@ public class EmptyRegion extends AbstractRegion {
         return Collections.emptyList();
     }
 
-    public Collection<Edge> getChildEdges() {
-        return Collections.emptyList();
-    }
-
     @Override
     public RegionName getName() {
         return new RegionName(null);
     }
 
-    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
+    public void reduce(RegionGraph graph) {
         throw new ABCDException("Cannot reduce a empty region");
     }
 }

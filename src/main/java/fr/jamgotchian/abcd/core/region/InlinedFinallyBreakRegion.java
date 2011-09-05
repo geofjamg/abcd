@@ -17,10 +17,7 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -61,17 +58,13 @@ public class InlinedFinallyBreakRegion extends AbstractRegion {
         return Arrays.asList(tryRegion, finallyRegion);
     }
 
-    public Collection<Edge> getChildEdges() {
-        return Collections.singleton(tryEdge);
-    }
-
-    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
-        graph.addVertex(this);
+    public void reduce(RegionGraph graph) {
+        graph.addRegion(this);
         Regions.moveHandlers(graph, tryRegion, this);
         Regions.moveIncomingEdges(graph, tryRegion, this);
         graph.removeEdge(tryEdge);
-        graph.removeVertex(tryRegion);
-        graph.removeVertex(finallyRegion);
+        graph.removeRegion(tryRegion);
+        graph.removeRegion(finallyRegion);
         setBreak(true);
     }
 }

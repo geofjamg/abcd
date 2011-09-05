@@ -17,11 +17,8 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
-import java.util.Collection;
 
 /**
  *
@@ -38,18 +35,14 @@ public class IfThenBreakRegion extends IfThenRegion {
         return RegionType.IF_THEN_BREAK;
     }
 
-    public Collection<Edge> getChildEdges() {
-        return Sets.newHashSet(thenEdge, elseEdge);
-    }
-
-    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
-        graph.addVertex(this);
+    public void reduce(RegionGraph graph) {
+        graph.addRegion(this);
         Regions.moveHandlers(graph, ifRegion, this);
         Regions.moveIncomingEdges(graph, ifRegion, this);
         graph.addEdge(this, graph.getEdgeTarget(elseEdge), new EdgeImpl());
         graph.removeEdge(thenEdge);
         graph.removeEdge(elseEdge);
-        graph.removeVertex(ifRegion);
-        graph.removeVertex(thenRegion);
+        graph.removeRegion(ifRegion);
+        graph.removeRegion(thenRegion);
     }
 }

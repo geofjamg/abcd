@@ -17,14 +17,11 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public interface RegionRecognizer {
 
-    Region recognize(DirectedGraph<Region, Edge> graph, Region regionA);
+    Region recognize(RegionGraph graph, Region regionA);
 }

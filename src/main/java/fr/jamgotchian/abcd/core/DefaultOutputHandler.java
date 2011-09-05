@@ -19,10 +19,8 @@ package fr.jamgotchian.abcd.core;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.output.TextCodeWriter;
-import fr.jamgotchian.abcd.core.region.Region;
+import fr.jamgotchian.abcd.core.region.RegionGraph;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -55,7 +53,7 @@ public class DefaultOutputHandler implements OutputHandler {
     public void treeAddressCodeBuilt(ControlFlowGraph graph) {
     }
 
-    public void regionGraphBuilt(DirectedGraph<Region, Edge> regionGraph) {
+    public void regionGraphBuilt(RegionGraph regionGraph) {
     }
 
     public void abstractSyntaxTreeBuilt(CompilationUnit compilUnit) {

@@ -18,11 +18,8 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -96,19 +93,15 @@ public class WhileLoopRegion extends AbstractRegion {
         return Arrays.asList(ifRegion, loopRegion);
     }
 
-    public Collection<Edge> getChildEdges() {
-        return Arrays.asList(backEdge, thenEdge, loopEdge);
-    }
-
-    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
-        graph.addVertex(this);
+    public void reduce(RegionGraph graph) {
+        graph.addRegion(this);
         Regions.moveHandlers(graph, ifRegion, this);
         graph.removeEdge(backEdge);
         graph.removeEdge(thenEdge);
         graph.removeEdge(loopEdge);
         Regions.moveIncomingEdges(graph, ifRegion, this);
-        graph.removeVertex(ifRegion);
-        graph.removeVertex(loopRegion);
+        graph.removeRegion(ifRegion);
+        graph.removeRegion(loopRegion);
         graph.addEdge(this, thenRegion, new EdgeImpl());
     }
 }

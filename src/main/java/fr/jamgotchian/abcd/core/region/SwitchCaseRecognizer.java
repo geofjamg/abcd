@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public class SwitchCaseRecognizer implements RegionRecognizer {
 
-    public Region recognize(DirectedGraph<Region, Edge> graph, Region regionA) {
+    public Region recognize(RegionGraph graph, Region regionA) {
         //
         // check switch case region
         //
@@ -55,7 +55,7 @@ public class SwitchCaseRecognizer implements RegionRecognizer {
             return null;
         }
         Set<Edge> edgesAB
-                = new HashSet<Edge>(Regions.getOutgoingEdgesOf(graph, regionA, false));
+                = new HashSet<Edge>(graph.getOutgoingEdgesOf(regionA, false));
         if (edgesAB.isEmpty()) {
             return null;
         }
@@ -68,7 +68,7 @@ public class SwitchCaseRecognizer implements RegionRecognizer {
             BasicBlock exitBlockOfRegionB = Regions.getDeepExitBasicBlock(graph, regionB);
             if (exitBlockOfRegionB != null
                     && exitBlockOfRegionB.getType() == BasicBlockType.RETURN) {
-                Edge edgeBExit = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
+                Edge edgeBExit = graph.getFirstOutgoingEdgeOf(regionB, false);
                 CaseValues value = (CaseValues) edgeAB.getValue();
                 caseRegions.add(new CaseRegion(regionB, edgeAB, edgeBExit, value));
                 itE.remove();
@@ -82,7 +82,7 @@ public class SwitchCaseRecognizer implements RegionRecognizer {
                 Set<Region> regionBC = new HashSet<Region>();
                 Region regionB = graph.getEdgeTarget(edgeAB);
                 regionBC.add(regionB);
-                regionBC.add(Regions.getFirstSuccessorOf(graph, regionB, false));
+                regionBC.add(graph.getFirstSuccessorOf(regionB, false));
                 regionsBC.add(regionBC);
             }
 
@@ -96,11 +96,11 @@ public class SwitchCaseRecognizer implements RegionRecognizer {
                     if (regionB.equals(regionC)) { // empty case
                         caseRegions.add(new CaseRegion(null, edgeAB, null, value));
                     } else {
-                        Edge edgeBC = Regions.getFirstOutgoingEdgeOf(graph, regionB, false);
+                        Edge edgeBC = graph.getFirstOutgoingEdgeOf(regionB, false);
                         caseRegions.add(new CaseRegion(regionB, edgeAB, edgeBC, value));
                     }
                 }
-                
+
                 edgesAB.clear();
             }
         }

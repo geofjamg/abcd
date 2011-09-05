@@ -62,8 +62,8 @@ public class RPSTBuilder {
             r2v.put(r, v);
         }
         for (Edge e : rg.getEdges()) {
-            Region source = rg.getSource(e);
-            Region target = rg.getTarget(e);
+            Region source = rg.getEdgeSource(e);
+            Region target = rg.getEdgeTarget(e);
             rg2.addEdge(r2v.get(source), r2v.get(target));
         }
         return rg2;
@@ -90,7 +90,7 @@ public class RPSTBuilder {
     }
 
     private RegionGraph convertFragment(RPSTNode<DirectedEdge, Vertex> node) {
-        RegionGraph fragment = new RegionGraph();
+        RegionGraph fragment = new RegionGraph("");
         for (Vertex v : node.getFragment().getVertices()) {
             Region r = (Region) v.getTag();
             fragment.addRegion(r);

@@ -26,7 +26,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Tree<N, E> extends Iterable<N>, Exportable<N, E> {
+public interface Tree<N, E> extends Iterable<N>, GraphvizDigraph<N, E> {
 
     boolean containsNode(N node);
 
@@ -58,5 +58,9 @@ public interface Tree<N, E> extends Iterable<N>, Exportable<N, E> {
 
     Iterator<N> iterator(N node);
 
-    void export(ExportType type, Writer writer, String name) throws IOException;
+    void export(Writer writer, String name,
+                AttributeFactory<N> nodeAttrFactory,
+                AttributeFactory<E> edgeAttrFactory) throws IOException;
+
+    void export(Writer writer, String name) throws IOException;
 }

@@ -17,14 +17,9 @@
 
 package fr.jamgotchian.abcd.core.region;
 
-import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeImpl;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -87,19 +82,8 @@ public class SwitchCaseRegion extends AbstractRegion {
         return regions;
     }
 
-    public Collection<Edge> getChildEdges() {
-        Set<Edge> edges = new HashSet<Edge>();
-        for (CaseRegion _case : caseRegions) {
-            edges.add(_case.getIncomingEdge());
-            if (_case.getOutgoingEdge() != null) {
-                edges.add(_case.getOutgoingEdge());
-            }
-        }
-        return edges;
-    }
-
-    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
-        graph.addVertex(this);
+    public void reduce(RegionGraph graph) {
+        graph.addRegion(this);
         Regions.moveHandlers(graph, switchRegion, this);
         Region switchExitRegion = null;
         for (CaseRegion _case : caseRegions) {
@@ -108,11 +92,11 @@ public class SwitchCaseRegion extends AbstractRegion {
                     && _case.getRegion() != null) {
                 switchExitRegion = graph.getEdgeTarget(_case.getOutgoingEdge());
                 graph.removeEdge(_case.getOutgoingEdge());
-                graph.removeVertex(_case.getRegion());
+                graph.removeRegion(_case.getRegion());
             }
         }
         graph.addEdge(this, switchExitRegion, new EdgeImpl());
         Regions.moveIncomingEdges(graph, switchRegion, this);
-        graph.removeVertex(switchRegion);
+        graph.removeRegion(switchRegion);
     }
 }

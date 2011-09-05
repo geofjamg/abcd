@@ -103,14 +103,25 @@ public class Trees {
             return delegate.iterator();
         }
 
-        public void export(ExportType type, Writer writer, String name) throws IOException {
-            delegate.export(type, writer, name);
+        public String getClusterID() {
+            return delegate.getClusterID();
         }
 
-        public void export(ExportType type, Writer writer, String name,
+        public void export(Writer writer, String name) throws IOException {
+            delegate.export(writer, name);
+        }
+
+        public void export(Writer writer, String name,
                            AttributeFactory<N> nodeAttrFactory,
                            AttributeFactory<E> edgeAttrFactory) throws IOException {
-            delegate.export(type, writer, name, nodeAttrFactory, edgeAttrFactory);
+            delegate.export(writer, name, nodeAttrFactory, edgeAttrFactory);
+        }
+
+        public void export(Writer writer, String name,
+                           AttributeFactory<N> nodeAttrFactory,
+                           AttributeFactory<E> edgeAttrFactory,
+                           boolean isSubgraph) throws IOException {
+            delegate.export(writer, name, nodeAttrFactory, edgeAttrFactory, isSubgraph);
         }
     }
 

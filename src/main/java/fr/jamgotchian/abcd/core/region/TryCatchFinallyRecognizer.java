@@ -19,7 +19,6 @@ package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.ExceptionHandlerInfo;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,17 +29,17 @@ import java.util.List;
  */
 public class TryCatchFinallyRecognizer implements RegionRecognizer {
 
-    public TryCatchFinallyRegion recognizeTryCatch(DirectedGraph<Region, Edge> graph, Region regionA,
+    public TryCatchFinallyRegion recognizeTryCatch(RegionGraph graph, Region regionA,
                                                    Collection<Region> handlersOfA, Region regionB) {
         List<CatchRegion> catchRegions = new ArrayList<CatchRegion>();
 
         for (Region regionC : handlersOfA) {
-            Collection<Region> successorsOfC = Regions.getSuccessorsOf(graph, regionC, false);
+            Collection<Region> successorsOfC = graph.getSuccessorsOf(regionC, false);
             if (successorsOfC.size() != 1
                     || !successorsOfC.iterator().next().equals(regionB)) {
                 continue;
             }
-            if (Regions.getPredecessorCountOf(graph, regionC, true) != 1) {
+            if (graph.getPredecessorCountOf(regionC, true) != 1) {
                 continue;
             }
             Edge edgeAC = graph.getEdge(regionA, regionC);
@@ -60,19 +59,19 @@ public class TryCatchFinallyRecognizer implements RegionRecognizer {
         return new TryCatchFinallyRegion(regionA, edgeAB, null, null, catchRegions, null);
     }
 
-    public TryCatchFinallyRegion recognizeTryCatchFinally(DirectedGraph<Region, Edge> graph,
+    public TryCatchFinallyRegion recognizeTryCatchFinally(RegionGraph graph,
                                                    Region regionA, Collection<Region> handlersOfA,
                                                    Region regionB, Region regionD) {
         List<CatchRegion> catchRegions = new ArrayList<CatchRegion>();
         CatchRegion finallyRegion = null;
 
         for (Region regionC : handlersOfA) {
-            Collection<Region> successorsOfC = Regions.getSuccessorsOf(graph, regionC, false);
+            Collection<Region> successorsOfC = graph.getSuccessorsOf(regionC, false);
             if (successorsOfC.size() != 1
                     || !successorsOfC.iterator().next().equals(regionD)) {
                 continue;
             }
-            if (Regions.getPredecessorCountOf(graph, regionC, true) != 1) {
+            if (graph.getPredecessorCountOf(regionC, true) != 1) {
                 continue;
             }
             Edge edgeAC = graph.getEdge(regionA, regionC);
@@ -112,12 +111,12 @@ public class TryCatchFinallyRecognizer implements RegionRecognizer {
                                   finallyRegion);
     }
 
-    public Region recognize(DirectedGraph<Region, Edge> graph, Region regionA) {
-        Collection<Region> successorsOfA = Regions.getSuccessorsOf(graph, regionA, false);
+    public Region recognize(RegionGraph graph, Region regionA) {
+        Collection<Region> successorsOfA = graph.getSuccessorsOf(regionA, false);
         if (successorsOfA.size() != 1) {
             return null;
         }
-        Collection<Region> handlersOfA = Regions.getSuccessorsOf(graph, regionA, true);
+        Collection<Region> handlersOfA = graph.getSuccessorsOf(regionA, true);
         if (handlersOfA.isEmpty()) {
             return null;
         }
@@ -146,11 +145,11 @@ public class TryCatchFinallyRecognizer implements RegionRecognizer {
         //     |  /  /
         //     D
         //
-        if (Regions.getSuccessorCountOf(graph, regionB, false) != 1
-                || Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
+        if (graph.getSuccessorCountOf(regionB, false) != 1
+                || graph.getPredecessorCountOf(regionB, false) != 1) {
             return null;
         }
-        Region regionD = Regions.getFirstSuccessorOf(graph, regionB, false);
+        Region regionD = graph.getFirstSuccessorOf(regionB, false);
 
         return recognizeTryCatchFinally(graph, regionA, handlersOfA, regionB, regionD);
     }

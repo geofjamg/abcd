@@ -18,7 +18,6 @@ package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,16 +27,16 @@ import java.util.List;
  */
 class BlockRecognizer implements RegionRecognizer {
 
-    public BlockRecognizer() {
+    BlockRecognizer() {
     }
 
-    private BlockRegion checkForward(DirectedGraph<Region, Edge> graph, Region regionA) {
-        if (Regions.getSuccessorCountOf(graph, regionA, false) != 1) {
+    private BlockRegion checkForward(RegionGraph graph, Region regionA) {
+        if (graph.getSuccessorCountOf(regionA, false) != 1) {
             return null;
         }
         List<Region> internalRegions = new ArrayList<Region>();
         Region r = null;
-        for (r = regionA; isBlockForward(graph, r); r = Regions.getFirstSuccessorOf(graph, r, false)) {
+        for (r = regionA; isBlockForward(graph, r); r = graph.getFirstSuccessorOf(r, false)) {
             internalRegions.add(r);
         }
         internalRegions.add(r);
@@ -51,13 +50,13 @@ class BlockRecognizer implements RegionRecognizer {
         return null;
     }
 
-    private BlockRegion checkBackward(DirectedGraph<Region, Edge> graph, Region regionA) {
-        if (Regions.getPredecessorCountOf(graph, regionA, false) != 1) {
+    private BlockRegion checkBackward(RegionGraph graph, Region regionA) {
+        if (graph.getPredecessorCountOf(regionA, false) != 1) {
             return null;
         }
         List<Region> internalRegions = new ArrayList<Region>();
         Region r = null;
-        for (r = regionA; isBlockBackward(graph, r); r = Regions.getFirstPredecessorOf(graph, r, false)) {
+        for (r = regionA; isBlockBackward(graph, r); r = graph.getFirstPredecessorOf(r, false)) {
             internalRegions.add(0, r);
         }
         internalRegions.add(0, r);
@@ -71,34 +70,34 @@ class BlockRecognizer implements RegionRecognizer {
         return null;
     }
 
-    private boolean isBlockForward(DirectedGraph<Region, Edge> graph, Region regionA) {
-        if (Regions.getSuccessorCountOf(graph, regionA, false) != 1) {
+    private boolean isBlockForward(RegionGraph graph, Region regionA) {
+        if (graph.getSuccessorCountOf(regionA, false) != 1) {
             return false;
         }
-        Edge edgeAB = Regions.getFirstOutgoingEdgeOf(graph, regionA, false);
+        Edge edgeAB = graph.getFirstOutgoingEdgeOf(regionA, false);
         if (edgeAB.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
             return false;
         }
         Region regionB = graph.getEdgeTarget(edgeAB);
-        if (Regions.getPredecessorCountOf(graph, regionB, false) != 1) {
+        if (graph.getPredecessorCountOf(regionB, false) != 1) {
             return false;
         }
         return Regions.sameHandlers(graph, regionA, regionB);
     }
 
-    private boolean isBlockBackward(DirectedGraph<Region, Edge> graph, Region regionA) {
-        if (Regions.getPredecessorCountOf(graph, regionA, false) != 1) {
+    private boolean isBlockBackward(RegionGraph graph, Region regionA) {
+        if (graph.getPredecessorCountOf(regionA, false) != 1) {
             return false;
         }
-        Edge edgeBA = Regions.getFirstIncomingEdgeOf(graph, regionA, false);
+        Edge edgeBA = graph.getFirstIncomingEdgeOf(regionA, false);
         Region regionB = graph.getEdgeSource(edgeBA);
-        if (Regions.getSuccessorCountOf(graph, regionB, false) != 1) {
+        if (graph.getSuccessorCountOf(regionB, false) != 1) {
             return false;
         }
         return Regions.sameHandlers(graph, regionA, regionB);
     }
 
-    public Region recognize(DirectedGraph<Region, Edge> graph, Region regionA) {
+    public Region recognize(RegionGraph graph, Region regionA) {
         //
         // check for block region forward
         //
@@ -119,9 +118,9 @@ class BlockRecognizer implements RegionRecognizer {
         //   |
         //   A
         //
-//        if (structuredRegion == null) {
-//            structuredRegion = checkBackward(graph, regionA);
-//        }
+        if (structuredRegion == null) {
+            structuredRegion = checkBackward(graph, regionA);
+        }
 
         return structuredRegion;
     }

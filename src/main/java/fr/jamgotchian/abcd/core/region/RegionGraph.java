@@ -19,23 +19,35 @@ package fr.jamgotchian.abcd.core.region;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
+import fr.jamgotchian.abcd.core.controlflow.EdgeAttributeFactory;
 import fr.jamgotchian.abcd.core.graph.AttributeFactory;
-import fr.jamgotchian.abcd.core.graph.Exportable;
+import fr.jamgotchian.abcd.core.graph.DefaultAttributeFactory;
+import fr.jamgotchian.abcd.core.graph.GraphvizDigraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
-import fr.jamgotchian.abcd.core.graph.ExportType;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
+import fr.jamgotchian.abcd.core.graph.Tree;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represent a single entry, single exit region.
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class RegionGraph implements Exportable<Region, Edge> {
+public class RegionGraph implements GraphvizDigraph<Region, Edge> {
+
+    private static final Logger logger = Logger.getLogger(RegionGraph.class.getName());
+
+    private final String name;
 
     private final MutableDirectedGraph<Region, Edge> graph;
 
@@ -43,12 +55,13 @@ public class RegionGraph implements Exportable<Region, Edge> {
 
     private Region exit;
 
-    public RegionGraph() {
+    public RegionGraph(String name) {
+        this.name = name;
         graph = DirectedGraphs.newDirectedGraph();
     }
 
     public RegionGraph(ControlFlowGraph cfg) {
-        this();
+        this(cfg.getName());
         Map<BasicBlock, Region> bb2r = new HashMap<BasicBlock, Region>();
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             Region r = new BasicBlockRegion(bb);
@@ -56,12 +69,78 @@ public class RegionGraph implements Exportable<Region, Edge> {
             graph.addVertex(r);
         }
         for (Edge edge : cfg.getEdges()) {
+            if (edge.hasAttribute(EdgeAttribute.FAKE_EDGE)) {
+                continue;
+            }
             BasicBlock source = cfg.getEdgeSource(edge);
             BasicBlock target = cfg.getEdgeTarget(edge);
-            graph.addEdge(bb2r.get(source), bb2r.get(target), edge);
+            Region sourceRegion = bb2r.get(source);
+            Region targetRegion = bb2r.get(target);
+            graph.addEdge(sourceRegion, targetRegion, edge);
         }
         entry = bb2r.get(cfg.getEntryBlock());
         exit = bb2r.get(cfg.getExitBlock());
+
+        updateAttributes();
+    }
+
+    private void updateAttributes() {
+        for (Region r : getRegions()) {
+            int loopExitEdgeCount = 0;
+            int returnEdgeCount = 0;
+            Collection<Edge> incomingEdges = getIncomingEdgesOf(r);
+            for (Edge e : incomingEdges) {
+                if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+                    loopExitEdgeCount++;
+                }
+                if (e.hasAttribute(EdgeAttribute.RETURN_EDGE)) {
+                    returnEdgeCount++;
+                }
+            }
+            if (loopExitEdgeCount == incomingEdges.size()) {
+                r.addAttribute(RegionAttribute.LOOP_EXIT_REGION);
+            } else if (loopExitEdgeCount > 0) {
+                logger.log(Level.WARNING, "Incorrect loop exit region {0}", r);
+            }
+            if (returnEdgeCount == incomingEdges.size()) {
+                r.addAttribute(RegionAttribute.RETURN_REGION);
+            } else if (returnEdgeCount > 0) {
+                logger.log(Level.WARNING, "Incorrect return region {0}", r);
+            }
+        }
+    }
+
+    public RegionGraph(RegionGraph other) {
+        name = other.name;
+        graph = other.graph.clone();
+        entry = other.entry;
+        exit = other.exit;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void reduceRegion(Region structuredRegion) {
+        logger.log(Level.FINER, "  Find {0} region : {1} => {2}",
+                new Object[] {structuredRegion.getTypeName(),
+                              structuredRegion.getChildRegions().toString(),
+                              structuredRegion});
+
+        structuredRegion.reduce(this);
+
+        if (entry.equals(structuredRegion.getEntryRegion())) {
+            logger.log(Level.FINEST, "    New entry region : {0}", structuredRegion);
+            entry = structuredRegion;
+        }
+        if (exit.equals(structuredRegion.getExitRegion())) {
+            logger.log(Level.FINEST, "    New exit region : {0}", structuredRegion);
+            exit = structuredRegion;
+        }
+    }
+
+    public MutableDirectedGraph<Region, Edge> getGraph() {
+        return graph;
     }
 
     public Region getEntry() {
@@ -88,7 +167,7 @@ public class RegionGraph implements Exportable<Region, Edge> {
         graph.addEdge(source, target, edge);
     }
 
-    public Collection<Region> getRegions() {
+    public Set<Region> getRegions() {
         return graph.getVertices();
     }
 
@@ -96,16 +175,125 @@ public class RegionGraph implements Exportable<Region, Edge> {
         return graph.getEdges();
     }
 
-    public Region getSource(Edge e) {
+    public Region getEdgeSource(Edge e) {
         return graph.getEdgeSource(e);
     }
 
-    public Region getTarget(Edge e) {
+    public Region getEdgeTarget(Edge e) {
         return graph.getEdgeTarget(e);
+    }
+
+    public void removeRegion(Region r) {
+        graph.removeVertex(r);
+    }
+
+    public void removeEdge(Edge e) {
+        graph.removeEdge(e);
     }
 
     public Edge getEdge(Region source, Region target) {
         return graph.getEdge(source, target);
+    }
+
+    private static boolean keepEdge(Edge edge, boolean exceptional) {
+        return !edge.hasAttribute(EdgeAttribute.FAKE_EDGE)
+                && edge.isExceptional() == exceptional;
+    }
+
+    public Collection<Edge> getOutgoingEdgesOf(Region region, boolean exceptional) {
+        List<Edge> outgoingEdges = new ArrayList<Edge>();
+        for (Edge edge : graph.getOutgoingEdgesOf(region)) {
+            if (keepEdge(edge, exceptional)) {
+                outgoingEdges.add(edge);
+            }
+        }
+        return outgoingEdges;
+    }
+
+    public Collection<Edge> getIncomingEdgesOf(Region region, boolean exceptional) {
+        List<Edge> incomingEdges = new ArrayList<Edge>();
+        for (Edge edge : graph.getIncomingEdgesOf(region)) {
+            if (keepEdge(edge, exceptional)) {
+                incomingEdges.add(edge);
+            }
+        }
+        return incomingEdges;
+    }
+
+    public Collection<Region> getSuccessorsOf(Region region, boolean exceptional) {
+        List<Region> successors = new ArrayList<Region>();
+        for (Edge edge : graph.getOutgoingEdgesOf(region)) {
+            if (keepEdge(edge, exceptional)) {
+                successors.add(graph.getEdgeTarget(edge));
+            }
+        }
+        return successors;
+    }
+
+    public Collection<Region> getPredecessorsOf(Region region, boolean exceptional) {
+        List<Region> predecessors = new ArrayList<Region>();
+        for (Edge edge : graph.getIncomingEdgesOf(region)) {
+            if (keepEdge(edge, exceptional)) {
+                predecessors.add(graph.getEdgeSource(edge));
+            }
+        }
+        return predecessors;
+    }
+
+    public Edge getFirstOutgoingEdgeOf(Region region, boolean exceptional) {
+        for (Edge edge : graph.getOutgoingEdgesOf(region)) {
+            if (keepEdge(edge, exceptional)) {
+                return edge;
+            }
+        }
+        return null;
+    }
+
+    public Edge getFirstIncomingEdgeOf(Region region, boolean exceptional) {
+        for (Edge edge : graph.getIncomingEdgesOf(region)) {
+            if (keepEdge(edge, exceptional)) {
+                return edge;
+            }
+        }
+        return null;
+    }
+
+    public Region getFirstSuccessorOf(Region region, boolean exceptional) {
+        for (Edge edge : graph.getOutgoingEdgesOf(region)) {
+            if (keepEdge(edge, exceptional)) {
+                return graph.getEdgeTarget(edge);
+            }
+        }
+        return null;
+    }
+
+    public Region getFirstPredecessorOf(Region region, boolean exceptional) {
+        for (Edge edge : graph.getIncomingEdgesOf(region)) {
+            if (keepEdge(edge, exceptional)) {
+                return graph.getEdgeSource(edge);
+            }
+        }
+        return null;
+    }
+
+    public int getSuccessorCountOf(Region region, boolean exceptional) {
+        int count = 0;
+        for (Edge edge : graph.getOutgoingEdgesOf(region)) {
+            if (keepEdge(edge, exceptional)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int getPredecessorCountOf(Region region, boolean exceptional) {
+        int count = 0;
+        for (Edge edge : graph.getIncomingEdgesOf(region)) {
+            if (keepEdge(edge, exceptional)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public Collection<Edge> getIncomingEdgesOf(Region r) {
@@ -124,14 +312,43 @@ public class RegionGraph implements Exportable<Region, Edge> {
         return graph.getSuccessorCountOf(r);
     }
 
-    public void export(ExportType type, Writer writer, String name,
+    public Tree<Region, Edge> getReversePostOrderDFST(Region root) {
+        return graph.getReversePostOrderDFST(root, false);
+    }
+
+    public String getClusterID() {
+        return graph.getClusterID();
+    }
+
+    public void export(Writer writer, String name,
                        AttributeFactory<Region> vertexAttrFactory,
-                       AttributeFactory<Edge> edgeAttrFactory) throws IOException {
-        graph.export(type, writer, name, vertexAttrFactory, edgeAttrFactory);
+                       AttributeFactory<Edge> edgeAttrFactory,
+                       boolean isSubgraph) throws IOException {
+        graph.export(writer, "\"" + name + "\"", new RegionAttributeFactory(),
+                                                 new EdgeAttributeFactory(),
+                                                 isSubgraph);
+    }
+
+    public void export(Writer writer) throws IOException {
+        graph.export(writer, "\"" + name + "\"", new RegionAttributeFactory(),
+                                                 new EdgeAttributeFactory());
+    }
+
+    public String toString(Collection<Edge> edges) {
+        return graph.toString(edges);
+    }
+
+    public String toString(Edge edge) {
+        return graph.toString(edge);
+    }
+
+    @Override
+    public RegionGraph clone() {
+        return new RegionGraph(this);
     }
 
     @Override
     public String toString() {
-        return graph.toString(graph.getEdges());
+        return "(" + entry + ", " + exit + ")";
     }
 }

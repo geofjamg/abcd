@@ -14,35 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package fr.jamgotchian.abcd.core.region;
 
-import fr.jamgotchian.abcd.core.controlflow.Edge;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlockRangeAttributeFactory;
+import fr.jamgotchian.abcd.core.graph.AttributeFactory;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class IfThenBreakElseBreakRegion extends IfThenElseRegion {
+public class RegionAttributeFactory implements AttributeFactory<Region> {
 
-    IfThenBreakElseBreakRegion(Edge thenEdge, Edge elseEdge, Region ifRegion,
-                               Region thenRegion, Region elseRegion) {
-        super(thenEdge, elseEdge, ifRegion, thenRegion, elseRegion);
-    }
-
-    public RegionType getType() {
-        return RegionType.IF_THEN_BREAK_ELSE_BREAK;
-    }
-
-    public void reduce(RegionGraph graph) {
-        graph.addRegion(this);
-        Regions.moveHandlers(graph, ifRegion, this);
-        Regions.moveIncomingEdges(graph, ifRegion, this);
-        graph.removeEdge(thenEdge);
-        graph.removeEdge(elseEdge);
-        graph.removeRegion(ifRegion);
-        graph.removeRegion(thenRegion);
-        graph.removeRegion(elseRegion);
-        setBreak(true);
+    public Map<String, String> getAttributes(Region region) {
+        if (region instanceof BasicBlockRegion) {
+            BasicBlock bb = ((BasicBlockRegion) region).getBasicBlock();
+            return new BasicBlockRangeAttributeFactory().getAttributes(bb);
+        } else {
+            Map<String, String> attrs = new HashMap<String, String>(3);
+            attrs.put("label", "< " + region.getName() + "<br/>" + region.getTypeName() + " >");
+            return attrs;
+        }
     }
 }

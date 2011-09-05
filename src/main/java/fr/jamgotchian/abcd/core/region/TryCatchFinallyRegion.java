@@ -18,7 +18,6 @@
 package fr.jamgotchian.abcd.core.region;
 
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -115,25 +114,8 @@ public class TryCatchFinallyRegion extends AbstractRegion {
         return regions;
     }
 
-    public Collection<Edge> getChildEdges() {
-        List<Edge> edges = new ArrayList<Edge>();
-        edges.add(tryEdge1);
-        if (tryEdge2 != null) {
-            edges.add(tryEdge2);
-        }
-        for (CatchRegion catchRegion : catchRegions) {
-            edges.add(catchRegion.getIncomingEdge());
-            edges.add(catchRegion.getOutgoingEdge());
-        }
-        if (finallyRegion != null) {
-            edges.add(finallyRegion.getIncomingEdge());
-            edges.add(finallyRegion.getOutgoingEdge());
-        }
-        return edges;
-    }
-
-    public void reduce(MutableDirectedGraph<Region, Edge> graph) {
-        graph.addVertex(this);
+    public void reduce(RegionGraph graph) {
+        graph.addRegion(this);
         Regions.moveHandlers(graph, tryRegion1, this);
         Regions.moveIncomingEdges(graph, tryRegion1, this);
         Edge exitEdge = tryEdge2 != null ? tryEdge2 : tryEdge1;
@@ -151,16 +133,16 @@ public class TryCatchFinallyRegion extends AbstractRegion {
         for (CatchRegion catchRegion : catchRegions) {
             graph.removeEdge(catchRegion.getIncomingEdge());
             graph.removeEdge(catchRegion.getOutgoingEdge());
-            graph.removeVertex(catchRegion.getRegion());
+            graph.removeRegion(catchRegion.getRegion());
         }
         if (finallyRegion != null) {
             graph.removeEdge(finallyRegion.getIncomingEdge());
             graph.removeEdge(finallyRegion.getOutgoingEdge());
-            graph.removeVertex(finallyRegion.getRegion());
+            graph.removeRegion(finallyRegion.getRegion());
         }
-        graph.removeVertex(tryRegion1);
+        graph.removeRegion(tryRegion1);
         if (tryRegion2 != null) {
-            graph.removeVertex(tryRegion2);
+            graph.removeRegion(tryRegion2);
         }
     }
 }

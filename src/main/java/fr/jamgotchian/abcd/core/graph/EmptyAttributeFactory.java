@@ -14,16 +14,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.jamgotchian.abcd.core.graph;
 
-package fr.jamgotchian.abcd.core.region;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public enum LogicalType {
-    AND,
-    OR,
-    AND_INVERT_B,
-    OR_INVERT_B
+public class EmptyAttributeFactory<O> implements AttributeFactory<O> {
+
+    public Map<String, String> getAttributes(O object) {
+        return Collections.emptyMap();
+    }
 }
