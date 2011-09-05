@@ -23,7 +23,6 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -400,38 +399,5 @@ public class DirectedGraphs {
             }
         }
         return builder.toString();
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <V, E> String getVertexName(GraphvizDigraph<V, E> exportable, V vertex) {
-        if (vertex instanceof GraphvizDigraph) {
-            return getClusterID((GraphvizDigraph<V, E>) vertex);
-        } else {
-            return getSimpleVertexName(exportable, vertex);
-        }
-    }
-
-    public static <V, E> String getClusterID(GraphvizDigraph<V, E> subgraph) {
-        return "cluster_" + subgraph.getClusterID();
-    }
-
-    public static <V, E> String getSimpleVertexName(GraphvizDigraph<V, E> exportable, V vertex) {
-        return Integer.toString(System.identityHashCode(exportable))
-                + Integer.toString(System.identityHashCode(vertex));
-    }
-
-    public static <V, E> void writeAttributes(Writer writer, Map<String, String> attributes) throws IOException {
-        writer.append(" [");
-        for (Iterator<Map.Entry<String, String>> it = attributes.entrySet().iterator();
-             it.hasNext();) {
-            Map.Entry<String, String> entry = it.next();
-            String propName = entry.getKey();
-            String propValue = entry.getValue();
-            writer.append(propName).append("=").append(propValue);
-            if (it.hasNext()) {
-                writer.append(", ");
-            }
-        }
-        writer.append("]");
     }
 }

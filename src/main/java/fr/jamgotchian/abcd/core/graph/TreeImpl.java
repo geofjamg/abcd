@@ -286,7 +286,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
                        AttributeFactory<E> edgeAttrFactory,
                        boolean isSubgraph) throws IOException {
         if (isSubgraph) {
-            String clusterName = DirectedGraphs.getClusterID(this);
+            String clusterName = GraphvizUtil.getClusterID(this);
             writer.append("subgraph ").append(clusterName).append(" {\n");
             writer.append("label=\"").append(name).append("\";\n");
         } else {
@@ -300,9 +300,9 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
                                   edgeAttrFactory, true);
             } else {
                 writer.append("  ")
-                        .append(DirectedGraphs.getSimpleVertexName(this, node))
+                        .append(GraphvizUtil.getSimpleVertexName(this, node))
                         .append(" ");
-                DirectedGraphs.writeAttributes(writer, nodeAttrFactory.getAttributes(node));
+                GraphvizUtil.writeAttributes(writer, nodeAttrFactory.getAttributes(node));
                 writer.append("\n");
             }
         }
@@ -310,10 +310,10 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             N source = getEdgeSource(edge);
             N target = getEdgeTarget(edge);
             writer.append("  ")
-                    .append(DirectedGraphs.getVertexName(this, source))
+                    .append(GraphvizUtil.getVertexName(this, source))
                     .append(" -> ")
-                    .append(DirectedGraphs.getVertexName(this, target));
-            DirectedGraphs.writeAttributes(writer, edgeAttrFactory.getAttributes(edge));
+                    .append(GraphvizUtil.getVertexName(this, target));
+            GraphvizUtil.writeAttributes(writer, edgeAttrFactory.getAttributes(edge));
             writer.append("\n");
         }
         writer.append("}\n");
