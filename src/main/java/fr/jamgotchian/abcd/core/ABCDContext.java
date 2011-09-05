@@ -20,7 +20,6 @@ package fr.jamgotchian.abcd.core;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.LocalVariableTable;
 import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
 import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
@@ -43,12 +42,11 @@ import fr.jamgotchian.abcd.core.analysis.LocalVariableTypeAnalyser;
 import fr.jamgotchian.abcd.core.analysis.LogicalOperatorBuilder;
 import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
 import fr.jamgotchian.abcd.core.analysis.TernaryOperatorBuilder;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.output.OutputUtil;
+import fr.jamgotchian.abcd.core.controlflow.OutputUtil;
 import fr.jamgotchian.abcd.core.region.Region;
+import fr.jamgotchian.abcd.core.region.RegionGraph;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
@@ -96,8 +94,8 @@ public class ABCDContext {
     }
 
     public static void analyse(File classFile, OutputStream os,
-                               File outputDir, boolean drawRegions) throws IOException {
-        new ABCDContext().decompileFile(classFile, new DebugOutputHandler(DEBUG, os, outputDir, drawRegions));
+                               File outputDir) throws IOException {
+        new ABCDContext().decompileFile(classFile, new DebugOutputHandler(DEBUG, os, outputDir));
     }
 
     private final Map<String, String> innerClasses = new HashMap<String, String>();
@@ -312,13 +310,15 @@ public class ABCDContext {
 
                 handler.treeAddressCodeBuilt(graph);
 
+//                new StructuralAnalysis2(graph).analysis();
+
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Analyse structure of " + methodSignature, '='));
-                DirectedGraph<Region, Edge> regionGraph = new StructuralAnalysis(graph).analyse();
+                RegionGraph regionGraph = new StructuralAnalysis(graph).analyse();
 
-                handler.regionGraphBuilt(DirectedGraphs.unmodifiableDirectedGraph(regionGraph));
+                handler.regionGraphBuilt(regionGraph);
 
-                Set<Region> rootRegions = regionGraph.getVertices();
+                Set<Region> rootRegions = regionGraph.getRegions();
                 if (rootRegions.size() > 1) {
                     throw new ABCDException("Fail to recognize structure");
                 }
@@ -330,9 +330,9 @@ public class ABCDContext {
                                               rootRegion, method.getBody()).build();
 
                 // refactor AST
-                for (Refactorer refactorer : REFACTORERS) {
-                    refactorer.refactor(method.getBody());
-                }
+//                for (Refactorer refactorer : REFACTORERS) {
+//                    refactorer.refactor(method.getBody());
+//                }
 
             } catch (Exception exc) {
                 logger.log(Level.SEVERE, exc.toString(), exc);
@@ -446,7 +446,7 @@ public class ABCDContext {
                     printUsage();
                 }
                 File outputDir = new File(args[5]);
-                ABCDContext.analyse(classFile, os, outputDir, false);
+                ABCDContext.analyse(classFile, os, outputDir);
             } else {
                 ABCDContext.decompile(classFile, os);
             }
