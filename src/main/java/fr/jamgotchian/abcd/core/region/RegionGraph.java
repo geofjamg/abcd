@@ -22,7 +22,6 @@ import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
 import fr.jamgotchian.abcd.core.controlflow.EdgeAttributeFactory;
 import fr.jamgotchian.abcd.core.graph.AttributeFactory;
-import fr.jamgotchian.abcd.core.graph.DefaultAttributeFactory;
 import fr.jamgotchian.abcd.core.graph.GraphvizDigraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
@@ -60,6 +59,12 @@ public class RegionGraph implements GraphvizDigraph<Region, Edge> {
         graph = DirectedGraphs.newDirectedGraph();
     }
 
+    public RegionGraph(String name, Region entry, Region exit) {
+        this(name);
+        this.entry = entry;
+        this.exit = exit;
+    }
+
     public RegionGraph(ControlFlowGraph cfg) {
         this(cfg.getName());
         Map<BasicBlock, Region> bb2r = new HashMap<BasicBlock, Region>();
@@ -84,28 +89,36 @@ public class RegionGraph implements GraphvizDigraph<Region, Edge> {
         updateAttributes();
     }
 
-    private void updateAttributes() {
-        for (Region r : getRegions()) {
+    public void updateAttributes() {
+        for (Region region : getRegions()) {
+            region.removeAttribute(RegionAttribute.RETURN_REGION);
+            region.removeAttribute(RegionAttribute.LOOP_EXIT_REGION);
             int loopExitEdgeCount = 0;
             int returnEdgeCount = 0;
-            Collection<Edge> incomingEdges = getIncomingEdgesOf(r);
-            for (Edge e : incomingEdges) {
-                if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+            Collection<Edge> incomingEdges = getIncomingEdgesOf(region);
+            for (Edge edge : incomingEdges) {
+                if (edge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                     loopExitEdgeCount++;
+                } else {
+                    Region region2 = getEdgeSource(edge);
+                    if (getSuccessorCountOf(region2) == 1
+                            && getPredecessorCountOf(region2) == 1) {
+                        Edge edge2 = getFirstIncomingEdgeOf(region2);
+                        if (edge2.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+                            loopExitEdgeCount++;
+                        }
+                    }
                 }
-                if (e.hasAttribute(EdgeAttribute.RETURN_EDGE)) {
+                if (edge.hasAttribute(EdgeAttribute.RETURN_EDGE)) {
                     returnEdgeCount++;
                 }
             }
-            if (loopExitEdgeCount == incomingEdges.size()) {
-                r.addAttribute(RegionAttribute.LOOP_EXIT_REGION);
-            } else if (loopExitEdgeCount > 0) {
-                logger.log(Level.WARNING, "Incorrect loop exit region {0}", r);
+            if (loopExitEdgeCount > 0 && loopExitEdgeCount == incomingEdges.size()) {
+                region.addAttribute(RegionAttribute.LOOP_EXIT_REGION);
+                logger.log(Level.FINE, "Found loop exit region {0}", region);
             }
             if (returnEdgeCount == incomingEdges.size()) {
-                r.addAttribute(RegionAttribute.RETURN_REGION);
-            } else if (returnEdgeCount > 0) {
-                logger.log(Level.WARNING, "Incorrect return region {0}", r);
+                region.addAttribute(RegionAttribute.RETURN_REGION);
             }
         }
     }
@@ -122,7 +135,7 @@ public class RegionGraph implements GraphvizDigraph<Region, Edge> {
     }
 
     public void reduceRegion(Region structuredRegion) {
-        logger.log(Level.FINER, "  Find {0} region : {1} => {2}",
+        logger.log(Level.FINER, "Find {0} region : {1} => {2}",
                 new Object[] {structuredRegion.getTypeName(),
                               structuredRegion.getChildRegions().toString(),
                               structuredRegion});
@@ -130,11 +143,11 @@ public class RegionGraph implements GraphvizDigraph<Region, Edge> {
         structuredRegion.reduce(this);
 
         if (entry.equals(structuredRegion.getEntryRegion())) {
-            logger.log(Level.FINEST, "    New entry region : {0}", structuredRegion);
+            logger.log(Level.FINEST, "New entry region : {0}", structuredRegion);
             entry = structuredRegion;
         }
         if (exit.equals(structuredRegion.getExitRegion())) {
-            logger.log(Level.FINEST, "    New exit region : {0}", structuredRegion);
+            logger.log(Level.FINEST, "New exit region : {0}", structuredRegion);
             exit = structuredRegion;
         }
     }
@@ -181,6 +194,10 @@ public class RegionGraph implements GraphvizDigraph<Region, Edge> {
 
     public Region getEdgeTarget(Edge e) {
         return graph.getEdgeTarget(e);
+    }
+
+    public boolean containsRegion(Region r) {
+        return graph.containsVertex(r);
     }
 
     public void removeRegion(Region r) {
@@ -304,6 +321,22 @@ public class RegionGraph implements GraphvizDigraph<Region, Edge> {
         return graph.getOutgoingEdgesOf(r);
     }
 
+    public Edge getFirstIncomingEdgeOf(Region r) {
+        return graph.getFirstIncomingEdgeOf(r);
+    }
+
+    public Edge getFirstOutgoingEdgesOf(Region r) {
+        return graph.getFirstOutgoingEdgeOf(r);
+    }
+
+    public Region getFirstPredecessorOf(Region r) {
+        return graph.getFirstPredecessorOf(r);
+    }
+
+    public Region getFirstSuccessorOf(Region r) {
+        return graph.getFirstSuccessorOf(r);
+    }
+
     public int getPredecessorCountOf(Region r) {
         return graph.getPredecessorCountOf(r);
     }
@@ -324,14 +357,16 @@ public class RegionGraph implements GraphvizDigraph<Region, Edge> {
                        AttributeFactory<Region> vertexAttrFactory,
                        AttributeFactory<Edge> edgeAttrFactory,
                        boolean isSubgraph) throws IOException {
-        graph.export(writer, "\"" + name + "\"", new RegionAttributeFactory(),
-                                                 new EdgeAttributeFactory(),
-                                                 isSubgraph);
+        boolean useConstraints = graph.getEdgeCount() > 1;
+        graph.export(writer, name, new RegionAttributeFactory(),
+                                   new EdgeAttributeFactory(useConstraints),
+                                   isSubgraph);
     }
 
     public void export(Writer writer) throws IOException {
-        graph.export(writer, "\"" + name + "\"", new RegionAttributeFactory(),
-                                                 new EdgeAttributeFactory());
+        boolean useConstraints = graph.getEdgeCount() > 1;
+        graph.export(writer, name, new RegionAttributeFactory(),
+                                   new EdgeAttributeFactory(useConstraints));
     }
 
     public String toString(Collection<Edge> edges) {

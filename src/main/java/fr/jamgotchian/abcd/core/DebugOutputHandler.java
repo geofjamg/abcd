@@ -20,6 +20,7 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockRangeAttributeFactory;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.EdgeAttributeFactory;
+import fr.jamgotchian.abcd.core.controlflow.RPST;
 import fr.jamgotchian.abcd.core.region.RegionGraph;
 import java.io.File;
 import java.io.FileWriter;
@@ -92,20 +93,10 @@ public class DebugOutputHandler extends DefaultOutputHandler {
                 graph.getDominatorInfo().getDominatorsTree()
                         .export(writer, "DT",
                                 new BasicBlockRangeAttributeFactory(),
-                                new EdgeAttributeFactory());
+                                new EdgeAttributeFactory(false));
             } finally {
                 writer.close();
             }
-
-//            writer = new FileWriter(baseName + "_PDT.dot");
-//            try {
-//                graph.getPostDominatorInfo().getPostDominatorsTree()
-//                        .export(writer, "PDT",
-//                                new BasicBlockRangeAttributeFactory(),
-//                                new EdgeAttributeFactory());
-//            } finally {
-//                writer.close();
-//            }
         } catch (IOException e) {
             logger.log(Level.SEVERE, e.toString(), e);
         }
@@ -117,9 +108,36 @@ public class DebugOutputHandler extends DefaultOutputHandler {
         String baseName = outputDir.getPath() + "/" + graph.getName();
 
         try {
-            Writer writer = new FileWriter(baseName + "_TAC.dot");
+            Writer writer = new FileWriter(baseName + "_PDT.dot");
+            try {
+                graph.getPostDominatorInfo().getPostDominatorsTree()
+                        .export(writer, "PDT",
+                                new BasicBlockRangeAttributeFactory(),
+                                new EdgeAttributeFactory(false));
+            } finally {
+                writer.close();
+            }
+
+            writer = new FileWriter(baseName + "_TAC.dot");
             try {
                 graph.exportTAC(writer);
+            } finally {
+                writer.close();
+            }
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, e.toString(), e);
+        }
+    }
+
+    @Override
+    public void rpstBuilt(RPST rpst) {
+
+        String baseName = outputDir.getPath() + "/" + rpst.getCFG().getName();
+
+        try {
+            Writer writer = new FileWriter(baseName + "_RPST.dot");
+            try {
+                rpst.export(writer);
             } finally {
                 writer.close();
             }

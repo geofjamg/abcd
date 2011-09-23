@@ -49,4 +49,16 @@ public class Sets {
             return intersect;
         }
     }
+
+    public static <E> boolean isSubset(Set<E> set1, Set<E> set2) {
+        if (set1.isEmpty()) {
+            return true;
+        }
+        for (E e : set1) {
+            if (!set2.contains(e)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

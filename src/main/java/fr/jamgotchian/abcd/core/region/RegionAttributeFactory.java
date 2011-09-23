@@ -34,7 +34,8 @@ public class RegionAttributeFactory implements AttributeFactory<Region> {
             return new BasicBlockRangeAttributeFactory().getAttributes(bb);
         } else {
             Map<String, String> attrs = new HashMap<String, String>(3);
-            attrs.put("label", "< " + region.getName() + "<br/>" + region.getTypeName() + " >");
+            attrs.put("label", "< <font color=\"black\">" + region.getName()
+                    + "<br/>" + region.getTypeName() + "</font> >");
             return attrs;
         }
     }

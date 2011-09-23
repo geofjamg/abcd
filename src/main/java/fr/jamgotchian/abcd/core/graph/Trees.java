@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.graph;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -101,6 +102,10 @@ public class Trees {
 
         public Iterator<N> iterator() {
             return delegate.iterator();
+        }
+
+        public List<N> getNodesPostOrder() {
+            return delegate.getNodesPostOrder();
         }
 
         public String getClusterID() {

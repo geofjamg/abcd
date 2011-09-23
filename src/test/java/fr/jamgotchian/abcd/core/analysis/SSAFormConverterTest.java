@@ -23,9 +23,9 @@ import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphImpl;
 import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.region.StructuralAnalysisTest;
 import fr.jamgotchian.abcd.core.controlflow.IntConst;
 import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
+import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
 import fr.jamgotchian.abcd.core.controlflow.Variable;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import fr.jamgotchian.abcd.core.util.SimplestFormatter;
@@ -68,7 +68,7 @@ public class SSAFormConverterTest {
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        Logger rootLogger = Logger.getLogger(StructuralAnalysisTest.class.getPackage().getName());
+        Logger rootLogger = Logger.getLogger(ABCDContext.class.getPackage().getName());
         for (Handler handler : rootLogger.getHandlers()) {
             handler.close();
         }
@@ -87,8 +87,9 @@ public class SSAFormConverterTest {
     }
 
     private BasicBlock newBasicBlock(int id, int... vars) {
-        BasicBlock bb = new BasicBlockTestImpl("BB", id);
+        BasicBlock bb = new BasicBlockTestImpl("BB" + id);
         for (int var : vars) {
+            bb.setInstructions(new TACInstSeq());
             bb.getInstructions().add(instFactory.newAssignConst(new Variable(var, bb, -1),
                                                                 new IntConst(0)));
         }

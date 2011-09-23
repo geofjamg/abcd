@@ -86,12 +86,16 @@ abstract class AbstractRegion implements Region {
         this._break = _break;
     }
 
-    public Set<RegionAttribute> getAttributes() {
-        return attributes;
+    public boolean hasAttribute(RegionAttribute attr) {
+        return attributes.contains(attr);
     }
 
     public void addAttribute(RegionAttribute attr) {
         attributes.add(attr);
+    }
+
+    public void removeAttribute(RegionAttribute attr) {
+        attributes.remove(attr);
     }
 
     public RegionName getName() {

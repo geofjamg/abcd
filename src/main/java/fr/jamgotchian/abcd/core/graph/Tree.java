@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.graph;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -57,6 +58,8 @@ public interface Tree<N, E> extends Iterable<N>, GraphvizDigraph<N, E> {
     Tree<N, E> getSubTree(N node);
 
     Iterator<N> iterator(N node);
+
+    List<N> getNodesPostOrder();
 
     void export(Writer writer, String name,
                 AttributeFactory<N> nodeAttrFactory,

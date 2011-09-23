@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.common.LabelManager;
+import fr.jamgotchian.abcd.core.graph.AttributeFactory;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.util.Range;
@@ -133,6 +134,10 @@ public interface ControlFlowGraph {
     void setExceptionTable(ExceptionTable exceptionTable);
 
     void addFakeEdges();
+
+    void export(Writer writer,
+                AttributeFactory<BasicBlock> vertexAttrFactory,
+                AttributeFactory<Edge> edgeAttrFactory) throws IOException;
 
     void export(Writer writer) throws IOException;
 

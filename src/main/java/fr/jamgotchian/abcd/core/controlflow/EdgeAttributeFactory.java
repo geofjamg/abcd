@@ -26,6 +26,16 @@ import java.util.Map;
  */
 public class EdgeAttributeFactory implements AttributeFactory<Edge> {
 
+    private final boolean useConstraints;
+
+    public EdgeAttributeFactory(boolean useConstraints) {
+        this.useConstraints = useConstraints;
+    }
+
+    public EdgeAttributeFactory() {
+        this(true);
+    }
+
     public Map<String, String> getAttributes(Edge edge) {
         Map<String, String> attrs = new HashMap<String, String>(3);
         if (edge.hasAttribute(EdgeAttribute.FAKE_EDGE)) {
@@ -45,7 +55,9 @@ public class EdgeAttributeFactory implements AttributeFactory<Edge> {
         if (edge.getValue() != null) {
             attrs.put("label", "\"" + edge.getValue() + "\"");
         }
-        if (edge.getCategory() != EdgeCategory.ADVANCING) {
+        if (useConstraints &&
+                edge != null &&
+                edge.getCategory() != EdgeCategory.ADVANCING) {
             attrs.put("constraint", "false");
         }
         return attrs;

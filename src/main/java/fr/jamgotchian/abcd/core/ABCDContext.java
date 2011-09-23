@@ -45,6 +45,7 @@ import fr.jamgotchian.abcd.core.analysis.TernaryOperatorBuilder;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.controlflow.OutputUtil;
+import fr.jamgotchian.abcd.core.controlflow.RPST;
 import fr.jamgotchian.abcd.core.region.Region;
 import fr.jamgotchian.abcd.core.region.RegionGraph;
 import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
@@ -310,7 +311,11 @@ public class ABCDContext {
 
                 handler.treeAddressCodeBuilt(graph);
 
-//                new StructuralAnalysis2(graph).analysis();
+                // build refined program structure tree
+                RPST rpst = new RPST(graph);
+//                rpst.print(System.out);
+
+                handler.rpstBuilt(rpst);
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Analyse structure of " + methodSignature, '='));

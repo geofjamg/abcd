@@ -20,9 +20,11 @@ package fr.jamgotchian.abcd.core.graph;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -264,6 +266,19 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     public Iterator<N> iterator() {
         return iterator(root);
+    }
+
+    public List<N> getNodesPostOrder() {
+        List<N> nodesPostOrder = new ArrayList<N>(nodes.size());
+        visitNodePostOrder(root, nodesPostOrder);
+        return nodesPostOrder;
+    }
+
+    private void visitNodePostOrder(N node, List<N> nodesPostOrder) {
+        for (N child : getChildren(node)) {
+            visitNodePostOrder(child, nodesPostOrder);
+        }
+        nodesPostOrder.add(node);
     }
 
     public String getClusterID() {

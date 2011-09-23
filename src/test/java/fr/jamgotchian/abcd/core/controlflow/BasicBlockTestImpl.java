@@ -17,98 +17,33 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
-import fr.jamgotchian.abcd.core.graph.Vertex;
-import fr.jamgotchian.abcd.core.util.Range;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BasicBlockTestImpl extends Vertex implements BasicBlock {
+public class BasicBlockTestImpl extends BasicBlockImpl {
 
-    private int order;
+    private String name;
 
-    private int loopLevel;
-
-    private TACInstSeq instructions;
-
-    private VariableStack inputStack;
-
-    private VariableStack outputStack;
-
-    public BasicBlockTestImpl(int id) {
-        this(null, id);
+    public BasicBlockTestImpl(String name) {
+        this.name = name;
     }
 
-    public BasicBlockTestImpl(String prefix, int id) {
-        super(prefix, id);
-        order = -1;
-        loopLevel = 0;
-        instructions = new TACInstSeq();
+    @Override
+    public boolean equals(Object obj) {
+        if  (obj instanceof BasicBlockTestImpl) {
+            return name.equals(((BasicBlockTestImpl) obj).name);
+        }
+        return false;
     }
 
-    public Range getRange() {
-        return null;
+    @Override
+    public int hashCode() {
+        return name.hashCode();
     }
 
-    public ControlFlowGraph getGraph() {
-        return null;
-    }
-
-    public void setGraph(ControlFlowGraph graph) {
-    }
-
-    public BasicBlockType getType() {
-        return null;
-    }
-
-    public void setType(BasicBlockType type) {
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    public int getLoopLevel() {
-        return loopLevel;
-    }
-
-    public void setLoopLevel(int loopLevel) {
-        this.loopLevel = loopLevel;
-    }
-
-    public void visit(BasicBlockVisitor visitor) {
-    }
-
-    public TACInstSeq getInstructions() {
-        return instructions;
-    }
-
-    public void setInstructions(TACInstSeq instructions) {
-        this.instructions = instructions;
-    }
-
-    public VariableStack getInputStack() {
-        return inputStack;
-    }
-
-    public void setInputStack(VariableStack inputStack) {
-        this.inputStack = inputStack;
-    }
-
-    public VariableStack getOutputStack() {
-        return outputStack;
-    }
-
-    public void setOutputStack(VariableStack outputStack) {
-        this.outputStack = outputStack;
-    }
-
-    public void resetState() {
-        loopLevel = 0;
+    @Override
+    public String toString() {
+        return name;
     }
 }

@@ -60,6 +60,8 @@ class BasicBlockImpl implements BasicBlock {
 
     private ControlFlowGraph graph;
 
+    private Region parent;
+
     BasicBlockImpl(Range range, BasicBlockType type) {
         this.range = range;
         this.type = type;
@@ -141,6 +143,15 @@ class BasicBlockImpl implements BasicBlock {
 
     public void resetState() {
         loopLevel = 0;
+    }
+
+    public Region getParent() {
+        return parent;
+    }
+
+    public void setParent(Region parent) {
+        this.parent = parent;
+        parent.addBasicBlock(this);
     }
 
     public void visit(BasicBlockVisitor visitor) {

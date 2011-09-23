@@ -57,6 +57,11 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
 
     private final VariableMapping mapping;
 
+    public static boolean equal(TACInstSeq seq, TACInstSeq otherSeq,
+                                VariableMapping mapping) {
+        return seq.accept(new TACInstComparator(otherSeq, mapping), null);
+    }
+
     public TACInstComparator(TACInstSeq otherSeq, VariableMapping mapping) {
         this.otherSeq = otherSeq;
         this.mapping = mapping;

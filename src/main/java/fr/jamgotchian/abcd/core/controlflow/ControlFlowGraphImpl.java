@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.LabelManager;
+import fr.jamgotchian.abcd.core.graph.AttributeFactory;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
@@ -139,6 +140,11 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public BasicBlock getExitBlock() {
         return exitBlock;
+    }
+
+    public void updateDomInfo() {
+        dominatorInfo = DominatorInfo.create(graph, entryBlock, EDGE_FACTORY);
+        postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY);
     }
 
     public DominatorInfo<BasicBlock, Edge> getDominatorInfo() {
@@ -367,7 +373,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         analyseLoopLevel();
     }
 
-    private void performDepthFirstSearch() {
+    void performDepthFirstSearch() {
         // build depth first spanning Tree
         dfst = graph.getReversePostOrderDFST(entryBlock, false);
         int order = 0;
@@ -402,7 +408,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     private void removeUnnecessaryBlock() {
         Set<BasicBlock> blocksToRemove = new HashSet<BasicBlock>();
         for (BasicBlock block : graph.getVertices()) {
-            if (graph.getIncomingEdgesOf(block).size() > 0 &&
+            if (graph.getIncomingEdgesOf(block).size() == 1 &&
                 graph.getOutgoingEdgesOf(block).size() == 1) {
                 Range range = block.getRange();
                 boolean remove = true;
@@ -649,6 +655,12 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
 
         postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY);
+    }
+
+    public void export(Writer writer,
+                       AttributeFactory<BasicBlock> vertexAttrFactory,
+                       AttributeFactory<Edge> edgeAttrFactory) throws IOException {
+        graph.export(writer, "\"" + name + "\"", vertexAttrFactory, edgeAttrFactory);
     }
 
     public void export(Writer writer) throws IOException {

@@ -69,17 +69,17 @@ public class ControlFlowGraphImplTest {
 //    @Test
     public void testDragonBookReducibleCFG() {
         System.out.println("testDragonBookReducibleCFG");
-        BasicBlock b1 = new BasicBlockTestImpl(1);
-        BasicBlock b2 = new BasicBlockTestImpl(2);
-        BasicBlock b3 = new BasicBlockTestImpl(3);
-        BasicBlock b4 = new BasicBlockTestImpl(4);
-        BasicBlock b5 = new BasicBlockTestImpl(5);
-        BasicBlock b6 = new BasicBlockTestImpl(6);
-        BasicBlock b7 = new BasicBlockTestImpl(7);
-        BasicBlock b8 = new BasicBlockTestImpl(8);
-        BasicBlock b9 = new BasicBlockTestImpl(9);
-        BasicBlock b10 = new BasicBlockTestImpl(10);
-        ControlFlowGraph graph = new ControlFlowGraphImpl("", b1);
+        BasicBlock b1 = new BasicBlockTestImpl("1");
+        BasicBlock b2 = new BasicBlockTestImpl("2");
+        BasicBlock b3 = new BasicBlockTestImpl("3");
+        BasicBlock b4 = new BasicBlockTestImpl("4");
+        BasicBlock b5 = new BasicBlockTestImpl("5");
+        BasicBlock b6 = new BasicBlockTestImpl("6");
+        BasicBlock b7 = new BasicBlockTestImpl("7");
+        BasicBlock b8 = new BasicBlockTestImpl("8");
+        BasicBlock b9 = new BasicBlockTestImpl("9");
+        BasicBlock b10 = new BasicBlockTestImpl("10");
+        ControlFlowGraph graph = new ControlFlowGraphImpl("Test", b1);
         graph.addBasicBlock(b2);
         graph.addBasicBlock(b3);
         graph.addBasicBlock(b4);
@@ -133,10 +133,10 @@ public class ControlFlowGraphImplTest {
 //    @Test
     public void testDragonBookIrreducibleCFG() {
         System.out.println("testDragonBookIrreducibleCFG");
-        BasicBlock b1 = new BasicBlockTestImpl(1);
-        BasicBlock b2 = new BasicBlockTestImpl(2);
-        BasicBlock b3 = new BasicBlockTestImpl(3);
-        ControlFlowGraph graph = new ControlFlowGraphImpl("", b1);
+        BasicBlock b1 = new BasicBlockTestImpl("1");
+        BasicBlock b2 = new BasicBlockTestImpl("2");
+        BasicBlock b3 = new BasicBlockTestImpl("3");
+        ControlFlowGraph graph = new ControlFlowGraphImpl("Test", b1);
         graph.addBasicBlock(b2);
         graph.addBasicBlock(b3);
         graph.addEdge(b1, b2);
@@ -170,14 +170,14 @@ public class ControlFlowGraphImplTest {
 //    @Test
     public void testNestedLoopCFG() {
         System.out.println("testNestedLoopCFG");
-        BasicBlock b1 = new BasicBlockTestImpl(1);
-        BasicBlock b2 = new BasicBlockTestImpl(2);
-        BasicBlock b3 = new BasicBlockTestImpl(3);
-        BasicBlock b4 = new BasicBlockTestImpl(4);
-        BasicBlock b5 = new BasicBlockTestImpl(5);
-        BasicBlock b6 = new BasicBlockTestImpl(6);
-        BasicBlock b7 = new BasicBlockTestImpl(7);
-        ControlFlowGraph graph = new ControlFlowGraphImpl("", b1);
+        BasicBlock b1 = new BasicBlockTestImpl("1");
+        BasicBlock b2 = new BasicBlockTestImpl("2");
+        BasicBlock b3 = new BasicBlockTestImpl("3");
+        BasicBlock b4 = new BasicBlockTestImpl("4");
+        BasicBlock b5 = new BasicBlockTestImpl("5");
+        BasicBlock b6 = new BasicBlockTestImpl("6");
+        BasicBlock b7 = new BasicBlockTestImpl("7");
+        ControlFlowGraph graph = new ControlFlowGraphImpl("Test", b1);
         graph.addBasicBlock(b2);
         graph.addBasicBlock(b3);
         graph.addBasicBlock(b4);
@@ -221,21 +221,21 @@ public class ControlFlowGraphImplTest {
 //    @Test
     public void testObfuscatedCFG() {
         System.out.println("testObfuscatedCFG");
-        BasicBlock b1 = new BasicBlockTestImpl(1);
-        BasicBlock b2 = new BasicBlockTestImpl(2);
-        BasicBlock b3 = new BasicBlockTestImpl(3);
-        BasicBlock b4 = new BasicBlockTestImpl(4);
-        BasicBlock b5 = new BasicBlockTestImpl(5);
-        BasicBlock b6 = new BasicBlockTestImpl(6);
-        BasicBlock b7 = new BasicBlockTestImpl(7);
-        BasicBlock b8 = new BasicBlockTestImpl(8);
-        BasicBlock b9 = new BasicBlockTestImpl(9);
-        BasicBlock b10 = new BasicBlockTestImpl(10);
-        BasicBlock b11 = new BasicBlockTestImpl(11);
-        BasicBlock b12 = new BasicBlockTestImpl(12);
-        BasicBlock b13 = new BasicBlockTestImpl(13);
-        BasicBlock b14 = new BasicBlockTestImpl(14);
-        ControlFlowGraph graph = new ControlFlowGraphImpl("", b1);
+        BasicBlock b1 = new BasicBlockTestImpl("1");
+        BasicBlock b2 = new BasicBlockTestImpl("2");
+        BasicBlock b3 = new BasicBlockTestImpl("3");
+        BasicBlock b4 = new BasicBlockTestImpl("4");
+        BasicBlock b5 = new BasicBlockTestImpl("5");
+        BasicBlock b6 = new BasicBlockTestImpl("6");
+        BasicBlock b7 = new BasicBlockTestImpl("7");
+        BasicBlock b8 = new BasicBlockTestImpl("8");
+        BasicBlock b9 = new BasicBlockTestImpl("9");
+        BasicBlock b10 = new BasicBlockTestImpl("10");
+        BasicBlock b11 = new BasicBlockTestImpl("11");
+        BasicBlock b12 = new BasicBlockTestImpl("12");
+        BasicBlock b13 = new BasicBlockTestImpl("13");
+        BasicBlock b14 = new BasicBlockTestImpl("14");
+        ControlFlowGraph graph = new ControlFlowGraphImpl("Test", b1);
         graph.addBasicBlock(b2);
         graph.addBasicBlock(b3);
         graph.addBasicBlock(b4);

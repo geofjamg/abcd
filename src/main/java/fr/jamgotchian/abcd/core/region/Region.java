@@ -53,9 +53,11 @@ public interface Region {
 
     void setBreak(boolean _break);
 
-    Set<RegionAttribute> getAttributes();
+    boolean hasAttribute(RegionAttribute attr);
 
     void addAttribute(RegionAttribute attr);
+
+    void removeAttribute(RegionAttribute attr);
 
     void reduce(RegionGraph graph);
 }

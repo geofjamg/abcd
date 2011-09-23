@@ -70,6 +70,9 @@ public class RPSTBuilder {
     }
 
     private MutableTree<RegionGraph, Object> convertRPST(RPST<DirectedEdge, Vertex> rpst) {
+        if (rpst.getRoot() == null) {
+            return null;
+        }
         RegionGraph root2 = convertFragment(rpst.getRoot());
         MutableTree<RegionGraph, Object> rpst2 = Trees.newTree(root2);
         for (RPSTNode<DirectedEdge, Vertex> child : rpst.getChildren(rpst.getRoot())) {
