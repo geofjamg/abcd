@@ -33,16 +33,15 @@ public class Region {
 
     private final Set<Region> children = new HashSet<Region>();
 
-    private final Set<BasicBlock> basicBlocks = new HashSet<BasicBlock>();
+    private ParentType parentType;
 
-    public Region() {
-    }
+    private ChildType childType;
 
-    public Region(BasicBlock entry, BasicBlock exit) {
+    public Region(BasicBlock entry, BasicBlock exit, ParentType parentType) {
         this.entry = entry;
         this.exit = exit;
-        // entry basic block belong to region, but not the exit basic block
-        basicBlocks.add(entry);
+        this.parentType = parentType;
+        childType = ChildType.UNDEFINED;
     }
 
     public BasicBlock getEntry() {
@@ -74,6 +73,10 @@ public class Region {
         return children;
     }
 
+    public int getChildCount() {
+        return children.size();
+    }
+
     public void addChild(Region child) {
         children.add(child);
     }
@@ -82,20 +85,24 @@ public class Region {
         return children.size() > 0;
     }
 
-    public Set<BasicBlock> getBasicBlocks() {
-        return basicBlocks;
+    public ParentType getParentType() {
+        return parentType;
     }
 
-    public void addBasicBlock(BasicBlock bb) {
-        basicBlocks.add(bb);
+    public void setParentType(ParentType parentType) {
+        this.parentType = parentType;
+    }
+
+    public ChildType getChildType() {
+        return childType;
+    }
+
+    public void setChildType(ChildType childType) {
+        this.childType = childType;
     }
 
     @Override
     public String toString() {
-        if (entry == null && exit == null) {
-            return "TopLevelRegion";
-        } else {
-            return "(" + entry + "," + exit + ")";
-        }
+        return childType + " " + parentType + " (" + entry + ", " + exit + ")";
     }
 }

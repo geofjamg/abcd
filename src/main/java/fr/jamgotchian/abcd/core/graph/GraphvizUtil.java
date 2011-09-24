@@ -31,11 +31,11 @@ public class GraphvizUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static <V, E> String getVertexName(GraphvizDigraph<V, E> subgraph, V vertex) {
+    public static <V, E> String getVertexID(GraphvizDigraph<V, E> subgraph, V vertex) {
         if (vertex instanceof GraphvizDigraph) {
             return getClusterID((GraphvizDigraph<V, E>) vertex);
         } else {
-            return getSimpleVertexName(subgraph, vertex);
+            return getSimpleVertexID(subgraph, vertex);
         }
     }
 
@@ -43,7 +43,7 @@ public class GraphvizUtil {
         return "cluster_" + subgraph.getClusterID();
     }
 
-    public static <V, E> String getSimpleVertexName(GraphvizDigraph<V, E> subgraph, V vertex) {
+    public static <V, E> String getSimpleVertexID(GraphvizDigraph<V, E> subgraph, V vertex) {
         return Integer.toString(System.identityHashCode(subgraph))
                 + Integer.toString(System.identityHashCode(vertex));
     }

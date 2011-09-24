@@ -315,7 +315,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
                                   edgeAttrFactory, true);
             } else {
                 writer.append("  ")
-                        .append(GraphvizUtil.getSimpleVertexName(this, node))
+                        .append(GraphvizUtil.getSimpleVertexID(this, node))
                         .append(" ");
                 GraphvizUtil.writeAttributes(writer, nodeAttrFactory.getAttributes(node));
                 writer.append("\n");
@@ -325,9 +325,9 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             N source = getEdgeSource(edge);
             N target = getEdgeTarget(edge);
             writer.append("  ")
-                    .append(GraphvizUtil.getVertexName(this, source))
+                    .append(GraphvizUtil.getVertexID(this, source))
                     .append(" -> ")
-                    .append(GraphvizUtil.getVertexName(this, target));
+                    .append(GraphvizUtil.getVertexID(this, target));
             GraphvizUtil.writeAttributes(writer, edgeAttrFactory.getAttributes(edge));
             writer.append("\n");
         }

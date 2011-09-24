@@ -151,7 +151,6 @@ class BasicBlockImpl implements BasicBlock {
 
     public void setParent(Region parent) {
         this.parent = parent;
-        parent.addBasicBlock(this);
     }
 
     public void visit(BasicBlockVisitor visitor) {

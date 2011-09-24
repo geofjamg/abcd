@@ -43,10 +43,10 @@ public class RPST {
 
     private static final Logger logger = Logger.getLogger(RPST.class.getName());
 
-    private final BasicBlockRangeAttributeFactory vertexAttrFactory
+    private static final BasicBlockRangeAttributeFactory VERTEX_ATTRIBUTE_FACTORY
             = new BasicBlockRangeAttributeFactory();
 
-    private final EdgeAttributeFactory edgeAttrFactory
+    private static final EdgeAttributeFactory EDGE_ATTRIBUTE_FACTORY
             = new EdgeAttributeFactory(true);
 
     private final ControlFlowGraph cfg;
@@ -57,7 +57,7 @@ public class RPST {
 
     private final List<Region> regions = new ArrayList<Region>();
 
-    private final Region topLevelRegion = new Region();
+    private final Region topLevelRegion = new Region(null, null, ParentType.ROOT);
 
     public RPST(ControlFlowGraph cfg) {
         this.cfg = cfg;
@@ -147,7 +147,7 @@ public class RPST {
         Region lastRegion = null;
         while ((pd = getNextExit(pd)) != null) {
             if (isRegion(entry, pd)) {
-                Region region = new Region(entry, pd);
+                Region region = new Region(entry, pd, ParentType.UNDEFINED);
                 addRegion(region);
                 if (lastRegion != null) {
                     lastRegion.setParent(region);
@@ -169,7 +169,7 @@ public class RPST {
         }
     }
 
-    private Region findRegion2(BasicBlock bb) {
+    private Region findRegionWithEntryAndNoParent(BasicBlock bb) {
         for (Region region : regions) {
             if (region.getEntry().equals(bb) && region.getParent() == null) {
                 return region;
@@ -179,53 +179,73 @@ public class RPST {
     }
 
     private void build(BasicBlock bb, Region region) {
-        while (bb.equals(region.getExit())) {
-            region = region.getParent();
+        Region region2 = region;
+        while (bb.equals(region2.getExit())) {
+            region2 = region2.getParent();
         }
-        Region child = findRegion2(bb);
+        Region child = findRegionWithEntryAndNoParent(bb);
         if (child != null) {
             logger.log(Level.FINEST, "Parent of region {0} is {1}",
-                    new Object[] {child, region});
-            child.setParent(region);
-            region = bb.getParent();
+                    new Object[] {child, region2});
+            child.setParent(region2);
+            region2 = bb.getParent();
         } else {
             logger.log(Level.FINEST, "Parent of BB {0} is {1}",
-                    new Object[] {bb, region});
-            bb.setParent(region);
+                    new Object[] {bb, region2});
+            bb.setParent(region2);
         }
         for (BasicBlock c : domInfo.getDominatorsTree().getChildren(bb)) {
-            build(c, region);
+            build(c, region2);
         }
     }
 
     private void build() {
         detectRegions();
         build(domInfo.getDominatorsTree().getRoot(), topLevelRegion);
+        for (BasicBlock bb : cfg.getBasicBlocks()) {
+            Region oldParent = bb.getParent();
+            Region newParent = new Region(bb, null, ParentType.BASIC_BLOCK);
+            bb.setParent(newParent);
+            newParent.setParent(oldParent);
+        }
     }
 
-    public void print(PrintStream out) {
-        print(out, topLevelRegion, 0);
+    private void visitRegionPostOrder(Region region, List<Region> regionsPostOrder) {
+        for (Region child : region.getChildren()) {
+            visitRegionPostOrder(child, regionsPostOrder);
+        }
+        regionsPostOrder.add(region);
     }
 
-    private void printIndent(PrintStream out, int indentLevel) {
+    public List<Region> getRegionsPostOrder() {
+        List<Region> regionsPostOrder = new ArrayList<Region>(regions.size());
+        visitRegionPostOrder(topLevelRegion, regionsPostOrder);
+        return regionsPostOrder;
+    }
+
+    public void print(Appendable out) {
+        try {
+            print(out, topLevelRegion, 0);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, e.toString(), e);
+        }
+    }
+
+    private void printSpace(Appendable out, int indentLevel) throws IOException {
         for (int i = 0 ; i < indentLevel; i++) {
-            out.print("  ");
+            out.append("  ");
         }
     }
 
-    public void print(PrintStream out, Region region, int indentLevel) {
-        printIndent(out, indentLevel);
-        out.println(region);
-        for (BasicBlock bb : region.getBasicBlocks()) {
-            printIndent(out, indentLevel+1);
-            out.println(bb);
-        }
+    public void print(Appendable out, Region region, int indentLevel) throws IOException {
+        printSpace(out, indentLevel);
+        out.append(region.toString()).append("\n");
         for (Region child : region.getChildren()) {
             print(out, child, indentLevel+1);
         }
     }
 
-    private void writeIndent(Writer writer, int indentLevel) throws IOException {
+    private void writeSpace(Writer writer, int indentLevel) throws IOException {
         for (int i = 0 ; i < indentLevel; i++) {
             writer.append("  ");
         }
@@ -233,22 +253,23 @@ public class RPST {
 
     private void exportRegion(Writer writer, Region region, int indentLevel) throws IOException {
         String clusterName = "cluster_" + Integer.toString(System.identityHashCode(region));
-        writeIndent(writer, indentLevel);
+        writeSpace(writer, indentLevel);
         writer.append("subgraph ").append(clusterName).append(" {\n");
-        for (BasicBlock bb : region.getBasicBlocks()) {
-            writeIndent(writer, indentLevel);
+        if (region.getParentType() == ParentType.BASIC_BLOCK) {
+            BasicBlock bb = region.getEntry();
+            writeSpace(writer, indentLevel);
             writer.append("  ")
                     .append(Integer.toString(System.identityHashCode(bb)))
                     .append(" ");
-            Map<String, String> attrs = vertexAttrFactory.getAttributes(bb);
+            Map<String, String> attrs = VERTEX_ATTRIBUTE_FACTORY.getAttributes(bb);
             GraphvizUtil.writeAttributes(writer, attrs);
-            writeIndent(writer, indentLevel);
+            writeSpace(writer, indentLevel);
             writer.append("\n");
         }
         for (Region child : region.getChildren()) {
             exportRegion(writer, child, indentLevel+1);
         }
-        writeIndent(writer, indentLevel);
+        writeSpace(writer, indentLevel);
         writer.append("}\n");
     }
 
@@ -262,7 +283,7 @@ public class RPST {
                     .append(Integer.toString(System.identityHashCode(source)))
                     .append(" -> ")
                     .append(Integer.toString(System.identityHashCode(target)));
-            GraphvizUtil.writeAttributes(writer, edgeAttrFactory.getAttributes(edge));
+            GraphvizUtil.writeAttributes(writer, EDGE_ATTRIBUTE_FACTORY.getAttributes(edge));
             writer.append("\n");
         }
         writer.append("}\n");
