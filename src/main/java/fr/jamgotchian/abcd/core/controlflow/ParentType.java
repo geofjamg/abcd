@@ -22,7 +22,7 @@ package fr.jamgotchian.abcd.core.controlflow;
  */
 public enum ParentType {
     UNDEFINED,
-    ROOT,
+    TRIVIAL,
     BASIC_BLOCK,
     IF_THEN_ELSE,
     IF_THEN,

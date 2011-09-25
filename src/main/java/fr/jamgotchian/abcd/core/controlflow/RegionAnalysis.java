@@ -35,6 +35,14 @@ public class RegionAnalysis {
         this.cfg = cfg;
     }
 
+    private boolean checkTrivialRegion(Region region) {
+        if (region.getChildCount() == 1) {
+            region.setParentType(ParentType.TRIVIAL);
+            return true;
+        }
+        return false;
+    }
+
     private boolean checkSequenceRegion(Region region) {
         if (region.getChildCount() == 2) {
             Iterator<Region> it = region.getChildren().iterator();
@@ -143,16 +151,17 @@ public class RegionAnalysis {
     public void analyse(OutputHandler handler) {
         // build refined program structure tree
         RPST rpst = new RPST(cfg);
-        handler.rpstBuilt(rpst);
         for (Region region : rpst.getRegionsPostOrder()) {
             if (region.getParentType() == ParentType.UNDEFINED) {
-                if (!(checkIfThenElseRegion(region)
+                if (!(checkTrivialRegion(region)
+                        || checkIfThenElseRegion(region)
                         || checkIfThenRegion(region)
                         || checkSequenceRegion(region))) {
                     // TODO
                 }
             }
         }
+        handler.rpstBuilt(rpst);
         StringBuilder builder = new StringBuilder();
         rpst.print(builder);
         logger.log(Level.FINER, "Region analysis :\n{0}", builder.toString());

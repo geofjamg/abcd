@@ -19,10 +19,8 @@ package fr.jamgotchian.abcd.core.controlflow;
 import fr.jamgotchian.abcd.core.graph.GraphvizUtil;
 import fr.jamgotchian.abcd.core.util.Sets;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +55,7 @@ public class RPST {
 
     private final List<Region> regions = new ArrayList<Region>();
 
-    private final Region topLevelRegion = new Region(null, null, ParentType.ROOT);
+    private final Region topLevelRegion = new Region(null, null, ParentType.UNDEFINED);
 
     public RPST(ControlFlowGraph cfg) {
         this.cfg = cfg;
@@ -79,20 +77,8 @@ public class RPST {
         return true;
     }
 
-    private boolean isTrivial(BasicBlock entry, BasicBlock exit) {
-        Collection<Edge> outgoingEdges = cfg.getOutgoingEdgesOf(entry);
-        if (outgoingEdges.size() == 1) {
-            Edge outgoingEdge = outgoingEdges.iterator().next();
-            return cfg.getEdgeTarget(outgoingEdge).equals(exit);
-        }
-        return false;
-    }
-
     boolean isRegion(BasicBlock entry, BasicBlock exit) {
-        if (isTrivial(entry, exit)) {
-            // skip trivial regions
-            return false;
-        } else if (!domInfo.dominate(entry, exit)) {
+        if (!domInfo.dominate(entry, exit)) {
             if (!Sets.isSubset(domInfo.getDominanceFrontierOf2(entry),
                                Collections.singleton(exit))) {
                 return false;
@@ -127,12 +113,13 @@ public class RPST {
     }
 
     private BasicBlock getNextExit(BasicBlock bb) {
-        BasicBlock exit = postDomInfo.getImmediatePostDominatorOf(bb);
-        if (exit != null) {
-            Region region;
-            while ((region = findRegionWithEntry(exit)) != null) {
-                exit = region.getExit();
-            }
+        BasicBlock exit = bb;
+        Region region;
+        while ((region = findRegionWithEntry(exit)) != null) {
+            exit = region.getExit();
+        }
+        if (bb.equals(exit)) {
+            exit = postDomInfo.getImmediatePostDominatorOf(exit);
         }
         return exit;
     }
@@ -233,13 +220,15 @@ public class RPST {
 
     private void printSpace(Appendable out, int indentLevel) throws IOException {
         for (int i = 0 ; i < indentLevel; i++) {
-            out.append("  ");
+            out.append("    ");
         }
     }
 
     public void print(Appendable out, Region region, int indentLevel) throws IOException {
         printSpace(out, indentLevel);
-        out.append(region.toString()).append("\n");
+        out.append(region.getChildType().toString()).append(" ")
+                .append(region.getParentType().toString()).append(" ")
+                .append(region.toString()).append("\n");
         for (Region child : region.getChildren()) {
             print(out, child, indentLevel+1);
         }
@@ -255,6 +244,15 @@ public class RPST {
         String clusterName = "cluster_" + Integer.toString(System.identityHashCode(region));
         writeSpace(writer, indentLevel);
         writer.append("subgraph ").append(clusterName).append(" {\n");
+        writeSpace(writer, indentLevel+1);
+        writer.append("fontsize=\"10\";\n");
+        writeSpace(writer, indentLevel+1);
+        writer.append("labeljust=\"left\";\n");
+        if (region.getParentType() != null) {
+            writeSpace(writer, indentLevel+1);
+            writer.append("label=\"").append(region.getParentType().toString())
+                    .append("\";\n");
+        }
         if (region.getParentType() == ParentType.BASIC_BLOCK) {
             BasicBlock bb = region.getEntry();
             writeSpace(writer, indentLevel);

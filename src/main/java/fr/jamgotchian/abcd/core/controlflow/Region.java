@@ -103,6 +103,6 @@ public class Region {
 
     @Override
     public String toString() {
-        return childType + " " + parentType + " (" + entry + ", " + exit + ")";
+        return "(" + entry + ", " + exit + ")";
     }
 }
