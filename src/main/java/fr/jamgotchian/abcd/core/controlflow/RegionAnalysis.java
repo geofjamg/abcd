@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
+import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.OutputHandler;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -48,16 +49,55 @@ public class RegionAnalysis {
             Iterator<Region> it = region.getChildren().iterator();
             Region child1 = it.next();
             Region child2 = it.next();
-            if (child2.getEntry().equals(child1.getExit())) {
+            if (child2.getEntry().equals(child1.getExit())
+                    && Objects.equal(region.getExit(), child2.getExit())) {
                 region.setParentType(ParentType.SEQUENCE);
                 child1.setChildType(ChildType.FIRST);
                 child2.setChildType(ChildType.SECOND);
                 return true;
-            } else if (child1.getEntry().equals(child2.getExit())) {
+            } else if (child1.getEntry().equals(child2.getExit())
+                    && Objects.equal(region.getExit(), child1.getExit())) {
                 region.setParentType(ParentType.SEQUENCE);
                 child2.setChildType(ChildType.FIRST);
                 child1.setChildType(ChildType.SECOND);
                 return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkSingleExitLoopRegion(Region region) {
+        if (region.getChildCount() == 2) {
+            Region headRegion = null;
+            Region bodyRegion = null;
+            for (Region child : region.getChildren()) {
+                if (child.getEntry().equals(region.getEntry())) {
+                    headRegion = child;
+                } else {
+                    bodyRegion = child;
+                }
+            }
+            if (headRegion != null && bodyRegion != null) {
+                if (bodyRegion.getExit().equals(headRegion.getEntry())) {
+                    Edge bodyEdge = cfg.getEdge(headRegion.getExit(), bodyRegion.getEntry());
+                    Edge exitEdge = cfg.getEdge(headRegion.getExit(), region.getExit());
+                    if (bodyEdge != null && exitEdge != null
+                            && exitEdge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+                        if (Boolean.TRUE.equals(exitEdge.getValue())
+                                && Boolean.FALSE.equals(bodyEdge.getValue())) {
+                            region.setParentType(ParentType.SINGLE_EXIT_LOOP);
+                            headRegion.setChildType(ChildType.LOOP_HEAD);
+                            bodyRegion.setChildType(ChildType.LOOP_BODY);
+                            return true;
+                        } else if (Boolean.FALSE.equals(exitEdge.getValue())
+                                && Boolean.TRUE.equals(bodyEdge.getValue())) {
+                            region.setParentType(ParentType.SINGLE_EXIT_LOOP_INVERTED_COND);
+                            headRegion.setChildType(ChildType.LOOP_HEAD);
+                            bodyRegion.setChildType(ChildType.LOOP_BODY);
+                            return true;
+                        }
+                    }
+                }
             }
         }
         return false;
@@ -75,23 +115,23 @@ public class RegionAnalysis {
                 }
             }
             if (ifRegion != null && thenRegion != null) {
-                BasicBlock ifBB = ifRegion.getEntry();
-                BasicBlock thenBB = thenRegion.getEntry();
-                Edge thenEdge = cfg.getEdge(ifBB, thenBB);
-                Edge elseEdge = cfg.getEdge(ifBB, region.getExit());
-                if (thenEdge != null && elseEdge != null) {
-                    if (Boolean.TRUE.equals(thenEdge.getValue())
-                            && Boolean.FALSE.equals(elseEdge.getValue())) {
-                        region.setParentType(ParentType.IF_THEN);
-                        ifRegion.setChildType(ChildType.IF);
-                        thenRegion.setChildType(ChildType.THEN);
-                        return true;
-                    } else if (Boolean.FALSE.equals(thenEdge.getValue())
-                            && Boolean.TRUE.equals(elseEdge.getValue())) {
-                        region.setParentType(ParentType.IF_NOT_THEN);
-                        ifRegion.setChildType(ChildType.IF);
-                        thenRegion.setChildType(ChildType.THEN);
-                        return true;
+                if (region.getExit().equals(thenRegion.getExit())) {
+                    Edge thenEdge = cfg.getEdge(ifRegion.getEntry(), thenRegion.getEntry());
+                    Edge elseEdge = cfg.getEdge(ifRegion.getEntry(), region.getExit());
+                    if (thenEdge != null && elseEdge != null) {
+                        if (Boolean.TRUE.equals(thenEdge.getValue())
+                                && Boolean.FALSE.equals(elseEdge.getValue())) {
+                            region.setParentType(ParentType.IF_THEN);
+                            ifRegion.setChildType(ChildType.IF);
+                            thenRegion.setChildType(ChildType.THEN);
+                            return true;
+                        } else if (Boolean.FALSE.equals(thenEdge.getValue())
+                                && Boolean.TRUE.equals(elseEdge.getValue())) {
+                            region.setParentType(ParentType.IF_NOT_THEN);
+                            ifRegion.setChildType(ChildType.IF);
+                            thenRegion.setChildType(ChildType.THEN);
+                            return true;
+                        }
                     }
                 }
             }
@@ -156,7 +196,8 @@ public class RegionAnalysis {
                 if (!(checkTrivialRegion(region)
                         || checkIfThenElseRegion(region)
                         || checkIfThenRegion(region)
-                        || checkSequenceRegion(region))) {
+                        || checkSequenceRegion(region)
+                        || checkSingleExitLoopRegion(region))) {
                     // TODO
                 }
             }

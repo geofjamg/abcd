@@ -27,5 +27,7 @@ public enum ParentType {
     IF_THEN_ELSE,
     IF_THEN,
     IF_NOT_THEN,
-    SEQUENCE
+    SEQUENCE,
+    SINGLE_EXIT_LOOP,
+    SINGLE_EXIT_LOOP_INVERTED_COND
 }

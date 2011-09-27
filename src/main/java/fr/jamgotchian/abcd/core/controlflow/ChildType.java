@@ -26,5 +26,7 @@ public enum ChildType {
     THEN,
     ELSE,
     FIRST,
-    SECOND
+    SECOND,
+    LOOP_HEAD,
+    LOOP_BODY
 }

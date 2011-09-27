@@ -191,7 +191,7 @@ public class RPST {
         build(domInfo.getDominatorsTree().getRoot(), topLevelRegion);
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             Region oldParent = bb.getParent();
-            Region newParent = new Region(bb, null, ParentType.BASIC_BLOCK);
+            Region newParent = new Region(bb, bb, ParentType.BASIC_BLOCK);
             bb.setParent(newParent);
             newParent.setParent(oldParent);
         }
