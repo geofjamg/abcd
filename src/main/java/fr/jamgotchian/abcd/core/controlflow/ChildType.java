@@ -28,5 +28,8 @@ public enum ChildType {
     FIRST,
     SECOND,
     LOOP_HEAD,
-    LOOP_BODY
+    LOOP_TAIL,
+    TRY,
+    CATCH,
+    FINALLY
 }

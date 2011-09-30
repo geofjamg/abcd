@@ -179,12 +179,25 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return getBasicBlock(new RangeImpl(first, last));
     }
 
+    public boolean containsBasicBlock(BasicBlock bb) {
+        return graph.containsVertex(bb);
+    }
+
     public Collection<Edge> getOutgoingEdgesOf(BasicBlock block) {
         return graph.getOutgoingEdgesOf(block);
     }
 
     public Edge getFirstOutgoingEdgeOf(BasicBlock block) {
         return graph.getFirstOutgoingEdgeOf(block);
+    }
+
+    public Edge getFirstNormalOutgoingEdgeOf(BasicBlock block) {
+        for (Edge e : getOutgoingEdgesOf(block)) {
+            if (!e.isExceptional()) {
+                return e;
+            }
+        }
+        return null;
     }
 
     public Collection<Edge> getIncomingEdgesOf(BasicBlock block) {
@@ -195,12 +208,31 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return graph.getFirstIncomingEdgeOf(block);
     }
 
+    public Edge getFirstNormalIncomingEdgeOf(BasicBlock block) {
+        for (Edge e : getIncomingEdgesOf(block)) {
+            if (!e.isExceptional()) {
+                return e;
+            }
+        }
+        return null;
+    }
+
     public Collection<BasicBlock> getPredecessorsOf(BasicBlock block) {
         return graph.getPredecessorsOf(block);
     }
 
     public int getPredecessorCountOf(BasicBlock block) {
         return graph.getPredecessorCountOf(block);
+    }
+
+    public int getNormalPredecessorCountOf(BasicBlock block) {
+        int count = 0;
+        for (Edge e : getIncomingEdgesOf(block)) {
+            if (!e.isExceptional()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public BasicBlock getFirstPredecessorOf(BasicBlock block) {
@@ -217,6 +249,16 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public int getSuccessorCountOf(BasicBlock block) {
         return graph.getSuccessorCountOf(block);
+    }
+
+    public int getNormalSuccessorCountOf(BasicBlock block) {
+        int count = 0;
+        for (Edge e : getOutgoingEdgesOf(block)) {
+            if (!e.isExceptional()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public Collection<BasicBlock> getBasicBlocksWithinRange(Range range) {
@@ -298,6 +340,10 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public Edge addEdge(BasicBlock source, BasicBlock target) {
         return addEdge(source, target, false);
+    }
+
+    public void addEdge(BasicBlock source, BasicBlock target, Edge edge) {
+        graph.addEdge(source, target, edge);
     }
 
     public Edge addEdge(BasicBlock source, BasicBlock target, boolean exceptional) {
@@ -408,8 +454,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     private void removeUnnecessaryBlock() {
         Set<BasicBlock> blocksToRemove = new HashSet<BasicBlock>();
         for (BasicBlock block : graph.getVertices()) {
-            if (graph.getIncomingEdgesOf(block).size() == 1 &&
-                graph.getOutgoingEdgesOf(block).size() == 1) {
+            if (getPredecessorCountOf(block) > 0 &&
+                getNormalSuccessorCountOf(block) == 1) {
                 Range range = block.getRange();
                 boolean remove = true;
                 TACInstSeq tacInsts = block.getInstructions();
@@ -446,7 +492,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
 
         for (BasicBlock block : blocksToRemove) {
-            Edge outgoingEdge = graph.getFirstOutgoingEdgeOf(block);
+            Edge outgoingEdge = getFirstNormalOutgoingEdgeOf(block);
             BasicBlock successor = graph.getEdgeTarget(outgoingEdge);
             Collection<Edge> incomingEdges = graph.getIncomingEdgesOf(block);
             for (Edge incomingEdge : new ArrayList<Edge>(incomingEdges)) {

@@ -22,6 +22,7 @@ package fr.jamgotchian.abcd.core.controlflow;
  */
 public enum ParentType {
     UNDEFINED,
+    ROOT,
     TRIVIAL,
     BASIC_BLOCK,
     IF_THEN_ELSE,
@@ -29,5 +30,9 @@ public enum ParentType {
     IF_NOT_THEN,
     SEQUENCE,
     SINGLE_EXIT_LOOP,
-    SINGLE_EXIT_LOOP_INVERTED_COND
+    SINGLE_EXIT_LOOP_INVERTED_COND,
+    BREAK_LABEL,
+    BASIC_BLOCK_IF_THEN_BREAK,
+    BASIC_BLOCK_IF_NOT_THEN_BREAK,
+    TRY_CATCH_FINALLY
 }

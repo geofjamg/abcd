@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.controlflow;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -31,7 +32,7 @@ public class Region {
 
     private Region parent;
 
-    private final Set<Region> children = new HashSet<Region>();
+    private final Set<Region> children = new LinkedHashSet<Region>();
 
     private ParentType parentType;
 
@@ -73,12 +74,28 @@ public class Region {
         return children;
     }
 
+    public Region getFirstChild() {
+        if (children.isEmpty()) {
+            return null;
+        } else {
+            return children.iterator().next();
+        }
+    }
+
     public int getChildCount() {
         return children.size();
     }
 
     public void addChild(Region child) {
         children.add(child);
+    }
+
+    public void removeChildren() {
+        children.clear();
+    }
+
+    public void removeChild(Region child) {
+        children.remove(child);
     }
 
     public boolean hasChild() {
@@ -99,6 +116,27 @@ public class Region {
 
     public void setChildType(ChildType childType) {
         this.childType = childType;
+    }
+
+    public boolean isBasicBlock() {
+        return parentType == ParentType.BASIC_BLOCK
+                || parentType == ParentType.BASIC_BLOCK_IF_THEN_BREAK
+                || parentType == ParentType.BASIC_BLOCK_IF_NOT_THEN_BREAK;
+    }
+    
+    public Set<BasicBlock> getBasicBlocks() {
+        Set<BasicBlock> bbs = new HashSet<BasicBlock>();
+        addBasicBlocks(bbs);
+        return bbs;
+    }
+
+    private void addBasicBlocks(Set<BasicBlock> bbs) {
+        if (entry != null) {
+            bbs.add(entry);
+        }
+        for (Region child : children) {
+            child.addBasicBlocks(bbs);
+        }
     }
 
     @Override

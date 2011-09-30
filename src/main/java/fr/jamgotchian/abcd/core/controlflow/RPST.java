@@ -18,6 +18,7 @@ package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.graph.GraphvizUtil;
 import fr.jamgotchian.abcd.core.util.Sets;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public class RPST {
 
     private final List<Region> regions = new ArrayList<Region>();
 
-    private final Region topLevelRegion = new Region(null, null, ParentType.UNDEFINED);
+    private final Region topLevelRegion = new Region(null, null, ParentType.ROOT);
 
     public RPST(ControlFlowGraph cfg) {
         this.cfg = cfg;
@@ -66,6 +67,14 @@ public class RPST {
 
     public ControlFlowGraph getCFG() {
         return cfg;
+    }
+
+    public List<Region> getRegions() {
+        return regions;
+    }
+
+    public Region getTopLevelRegion() {
+        return topLevelRegion;
     }
 
     private boolean derivedDomFrontier(BasicBlock bb, BasicBlock entry, BasicBlock exit) {
@@ -187,6 +196,9 @@ public class RPST {
     }
 
     private void build() {
+        for (BasicBlock bb : cfg.getBasicBlocks()) {
+            bb.setParent(null);
+        }
         detectRegions();
         build(domInfo.getDominatorsTree().getRoot(), topLevelRegion);
         for (BasicBlock bb : cfg.getBasicBlocks()) {
@@ -226,11 +238,12 @@ public class RPST {
 
     public void print(Appendable out, Region region, int indentLevel) throws IOException {
         printSpace(out, indentLevel);
-        out.append(region.getChildType().toString()).append(" ")
-                .append(region.getParentType().toString()).append(" ")
+        out.append(region.getChildType().toString()).append("\n");
+        printSpace(out, indentLevel+1);
+        out.append("+").append(region.getParentType().toString()).append(" ")
                 .append(region.toString()).append("\n");
         for (Region child : region.getChildren()) {
-            print(out, child, indentLevel+1);
+            print(out, child, indentLevel+2);
         }
     }
 
@@ -251,9 +264,9 @@ public class RPST {
         if (region.getParentType() != null) {
             writeSpace(writer, indentLevel+1);
             writer.append("label=\"").append(region.getParentType().toString())
-                    .append("\";\n");
+                    .append(" ").append(region.toString()).append("\";\n");
         }
-        if (region.getParentType() == ParentType.BASIC_BLOCK) {
+        if (region.isBasicBlock()) {
             BasicBlock bb = region.getEntry();
             writeSpace(writer, indentLevel);
             writer.append("  ")
@@ -285,5 +298,15 @@ public class RPST {
             writer.append("\n");
         }
         writer.append("}\n");
+    }
+
+    public void export(String fileName) {
+        try {
+            Writer writer = new FileWriter(fileName);
+            export(writer);
+            writer.close();
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, e.toString(), e);
+        }
     }
 }

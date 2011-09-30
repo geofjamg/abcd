@@ -41,6 +41,8 @@ public interface ControlFlowGraph {
 
     Edge addEdge(BasicBlock source, BasicBlock target);
 
+    void addEdge(BasicBlock source, BasicBlock target, Edge edge);
+
     Edge addEdge(BasicBlock source, BasicBlock target, boolean exceptional);
 
     void compact();
@@ -62,6 +64,8 @@ public interface ControlFlowGraph {
     Collection<BasicBlock> getBasicBlocksWithinRange(Range range);
 
     Collection<BasicBlock> getBasicBlocksWithinRange(int first, int last);
+
+    boolean containsBasicBlock(BasicBlock bb);
 
     Tree<BasicBlock, Edge> getDFST();
 
