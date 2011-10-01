@@ -19,8 +19,11 @@ package fr.jamgotchian.abcd.core.controlflow;
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.OutputHandler;
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -67,6 +70,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkTrivialRegion(Region region) {
+        logger.log(Level.FINER, "Check trivial region {0}", region);
         if (region.getChildCount() == 1) {
             region.setParentType(ParentType.TRIVIAL);
             return true;
@@ -75,6 +79,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkSequenceRegion(Region region) {
+        logger.log(Level.FINER, "Check sequence region {0}", region);
         if (region.getChildCount() == 2) {
             Iterator<Region> it = region.getChildren().iterator();
             Region child1 = it.next();
@@ -97,6 +102,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkSingleExitLoopRegion(Region region) {
+        logger.log(Level.FINER, "Check single exit loop region {0}", region);
         if (region.getChildCount() == 2) {
             Region headRegion = null;
             Region tailRegion = null;
@@ -134,6 +140,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkIfThenRegion(Region region) {
+        logger.log(Level.FINER, "Check if then region {0}", region);
         if (region.getChildCount() == 2) {
             Region ifRegion = null;
             Region thenRegion = null;
@@ -170,6 +177,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkIfThenElseRegion(Region region) {
+        logger.log(Level.FINER, "Check if then else region {0}", region);
         if (region.getChildCount() == 3) {
             Region ifRegion = null;
             Region thenOrElseRegion1 = null;
@@ -219,25 +227,33 @@ public class RegionAnalysis {
     }
 
     private boolean checkTryCatchFinally(Region region) {
+        logger.log(Level.FINER, "Check try catch finally region {0}", region);
         Set<Region> handlerRegions = new HashSet<Region>();
         Set<BasicBlock> handlerEntries = new HashSet<BasicBlock>();
+        Region finallyRegion = null;
         for (Region child : region.getChildren()) {
             // the child region is an exception handler whether its exit is connected
             // to parent region exit and if every edges incoming to it entry is
             // exceptional
             boolean isHandler = false;
+            boolean isFinally = false;
             if (child.getExit().equals(region.getExit())) {
                 if (cfg.getPredecessorCountOf(child.getEntry()) > 0) {
                     isHandler = true;
+                    isFinally = true;
                     for (Edge e : cfg.getIncomingEdgesOf(child.getEntry())) {
                         if (!e.isExceptional()) {
                             isHandler = false;
                             break;
                         }
+                        ExceptionHandlerInfo info = (ExceptionHandlerInfo) e.getValue();
+                        if (info.getClassName() != null) {
+                            isFinally = false;
+                        }
                     }
+                    // skip nested handlers
                     for (Edge e : cfg.getOutgoingEdgesOf(child.getExit())) {
                         if (e.isExceptional()) {
-                            // nested handler
                             isHandler = false;
                             break;
                         }
@@ -247,14 +263,30 @@ public class RegionAnalysis {
             if (isHandler) {
                 handlerRegions.add(child);
                 handlerEntries.add(child.getEntry());
+                if (isFinally) {
+                    finallyRegion = child;
+                }
             }
         }
         if (handlerRegions.isEmpty()) {
             return false;
         }
+        // search inlined finally region
+        Set<Region> inlinedFinallyRegions = new HashSet<Region>();
+        if (finallyRegion != null) {
+            for (Region child : region.getChildren()) {
+                if (child.getExit().equals(region.getExit())
+                        && !child.equals(finallyRegion)) {
+                    if (child.deepEquals(finallyRegion)) {
+                        inlinedFinallyRegions.add(child);
+                    }
+                }
+            }
+        }
         // every other child region should be connected to handlers
         Set<Region> otherChildren = new HashSet<Region>(region.getChildren());
         otherChildren.removeAll(handlerRegions);
+        otherChildren.removeAll(inlinedFinallyRegions);
         for (Region otherChild : otherChildren) {
             for (BasicBlock bb : otherChild.getBasicBlocks()) {
                 Set<BasicBlock> handlers = new HashSet<BasicBlock>();
@@ -279,8 +311,22 @@ public class RegionAnalysis {
                 subCfg.removeBasicBlock(bb);
             }
         }
+        // remove inlined basic blocks
+        for (Region inlinedFinallyRegion : inlinedFinallyRegions) {
+            BasicBlock entry = inlinedFinallyRegion.getEntry();
+            BasicBlock exit = inlinedFinallyRegion.getExit();
+            for (Edge e : new ArrayList<Edge>(subCfg.getIncomingEdgesOf(entry))) {
+                BasicBlock p = subCfg.getEdgeSource(e);
+                subCfg.removeEdge(e);
+                subCfg.addEdge(p, exit, e);
+            }
+            for (BasicBlock bb : inlinedFinallyRegion.getBasicBlocks()) {
+                subCfg.removeBasicBlock(bb);
+            }
+        }
         // build rpst from control flow subgraph
-        subCfg.updateDomInfo();
+        subCfg.updateDominatorInfo();
+        subCfg.updatePostDominatorInfo();
         RPST subRpst = checkRegions(subCfg);
         region.setParentType(ParentType.TRY_CATCH_FINALLY);
         region.removeChildren();
@@ -289,37 +335,57 @@ public class RegionAnalysis {
         tryRegion.setChildType(ChildType.TRY);
         region.addChild(tryRegion);
         for (Region handlerRegion : handlerRegions) {
-            handlerRegion.setChildType(ChildType.CATCH);
+            if (finallyRegion != null && handlerRegion.equals(finallyRegion)) {
+                handlerRegion.setChildType(ChildType.FINALLY);
+            } else {
+                handlerRegion.setChildType(ChildType.CATCH);
+            }
             region.addChild(handlerRegion);
+        }
+        for (Region inlinedFinallyRegion : inlinedFinallyRegions) {
+            region.addChild(inlinedFinallyRegion);
+            inlinedFinallyRegion.setChildType(ChildType.INLINED_FINALLY);
         }
         return true;
     }
 
     private boolean checkBreakLabelRegion(Region region) {
+        logger.log(Level.FINER, "Check break label region {0}", region);
         ControlFlowGraphImpl subCfg = createSubCFG(region);
         if (subCfg == null) {
             return false;
         }
         // predecessors of exit ordered by dominance tree depth
-        TreeMap<Integer, BasicBlock> breakBB = new TreeMap<Integer, BasicBlock>();
+        TreeMap<Integer, List<BasicBlock>> breakBB = new TreeMap<Integer, List<BasicBlock>>();
         for (BasicBlock bb : cfg.getPredecessorsOf(subCfg.getExitBlock())) {
             int depth = cfg.getDominatorInfo().getDominatorsTree().getDepthFromRoot(bb);
-            breakBB.put(depth, bb);
+            if (!breakBB.containsKey(depth)) {
+                breakBB.put(depth, new ArrayList<BasicBlock>());
+            }
+            breakBB.get(depth).add(bb);
+        }
+        if (breakBB.firstEntry().getValue().size() != 1) {
+            throw new ABCDException("firstEntry.getValue().size() != 1");
         }
         breakBB.remove(breakBB.firstKey());
-        for (BasicBlock bb : breakBB.values()) {
-            subCfg.removeEdge(bb, subCfg.getExitBlock());
+        for (Map.Entry<Integer, List<BasicBlock>> entry : breakBB.entrySet()) {
+            for (BasicBlock bb : entry.getValue()) {
+                subCfg.removeEdge(bb, subCfg.getExitBlock());
+            }
         }
-        subCfg.updateDomInfo();
+        subCfg.updateDominatorInfo();
+        subCfg.updatePostDominatorInfo();
         RPST rpst = checkRegions(subCfg);
-        for (BasicBlock bb : breakBB.values()) {
-            if (bb.getType() == BasicBlockType.JUMP_IF) {
-                Edge exitEdge = cfg.getEdge(bb, region.getExit());
-                boolean value = (Boolean) exitEdge.getValue();
-                bb.getParent().setParentType(value ? ParentType.BASIC_BLOCK_IF_THEN_BREAK
-                                                   : ParentType.BASIC_BLOCK_IF_NOT_THEN_BREAK);
-            } else {
-                throw new ABCDException("TODO");
+        for (Map.Entry<Integer, List<BasicBlock>> entry : breakBB.entrySet()) {
+            for (BasicBlock bb : entry.getValue()) {
+                if (bb.getType() == BasicBlockType.JUMP_IF) {
+                    Edge exitEdge = cfg.getEdge(bb, region.getExit());
+                    boolean value = (Boolean) exitEdge.getValue();
+                    bb.getParent().setParentType(value ? ParentType.BASIC_BLOCK_IF_THEN_BREAK
+                                                       : ParentType.BASIC_BLOCK_IF_NOT_THEN_BREAK);
+                } else {
+                    throw new ABCDException("TODO");
+                }
             }
         }
         region.setParentType(ParentType.BREAK_LABEL);

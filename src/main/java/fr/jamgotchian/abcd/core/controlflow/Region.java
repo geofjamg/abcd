@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
+import fr.jamgotchian.abcd.core.controlflow.util.TACInstComparator;
+import fr.jamgotchian.abcd.core.controlflow.util.VariableMapping;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -123,7 +125,7 @@ public class Region {
                 || parentType == ParentType.BASIC_BLOCK_IF_THEN_BREAK
                 || parentType == ParentType.BASIC_BLOCK_IF_NOT_THEN_BREAK;
     }
-    
+
     public Set<BasicBlock> getBasicBlocks() {
         Set<BasicBlock> bbs = new HashSet<BasicBlock>();
         addBasicBlocks(bbs);
@@ -137,6 +139,40 @@ public class Region {
         for (Region child : children) {
             child.addBasicBlocks(bbs);
         }
+    }
+
+    public boolean deepEquals(Region other) {
+        return deepEquals(other, new VariableMapping());
+    }
+
+    private boolean deepEquals(Region other, VariableMapping mapping) {
+        if (parentType == other.getParentType()
+                && childType == other.getChildType()) {
+            if (isBasicBlock()) {
+                BasicBlock bb = entry;
+                BasicBlock otherBb = other.getEntry();
+                return TACInstComparator.equal(bb.getInstructions(),
+                                               otherBb.getInstructions(),
+                                               mapping);
+            } else {
+                if (getChildCount() == other.getChildCount()) {
+                    for (Region child : children) {
+                        boolean found = false;
+                        for (Region otherChild : other.getChildren()) {
+                            if (child.deepEquals(otherChild, mapping)) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

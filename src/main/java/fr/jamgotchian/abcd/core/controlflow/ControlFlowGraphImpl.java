@@ -30,6 +30,7 @@ import fr.jamgotchian.abcd.core.graph.EdgeFactory;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
 import fr.jamgotchian.abcd.core.util.RangeMap;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -142,8 +143,11 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return exitBlock;
     }
 
-    public void updateDomInfo() {
+    public void updateDominatorInfo() {
         dominatorInfo = DominatorInfo.create(graph, entryBlock, EDGE_FACTORY);
+    }
+
+    public void updatePostDominatorInfo() {
         postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY);
     }
 
@@ -713,6 +717,16 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         graph.export(writer, "\"" + name + "\"",
                      new BasicBlockRangeAttributeFactory(),
                      new EdgeAttributeFactory());
+    }
+
+    public void export(String fileName) {
+        try {
+            Writer writer = new FileWriter(fileName);
+            export(writer);
+            writer.close();
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, e.toString(), e);
+        }
     }
 
     public void exportBytecode(Writer writer) throws IOException {

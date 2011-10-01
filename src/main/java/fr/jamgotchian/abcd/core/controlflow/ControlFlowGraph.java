@@ -145,6 +145,8 @@ public interface ControlFlowGraph {
 
     void export(Writer writer) throws IOException;
 
+    void export(String fileName);
+
     void exportBytecode(Writer writer) throws IOException;
 
     void exportTAC(Writer writer) throws IOException;
