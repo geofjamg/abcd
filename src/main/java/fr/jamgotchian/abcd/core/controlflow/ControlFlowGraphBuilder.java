@@ -102,9 +102,8 @@ public class ControlFlowGraphBuilder {
     private void analyseExceptionTable(ExceptionTable table) {
         for (ExceptionTable.Entry entry : table.getEntries()) {
             // split at tryStart and tryEnd
-            BasicBlockSplit tryStartSplit = graph.splitBasicBlockAt(entry.getTryStart());
-            BasicBlockSplit tryEndSplit = graph.splitBasicBlockAt(entry.getTryEnd());
-            graph.addEdge(tryEndSplit.getBlockBefore(), tryEndSplit.getBlockAfter());
+            graph.splitBasicBlockAt(entry.getTryStart());
+            graph.splitBasicBlockAt(entry.getTryEnd());
 
             // split at catchStart
             BasicBlockSplit catchStartSplit = graph.splitBasicBlockAt(entry.getCatchStart());
