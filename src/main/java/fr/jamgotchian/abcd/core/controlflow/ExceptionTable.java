@@ -86,13 +86,13 @@ public class ExceptionTable {
         List<String> catchStartColumn = new ArrayList<String>(rowCount);
         List<String> typeColumn = new ArrayList<String>(rowCount);
         tryStartColumn.add("tryStart");
-        tryEndColumn.add("endStart");
+        tryEndColumn.add("tryEnd");
         catchStartColumn.add("catchStart");
         typeColumn.add("type");
 
         for (int i = 0; i < entries.size(); i++) {
             Entry entry = entries.get(i);
-            tryStartColumn.add(Integer.toString(entry.getCatchStart()));
+            tryStartColumn.add(Integer.toString(entry.getTryStart()));
             tryEndColumn.add(Integer.toString(entry.getTryEnd()));
             catchStartColumn.add(Integer.toString(entry.getCatchStart()));
             typeColumn.add(entry.getExceptionClassName());
