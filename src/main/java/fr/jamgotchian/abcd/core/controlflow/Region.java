@@ -18,7 +18,7 @@ package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.controlflow.util.TACInstComparator;
 import fr.jamgotchian.abcd.core.controlflow.util.VariableMapping;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -68,8 +68,13 @@ public class Region {
     }
 
     public void setParent(Region parent) {
+        if (this.parent != null) {
+            this.parent.children.remove(this);
+        }
         this.parent = parent;
-        parent.addChild(this);
+        if (parent != null) {
+            parent.addChild(this);
+        }
     }
 
     public Set<Region> getChildren() {
@@ -93,11 +98,9 @@ public class Region {
     }
 
     public void removeChildren() {
-        children.clear();
-    }
-
-    public void removeChild(Region child) {
-        children.remove(child);
+        for (Region child : new ArrayList<Region>(children)) {
+            child.setParent(null);
+        }
     }
 
     public boolean hasChild() {
@@ -127,7 +130,7 @@ public class Region {
     }
 
     public Set<BasicBlock> getBasicBlocks() {
-        Set<BasicBlock> bbs = new HashSet<BasicBlock>();
+        Set<BasicBlock> bbs = new LinkedHashSet<BasicBlock>();
         addBasicBlocks(bbs);
         return bbs;
     }
