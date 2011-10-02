@@ -115,7 +115,7 @@ public class RPSTTest {
         cfg.addEdge(i, k);
         cfg.addEdge(j, k);
         cfg.addEdge(k, e);
-        cfg.updateDomInfo();
+        cfg.updateDominatorInfo();
         cfg.performDepthFirstSearch();
 
         Writer writer = new FileWriter("/tmp/RPSTTest_CFG.dot");
