@@ -92,6 +92,10 @@ public class Trees {
             return delegate.getChildrenCount(node);
         }
 
+        public Set<N> getLeaves() {
+            return delegate.getLeaves();
+        }
+
         public boolean containsNode(N node) {
             return delegate.containsNode(node);
         }

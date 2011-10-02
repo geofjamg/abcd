@@ -35,6 +35,8 @@ public interface Tree<N, E> extends Iterable<N>, GraphvizDigraph<N, E> {
 
     int getChildrenCount(N node);
 
+    Set<N> getLeaves();
+
     int getDepthFromRoot(N node);
 
     N getEdgeSource(E edge);

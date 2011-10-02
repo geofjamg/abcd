@@ -21,6 +21,7 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -209,6 +210,16 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             throw new ABCDException("Node " + node + " not found");
         }
         return neighbors.getChildren().size();
+    }
+
+    public Set<N> getLeaves() {
+        Set<N> leaves = new HashSet<N>(1);
+        for (N node : getNodes()) {
+            if (getChildrenCount(node) == 0) {
+                leaves.add(node);
+            }
+        }
+        return leaves;
     }
 
     public N getEdgeSource(E edge) {
