@@ -62,4 +62,8 @@ public interface BasicBlock {
     Region getParent();
 
     void setParent(Region region);
+
+    void addAttribute(BasicBlockAttribute attr);
+
+    boolean hasAttribute(BasicBlockAttribute attr);
 }

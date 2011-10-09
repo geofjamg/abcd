@@ -17,6 +17,8 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
+import java.util.Set;
+import java.util.EnumSet;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
@@ -62,11 +64,14 @@ class BasicBlockImpl implements BasicBlock {
 
     private Region parent;
 
+    private Set<BasicBlockAttribute> attributes;
+
     BasicBlockImpl(Range range, BasicBlockType type) {
         this.range = range;
         this.type = type;
         order = -1;
         loopLevel = 0;
+        attributes = EnumSet.noneOf(BasicBlockAttribute.class);
     }
 
     BasicBlockImpl(int firstInstn, int lastInstn, BasicBlockType type) {
@@ -151,6 +156,14 @@ class BasicBlockImpl implements BasicBlock {
 
     public void setParent(Region parent) {
         this.parent = parent;
+    }
+
+    public void addAttribute(BasicBlockAttribute attr) {
+        attributes.add(attr);
+    }
+
+    public boolean hasAttribute(BasicBlockAttribute attr) {
+        return attributes.contains(attr);
     }
 
     public void visit(BasicBlockVisitor visitor) {

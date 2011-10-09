@@ -280,7 +280,8 @@ public class RegionAnalysis {
         Set<Region> inlinedFinallyRegions = new HashSet<Region>();
         if (finallyRegion != null) {
             for (Region child : region.getChildren()) {
-                if (child.getExit().equals(region.getExit())
+                if ((child.getExit().equals(region.getExit())
+                        || child.getExit().hasAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT))
                         && !child.equals(finallyRegion)) {
                     if (child.deepEquals(finallyRegion)) {
                         inlinedFinallyRegions.add(child);
@@ -305,6 +306,7 @@ public class RegionAnalysis {
                 }
             }
         }
+
         // build control flow subgraph
         ControlFlowGraphImpl subCfg = createSubCFG(cfg, region);
         if (subCfg == null) {
@@ -316,11 +318,13 @@ public class RegionAnalysis {
                 subCfg.removeBasicBlock(bb);
             }
         }
-
-        // build rpst from control flow subgraph
+        // update dominators and post dominators infos
         subCfg.updateDominatorInfo();
         subCfg.updatePostDominatorInfo();
+
+        // build rpst from control flow subgraph
         RPST subRpst = checkRegions(subCfg);
+
         region.setParentType(ParentType.TRY_CATCH_FINALLY);
         region.removeChildren();
         Region rootRegion = subRpst.getTopLevelRegion();
@@ -334,6 +338,17 @@ public class RegionAnalysis {
                 handlerRegion.setChildType(ChildType.CATCH);
             }
             region.addChild(handlerRegion);
+        }
+        for (Region child : tryRegion.getSubRegions()) {
+            for (Region inlinedFinallyRegion : inlinedFinallyRegions) {
+                if (child.getEntry().equals(inlinedFinallyRegion.getEntry())
+                        && child.getExit().equals(inlinedFinallyRegion.getExit())) {
+                    child.insertParent(new Region(child.getEntry(),
+                                                  child.getExit(),
+                                                  ParentType.INLINED_FINALLY));
+                    break;
+                }
+            }
         }
 
         return true;
@@ -403,11 +418,11 @@ public class RegionAnalysis {
                         logger.log(Level.FINER, "Transform exit edge {0} to {1}",
                                 new Object[] {subCfg.toString(exitEdge), subCfg.toString(joinEdge)});
                         BasicBlock s = subCfg.getEdgeSource(exitEdge);
+                        BasicBlock t = subCfg.getEdgeTarget(joinEdge);
                         subCfg.removeEdge(exitEdge);
+                        t.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT);
                         exitEdge.addAttribute(EdgeAttribute.BREAK_LABEL_EDGE);
-                        subCfg.addEdge(s,
-                                       subCfg.getEdgeTarget(joinEdge),
-                                       exitEdge);
+                        subCfg.addEdge(s, t, exitEdge);
                     }
                     break;
                 }
