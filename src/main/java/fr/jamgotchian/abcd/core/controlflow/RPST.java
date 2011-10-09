@@ -134,7 +134,7 @@ public class RPST {
     }
 
     private void addRegion(Region region) {
-        logger.log(Level.FINER, "New Region {0}", region);
+        logger.log(Level.FINEST, "New Region {0}", region);
         regions.add(region);
     }
 

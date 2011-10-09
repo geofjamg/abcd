@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.graph;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -28,12 +29,16 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 class TreeImpl<N, E> implements MutableTree<N, E> {
+
+    private static final Logger logger = Logger.getLogger(TreeImpl.class.getName());
 
     private static class Connection<N> {
 
@@ -294,6 +299,28 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     public String getClusterID() {
         return Integer.toString(System.identityHashCode(this));
+    }
+
+    public void export(String fileName, String name,
+                       AttributeFactory<N> nodeAttrFactory,
+                       AttributeFactory<E> edgeAttrFactory) {
+        try {
+            Writer writer = new FileWriter(fileName);
+            export(writer, name, nodeAttrFactory, edgeAttrFactory);
+            writer.close();
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, e.toString(), e);
+        }
+    }
+
+    public void export(String fileName, String name) {
+        try {
+            Writer writer = new FileWriter(fileName);
+            export(writer, name);
+            writer.close();
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, e.toString(), e);
+        }
     }
 
     public void export(Writer writer, String name) throws IOException {

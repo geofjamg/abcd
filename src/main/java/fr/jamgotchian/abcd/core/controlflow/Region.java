@@ -124,9 +124,7 @@ public class Region {
     }
 
     public boolean isBasicBlock() {
-        return parentType == ParentType.BASIC_BLOCK
-                || parentType == ParentType.BASIC_BLOCK_IF_THEN_BREAK
-                || parentType == ParentType.BASIC_BLOCK_IF_NOT_THEN_BREAK;
+        return parentType == ParentType.BASIC_BLOCK;
     }
 
     public Set<BasicBlock> getBasicBlocks() {

@@ -116,6 +116,16 @@ public class Trees {
             return delegate.getClusterID();
         }
 
+        public void export(String fileName, String name,
+                           AttributeFactory<N> nodeAttrFactory,
+                           AttributeFactory<E> edgeAttrFactory) {
+            delegate.export(fileName, name, nodeAttrFactory, edgeAttrFactory);
+        }
+
+        public void export(String fileName, String name) {
+            delegate.export(fileName, name);
+        }
+
         public void export(Writer writer, String name) throws IOException {
             delegate.export(writer, name);
         }

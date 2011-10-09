@@ -89,7 +89,11 @@ public interface ControlFlowGraph {
 
     Edge getFirstIncomingEdgeOf(BasicBlock block);
 
+    Edge getFirstNormalIncomingEdgeOf(BasicBlock block);
+
     Edge getFirstOutgoingEdgeOf(BasicBlock block);
+
+    Edge getFirstNormalOutgoingEdgeOf(BasicBlock block);
 
     BasicBlock getFirstPredecessorOf(BasicBlock block);
 
@@ -109,11 +113,17 @@ public interface ControlFlowGraph {
 
     Collection<Edge> getOutgoingEdgesOf(BasicBlock block);
 
+    Collection<Edge> getNormalOutgoingEdgesOf(BasicBlock block);
+
     int getPredecessorCountOf(BasicBlock block);
+
+    int getNormalPredecessorCountOf(BasicBlock block);
 
     Collection<BasicBlock> getPredecessorsOf(BasicBlock block);
 
     int getSuccessorCountOf(BasicBlock block);
+
+    int getNormalSuccessorCountOf(BasicBlock block);
 
     Collection<BasicBlock> getSuccessorsOf(BasicBlock block);
 

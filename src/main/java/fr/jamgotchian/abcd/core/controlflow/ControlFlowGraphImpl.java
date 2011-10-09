@@ -191,6 +191,16 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return graph.getOutgoingEdgesOf(block);
     }
 
+    public Collection<Edge> getNormalOutgoingEdgesOf(BasicBlock block) {
+        List<Edge> edges = new ArrayList<Edge>();
+        for (Edge e : getOutgoingEdgesOf(block)) {
+            if (!e.isExceptional()) {
+                edges.add(e);
+            }
+        }
+        return edges;
+    }
+
     public Edge getFirstOutgoingEdgeOf(BasicBlock block) {
         return graph.getFirstOutgoingEdgeOf(block);
     }
@@ -458,7 +468,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     private void removeUnnecessaryBlock() {
         Set<BasicBlock> blocksToRemove = new HashSet<BasicBlock>();
         for (BasicBlock block : graph.getVertices()) {
-            if (getPredecessorCountOf(block) > 0 &&
+            if (getPredecessorCountOf(block) == 1 &&
                 getNormalSuccessorCountOf(block) == 1) {
                 Range range = block.getRange();
                 boolean remove = true;
