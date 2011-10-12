@@ -31,5 +31,7 @@ public enum ChildType {
     LOOP_TAIL,
     TRY,
     CATCH,
-    FINALLY
+    FINALLY,
+    SWITCH,
+    CASE
 }

@@ -20,10 +20,12 @@ import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.OutputHandler;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.graph.Tree;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -231,6 +233,41 @@ public class RegionAnalysis {
         return false;
     }
 
+    private boolean checkSwitchCaseRegion(ControlFlowGraph cfg, Region region) {
+        logger.log(Level.FINEST, "Check switch case region {0}", region);
+        if (region.getChildCount() < 3) {
+            return false;
+        }
+        Region switchRegion = null;
+        List<Region> caseRegions = new ArrayList<Region>();
+        for (Region child : region.getChildren()) {
+            if (child.getEntry().equals(region.getEntry())
+                    && child.getExit().getType() == BasicBlockType.SWITCH) {
+                switchRegion = child;
+            } else {
+                caseRegions.add(child);
+            }
+        }
+        if (switchRegion == null) {
+            return false;
+        }
+        for (Region caseRegion : caseRegions) {
+            if (!cfg.containsEdge(switchRegion.getExit(), caseRegion.getEntry())) {
+                return false;
+            }
+            Edge edge = cfg.getEdge(switchRegion.getExit(), caseRegion.getEntry());
+            if (!(edge.getValue() instanceof CaseValues)) {
+                return false;
+            }
+        }
+        region.setParentType(ParentType.SWITCH_CASE);
+        switchRegion.setChildType(ChildType.SWITCH);
+        for (Region caseRegion : caseRegions) {
+            caseRegion.setChildType(ChildType.CASE);
+        }
+        return true;
+    }
+
     private boolean checkTryCatchFinally(ControlFlowGraph cfg, Region region) {
         logger.log(Level.FINEST, "Check try catch finally region {0}", region);
         Set<Region> handlerRegions = new HashSet<Region>();
@@ -421,8 +458,15 @@ public class RegionAnalysis {
                         BasicBlock t = subCfg.getEdgeTarget(joinEdge);
                         subCfg.removeEdge(exitEdge);
                         t.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT);
-                        exitEdge.addAttribute(EdgeAttribute.BREAK_LABEL_EDGE);
-                        subCfg.addEdge(s, t, exitEdge);
+                        if (s.getType() == BasicBlockType.JUMP_IF) {
+                            BasicBlock empty = new BasicBlockImpl();
+                            subCfg.addBasicBlock(empty);
+                            subCfg.addEdge(s, empty, exitEdge);
+                            subCfg.addEdge(empty, t, new EdgeImpl());
+                        } else {
+                            subCfg.addEdge(s, t, exitEdge);
+                            exitEdge.addAttribute(EdgeAttribute.BREAK_LABEL_EDGE);
+                        }
                     }
                     break;
                 }
@@ -457,6 +501,7 @@ public class RegionAnalysis {
                 if (!(checkTrivialRegion(region)
                         || checkIfThenElseRegion(cfg, region)
                         || checkIfThenRegion(cfg, region)
+                        || checkSwitchCaseRegion(cfg, region)
                         || checkSequenceRegion(region)
                         || checkSingleExitLoopRegion(cfg, region)
                         || checkTryCatchFinally(cfg, region)
