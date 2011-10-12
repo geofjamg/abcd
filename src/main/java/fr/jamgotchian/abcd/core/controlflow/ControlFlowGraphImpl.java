@@ -468,7 +468,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     private void removeUnnecessaryBlock() {
         Set<BasicBlock> blocksToRemove = new HashSet<BasicBlock>();
         for (BasicBlock block : graph.getVertices()) {
-            if (getPredecessorCountOf(block) == 1 &&
+            if (getPredecessorCountOf(block) >= 1 &&
                 getNormalSuccessorCountOf(block) == 1) {
                 Range range = block.getRange();
                 boolean remove = true;
@@ -643,14 +643,10 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     private void analyseLoopLevel() {
-        Map<Integer, NaturalLoop> loopsByLevel = new HashMap<Integer, NaturalLoop>();
-
         // from outermost to innermost loops
         for (BasicBlock loopHead : dfst.getNodes()) {
             NaturalLoop nl = naturalLoops.get(loopHead);
             if (nl != null) {
-                loopsByLevel.put(nl.getHead().getLoopLevel()+1, nl);
-
                 // increase loop level for all blocks of the loop
                 for (BasicBlock block : nl.getBody()) {
                     block.setLoopLevel(block.getLoopLevel()+1);
@@ -667,7 +663,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 naturalLoops.put(nl.getHead(), nl);
                 logger.log(Level.FINER, " Found self loop : {0}", nl);
 
-                loopsByLevel.put(block.getLoopLevel()+1, nl);
                 block.setLoopLevel(block.getLoopLevel()+1);
             }
         }
@@ -677,15 +672,18 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                     new Object[] {block, block.getLoopLevel()});
         }
 
-        for (Edge edge : graph.getEdges()) {
-            BasicBlock source = graph.getEdgeSource(edge);
-            BasicBlock target = graph.getEdgeTarget(edge);
-            if (target.getLoopLevel() < source.getLoopLevel()) {
-                logger.log(Level.FINEST, "Loop exit edge {0}", graph.toString(edge));
-                edge.addAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
-                loopsByLevel.get(source.getLoopLevel()).getExits().add(edge);
+        for (NaturalLoop nl : naturalLoops.values()) {
+            for (BasicBlock bb : nl.getBody()) {
+                for (Edge e : graph.getOutgoingEdgesOf(bb)) {
+                    BasicBlock t = graph.getEdgeTarget(e);
+                    if (!nl.getBody().contains(t)) {
+                        logger.log(Level.FINEST, "Loop exit edge {0}", graph.toString(e));
+                        e.addAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
+                        nl.getExits().add(e);
+                    }
+                }
             }
-       }
+        }
     }
 
     public void addFakeEdges() {
