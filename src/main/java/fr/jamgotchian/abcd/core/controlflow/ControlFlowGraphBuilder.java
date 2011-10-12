@@ -108,6 +108,7 @@ public class ControlFlowGraphBuilder {
             // split at catchStart
             BasicBlockSplit catchStartSplit = graph.splitBasicBlockAt(entry.getCatchStart());
             BasicBlock catchEntryBlock = catchStartSplit.getBlockAfter();
+            catchEntryBlock.setType(BasicBlockType.HANDLER);
             graph.removeEdge(catchStartSplit.getBlockBefore(), catchEntryBlock);
 
             // link all blocks contained in the try range to the catch entry block

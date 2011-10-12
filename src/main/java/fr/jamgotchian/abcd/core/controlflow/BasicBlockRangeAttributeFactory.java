@@ -56,6 +56,12 @@ public class BasicBlockRangeAttributeFactory implements AttributeFactory<BasicBl
                     attrs.put("color", "orange");
                     attrs.put("style", "filled");
                     break;
+
+                case HANDLER:
+                    attrs.put("shape", "trapezium");
+                    attrs.put("color", "pink");
+                    attrs.put("style", "filled");
+                    break;
             }
         }
         attrs.put("label", "\"" + block + "\"");
