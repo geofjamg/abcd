@@ -57,7 +57,7 @@ public class TreeAddressCodeBuilder {
 
     private final StringConst magicString;
 
-    private final ControlFlowGraph graph;
+    private final ControlFlowGraph cfg;
 
     private final ClassNameFactory classNameFactory;
 
@@ -69,11 +69,11 @@ public class TreeAddressCodeBuilder {
 
     private final Set<Variable> catchTmpVars;
 
-    public TreeAddressCodeBuilder(ControlFlowGraph graph,
+    public TreeAddressCodeBuilder(ControlFlowGraph cfg,
                                   ClassNameFactory classNameFactory,
                                   TemporaryVariableFactory tmpVarFactory,
                                   TACInstFactory instFactory) {
-        this.graph = graph;
+        this.cfg = cfg;
         this.classNameFactory = classNameFactory;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
@@ -100,7 +100,7 @@ public class TreeAddressCodeBuilder {
         VariableStack outputStack = inputStack.clone();
 
         if (block.getType() != BasicBlockType.EMPTY) {
-            Edge edge = graph.getFirstIncomingEdgeOf(block);
+            Edge edge = cfg.getFirstIncomingEdgeOf(block);
             if (edge != null && edge.isExceptional()) {
                 Variable exceptionVar = tmpVarFactory.create(block);
                 TACInst tmpInst;
@@ -125,7 +125,7 @@ public class TreeAddressCodeBuilder {
         BasicBlock3ACBuilder builder
                 = new BasicBlock3ACBuilder(classNameFactory, tmpVarFactory,
                                            outputStack, instFactory);
-        block.visit(builder);
+        builder.visit(block, cfg);
         block.setOutputStack(outputStack);
 
         if (block.getOutputStack().size() > 0) {
@@ -174,10 +174,10 @@ public class TreeAddressCodeBuilder {
     private void cleanupExceptionHandlers() {
         Set<Variable> finallyVars = new HashSet<Variable>();
 
-        for (BasicBlock bb : graph.getBasicBlocks()) {
+        for (BasicBlock bb : cfg.getBasicBlocks()) {
 
             boolean isExceptionHandlerHead = true;
-            for (Edge incomingEdge : graph.getIncomingEdgesOf(bb)) {
+            for (Edge incomingEdge : cfg.getIncomingEdgesOf(bb)) {
                 if (!incomingEdge.isExceptional()) {
                     isExceptionHandlerHead = false;
                     break;
@@ -221,7 +221,7 @@ public class TreeAddressCodeBuilder {
                 }
 
                 if (remove) {
-                    for (Edge incomingEdge : graph.getIncomingEdgesOf(bb)) {
+                    for (Edge incomingEdge : cfg.getIncomingEdgesOf(bb)) {
                         ((ExceptionHandlerInfo) incomingEdge.getValue()).setVariable(excVar);
                     }
                     logger.log(Level.FINEST, "Cleanup exception handler (bb={0}, excVar={1}) :",
@@ -234,7 +234,7 @@ public class TreeAddressCodeBuilder {
             }
         }
 
-        for (BasicBlock bb : graph.getBasicBlocks()) {
+        for (BasicBlock bb : cfg.getBasicBlocks()) {
             TACInstSeq seq = bb.getInstructions();
             for (int i = 0; i < seq.size()-1; i++) {
                 TACInst inst = seq.get(i);
@@ -266,21 +266,21 @@ public class TreeAddressCodeBuilder {
     }
 
     public void build() {
-        for (BasicBlock bb : graph.getBasicBlocks()) {
+        for (BasicBlock bb : cfg.getBasicBlocks()) {
             bb.setInstructions(new TACInstSeq());
         }
 
-        List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(graph.getDFST().getNodes());
+        List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(cfg.getDFST().getNodes());
         while (blocksToProcess.size() > 0) {
             for (Iterator<BasicBlock> it = blocksToProcess.iterator(); it.hasNext();) {
                 BasicBlock block = it.next();
 
                 List<VariableStack> inputStacks = new ArrayList<VariableStack>();
-                for (Edge incomingEdge : graph.getIncomingEdgesOf(block)) {
+                for (Edge incomingEdge : cfg.getIncomingEdgesOf(block)) {
                     if (incomingEdge.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
                         continue;
                     }
-                    BasicBlock pred = graph.getEdgeSource(incomingEdge);
+                    BasicBlock pred = cfg.getEdgeSource(incomingEdge);
                     inputStacks.add(pred.getOutputStack().clone());
                 }
 

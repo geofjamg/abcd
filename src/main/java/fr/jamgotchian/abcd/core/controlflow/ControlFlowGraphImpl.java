@@ -292,7 +292,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public void addBasicBlock(BasicBlock block) {
-        block.setGraph(this);
         graph.addVertex(block);
         if (block.getRange() != null) {
             basicBlocks.put(block.getRange(), block);
@@ -300,7 +299,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public void removeBasicBlock(BasicBlock block) {
-        block.setGraph(null);
         graph.removeVertex(block);
         if (block.getRange() != null) {
             basicBlocks.remove(block.getRange());
@@ -329,7 +327,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
                 // create the block after the split
                 blockAfter = new BasicBlockImpl(index, last, blockBefore.getType());
-                blockAfter.setGraph(this);
                 graph.splitVertex(blockBefore, blockAfter);
                 basicBlocks.put(blockAfter.getRange(), blockAfter);
 
@@ -551,7 +548,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             graph.removeEdge(criticalEdge);
             BasicBlock emptyBlock = new BasicBlockImpl(BasicBlockType.EMPTY);
             emptyBlock.setInstructions(new TACInstSeq());
-            emptyBlock.setGraph(this);
             graph.addVertex(emptyBlock);
             graph.addEdge(source, emptyBlock, criticalEdge);
             graph.addEdge(emptyBlock, target, EDGE_FACTORY.createEdge());
@@ -739,7 +735,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public void exportBytecode(Writer writer) throws IOException {
         graph.export(writer, "\"" + name + "\"",
-                     new BasicBlockBytecodeAttributeFactory(),
+                     new BasicBlockBytecodeAttributeFactory(this),
                      new EdgeAttributeFactory());
     }
 

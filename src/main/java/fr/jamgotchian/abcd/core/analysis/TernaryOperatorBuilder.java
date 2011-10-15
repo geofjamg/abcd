@@ -52,7 +52,7 @@ public class TernaryOperatorBuilder {
     private static final Logger logger
             = Logger.getLogger(TernaryOperatorBuilder.class.getName());
 
-    private final ControlFlowGraph CFG;
+    private final ControlFlowGraph cfg;
 
     private final TemporaryVariableFactory tmpVarFactory;
 
@@ -61,15 +61,15 @@ public class TernaryOperatorBuilder {
     public TernaryOperatorBuilder(ControlFlowGraph CFG,
                                   TemporaryVariableFactory tmpVarFactory,
                                   TACInstFactory instFactory) {
-        this.CFG = CFG;
+        this.cfg = CFG;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
     }
 
     public void build() {
-        for (BasicBlock joinBlock : CFG.getDFST()) {
+        for (BasicBlock joinBlock : cfg.getDFST()) {
             TACInstSeq joinInsts = joinBlock.getInstructions();
-            
+
             for (int i = 0; i < joinInsts.size(); i++) {
                 TACInst inst = joinInsts.get(i);
                 if (!(inst instanceof ChoiceInst)) {
@@ -87,9 +87,8 @@ public class TernaryOperatorBuilder {
                             = HashMultimap.create();
                     for (Variable var : choiceInst.getChoices()) {
                         BasicBlock block = var.getBasicBlock();
-                        DominatorInfo<BasicBlock, Edge> dominatorInfo
-                                = block.getGraph().getDominatorInfo();
-                        BasicBlock forkBlock = dominatorInfo.getDominatorsTree().getParent(block);
+                        DominatorInfo<BasicBlock, Edge> domInfo = cfg.getDominatorInfo();
+                        BasicBlock forkBlock = domInfo.getDominatorsTree().getParent(block);
                         forkBlocks.put(forkBlock, var);
                     }
 
@@ -105,9 +104,9 @@ public class TernaryOperatorBuilder {
 
                             BasicBlock block1 = var1.getBasicBlock();
                             BasicBlock block2 = var2.getBasicBlock();
-                            PostDominatorInfo<BasicBlock, Edge> postDominatorInfo = forkBlock.getGraph().getPostDominatorInfo();
-                            Edge forkEdge1 = postDominatorInfo.getPostDominanceFrontierOf(block1).iterator().next();
-                            Edge forkEdge2 = postDominatorInfo.getPostDominanceFrontierOf(block2).iterator().next();
+                            PostDominatorInfo<BasicBlock, Edge> postDomInfo = cfg.getPostDominatorInfo();
+                            Edge forkEdge1 = postDomInfo.getPostDominanceFrontierOf(block1).iterator().next();
+                            Edge forkEdge2 = postDomInfo.getPostDominanceFrontierOf(block2).iterator().next();
                             Variable thenVar = null;
                             Variable elseVar = null;
                             if (Boolean.TRUE.equals(forkEdge1.getValue())

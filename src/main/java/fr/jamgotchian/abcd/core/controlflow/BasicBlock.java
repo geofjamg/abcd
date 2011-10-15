@@ -35,12 +35,6 @@ public interface BasicBlock {
 
     void setLoopLevel(int loopLevel);
 
-    ControlFlowGraph getGraph();
-
-    void setGraph(ControlFlowGraph graph);
-
-    void visit(BasicBlockVisitor visitor);
-
     int getOrder();
 
     void setOrder(int order);

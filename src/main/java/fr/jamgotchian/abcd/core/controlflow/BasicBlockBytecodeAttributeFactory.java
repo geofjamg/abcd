@@ -26,11 +26,17 @@ import java.util.Map;
  */
 public class BasicBlockBytecodeAttributeFactory implements AttributeFactory<BasicBlock> {
 
-    public Map<String, String> getAttributes(BasicBlock block) {
+    private final ControlFlowGraph cfg;
+
+    public BasicBlockBytecodeAttributeFactory(ControlFlowGraph cfg) {
+        this.cfg = cfg;
+    }
+
+    public Map<String, String> getAttributes(BasicBlock bb) {
         Map<String, String> attrs = new HashMap<String, String>(3);
         attrs.put("shape", "box");
         attrs.put("color", "black");
-        attrs.put("label", "< " + OutputUtil.toDOTHTMLLike(block) + " >");
+        attrs.put("label", "< " + OutputUtil.toDOTHTMLLike(cfg, bb) + " >");
         return attrs;
     }
 }

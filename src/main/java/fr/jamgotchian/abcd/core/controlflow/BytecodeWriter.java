@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.output.InstnWriter;
 import java.awt.Color;
 import java.io.IOException;
@@ -41,7 +42,7 @@ import org.objectweb.asm.tree.VarInsnNode;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BytecodeWriter implements BasicBlockVisitor {
+public class BytecodeWriter extends BytecodeRangeVisitor {
 
     protected final InstnWriter writer;
 
@@ -49,18 +50,18 @@ public class BytecodeWriter implements BasicBlockVisitor {
         this.writer = writer;
     }
 
-    private void writeEol(BasicBlock block, int index) throws IOException {
-        if (index < block.getRange().getLast()) {
+    private void writeEol(BasicBlock bb, int index) throws IOException {
+        if (index < bb.getRange().getLast()) {
             writer.writeEol();
         }
     }
 
-    public void before(BasicBlock block) {
+    public void before(BasicBlock bb) {
         try {
             writer.begin();
-            if (block.getType() == BasicBlockType.ENTRY) {
+            if (bb.getType() == BasicBlockType.ENTRY) {
                 writer.write("ENTRY", Color.BLACK);
-            } else if (block.getType() == BasicBlockType.EXIT) {
+            } else if (bb.getType() == BasicBlockType.EXIT) {
                 writer.write("EXIT", Color.BLACK);
             }
         } catch(IOException exc) {
@@ -68,136 +69,136 @@ public class BytecodeWriter implements BasicBlockVisitor {
         }
     }
 
-    public void visitFieldInsn(BasicBlock block, int index, FieldInsnNode node) {
+    public void visitFieldInsn(BasicBlock bb, int index, FieldInsnNode node) {
         try {
             writer.writeFieldOrMethodInstn(index, node.getOpcode(), node.owner, node.name);
-            writeEol(block, index);
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void visitIincInsn(BasicBlock block, int index, IincInsnNode node) {
+    public void visitIincInsn(BasicBlock bb, int index, IincInsnNode node) {
         try {
             writer.writeIIncInstn(index, node.getOpcode(), node.var, node.incr);
-            writeEol(block, index);
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void visitInsn(BasicBlock block, int index, InsnNode node) {
+    public void visitInsn(BasicBlock bb, int index, InsnNode node) {
         try {
             writer.writeInstn(index, node.getOpcode());
-            writeEol(block, index);
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void visitIntInsn(BasicBlock block, int index, IntInsnNode node) {
+    public void visitIntInsn(BasicBlock bb, int index, IntInsnNode node) {
         try {
             writer.writeIntInstn(index, node.getOpcode(), node.operand);
-            writeEol(block, index);
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void visitJumpInsn(BasicBlock block, int index, JumpInsnNode node) {
+    public void visitJumpInsn(BasicBlock bb, int index, JumpInsnNode node, LabelManager labelManager) {
         try {
-            writer.writerJumpInstn(index, node.getOpcode(), block.getGraph().getLabelManager().getLabel(node.label).getId());
-            writeEol(block, index);
+            writer.writerJumpInstn(index, node.getOpcode(), labelManager.getLabel(node.label).getId());
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void visitLabel(BasicBlock block, int index, LabelNode node) {
+    public void visitLabel(BasicBlock bb, int index, LabelNode node, LabelManager labelManager) {
         try {
-            writer.writeLabelInstn(index, block.getGraph().getLabelManager().getLabel(node).getId());
-            writeEol(block, index);
+            writer.writeLabelInstn(index, labelManager.getLabel(node).getId());
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void visitLdcInsn(BasicBlock block, int index, LdcInsnNode node) {
+    public void visitLdcInsn(BasicBlock bb, int index, LdcInsnNode node) {
         try {
             writer.writeLdcInstn(index, node.getOpcode(), node.cst);
-            writeEol(block, index);
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void visitLookupSwitchInsn(BasicBlock block, int index, LookupSwitchInsnNode node) {
+    public void visitLookupSwitchInsn(BasicBlock bb, int index, LookupSwitchInsnNode node, LabelManager labelManager) {
         try {
             List<Integer> labelsIndex = new ArrayList<Integer>(node.labels.size());
             for (int i = 0; i < node.labels.size(); i++) {
                 LabelNode labelNode = (LabelNode) node.labels.get(i);
-                labelsIndex.add(block.getGraph().getLabelManager().getLabel(labelNode).getId());
+                labelsIndex.add(labelManager.getLabel(labelNode).getId());
             }
             writer.writeLookupSwitchInstn(index, node.getOpcode(), node.keys,
-                                          block.getGraph().getLabelManager().getLabel(node.dflt).getId(), labelsIndex);
-            writeEol(block, index);
+                                          labelManager.getLabel(node.dflt).getId(), labelsIndex);
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void visitMethodInsn(BasicBlock block, int index, MethodInsnNode node) {
+    public void visitMethodInsn(BasicBlock bb, int index, MethodInsnNode node) {
         try {
             writer.writeFieldOrMethodInstn(index, node.getOpcode(), node.owner, node.name);
-            writeEol(block, index);
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void visitMultiANewArrayInsn(BasicBlock block, int index, MultiANewArrayInsnNode node) {
+    public void visitMultiANewArrayInsn(BasicBlock bb, int index, MultiANewArrayInsnNode node) {
         try {
             writer.writeMultiANewArrayInstn(index, node.getOpcode(), node.desc, node.dims);
-            writeEol(block, index);
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void visitTableSwitchInsn(BasicBlock block, int index, TableSwitchInsnNode node) {
+    public void visitTableSwitchInsn(BasicBlock bb, int index, TableSwitchInsnNode node, LabelManager labelManager) {
         try {
             List<Integer> labelsIndex = new ArrayList<Integer>(node.labels.size());
             for (int i = 0; i < node.labels.size(); i++) {
                 LabelNode labelNode = (LabelNode) node.labels.get(i);
-                labelsIndex.add(block.getGraph().getLabelManager().getLabel(labelNode).getId());
+                labelsIndex.add(labelManager.getLabel(labelNode).getId());
             }
             writer.writeTableSwitchInstn(index, node.getOpcode(), node.min, node.max,
-                                         block.getGraph().getLabelManager().getLabel(node.dflt).getId(), labelsIndex);
-            writeEol(block, index);
+                                         labelManager.getLabel(node.dflt).getId(), labelsIndex);
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void visitTypeInsnInsn(BasicBlock block, int index, TypeInsnNode node) {
+    public void visitTypeInsnInsn(BasicBlock bb, int index, TypeInsnNode node) {
         try {
             writer.writeTypeInstn(index, node.getOpcode(), node.desc);
-            writeEol(block, index);
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void visitVarInsn(BasicBlock block, int index, VarInsnNode node) {
+    public void visitVarInsn(BasicBlock bb, int index, VarInsnNode node) {
         try {
             writer.writeVarInstn(index, node.getOpcode(), node.var);
-            writeEol(block, index);
+            writeEol(bb, index);
         } catch(IOException exc) {
             throw new ABCDException(exc);
         }
     }
 
-    public void after(BasicBlock block) {
+    public void after(BasicBlock bb) {
         try {
             writer.end();
         } catch(IOException exc) {

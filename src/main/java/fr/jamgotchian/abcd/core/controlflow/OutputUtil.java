@@ -45,7 +45,7 @@ public class OutputUtil {
         }
 
         @Override
-        public void before(BasicBlock block) {
+        public void before(BasicBlock cfg) {
             try {
                 writer.begin();
             } catch(IOException exc) {
@@ -54,37 +54,37 @@ public class OutputUtil {
         }
     }
 
-    public static String toText(BasicBlock block) {
+    public static String toText(ControlFlowGraph cfg, BasicBlock bb) {
         StringWriter writer = new StringWriter();
-        block.visit(new BytecodeWriter(new TextInstnWriter(writer)));
+        new BytecodeWriter(new TextInstnWriter(writer)).visit(bb, cfg);
         return writer.toString();
     }
 
     public static String toText(InsnList instructions) {
         StringWriter writer = new StringWriter();
-        ControlFlowGraph graph = new ControlFlowGraphImpl("", instructions);
-        BasicBlock block = graph.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next();
-        block.visit(new InstnPrintVisitor(new TextInstnWriter(writer)));
+        ControlFlowGraph cfg = new ControlFlowGraphImpl("tmp", instructions);
+        BasicBlock bb = cfg.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next();
+        new InstnPrintVisitor(new TextInstnWriter(writer)).visit(bb, cfg);
         return writer.toString();
     }
 
-    public static String toHTML(BasicBlock block) {
+    public static String toHTML(ControlFlowGraph cfg, BasicBlock bb) {
         StringWriter writer = new StringWriter();
-        block.visit(new BytecodeWriter(new HTMLInstnWriter(writer)));
+        new BytecodeWriter(new HTMLInstnWriter(writer)).visit(bb, cfg);
         return writer.toString();
     }
 
-    public static String toDOTHTMLLike(BasicBlock block) {
+    public static String toDOTHTMLLike(ControlFlowGraph cfg, BasicBlock bb) {
         StringWriter writer = new StringWriter();
-        block.visit(new BytecodeWriter(new DOTHTMLLikeInstnWriter(writer)));
+        new BytecodeWriter(new DOTHTMLLikeInstnWriter(writer)).visit(bb, cfg);
         return writer.toString();
     }
 
     public static String toHTML(InsnList instructions) {
         StringWriter writer = new StringWriter();
-        ControlFlowGraph graph = new ControlFlowGraphImpl("", instructions);
-        BasicBlock block = graph.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next();
-        block.visit(new InstnPrintVisitor(new HTMLInstnWriter(writer)));
+        ControlFlowGraph cfg = new ControlFlowGraphImpl("tmp", instructions);
+        BasicBlock bb = cfg.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next();
+        new InstnPrintVisitor(new HTMLInstnWriter(writer)).visit(bb, cfg);
         return writer.toString();
     }
 }
