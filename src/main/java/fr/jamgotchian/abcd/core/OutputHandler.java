@@ -19,7 +19,6 @@ package fr.jamgotchian.abcd.core;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.RPST;
-import fr.jamgotchian.abcd.core.region.RegionGraph;
 
 /**
  *
@@ -32,8 +31,6 @@ public interface OutputHandler {
     void treeAddressCodeBuilt(ControlFlowGraph graph);
 
     void rpstBuilt(RPST rpst);
-
-    void regionGraphBuilt(RegionGraph regionGraph);
 
     void abstractSyntaxTreeBuilt(CompilationUnit compilUnit);
 }

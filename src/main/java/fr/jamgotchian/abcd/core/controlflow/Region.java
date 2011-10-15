@@ -19,8 +19,10 @@ package fr.jamgotchian.abcd.core.controlflow;
 import fr.jamgotchian.abcd.core.controlflow.util.TACInstComparator;
 import fr.jamgotchian.abcd.core.controlflow.util.VariableMapping;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -40,6 +42,8 @@ public class Region {
     private ParentType parentType;
 
     private ChildType childType;
+
+    private Object data;
 
     public Region(BasicBlock entry, BasicBlock exit, ParentType parentType) {
         this.entry = entry;
@@ -98,6 +102,25 @@ public class Region {
         } else {
             return children.iterator().next();
         }
+    }
+
+    public Region getFirstChild(ChildType childType) {
+        for (Region child : children) {
+            if (child.getChildType() == childType) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    public Collection<Region> getChildren(ChildType childType) {
+        List<Region> children2 = new ArrayList<Region>();
+        for (Region child : children) {
+            if (child.getChildType() == childType) {
+                children2.add(child);
+            }
+        }
+        return children2;
     }
 
     public int getChildCount() {
@@ -164,6 +187,14 @@ public class Region {
         for (Region child : children) {
             child.addBasicBlocks(bbs);
         }
+    }
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
     }
 
     public boolean deepEquals(Region other) {

@@ -21,7 +21,6 @@ import fr.jamgotchian.abcd.core.controlflow.BasicBlockRangeAttributeFactory;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.EdgeAttributeFactory;
 import fr.jamgotchian.abcd.core.controlflow.RPST;
-import fr.jamgotchian.abcd.core.region.RegionGraph;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -138,23 +137,6 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             Writer writer = new FileWriter(baseName + "_RPST.dot");
             try {
                 rpst.export(writer);
-            } finally {
-                writer.close();
-            }
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, e.toString(), e);
-        }
-    }
-
-    @Override
-    public void regionGraphBuilt(RegionGraph graph) {
-
-        String baseName = outputDir.getPath() + "/" + graph.getName();
-
-        try {
-            Writer writer = new FileWriter(baseName + "_RG.dot");
-            try {
-                graph.export(writer);
             } finally {
                 writer.close();
             }

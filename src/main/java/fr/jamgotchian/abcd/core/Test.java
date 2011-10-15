@@ -472,27 +472,27 @@ public class Test {
         }
     }
 
-    public void testDoWhile() {
-        int a = 2;
-        do {
-            a();
-        } while(a > 3);
-    }
-
-    public void testDoWhileBreak() {
-        int a = 2;
-        do {
-            if (a == 2) {
-                a();
-                break;
-            }
-            if (a == 3) {
-                b();
-                break;
-            }
-        } while(a > 3);
-        c();
-    }
+//    public void testDoWhile() {
+//        int a = 2;
+//        do {
+//            a();
+//        } while(a > 3);
+//    }
+//
+//    public void testDoWhileBreak() {
+//        int a = 2;
+//        do {
+//            if (a == 2) {
+//                a();
+//                break;
+//            }
+//            if (a == 3) {
+//                b();
+//                break;
+//            }
+//        } while(a > 3);
+//        c();
+//    }
 
     public void testWhileWithCond() {
         int a  = 0;

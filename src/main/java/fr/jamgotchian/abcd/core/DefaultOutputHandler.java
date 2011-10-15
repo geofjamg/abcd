@@ -21,7 +21,6 @@ import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.RPST;
 import fr.jamgotchian.abcd.core.output.TextCodeWriter;
-import fr.jamgotchian.abcd.core.region.RegionGraph;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -55,9 +54,6 @@ public class DefaultOutputHandler implements OutputHandler {
     }
 
     public void rpstBuilt(RPST rpst) {
-    }
-
-    public void regionGraphBuilt(RegionGraph regionGraph) {
     }
 
     public void abstractSyntaxTreeBuilt(CompilationUnit compilUnit) {

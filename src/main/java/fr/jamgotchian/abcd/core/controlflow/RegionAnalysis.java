@@ -259,6 +259,7 @@ public class RegionAnalysis {
             if (!(edge.getValue() instanceof CaseValues)) {
                 return false;
             }
+            caseRegion.setData(edge.getValue());
         }
         region.setParentType(ParentType.SWITCH_CASE);
         switchRegion.setChildType(ChildType.SWITCH);
@@ -374,6 +375,9 @@ public class RegionAnalysis {
             } else {
                 handlerRegion.setChildType(ChildType.CATCH);
             }
+            ExceptionHandlerInfo info
+                    = (ExceptionHandlerInfo) cfg.getFirstIncomingEdgeOf(handlerRegion.getEntry()).getValue();
+            handlerRegion.setData(info);
             region.addChild(handlerRegion);
         }
         for (Region child : tryRegion.getSubRegions()) {
@@ -459,7 +463,7 @@ public class RegionAnalysis {
                         subCfg.removeEdge(exitEdge);
                         t.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT);
                         if (s.getType() == BasicBlockType.JUMP_IF) {
-                            BasicBlock empty = new BasicBlockImpl();
+                            BasicBlock empty = new BasicBlockImpl(BasicBlockType.EMPTY);
                             subCfg.addBasicBlock(empty);
                             subCfg.addEdge(s, empty, exitEdge);
                             subCfg.addEdge(empty, t, new EdgeImpl());
@@ -516,12 +520,8 @@ public class RegionAnalysis {
         return rpst;
     }
 
-    public void analyse(OutputHandler handler) {
+    public RPST analyse() {
         iSubgraph = 0;
-        RPST rpst = checkRegions(cfg0);
-        handler.rpstBuilt(rpst);
-        StringBuilder builder = new StringBuilder();
-        rpst.print(builder);
-        logger.log(Level.FINER, "Region analysis :\n{0}", builder.toString());
+        return checkRegions(cfg0);
     }
 }

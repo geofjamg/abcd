@@ -27,7 +27,6 @@ import fr.jamgotchian.abcd.core.ast.expr.TypeExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ASTUnaryOperator;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.BreakStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.DoWhileStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
@@ -44,25 +43,19 @@ import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
 import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
-import fr.jamgotchian.abcd.core.region.BasicBlockRegion;
-import fr.jamgotchian.abcd.core.region.BlockRegion;
-import fr.jamgotchian.abcd.core.region.CaseRegion;
-import fr.jamgotchian.abcd.core.region.CatchRegion;
-import fr.jamgotchian.abcd.core.region.IfThenRegion;
-import fr.jamgotchian.abcd.core.region.InfiniteLoopRegion;
-import fr.jamgotchian.abcd.core.region.Region;
-import fr.jamgotchian.abcd.core.region.SwitchCaseRegion;
-import fr.jamgotchian.abcd.core.region.TryCatchFinallyRegion;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.ArrayLengthInst;
 import fr.jamgotchian.abcd.core.controlflow.AssignConstInst;
 import fr.jamgotchian.abcd.core.controlflow.AssignVarInst;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.BinaryInst;
 import fr.jamgotchian.abcd.core.controlflow.ByteConst;
 import fr.jamgotchian.abcd.core.controlflow.CallMethodInst;
 import fr.jamgotchian.abcd.core.controlflow.CallStaticMethodInst;
+import fr.jamgotchian.abcd.core.controlflow.CaseValues;
 import fr.jamgotchian.abcd.core.controlflow.CastInst;
+import fr.jamgotchian.abcd.core.controlflow.ChildType;
 import fr.jamgotchian.abcd.core.controlflow.ChoiceInst;
 import fr.jamgotchian.abcd.core.controlflow.ClassConst;
 import fr.jamgotchian.abcd.core.controlflow.ConditionalInst;
@@ -82,7 +75,9 @@ import fr.jamgotchian.abcd.core.controlflow.MonitorExitInst;
 import fr.jamgotchian.abcd.core.controlflow.NewArrayInst;
 import fr.jamgotchian.abcd.core.controlflow.NewObjectInst;
 import fr.jamgotchian.abcd.core.controlflow.NullConst;
+import fr.jamgotchian.abcd.core.controlflow.ParentType;
 import fr.jamgotchian.abcd.core.controlflow.PhiInst;
+import fr.jamgotchian.abcd.core.controlflow.Region;
 import fr.jamgotchian.abcd.core.controlflow.ReturnInst;
 import fr.jamgotchian.abcd.core.controlflow.SetArrayInst;
 import fr.jamgotchian.abcd.core.controlflow.SetFieldInst;
@@ -96,12 +91,6 @@ import fr.jamgotchian.abcd.core.controlflow.UnaryInst;
 import fr.jamgotchian.abcd.core.controlflow.Variable;
 import fr.jamgotchian.abcd.core.controlflow.VariableID;
 import fr.jamgotchian.abcd.core.controlflow.util.EmptyTACInstVisitor;
-import fr.jamgotchian.abcd.core.region.DoWhileLoopRegion;
-import fr.jamgotchian.abcd.core.region.IfThenElseRegion;
-import fr.jamgotchian.abcd.core.region.InlinedFinallyBreakRegion;
-import fr.jamgotchian.abcd.core.region.LabeledRegion;
-import fr.jamgotchian.abcd.core.region.RegionType;
-import fr.jamgotchian.abcd.core.region.WhileLoopRegion;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -549,199 +538,143 @@ public class AbstractSyntaxTreeBuilder {
 
     private void buildAST(Region region, BlockStatement blockStmt) {
         logger.log(Level.FINEST, "Build AST from region {0} {1}",
-                new Object[] {region, region.getTypeName()});
+                new Object[] {region, region.getParentType()});
 
-        switch (region.getType()) {
-            case EMPTY:
+        switch (region.getParentType()) {
+            case ROOT:
+            case TRIVIAL:
+                buildAST(region.getFirstChild(), blockStmt);
                 break;
 
             case BASIC_BLOCK: {
-                BasicBlockRegion region2 = (BasicBlockRegion) region;
-                BasicBlock bb = region2.getBasicBlock();
-                RegionTACInstVisitor visitor = new RegionTACInstVisitor();
-                bb.getInstructions().accept(visitor, blockStmt);
-                break;
-            }
-
-            case BLOCK: {
-                BlockRegion region2 = (BlockRegion) region;
-                for (Region child : region2.getRegions()) {
-                    buildAST(child, blockStmt);
+                BasicBlock bb = region.getEntry();
+                if (bb.getType() != BasicBlockType.EMPTY) {
+                    RegionTACInstVisitor visitor = new RegionTACInstVisitor();
+                    bb.getInstructions().accept(visitor, blockStmt);
                 }
                 break;
             }
 
-            case IF_THEN_ELSE_JOIN:
-            case IF_THEN_BREAK_ELSE_BREAK: {
-                IfThenElseRegion region2 = (IfThenElseRegion) region;
+            case SEQUENCE: {
+                buildAST(region.getFirstChild(ChildType.FIRST), blockStmt);
+                buildAST(region.getFirstChild(ChildType.SECOND), blockStmt);
+                break;
+            }
 
-                buildAST(region2.getIfRegion(), blockStmt);
+            case IF_THEN_ELSE: {
+                buildAST(region.getFirstChild(ChildType.IF), blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
                 ifStmt.invertCondition();
                 BlockStatement thenBlockStmt = new BlockStatement();
                 ifStmt.setThen(thenBlockStmt);
                 BlockStatement elseBlockStmt = new BlockStatement();
                 ifStmt.setElse(elseBlockStmt);
-                buildAST(region2.getThenRegion(), elseBlockStmt);
-                buildAST(region2.getElseRegion(), thenBlockStmt);
+                buildAST(region.getFirstChild(ChildType.ELSE), elseBlockStmt);
+                buildAST(region.getFirstChild(ChildType.THEN), thenBlockStmt);
                 if (ifStmt.getThen().isEmpty() && ifStmt.getElse().isEmpty()) {
                     ifStmt.remove();
                 }
                 break;
             }
 
-            case IF_THEN_JOIN:
-            case IF_THEN_BREAK: {
-                IfThenRegion region2 = (IfThenRegion) region;
-
-                buildAST(region2.getIfRegion(), blockStmt);
+            case IF_THEN:
+            case IF_NOT_THEN: {
+                buildAST(region.getFirstChild(ChildType.IF), blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
-                if (region2.mustInvertCondition()) {
+                if (region.getParentType() == ParentType.IF_NOT_THEN) {
                     ifStmt.invertCondition();
                 }
                 BlockStatement thenBlockStmt = new BlockStatement();
                 ifStmt.setThen(thenBlockStmt);
-                buildAST(region2.getThenRegion(), thenBlockStmt);
-                if (region.getType() == RegionType.IF_THEN_BREAK) {
-                    thenBlockStmt.add(new BreakStatement());
-                }
-                if (ifStmt.getThen().isEmpty()) {
-                    ifStmt.remove();
-                }
+                buildAST(region.getFirstChild(ChildType.THEN), thenBlockStmt);
+//                if (ifStmt.getThen().isEmpty()) {
+//                    ifStmt.remove();
+//                }
                 break;
             }
 
-            case LABELED: {
-                LabeledRegion region2 = (LabeledRegion) region;
-
+            case BREAK_LABEL: {
                 BlockStatement bodyBlockStmt = new BlockStatement();
-                buildAST(region2.getBodyRegion(), bodyBlockStmt);
+                buildAST(region.getFirstChild(), bodyBlockStmt);
 
                 blockStmt.add(new LabeledStatement("LABEL", bodyBlockStmt));
 
                 break;
             }
 
-            case INFINITE_LOOP: {
-                InfiniteLoopRegion region2 = (InfiniteLoopRegion) region;
-
+            case SINGLE_EXIT_LOOP:
+            case SINGLE_EXIT_LOOP_INVERTED_COND: {
                 BlockStatement bodyBlockStmt = new BlockStatement();
-                buildAST(region2.getLoopRegion(), bodyBlockStmt);
-
-                blockStmt.add(new WhileStatement(Expressions.newBooleanExpr(true), bodyBlockStmt));
-
-                break;
-            }
-
-            case DO_WHILE_LOOP: {
-                DoWhileLoopRegion region2 = (DoWhileLoopRegion) region;
-
-                BlockStatement bodyBlockStmt = new BlockStatement();
-                buildAST(region2.getLoopRegion(), bodyBlockStmt);
-
+                buildAST(region.getFirstChild(ChildType.LOOP_HEAD), bodyBlockStmt);
                 IfStatement ifStmt = (IfStatement) bodyBlockStmt.getLast();
-                ifStmt.remove();
-                Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
-                blockStmt.add(new DoWhileStatement(bodyBlockStmt, condition));
-
-                break;
-            }
-
-            case WHILE_LOOP: {
-                WhileLoopRegion region2 = (WhileLoopRegion) region;
-
-                BlockStatement bodyBlockStmt = new BlockStatement();
-                buildAST(region2.getIfRegion(), bodyBlockStmt);
-
-                if (bodyBlockStmt.getFirst() instanceof IfStatement) {
-                    IfStatement ifStmt = (IfStatement) bodyBlockStmt.getFirst();
+                if (bodyBlockStmt.hasSingleStatement()) {
                     ifStmt.remove();
                     Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
-
-                    buildAST(region2.getLoopRegion(), bodyBlockStmt);
-
+                    buildAST(region.getFirstChild(ChildType.LOOP_TAIL), bodyBlockStmt);
                     blockStmt.add(new WhileStatement(condition, bodyBlockStmt));
                 } else {
-                    for (Statement stmt : bodyBlockStmt) {
-                        if (stmt instanceof IfStatement) {
-                            BlockStatement thenBlockStmt = new BlockStatement();
-                            thenBlockStmt.add(new BreakStatement());
-                            IfStatement ifStmt = ((IfStatement) stmt);
-                            ifStmt.invertCondition();
-                            ifStmt.setThen(thenBlockStmt);
-                        }
-                    }
-
-                    buildAST(region2.getLoopRegion(), bodyBlockStmt);
-
+                    BlockStatement thenStmt = new BlockStatement();
+                    thenStmt.add(new BreakStatement());
+                    ifStmt.setThen(thenStmt);
+                    buildAST(region.getFirstChild(ChildType.LOOP_TAIL), bodyBlockStmt);
                     blockStmt.add(new WhileStatement(Expressions.newBooleanExpr(true), bodyBlockStmt));
                 }
-
                 break;
             }
 
             case SWITCH_CASE: {
-                SwitchCaseRegion region2 = (SwitchCaseRegion) region;
-
-                buildAST(region2.getSwitchRegion(), blockStmt);
+                buildAST(region.getFirstChild(ChildType.SWITCH), blockStmt);
                 SwitchCaseStatement switchStmt
                         = (SwitchCaseStatement) blockStmt.getLast();
 
-                for (CaseRegion caseRegion : region2.getCaseRegions()) {
+                for (Region caseRegion : region.getChildren(ChildType.CASE)) {
                     List<Statement> caseStmts = new ArrayList<Statement>();
 
-                    if (caseRegion.getRegion() != null) {
-                        BlockStatement caseCompoundStmt = new BlockStatement();
-                        buildAST(caseRegion.getRegion(), caseCompoundStmt);
-                        for (Statement stmt : caseCompoundStmt) {
-                            caseStmts.add(stmt);
-                        }
-                        caseCompoundStmt.clear();
-                        if (!(caseStmts.get(caseStmts.size()-1) instanceof ReturnStatement)) {
-                            caseStmts.add(new BreakStatement());
-                        }
-                    } else {
+                    BlockStatement caseCompoundStmt = new BlockStatement();
+                    buildAST(caseRegion, caseCompoundStmt);
+                    for (Statement stmt : caseCompoundStmt) {
+                        caseStmts.add(stmt);
+                    }
+                    caseCompoundStmt.clear();
+                    if (!(caseStmts.get(caseStmts.size()-1) instanceof ReturnStatement)) {
                         caseStmts.add(new BreakStatement());
                     }
 
-                    switchStmt.addCase(new CaseStatement(caseRegion.getValues(), caseStmts));
+                    CaseValues values = (CaseValues) caseRegion.getData();
+                    switchStmt.addCase(new CaseStatement(values, caseStmts));
                 }
 
                 break;
             }
 
-            case INLINED_FINALLY_BREAK: {
-                InlinedFinallyBreakRegion region2 = (InlinedFinallyBreakRegion) region;
-
-                buildAST(region2.getTryRegion(), blockStmt);
-
+            case INLINED_FINALLY: {
+                // do nothing
                 break;
             }
 
             case TRY_CATCH_FINALLY: {
-                TryCatchFinallyRegion region2 = (TryCatchFinallyRegion) region;
-
                 BlockStatement tryBlockStmt = new BlockStatement();
-                buildAST(region2.getTryRegion1(), tryBlockStmt);
+                buildAST(region.getFirstChild(ChildType.TRY), tryBlockStmt);
 
                 List<CatchClause> catchClauses = new ArrayList<CatchClause>();
                 BlockStatement finallyBlockStmt = null;
 
-                for (CatchRegion catchRegion : region2.getCatchRegions()) {
+                for (Region catchRegion : region.getChildren(ChildType.CATCH)) {
                     BlockStatement catchBlockStmt = new BlockStatement();
-                    buildAST(catchRegion.getRegion(), catchBlockStmt);
+                    buildAST(catchRegion, catchBlockStmt);
 
                     ExceptionHandlerInfo info
-                            = (ExceptionHandlerInfo) catchRegion.getIncomingEdge().getValue();
+                            = (ExceptionHandlerInfo) catchRegion.getData();
                     Variable excVar = info.getVariable();
                     LocalVariableDeclaration varDecl
                             = new LocalVariableDeclaration(Expressions.newVarExpr(excVar.getID(), excVar.getName()),
                                                            excVar.getType());
                     catchClauses.add(new CatchClause(catchBlockStmt, varDecl));
                 }
-                if (region2.getFinallyRegion() != null) {
+                Region finallyRegion = region.getFirstChild(ChildType.FINALLY);
+                if (finallyRegion != null) {
                     finallyBlockStmt = new BlockStatement();
-                    buildAST(region2.getFinallyRegion().getRegion(), finallyBlockStmt);
+                    buildAST(finallyRegion, finallyBlockStmt);
                 }
 
                 TryCatchFinallyStatement tryCatchStmt

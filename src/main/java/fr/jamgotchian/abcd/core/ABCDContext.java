@@ -17,7 +17,7 @@
 
 package fr.jamgotchian.abcd.core;
 
-import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.LocalVariableTable;
@@ -37,7 +37,6 @@ import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.util.Refactorer;
 import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
-import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
 import fr.jamgotchian.abcd.core.analysis.LocalVariableTypeAnalyser;
 import fr.jamgotchian.abcd.core.analysis.LogicalOperatorBuilder;
 import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
@@ -46,10 +45,8 @@ import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.controlflow.OutputUtil;
 import fr.jamgotchian.abcd.core.controlflow.RPST;
+import fr.jamgotchian.abcd.core.controlflow.Region;
 import fr.jamgotchian.abcd.core.controlflow.RegionAnalysis;
-import fr.jamgotchian.abcd.core.region.Region;
-import fr.jamgotchian.abcd.core.region.RegionGraph;
-import fr.jamgotchian.abcd.core.region.StructuralAnalysis;
 import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
@@ -312,19 +309,18 @@ public class ABCDContext {
 
                 handler.treeAddressCodeBuilt(graph);
 
-                new RegionAnalysis(graph).analyse(handler);
-
                 logger.log(Level.FINE, "\n{0}",
-                        ConsoleUtil.printTitledSeparator("Analyse structure of " + methodSignature, '='));
-                RegionGraph regionGraph = new StructuralAnalysis(graph).analyse();
+                        ConsoleUtil.printTitledSeparator("Analyse regions of " + methodSignature, '='));
 
-                handler.regionGraphBuilt(regionGraph);
+                RPST rpst = new RegionAnalysis(graph).analyse();
 
-                Set<Region> rootRegions = regionGraph.getRegions();
-                if (rootRegions.size() > 1) {
-                    throw new ABCDException("Fail to recognize structure");
-                }
-                Region rootRegion = rootRegions.iterator().next();
+                handler.rpstBuilt(rpst);
+
+                builder = new StringBuilder();
+                rpst.print(builder);
+                logger.log(Level.FINER, "RPST :\n{0}", builder.toString());
+
+                Region rootRegion = rpst.getTopLevelRegion();
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build AST of " + methodSignature, '='));

@@ -66,6 +66,10 @@ public class BlockStatement extends AbstractStatement
         return first == null;
     }
 
+    public boolean hasSingleStatement() {
+        return first.equals(last);
+    }
+
     public Iterator<Statement> iterator() {
         return new Iterator<Statement>() {
 
