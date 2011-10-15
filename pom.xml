@@ -32,12 +32,5 @@
             <artifactId>guava</artifactId>
             <version>r09</version>
         </dependency>
-        <dependency>
-            <groupId>de.hpi.bpt</groupId>
-            <artifactId>jbpt</artifactId>
-            <version>r73</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jbpt_r73.jar</systemPath>
-        </dependency>
     </dependencies>
 </project>
