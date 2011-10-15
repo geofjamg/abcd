@@ -16,7 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
-import fr.jamgotchian.abcd.core.graph.AttributeFactory;
+import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,14 +24,14 @@ import java.util.Map;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BasicBlockRangeAttributeFactory implements AttributeFactory<BasicBlock> {
+public class RangeDOTAttributeFactory implements DOTAttributeFactory<BasicBlock> {
 
-    public Map<String, String> getAttributes(BasicBlock block) {
+    public Map<String, String> getAttributes(BasicBlock bb) {
         Map<String, String> attrs = new HashMap<String, String>(4);
         attrs.put("shape", "box");
         attrs.put("color", "black");
-        if (block.getType() != null) {
-            switch (block.getType()) {
+        if (bb.getType() != null) {
+            switch (bb.getType()) {
                 case ENTRY:
                 case EXIT:
                     attrs.put("shape", "ellipse");
@@ -64,7 +64,7 @@ public class BasicBlockRangeAttributeFactory implements AttributeFactory<BasicBl
                     break;
             }
         }
-        attrs.put("label", "\"" + block + "\"");
+        attrs.put("label", "\"" + bb + "\"");
         return attrs;
     }
 }

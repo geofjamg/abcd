@@ -65,14 +65,14 @@ public class DirectedGraphs {
         }
 
         public void export(Writer writer, String name,
-                           AttributeFactory<V> nodeAttrFactory,
-                           AttributeFactory<E> edgeAttrFactory) throws IOException {
+                           DOTAttributeFactory<V> nodeAttrFactory,
+                           DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
             delegate.export(writer, name, nodeAttrFactory, edgeAttrFactory);
         }
 
         public void export(Writer writer, String name,
-                           AttributeFactory<V> vertexAttrFactory,
-                           AttributeFactory<E> edgeAttrFactory,
+                           DOTAttributeFactory<V> vertexAttrFactory,
+                           DOTAttributeFactory<E> edgeAttrFactory,
                            boolean isSubgraph) throws IOException {
             delegate.export(writer, name, vertexAttrFactory, edgeAttrFactory, isSubgraph);
         }
@@ -355,14 +355,14 @@ public class DirectedGraphs {
         }
 
         public void export(Writer writer, String name,
-                           AttributeFactory<V> nodeAttrFactory,
-                           AttributeFactory<E> edgeAttrFactory) throws IOException {
+                           DOTAttributeFactory<V> nodeAttrFactory,
+                           DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
             delegate.export(writer, name, nodeAttrFactory, edgeAttrFactory);
         }
 
         public void export(Writer writer, String name,
-                           AttributeFactory<V> vertexAttrFactory,
-                           AttributeFactory<E> edgeAttrFactory,
+                           DOTAttributeFactory<V> vertexAttrFactory,
+                           DOTAttributeFactory<E> edgeAttrFactory,
                            boolean isSubgraph) throws IOException {
             delegate.export(writer, name, vertexAttrFactory, edgeAttrFactory, isSubgraph);
         }

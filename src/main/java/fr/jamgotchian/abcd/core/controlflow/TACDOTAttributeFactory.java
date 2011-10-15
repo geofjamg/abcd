@@ -17,7 +17,7 @@
 package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.controlflow.util.TACInstWriter;
-import fr.jamgotchian.abcd.core.graph.AttributeFactory;
+import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,22 +25,22 @@ import java.util.Map;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BasicBlockTACAttributeFactory implements AttributeFactory<BasicBlock> {
+public class TACDOTAttributeFactory implements DOTAttributeFactory<BasicBlock> {
 
-    public Map<String, String> getAttributes(BasicBlock block) {
+    public Map<String, String> getAttributes(BasicBlock bb) {
         Map<String, String> attrs = new HashMap<String, String>(3);
         attrs.put("shape", "box");
         attrs.put("color", "black");
         StringBuilder builder = new StringBuilder();
         builder.append("< ");
-        if (block.getType() == BasicBlockType.ENTRY
-                || block.getType() == BasicBlockType.EXIT) {
-            builder.append("<font color=\"black\">").append(block.getType()).append("</font>");
+        if (bb.getType() == BasicBlockType.ENTRY
+                || bb.getType() == BasicBlockType.EXIT) {
+            builder.append("<font color=\"black\">").append(bb.getType()).append("</font>");
         } else {
-            builder.append(TACInstWriter.toDOTHTMLLike(block.getRange(),
-                    block.getInstructions(),
-                    block.getInputStack(),
-                    block.getOutputStack()));
+            builder.append(TACInstWriter.toDOTHTMLLike(bb.getRange(),
+                    bb.getInstructions(),
+                    bb.getInputStack(),
+                    bb.getOutputStack()));
         }
         builder.append(" >");
         attrs.put("label", builder.toString());

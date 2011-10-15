@@ -28,7 +28,7 @@ public interface GraphvizDigraph<V, E> {
     String getClusterID();
 
     void export(Writer writer, String name,
-                AttributeFactory<V> vertexAttrFactory,
-                AttributeFactory<E> edgeAttrFactory,
+                DOTAttributeFactory<V> vertexAttrFactory,
+                DOTAttributeFactory<E> edgeAttrFactory,
                 boolean isSubgraph) throws IOException;
 }

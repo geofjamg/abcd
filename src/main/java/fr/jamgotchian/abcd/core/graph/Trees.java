@@ -117,8 +117,8 @@ public class Trees {
         }
 
         public void export(String fileName, String name,
-                           AttributeFactory<N> nodeAttrFactory,
-                           AttributeFactory<E> edgeAttrFactory) {
+                           DOTAttributeFactory<N> nodeAttrFactory,
+                           DOTAttributeFactory<E> edgeAttrFactory) {
             delegate.export(fileName, name, nodeAttrFactory, edgeAttrFactory);
         }
 
@@ -131,14 +131,14 @@ public class Trees {
         }
 
         public void export(Writer writer, String name,
-                           AttributeFactory<N> nodeAttrFactory,
-                           AttributeFactory<E> edgeAttrFactory) throws IOException {
+                           DOTAttributeFactory<N> nodeAttrFactory,
+                           DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
             delegate.export(writer, name, nodeAttrFactory, edgeAttrFactory);
         }
 
         public void export(Writer writer, String name,
-                           AttributeFactory<N> nodeAttrFactory,
-                           AttributeFactory<E> edgeAttrFactory,
+                           DOTAttributeFactory<N> nodeAttrFactory,
+                           DOTAttributeFactory<E> edgeAttrFactory,
                            boolean isSubgraph) throws IOException {
             delegate.export(writer, name, nodeAttrFactory, edgeAttrFactory, isSubgraph);
         }

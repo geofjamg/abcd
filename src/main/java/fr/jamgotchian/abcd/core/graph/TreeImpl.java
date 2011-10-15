@@ -302,8 +302,8 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     public void export(String fileName, String name,
-                       AttributeFactory<N> nodeAttrFactory,
-                       AttributeFactory<E> edgeAttrFactory) {
+                       DOTAttributeFactory<N> nodeAttrFactory,
+                       DOTAttributeFactory<E> edgeAttrFactory) {
         try {
             Writer writer = new FileWriter(fileName);
             export(writer, name, nodeAttrFactory, edgeAttrFactory);
@@ -324,19 +324,19 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     public void export(Writer writer, String name) throws IOException {
-        export(writer, name, new DefaultAttributeFactory<N>(),
-                             new DefaultAttributeFactory<E>());
+        export(writer, name, new DefaultDOTAttributeFactory<N>(),
+                             new DefaultDOTAttributeFactory<E>());
     }
 
     public void export(Writer writer, String name,
-                       AttributeFactory<N> nodeAttrFactory,
-                       AttributeFactory<E> edgeAttrFactory) throws IOException {
+                       DOTAttributeFactory<N> nodeAttrFactory,
+                       DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
         export(writer, name, nodeAttrFactory, edgeAttrFactory, false);
     }
 
     public void export(Writer writer, String name,
-                       AttributeFactory<N> nodeAttrFactory,
-                       AttributeFactory<E> edgeAttrFactory,
+                       DOTAttributeFactory<N> nodeAttrFactory,
+                       DOTAttributeFactory<E> edgeAttrFactory,
                        boolean isSubgraph) throws IOException {
         if (isSubgraph) {
             String clusterName = GraphvizUtil.getClusterID(this);

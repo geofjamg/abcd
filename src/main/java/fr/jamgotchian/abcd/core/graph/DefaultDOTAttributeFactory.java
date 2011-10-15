@@ -14,9 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.controlflow;
+package fr.jamgotchian.abcd.core.graph;
 
-import fr.jamgotchian.abcd.core.graph.AttributeFactory;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,19 +23,12 @@ import java.util.Map;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BasicBlockBytecodeAttributeFactory implements AttributeFactory<BasicBlock> {
+public class DefaultDOTAttributeFactory<O> implements DOTAttributeFactory<O> {
 
-    private final ControlFlowGraph cfg;
-
-    public BasicBlockBytecodeAttributeFactory(ControlFlowGraph cfg) {
-        this.cfg = cfg;
-    }
-
-    public Map<String, String> getAttributes(BasicBlock bb) {
-        Map<String, String> attrs = new HashMap<String, String>(3);
-        attrs.put("shape", "box");
+    public Map<String, String> getAttributes(O object) {
+        Map<String, String> attrs = new HashMap<String, String>();
         attrs.put("color", "black");
-        attrs.put("label", "< " + OutputUtil.toDOTHTMLLike(cfg, bb) + " >");
+        attrs.put("label", "\"" + (object == null ? "" : object.toString()) + "\"");
         return attrs;
     }
 }

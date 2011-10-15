@@ -16,19 +16,16 @@
  */
 package fr.jamgotchian.abcd.core.graph;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DefaultAttributeFactory<O> implements AttributeFactory<O> {
+public class EmptyDOTAttributeFactory<O> implements DOTAttributeFactory<O> {
 
     public Map<String, String> getAttributes(O object) {
-        Map<String, String> attrs = new HashMap<String, String>();
-        attrs.put("color", "black");
-        attrs.put("label", "\"" + (object == null ? "" : object.toString()) + "\"");
-        return attrs;
+        return Collections.emptyMap();
     }
 }

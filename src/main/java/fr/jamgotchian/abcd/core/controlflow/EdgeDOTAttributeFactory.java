@@ -16,7 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
-import fr.jamgotchian.abcd.core.graph.AttributeFactory;
+import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,15 +24,15 @@ import java.util.Map;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class EdgeAttributeFactory implements AttributeFactory<Edge> {
+public class EdgeDOTAttributeFactory implements DOTAttributeFactory<Edge> {
 
     private final boolean useConstraints;
 
-    public EdgeAttributeFactory(boolean useConstraints) {
+    public EdgeDOTAttributeFactory(boolean useConstraints) {
         this.useConstraints = useConstraints;
     }
 
-    public EdgeAttributeFactory() {
+    public EdgeDOTAttributeFactory() {
         this(true);
     }
 

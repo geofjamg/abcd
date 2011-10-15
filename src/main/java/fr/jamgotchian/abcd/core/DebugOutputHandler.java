@@ -17,9 +17,9 @@
 package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlockRangeAttributeFactory;
+import fr.jamgotchian.abcd.core.controlflow.RangeDOTAttributeFactory;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.controlflow.EdgeAttributeFactory;
+import fr.jamgotchian.abcd.core.controlflow.EdgeDOTAttributeFactory;
 import fr.jamgotchian.abcd.core.controlflow.RPST;
 import java.io.File;
 import java.io.FileWriter;
@@ -67,8 +67,8 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             try {
                 graph.getDFST()
                         .export(writer, "DFST",
-                                new BasicBlockRangeAttributeFactory(),
-                                new EdgeAttributeFactory());
+                                new RangeDOTAttributeFactory(),
+                                new EdgeDOTAttributeFactory());
             } finally {
                 writer.close();
             }
@@ -91,8 +91,8 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             try {
                 graph.getDominatorInfo().getDominatorsTree()
                         .export(writer, "DT",
-                                new BasicBlockRangeAttributeFactory(),
-                                new EdgeAttributeFactory(false));
+                                new RangeDOTAttributeFactory(),
+                                new EdgeDOTAttributeFactory(false));
             } finally {
                 writer.close();
             }
@@ -111,8 +111,8 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             try {
                 graph.getPostDominatorInfo().getPostDominatorsTree()
                         .export(writer, "PDT",
-                                new BasicBlockRangeAttributeFactory(),
-                                new EdgeAttributeFactory(false));
+                                new RangeDOTAttributeFactory(),
+                                new EdgeDOTAttributeFactory(false));
             } finally {
                 writer.close();
             }

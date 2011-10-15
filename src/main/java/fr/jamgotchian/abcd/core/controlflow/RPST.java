@@ -42,11 +42,11 @@ public class RPST {
 
     private static final Logger logger = Logger.getLogger(RPST.class.getName());
 
-    private static final BasicBlockRangeAttributeFactory VERTEX_ATTRIBUTE_FACTORY
-            = new BasicBlockRangeAttributeFactory();
+    private static final RangeDOTAttributeFactory VERTEX_ATTRIBUTE_FACTORY
+            = new RangeDOTAttributeFactory();
 
-    private static final EdgeAttributeFactory EDGE_ATTRIBUTE_FACTORY
-            = new EdgeAttributeFactory(true);
+    private static final EdgeDOTAttributeFactory EDGE_ATTRIBUTE_FACTORY
+            = new EdgeDOTAttributeFactory(true);
 
     private final ControlFlowGraph cfg;
 

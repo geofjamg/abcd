@@ -19,7 +19,7 @@ package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.LabelManager;
-import fr.jamgotchian.abcd.core.graph.AttributeFactory;
+import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
@@ -712,15 +712,15 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public void export(Writer writer,
-                       AttributeFactory<BasicBlock> vertexAttrFactory,
-                       AttributeFactory<Edge> edgeAttrFactory) throws IOException {
+                       DOTAttributeFactory<BasicBlock> vertexAttrFactory,
+                       DOTAttributeFactory<Edge> edgeAttrFactory) throws IOException {
         graph.export(writer, "\"" + name + "\"", vertexAttrFactory, edgeAttrFactory);
     }
 
     public void export(Writer writer) throws IOException {
         graph.export(writer, "\"" + name + "\"",
-                     new BasicBlockRangeAttributeFactory(),
-                     new EdgeAttributeFactory());
+                     new RangeDOTAttributeFactory(),
+                     new EdgeDOTAttributeFactory());
     }
 
     public void export(String fileName) {
@@ -735,14 +735,14 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public void exportBytecode(Writer writer) throws IOException {
         graph.export(writer, "\"" + name + "\"",
-                     new BasicBlockBytecodeAttributeFactory(this),
-                     new EdgeAttributeFactory());
+                     new BytecodeDOTAttributeFactory(this),
+                     new EdgeDOTAttributeFactory());
     }
 
     public void exportTAC(Writer writer) throws IOException {
         graph.export(writer, "\"" + name + "\"",
-                     new BasicBlockTACAttributeFactory(),
-                     new EdgeAttributeFactory());
+                     new TACDOTAttributeFactory(),
+                     new EdgeDOTAttributeFactory());
     }
 
     public String toString(Collection<Edge> edges) {

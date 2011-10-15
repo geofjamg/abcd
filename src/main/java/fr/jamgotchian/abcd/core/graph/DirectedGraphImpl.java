@@ -402,19 +402,19 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
     }
 
     public void export(Writer writer, String name) throws IOException {
-        export(writer, name, new DefaultAttributeFactory<V>(),
-                             new DefaultAttributeFactory<E>());
+        export(writer, name, new DefaultDOTAttributeFactory<V>(),
+                             new DefaultDOTAttributeFactory<E>());
     }
 
     public void export(Writer writer, String name,
-                       AttributeFactory<V> nodeAttrFactory,
-                       AttributeFactory<E> edgeAttrFactory) throws IOException {
+                       DOTAttributeFactory<V> nodeAttrFactory,
+                       DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
         export(writer, name, nodeAttrFactory, edgeAttrFactory, false);
     }
 
     public void export(Writer writer, String name,
-                       AttributeFactory<V> vertexAttrFactory,
-                       AttributeFactory<E> edgeAttrFactory,
+                       DOTAttributeFactory<V> vertexAttrFactory,
+                       DOTAttributeFactory<E> edgeAttrFactory,
                        boolean isSubgraph) throws IOException {
         if (isSubgraph) {
             String clusterName = GraphvizUtil.getClusterID(this);
