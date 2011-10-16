@@ -25,6 +25,5 @@ public enum EdgeAttribute {
     SELF_LOOP_EDGE,
     LOOP_EXIT_EDGE,
     FAKE_EDGE,
-    RETURN_EDGE,
-    BREAK_LABEL_EDGE
+    EXCEPTIONAL_EDGE
 }

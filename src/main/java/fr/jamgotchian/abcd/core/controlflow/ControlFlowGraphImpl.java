@@ -194,7 +194,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     public Collection<Edge> getNormalOutgoingEdgesOf(BasicBlock block) {
         List<Edge> edges = new ArrayList<Edge>();
         for (Edge e : getOutgoingEdgesOf(block)) {
-            if (!e.isExceptional()) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
                 edges.add(e);
             }
         }
@@ -207,7 +207,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public Edge getFirstNormalOutgoingEdgeOf(BasicBlock block) {
         for (Edge e : getOutgoingEdgesOf(block)) {
-            if (!e.isExceptional()) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
                 return e;
             }
         }
@@ -224,7 +224,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public Edge getFirstNormalIncomingEdgeOf(BasicBlock block) {
         for (Edge e : getIncomingEdgesOf(block)) {
-            if (!e.isExceptional()) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
                 return e;
             }
         }
@@ -242,7 +242,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     public int getNormalPredecessorCountOf(BasicBlock block) {
         int count = 0;
         for (Edge e : getIncomingEdgesOf(block)) {
-            if (!e.isExceptional()) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
                 count++;
             }
         }
@@ -265,10 +265,20 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return graph.getSuccessorCountOf(block);
     }
 
+    public Collection<BasicBlock> getExceptionalSuccessorsOf(BasicBlock block) {
+        List<BasicBlock> successors = new ArrayList<BasicBlock>();
+        for (Edge e : graph.getOutgoingEdgesOf(block)) {
+            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                successors.add(graph.getEdgeTarget(e));
+            }
+        }
+        return successors;
+    }
+
     public int getNormalSuccessorCountOf(BasicBlock block) {
         int count = 0;
         for (Edge e : getOutgoingEdgesOf(block)) {
-            if (!e.isExceptional()) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
                 count++;
             }
         }
@@ -358,21 +368,16 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public Edge addEdge(BasicBlock source, BasicBlock target, boolean exceptional) {
-        if (source == null) {
-            throw new IllegalArgumentException("source == null");
-        }
-        if (target == null) {
-            throw new IllegalArgumentException("target == null");
-        }
-
         Edge edge = graph.getEdge(source, target);
         if (edge == null) {
-            logger.log(Level.FINEST, "  Create edge between {0} and {1}", new Object[]{source, target});
-
-            edge = new EdgeImpl(exceptional);
+            logger.log(Level.FINEST, "  Create edge between {0} and {1}",
+                    new Object[] {source, target});
+            edge = EDGE_FACTORY.createEdge();
+            if (exceptional) {
+                edge.addAttribute(EdgeAttribute.EXCEPTIONAL_EDGE);
+            }
             graph.addEdge(source, target, edge);
         }
-
         return edge;
     }
 

@@ -48,6 +48,7 @@ import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.ArrayLengthInst;
 import fr.jamgotchian.abcd.core.controlflow.AssignConstInst;
 import fr.jamgotchian.abcd.core.controlflow.AssignVarInst;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlockAttribute;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.BinaryInst;
 import fr.jamgotchian.abcd.core.controlflow.ByteConst;
@@ -108,7 +109,7 @@ public class AbstractSyntaxTreeBuilder {
 
     private static final Logger logger = Logger.getLogger(AbstractSyntaxTreeBuilder.class.getName());
 
-    private final ControlFlowGraph CFG;
+    private final ControlFlowGraph cfg;
 
     private final ImportManager importManager;
 
@@ -522,9 +523,9 @@ public class AbstractSyntaxTreeBuilder {
         }
     }
 
-    public AbstractSyntaxTreeBuilder(ControlFlowGraph CFG, ImportManager importManager,
+    public AbstractSyntaxTreeBuilder(ControlFlowGraph cfg, ImportManager importManager,
                                      Region rootRegion, BlockStatement methodBody) {
-        this.CFG = CFG;
+        this.cfg = cfg;
         this.importManager = importManager;
         this.rootRegion = rootRegion;
         this.methodBody = methodBody;
@@ -532,7 +533,7 @@ public class AbstractSyntaxTreeBuilder {
     }
 
     public void build() {
-        this.liveVariables = new LiveVariablesAnalysis(CFG).analyse();
+        this.liveVariables = new LiveVariablesAnalysis(cfg).analyse();
         buildAST(rootRegion, methodBody);
     }
 
@@ -551,6 +552,9 @@ public class AbstractSyntaxTreeBuilder {
                 if (bb.getType() != BasicBlockType.EMPTY) {
                     RegionTACInstVisitor visitor = new RegionTACInstVisitor();
                     bb.getInstructions().accept(visitor, blockStmt);
+                }
+                if (bb.hasAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT)) {
+                    blockStmt.add(new BreakStatement("L" + bb.getData()));
                 }
                 break;
             }
@@ -586,10 +590,11 @@ public class AbstractSyntaxTreeBuilder {
                 }
                 BlockStatement thenBlockStmt = new BlockStatement();
                 ifStmt.setThen(thenBlockStmt);
-                buildAST(region.getFirstChild(ChildType.THEN), thenBlockStmt);
-//                if (ifStmt.getThen().isEmpty()) {
-//                    ifStmt.remove();
-//                }
+                Region thenRegion = region.getFirstChild(ChildType.THEN);
+                buildAST(thenRegion, thenBlockStmt);
+                if (ifStmt.getThen().isEmpty()) {
+                    ifStmt.remove();
+                }
                 break;
             }
 
@@ -597,7 +602,7 @@ public class AbstractSyntaxTreeBuilder {
                 BlockStatement bodyBlockStmt = new BlockStatement();
                 buildAST(region.getFirstChild(), bodyBlockStmt);
 
-                blockStmt.add(new LabeledStatement("LABEL", bodyBlockStmt));
+                blockStmt.add(new LabeledStatement("L" + region.getData(), bodyBlockStmt));
 
                 break;
             }
@@ -664,7 +669,7 @@ public class AbstractSyntaxTreeBuilder {
                     buildAST(catchRegion, catchBlockStmt);
 
                     ExceptionHandlerInfo info
-                            = (ExceptionHandlerInfo) catchRegion.getData();
+                            = (ExceptionHandlerInfo) catchRegion.getEntry().getData();
                     Variable excVar = info.getVariable();
                     LocalVariableDeclaration varDecl
                             = new LocalVariableDeclaration(Expressions.newVarExpr(excVar.getID(), excVar.getName()),

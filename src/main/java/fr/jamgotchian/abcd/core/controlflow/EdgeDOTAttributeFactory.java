@@ -44,14 +44,10 @@ public class EdgeDOTAttributeFactory implements DOTAttributeFactory<Edge> {
             attrs.put("color", "red");
         } else if (edge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
             attrs.put("color", "green");
-        } else if (edge.hasAttribute(EdgeAttribute.BREAK_LABEL_EDGE)) {
-            attrs.put("color", "purple");
-        } else if (edge.hasAttribute(EdgeAttribute.RETURN_EDGE)) {
-            attrs.put("color", "orange");
         } else {
             attrs.put("color", "black");
         }
-        if (edge.isExceptional()) {
+        if (edge.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
             attrs.put("style", "dotted");
         }
         if (edge.getValue() != null) {

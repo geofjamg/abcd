@@ -46,6 +46,8 @@ class BasicBlockImpl implements BasicBlock {
 
     private Set<BasicBlockAttribute> attributes;
 
+    private Object data;
+
     BasicBlockImpl(Range range, BasicBlockType type) {
         this.range = range;
         this.type = type;
@@ -136,6 +138,14 @@ class BasicBlockImpl implements BasicBlock {
 
     public boolean hasAttribute(BasicBlockAttribute attr) {
         return attributes.contains(attr);
+    }
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
     }
 
     @Override

@@ -141,6 +141,12 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
     }
 
     public E getEdge(V source, V target) {
+        if (source == null) {
+            throw new ABCDException("source == null");
+        }
+        if (target == null) {
+            throw new ABCDException("target == null");
+        }
         Neighbors<V, E> neighbors = vertices.get(source);
         if (neighbors != null) {
             return neighbors.getSuccessors().get(target);

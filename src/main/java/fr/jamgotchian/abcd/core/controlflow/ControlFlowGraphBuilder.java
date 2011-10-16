@@ -108,13 +108,17 @@ public class ControlFlowGraphBuilder {
             // split at catchStart
             BasicBlockSplit catchStartSplit = graph.splitBasicBlockAt(entry.getCatchStart());
             BasicBlock catchEntryBlock = catchStartSplit.getBlockAfter();
-            catchEntryBlock.setType(BasicBlockType.HANDLER);
+            catchEntryBlock.setType(BasicBlockType.HANDLER_ENTRY);
+            if (entry.getExceptionClassName() == null) {
+                catchEntryBlock.addAttribute(BasicBlockAttribute.FINALLY_ENTRY);
+            }
+            catchEntryBlock.setData(new ExceptionHandlerInfo(entry.getExceptionClassName()));
+
             graph.removeEdge(catchStartSplit.getBlockBefore(), catchEntryBlock);
 
             // link all blocks contained in the try range to the catch entry block
             for (BasicBlock block : graph.getBasicBlocksWithinRange(entry.getTryStart(), entry.getTryEnd() - 1)) {
-                ExceptionHandlerInfo info = new ExceptionHandlerInfo(entry.getExceptionClassName());
-                graph.addEdge(block, catchEntryBlock, true).setValue(info);
+                graph.addEdge(block, catchEntryBlock, true);
             }
         }
     }
@@ -330,8 +334,7 @@ public class ControlFlowGraphBuilder {
                             if (remainingBlock != null) {
                                 graph.removeEdge(returnBlock, remainingBlock);
                             }
-                            graph.addEdge(returnBlock, graph.getExitBlock())
-                                    .addAttribute(EdgeAttribute.RETURN_EDGE);
+                            graph.addEdge(returnBlock, graph.getExitBlock());
 
                             returnBlock.setType(BasicBlockType.RETURN);
 

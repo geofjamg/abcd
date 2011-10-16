@@ -31,8 +31,6 @@ public interface Edge {
 
     void setValue(Object value);
 
-    boolean isExceptional();
-
     void addAttribute(EdgeAttribute attr);
 
     boolean hasAttribute(EdgeAttribute attr);

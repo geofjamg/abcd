@@ -29,5 +29,5 @@ public enum BasicBlockType {
     GOTO,
     RETURN,
     EMPTY,
-    HANDLER
+    HANDLER_ENTRY
 }

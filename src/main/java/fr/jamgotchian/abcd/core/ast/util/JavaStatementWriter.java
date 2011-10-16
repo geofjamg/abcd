@@ -147,7 +147,11 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
     }
 
     public Void visit(BreakStatement stmt, Void arg) {
-        writer.writeKeyword("break").write(";");
+        writer.writeKeyword("break");
+        if (stmt.getLabel() != null) {
+            writer.writeSpace().write(stmt.getLabel());
+        }
+        writer.write(";");
         return null;
     }
 

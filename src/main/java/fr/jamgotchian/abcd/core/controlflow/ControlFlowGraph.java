@@ -127,6 +127,8 @@ public interface ControlFlowGraph {
 
     Collection<BasicBlock> getSuccessorsOf(BasicBlock block);
 
+    Collection<BasicBlock> getExceptionalSuccessorsOf(BasicBlock block);
+
     boolean isBasicBlockReachable(BasicBlock block);
 
     void removeEdge(Edge edge);

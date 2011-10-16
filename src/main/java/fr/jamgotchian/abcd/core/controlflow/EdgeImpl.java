@@ -24,37 +24,20 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class EdgeImpl implements Edge {
+class EdgeImpl implements Edge {
 
     private EdgeCategory category;
-
-    private final boolean exceptional;
 
     private Object value;
 
     private final Set<EdgeAttribute> attributes;
 
-    public EdgeImpl() {
-        this(false);
-    }
-
-    public EdgeImpl(boolean exceptional) {
-        this(exceptional, null);
-    }
-
-    public EdgeImpl(Object value) {
-        this(false, value);
-    }
-
-    public EdgeImpl(boolean exceptional, Object value) {
-        this.exceptional = exceptional;
-        this.value = value;
+    EdgeImpl() {
         attributes = EnumSet.noneOf(EdgeAttribute.class);
     }
 
     private EdgeImpl(EdgeImpl other) {
         category = other.category;
-        exceptional = other.exceptional;
         value = other.value;
         attributes = EnumSet.copyOf(other.attributes);
     }
@@ -65,10 +48,6 @@ public class EdgeImpl implements Edge {
 
     public void setCategory(EdgeCategory category) {
         this.category = category;
-    }
-
-    public boolean isExceptional() {
-        return exceptional;
     }
 
     public Object getValue() {
@@ -109,7 +88,6 @@ public class EdgeImpl implements Edge {
 
     @Override
     public String toString() {
-        return "Edge[value=" + value + ", exceptional=" + exceptional
-                + ", attrs=" + attributes + "]";
+        return "Edge[value=" + value + ", attrs=" + attributes + "]";
     }
 }

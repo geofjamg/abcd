@@ -60,4 +60,8 @@ public interface BasicBlock {
     void addAttribute(BasicBlockAttribute attr);
 
     boolean hasAttribute(BasicBlockAttribute attr);
+
+    Object getData();
+
+    void setData(Object data);
 }
