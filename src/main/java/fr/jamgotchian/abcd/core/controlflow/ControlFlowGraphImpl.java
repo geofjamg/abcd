@@ -596,7 +596,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 if (target.getOrder() > source.getOrder()) {
                     e.setCategory(EdgeCategory.ADVANCING);
                 } else if (target.getOrder() < source.getOrder()) {
-                    if (dominatorInfo.dominate(target, source)) {
+                    if (dominatorInfo.dominates(target, source)) {
                         e.setCategory(EdgeCategory.BACK);
                     } else {
                         e.setCategory(EdgeCategory.RETREATING);

@@ -77,7 +77,7 @@ public class RPST {
 
     private boolean isCommonDomFrontier(BasicBlock bb, BasicBlock entry, BasicBlock exit) {
         for (BasicBlock p : cfg.getPredecessorsOf(bb)) {
-            if (domInfo.dominate(entry, p) && !domInfo.dominate(exit, p)) {
+            if (domInfo.dominates(entry, p) && !domInfo.dominates(exit, p)) {
                 return false;
             }
         }
@@ -85,7 +85,7 @@ public class RPST {
     }
 
     boolean isRegion(BasicBlock entry, BasicBlock exit) {
-        if (!domInfo.dominate(entry, exit)) {
+        if (!domInfo.dominates(entry, exit)) {
             if (!Sets.isSubset(domInfo.getDominanceFrontierOf2(entry),
                                Collections.singleton(exit))) {
                 return false;
@@ -102,7 +102,7 @@ public class RPST {
                 }
             }
             for (BasicBlock bb : domInfo.getDominanceFrontierOf2(exit)) {
-                if (domInfo.strictlyDominate(entry, bb)) {
+                if (domInfo.strictlyDominates(entry, bb)) {
                     return false;
                 }
             }
@@ -158,7 +158,7 @@ public class RPST {
                 lastRegion = newRegion;
                 lastExit = exit;
             }
-            if (!domInfo.dominate(entry, exit)) {
+            if (!domInfo.dominates(entry, exit)) {
                 break;
             }
         }

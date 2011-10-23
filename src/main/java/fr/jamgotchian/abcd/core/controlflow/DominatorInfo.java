@@ -51,7 +51,7 @@ public class DominatorInfo<N, E> {
 
     private Map<N, Set<E>> dominanceFrontierOf;
 
-    public static <N, E> DominatorInfo<N, E> 
+    public static <N, E> DominatorInfo<N, E>
             create(DirectedGraph<N, E> graph, N entryNode, EdgeFactory<E> factory) {
         DominatorInfo<N, E> domInfo = new DominatorInfo<N, E>(graph, entryNode, factory);
         domInfo.update();
@@ -68,12 +68,12 @@ public class DominatorInfo<N, E> {
         return Collections.unmodifiableSet(dominatorsOf.get(n));
     }
 
-    public boolean dominate(N x, N y) {
+    public boolean dominates(N x, N y) {
         return dominatorsOf.get(y).contains(x);
     }
 
-    public boolean strictlyDominate(N x, N y) {
-        return !x.equals(y) && dominate(x, y);
+    public boolean strictlyDominates(N x, N y) {
+        return !x.equals(y) && dominates(x, y);
     }
 
     public N getImmediateDominatorOf(N n) {
@@ -96,7 +96,7 @@ public class DominatorInfo<N, E> {
         return frontier;
     }
 
-    static <N, E> void buildTree(Map<N, Set<N>> dominatorsOf, N parentNode, 
+    static <N, E> void buildTree(Map<N, Set<N>> dominatorsOf, N parentNode,
                                  MutableTree<N, E> tree, EdgeFactory<E> factory) {
         for (Map.Entry<N, Set<N>> entry : dominatorsOf.entrySet()) {
             N node = entry.getKey();
@@ -105,7 +105,7 @@ public class DominatorInfo<N, E> {
                 if (dominators.contains(parentNode)) {
                     if (tree.containsNode(node)) {
                         if (tree.getSubTree(node).containsNode(parentNode)) {
-                            throw new ABCDException("Cycle detected during dominator tree building : " 
+                            throw new ABCDException("Cycle detected during dominator tree building : "
                                     + node + " <-> " + parentNode);
                         }
                         tree.setParent(node, parentNode);
@@ -130,7 +130,7 @@ public class DominatorInfo<N, E> {
                 for (N y : dominatorsTree.getSubTree(x).getNodes()) {
                     for (N z : graph.getSuccessorsOf(y)) {
                         if (!z.equals(x)) {
-                            if (!strictlyDominate(x, z)) {
+                            if (!strictlyDominates(x, z)) {
                                 E yz = graph.getEdge(y, z);
                                 dominanceFrontierOf.get(x).add(yz);
                             }

@@ -50,7 +50,7 @@ public class PostDominatorInfo<N, E> {
 
     private Map<N, Set<E>> postDominanceFrontierOf;
 
-    public static <N, E> PostDominatorInfo<N, E> 
+    public static <N, E> PostDominatorInfo<N, E>
             create(DirectedGraph<N, E> graph, N exitNode, EdgeFactory<E> factory) {
         PostDominatorInfo<N, E> domInfo = new PostDominatorInfo<N, E>(graph, exitNode, factory);
         domInfo.update();
@@ -83,12 +83,12 @@ public class PostDominatorInfo<N, E> {
         return frontier;
     }
 
-    public boolean postDominate(N x, N y) {
+    public boolean postDominates(N x, N y) {
         return postDominatorsOf.get(y).contains(x);
     }
 
-    public boolean strictlyPostDominate(N x, N y) {
-        return !x.equals(y) && postDominate(x, y);
+    public boolean strictlyPostDominates(N x, N y) {
+        return !x.equals(y) && postDominates(x, y);
     }
 
     public N getImmediatePostDominatorOf(N n) {
@@ -103,7 +103,7 @@ public class PostDominatorInfo<N, E> {
             for (N y : postDominatorsTree.getSubTree(x).getNodes()) {
                 for (N z : graph.getPredecessorsOf(y)) {
                     if (!z.equals(x)) {
-                        if (!strictlyPostDominate(x, z)) {
+                        if (!strictlyPostDominates(x, z)) {
                             E zy = graph.getEdge(z, y);
                             postDominanceFrontierOf.get(x).add(zy);
                         }
@@ -145,15 +145,15 @@ public class PostDominatorInfo<N, E> {
             for (N node2 : entry.getValue()) {
                 if (!node.equals(node2)) {
                     if (postDominatorsOf.get(node2).contains(node)) {
-                        logger.log(Level.WARNING, 
+                        logger.log(Level.WARNING,
                                 "Detect post dominance cycle : {0} <-> {1}"
                                 , new Object[] {node, node2});
 
                     }
                 }
             }
-        }        
-        
+        }
+
         // build post-dominators tree
         postDominatorsTree = Trees.newTree(exitNode);
         DominatorInfo.buildTree(postDominatorsOf, exitNode, postDominatorsTree, factory);

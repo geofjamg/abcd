@@ -385,11 +385,11 @@ public class RegionAnalysis {
                             joinEdge = edge2;
                         } else if (bb2.equals(subCfg.getExitBlock())) {
                             joinEdge = edge1;
-                        } else if (postDomInfo.postDominate(source, bb1)
-                                && !postDomInfo.postDominate(source, bb2)) {
+                        } else if (postDomInfo.postDominates(source, bb1)
+                                && !postDomInfo.postDominates(source, bb2)) {
                             joinEdge = edge1;
-                        } else if (postDomInfo.postDominate(source, bb2)
-                                && !postDomInfo.postDominate(source, bb1)) {
+                        } else if (postDomInfo.postDominates(source, bb2)
+                                && !postDomInfo.postDominates(source, bb1)) {
                             joinEdge = edge2;
                         }
                         if (joinEdge != null) {
