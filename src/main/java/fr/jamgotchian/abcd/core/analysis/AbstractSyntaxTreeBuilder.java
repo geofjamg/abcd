@@ -98,6 +98,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -633,7 +635,16 @@ public class AbstractSyntaxTreeBuilder {
                 SwitchCaseStatement switchStmt
                         = (SwitchCaseStatement) blockStmt.getLast();
 
+                Map<CaseValues, Region> caseRegions = new TreeMap<CaseValues, Region>();
                 for (Region caseRegion : region.getChildren(ChildType.CASE)) {
+                    CaseValues values = (CaseValues) caseRegion.getData();
+                    caseRegions.put(values, caseRegion);
+                }
+
+                for (Map.Entry<CaseValues, Region> entry : caseRegions.entrySet()) {
+                    CaseValues values = entry.getKey();
+                    Region caseRegion = entry.getValue();
+
                     List<Statement> caseStmts = new ArrayList<Statement>();
 
                     BlockStatement caseCompoundStmt = new BlockStatement();
@@ -646,7 +657,6 @@ public class AbstractSyntaxTreeBuilder {
                         caseStmts.add(new BreakStatement());
                     }
 
-                    CaseValues values = (CaseValues) caseRegion.getData();
                     switchStmt.addCase(new CaseStatement(values, caseStmts));
                 }
 
