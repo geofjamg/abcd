@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -75,6 +76,19 @@ public class RPST {
         return rootRegion;
     }
 
+    private void visitRegionPostOrder(Region region, List<Region> regionsPostOrder) {
+        for (Region child : region.getChildren()) {
+            visitRegionPostOrder(child, regionsPostOrder);
+        }
+        regionsPostOrder.add(region);
+    }
+
+    public List<Region> getRegionsPostOrder() {
+        List<Region> regionsPostOrder = new ArrayList<Region>();
+        visitRegionPostOrder(rootRegion, regionsPostOrder);
+        return regionsPostOrder;
+    }
+
     private boolean isCommonDomFrontier(BasicBlock bb, BasicBlock entry, BasicBlock exit) {
         for (BasicBlock p : cfg.getPredecessorsOf(bb)) {
             if (domInfo.dominates(entry, p) && !domInfo.dominates(exit, p)) {
@@ -84,7 +98,7 @@ public class RPST {
         return true;
     }
 
-    boolean isRegion(BasicBlock entry, BasicBlock exit) {
+    private boolean isRegion(BasicBlock entry, BasicBlock exit) {
         if (!domInfo.dominates(entry, exit)) {
             if (!Sets.isSubset(domInfo.getDominanceFrontierOf2(entry),
                                Collections.singleton(exit))) {
@@ -203,14 +217,47 @@ public class RPST {
         }
     }
 
+    /**
+     * Test if two canonical regions could be merge in one non canonical region.
+     */
+    private boolean isNonCanonicalRegion(Region region1, Region region2) {
+        if (!region1.getExit().equals(region2.getEntry())) {
+            return false;
+        }
+        if (region2.getChildCount() == 0) {
+            return false;
+        }
+        // basic blocks of merged region
+        Set<BasicBlock> basicBlocks = new HashSet<BasicBlock>();
+        basicBlocks.addAll(region1.getBasicBlocks());
+        basicBlocks.addAll(region2.getBasicBlocks());
+        basicBlocks.add(region2.getExit());
+        if (!basicBlocks.containsAll(cfg.getSuccessorsOf(region1.getExit()))) {
+            return false;
+        }
+        if (!basicBlocks.containsAll(cfg.getPredecessorsOf(region1.getExit()))) {
+            return false;
+        }
+        return true;
+    }
+
     private void findNonCanonicalRegions(Region region) {
         Set<Region> childrenBefore = new HashSet<Region>(region.getChildren());
         if (region.getChildCount() > 1) {
             boolean found = true;
             while (found) {
                 found = false;
-                for (Region child1 : region.getChildren()) {
-                    for (Region child2 : region.getChildren()) {
+
+                // children ordered by dominance
+                List<Region> children = new ArrayList<Region>(region.getChildren());
+                Collections.sort(children, new Comparator<Region>() {
+                    public int compare(Region region1, Region region2) {
+                        return domInfo.dominates(region1.getEntry(), region2.getEntry()) ? 1 : -1;
+                    }
+                });
+
+                for (Region child1 : children) {
+                    for (Region child2 : children) {
                         if (!child1.equals(child2)) {
                             if (isNonCanonicalRegion(child1, child2)) {
                                 Region newRegion = new Region(child1.getEntry(),
@@ -237,57 +284,29 @@ public class RPST {
     }
 
     private void build() {
+        // reset basic blocks parent
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             bb.setParent(null);
         }
+
+        // find canonical regions
         Map<BasicBlock, BasicBlock> shortCut = new HashMap<BasicBlock, BasicBlock>();
         detectRegions(shortCut);
+
+        // build tree of canonical regions
         rootRegion = new Region(cfg.getEntryBlock(), null, ParentType.ROOT);
         buildRegionTree(cfg.getEntryBlock(), rootRegion);
+
+        // insert dummy region for each basic block
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             Region oldParent = bb.getParent();
             Region newParent = new Region(bb, bb, ParentType.BASIC_BLOCK);
             bb.setParent(newParent);
             newParent.setParent(oldParent);
         }
+
+        // add non canonical region to the tree
         findNonCanonicalRegions(rootRegion);
-    }
-
-    /**
-     * Get a non canonical region from two canonical regions.
-     */
-    private boolean isNonCanonicalRegion(Region region1, Region region2) {
-        if (!region1.getExit().equals(region2.getEntry())) {
-            return false;
-        }
-        if (region2.getChildCount() == 0) {
-            return false;
-        }
-        // basic blocks of merged region
-        Set<BasicBlock> basicBlocks = new HashSet<BasicBlock>();
-        basicBlocks.addAll(region1.getBasicBlocks());
-        basicBlocks.addAll(region2.getBasicBlocks());
-        basicBlocks.add(region2.getExit());
-        if (!basicBlocks.containsAll(cfg.getSuccessorsOf(region1.getExit()))) {
-            return false;
-        }
-        if (!basicBlocks.containsAll(cfg.getPredecessorsOf(region1.getExit()))) {
-            return false;
-        }
-        return true;
-    }
-
-    private void visitRegionPostOrder(Region region, List<Region> regionsPostOrder) {
-        for (Region child : region.getChildren()) {
-            visitRegionPostOrder(child, regionsPostOrder);
-        }
-        regionsPostOrder.add(region);
-    }
-
-    public List<Region> getRegionsPostOrder() {
-        List<Region> regionsPostOrder = new ArrayList<Region>();
-        visitRegionPostOrder(rootRegion, regionsPostOrder);
-        return regionsPostOrder;
     }
 
     public void print(Appendable out) {
