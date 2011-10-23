@@ -544,6 +544,10 @@ public class AbstractSyntaxTreeBuilder {
                 new Object[] {region, region.getParentType()});
 
         switch (region.getParentType()) {
+            case ROOT:
+                buildAST(region.getEntryChild(), blockStmt);
+                break;
+
             case TRIVIAL:
                 buildAST(region.getFirstChild(), blockStmt);
                 break;
@@ -560,13 +564,10 @@ public class AbstractSyntaxTreeBuilder {
                 break;
             }
 
-            case ROOT:
-            case SEQUENCE: {
-                for (Region child : region.getChildren()) {
-                    buildAST(child, blockStmt);
-                }
+            case SEQUENCE:
+                buildAST(region.getFirstChild(ChildType.FIRST), blockStmt);
+                buildAST(region.getFirstChild(ChildType.SECOND), blockStmt);
                 break;
-            }
 
             case IF_THEN_ELSE: {
                 buildAST(region.getFirstChild(ChildType.IF), blockStmt);
