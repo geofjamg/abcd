@@ -108,7 +108,7 @@ public class ControlFlowGraphBuilder {
             // split at catchStart
             BasicBlockSplit catchStartSplit = graph.splitBasicBlockAt(entry.getCatchStart());
             BasicBlock catchEntryBlock = catchStartSplit.getBlockAfter();
-            catchEntryBlock.setType(BasicBlockType.HANDLER_ENTRY);
+            catchEntryBlock.addAttribute(BasicBlockAttribute.EXCEPTION_HANDLER_ENTRY);
             if (entry.getExceptionClassName() == null) {
                 catchEntryBlock.addAttribute(BasicBlockAttribute.FINALLY_ENTRY);
             }

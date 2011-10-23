@@ -21,7 +21,6 @@ import fr.jamgotchian.abcd.core.controlflow.AssignConstInst;
 import fr.jamgotchian.abcd.core.controlflow.AssignVarInst;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockAttribute;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlockType;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.Edge;
 import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
@@ -100,7 +99,7 @@ public class TreeAddressCodeBuilder {
 
         VariableStack outputStack = inputStack.clone();
 
-        if (block.getType() == BasicBlockType.HANDLER_ENTRY) {
+        if (block.hasAttribute(BasicBlockAttribute.EXCEPTION_HANDLER_ENTRY)) {
             Variable exceptionVar = tmpVarFactory.create(block);
             TACInst tmpInst;
             if (block.hasAttribute(BasicBlockAttribute.FINALLY_ENTRY)) {
@@ -173,7 +172,7 @@ public class TreeAddressCodeBuilder {
         Set<Variable> finallyVars = new HashSet<Variable>();
 
         for (BasicBlock bb : cfg.getBasicBlocks()) {
-            if (bb.getType() != BasicBlockType.HANDLER_ENTRY) {
+            if (!bb.hasAttribute(BasicBlockAttribute.EXCEPTION_HANDLER_ENTRY)) {
                 continue;
             }
 

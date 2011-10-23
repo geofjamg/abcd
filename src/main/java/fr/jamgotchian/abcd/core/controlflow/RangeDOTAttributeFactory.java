@@ -58,12 +58,6 @@ public class RangeDOTAttributeFactory implements DOTAttributeFactory<BasicBlock>
                     attrs.put("color", "orange");
                     attrs.put("style", "filled");
                     break;
-
-                case HANDLER_ENTRY:
-                    attrs.put("shape", "trapezium");
-                    attrs.put("color", "pink");
-                    attrs.put("style", "filled");
-                    break;
             }
         }
         attrs.put("label", "\"" + bb + "\"");

@@ -278,9 +278,10 @@ public class RegionAnalysis {
         Set<BasicBlock> handlerEntries = new HashSet<BasicBlock>();
         for (Region child : region.getChildren()) {
             // the child region is an exception handler whether its exit is connected
-            // to parent region exit and its entry basic block type is HANDLER_ENTRY
+            // to parent region exit and its entry basic block has attribute
+            // EXCEPTION_HANDLER_ENTRY
             if (child.getExit().equals(region.getExit())
-                    && child.getEntry().getType() == BasicBlockType.HANDLER_ENTRY) {
+                    && child.getEntry().hasAttribute(BasicBlockAttribute.EXCEPTION_HANDLER_ENTRY)) {
                 handlerRegions.add(child);
                 handlerEntries.add(child.getEntry());
                 if (child.getEntry().hasAttribute(BasicBlockAttribute.FINALLY_ENTRY)) {

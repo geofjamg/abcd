@@ -23,5 +23,6 @@ package fr.jamgotchian.abcd.core.controlflow;
 public enum BasicBlockAttribute {
     BREAK_LABEL_EXIT_SOURCE,
     BREAK_LABEL_EXIT_TARGET,
+    EXCEPTION_HANDLER_ENTRY,
     FINALLY_ENTRY
 }
