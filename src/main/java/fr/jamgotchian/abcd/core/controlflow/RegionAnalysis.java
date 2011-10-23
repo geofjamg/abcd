@@ -454,7 +454,7 @@ public class RegionAnalysis {
         region.setParentType(ParentType.BREAK_LABEL);
         region.setData(breakLabelCount++);
         Region rootRegion = rpst.getRootRegion();
-        Region bodyRegion = rootRegion.getFirstChild();
+        Region bodyRegion = rootRegion.getEntryChild();
         region.removeChildren();
         region.addChild(bodyRegion);
         return true;
