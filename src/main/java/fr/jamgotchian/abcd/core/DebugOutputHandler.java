@@ -67,7 +67,7 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             try {
                 graph.getDFST()
                         .export(writer, "DFST",
-                                new RangeDOTAttributeFactory(),
+                                RangeDOTAttributeFactory.INSTANCE,
                                 new EdgeDOTAttributeFactory());
             } finally {
                 writer.close();
@@ -111,7 +111,7 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             try {
                 graph.getPostDominatorInfo().getPostDominatorsTree()
                         .export(writer, "PDT",
-                                new RangeDOTAttributeFactory(),
+                                RangeDOTAttributeFactory.INSTANCE,
                                 new EdgeDOTAttributeFactory(false));
             } finally {
                 writer.close();

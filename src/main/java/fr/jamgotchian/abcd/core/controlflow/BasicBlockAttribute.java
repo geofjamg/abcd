@@ -21,6 +21,7 @@ package fr.jamgotchian.abcd.core.controlflow;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public enum BasicBlockAttribute {
-    BREAK_LABEL_EXIT,
+    BREAK_LABEL_EXIT_SOURCE,
+    BREAK_LABEL_EXIT_TARGET,
     FINALLY_ENTRY
 }

@@ -23,13 +23,18 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Build a refined program structure tree from control flow graph.
+ * Build a refined program structure tree (RPST) from control flow graph.
+ *
+ * A RPST is a tree build out of canonical refined regions of a function.
  *
  * This is an implementation of the algorithm described in the following paper :
  * The refined program structure tree, Calculate a fine grained PST taking
@@ -42,11 +47,8 @@ public class RPST {
 
     private static final Logger logger = Logger.getLogger(RPST.class.getName());
 
-    private static final RangeDOTAttributeFactory VERTEX_ATTRIBUTE_FACTORY
-            = new RangeDOTAttributeFactory();
-
     private static final EdgeDOTAttributeFactory EDGE_ATTRIBUTE_FACTORY
-            = new EdgeDOTAttributeFactory(true);
+            = new EdgeDOTAttributeFactory(false);
 
     private final ControlFlowGraph cfg;
 
@@ -54,9 +56,9 @@ public class RPST {
 
     private final PostDominatorInfo<BasicBlock, Edge> postDomInfo;
 
-    private final List<Region> regions = new ArrayList<Region>();
+    private final Map<BasicBlock, Region> bb2region = new HashMap<BasicBlock, Region>();
 
-    private final Region topLevelRegion = new Region(null, null, ParentType.ROOT);
+    private Region rootRegion;
 
     public RPST(ControlFlowGraph cfg) {
         this.cfg = cfg;
@@ -69,17 +71,13 @@ public class RPST {
         return cfg;
     }
 
-    public List<Region> getRegions() {
-        return regions;
+    public Region getRootRegion() {
+        return rootRegion;
     }
 
-    public Region getTopLevelRegion() {
-        return topLevelRegion;
-    }
-
-    private boolean derivedDomFrontier(BasicBlock bb, BasicBlock entry, BasicBlock exit) {
+    private boolean isCommonDomFrontier(BasicBlock bb, BasicBlock entry, BasicBlock exit) {
         for (BasicBlock p : cfg.getPredecessorsOf(bb)) {
-            if (!(domInfo.dominate(entry, p) ? domInfo.dominate(exit, p) : true)) {
+            if (domInfo.dominate(entry, p) && !domInfo.dominate(exit, p)) {
                 return false;
             }
         }
@@ -99,7 +97,7 @@ public class RPST {
                 return false;
             }
             for (BasicBlock bb : domInfo.getDominanceFrontierOf2(entry)) {
-                if (!derivedDomFrontier(bb, entry, exit)) {
+                if (!isCommonDomFrontier(bb, entry, exit)) {
                     return false;
                 }
             }
@@ -112,86 +110,129 @@ public class RPST {
         return true;
     }
 
-    private Region findRegionWithEntry(BasicBlock bb) {
-        for (Region region : regions) {
-            if (region.getEntry().equals(bb)) {
-                return region;
-            }
+    private void insertShortCut(BasicBlock entry, BasicBlock exit,
+                                Map<BasicBlock, BasicBlock> shortCut) {
+        assert entry != null && exit != null;
+        BasicBlock bb = shortCut.get(exit);
+        if (bb == null) {
+            shortCut.put(entry, exit);
+        } else {
+            shortCut.put(entry, bb);
         }
-        return null;
     }
 
-    private BasicBlock getNextExit(BasicBlock bb) {
-        BasicBlock exit = bb;
-        Region region;
-        while ((region = findRegionWithEntry(exit)) != null) {
-            exit = region.getExit();
+    private BasicBlock getNextPostDom(BasicBlock bb, Map<BasicBlock, BasicBlock> shortCut) {
+        BasicBlock bb2 = shortCut.get(bb);
+        if (bb2 == null) {
+            return postDomInfo.getImmediatePostDominatorOf(bb);
+        } else {
+            return postDomInfo.getImmediatePostDominatorOf(bb2);
         }
-        if (bb.equals(exit)) {
-            exit = postDomInfo.getImmediatePostDominatorOf(exit);
-        }
-        return exit;
     }
 
-    private void addRegion(Region region) {
-        logger.log(Level.FINEST, "New Region {0}", region);
-        regions.add(region);
+    private Region createRegion(BasicBlock entry, BasicBlock exit) {
+        assert entry != null && exit != null;
+        Region newRegion = new Region(entry, exit, ParentType.UNDEFINED);
+        bb2region.put(entry, newRegion);
+        logger.log(Level.FINER, "New Region {0}", newRegion);
+        return newRegion;
     }
 
-    private void detectRegionsWithEntry(BasicBlock entry) {
-        BasicBlock pd = entry;
+    private void detectRegionsWithEntry(BasicBlock entry, Map<BasicBlock, BasicBlock> shortCut) {
+        assert  entry != null;
+        BasicBlock exit = entry;
         Region lastRegion = null;
-        while ((pd = getNextExit(pd)) != null) {
-            if (isRegion(entry, pd)) {
-                Region region = new Region(entry, pd, ParentType.UNDEFINED);
-                addRegion(region);
+        BasicBlock lastExit = entry;
+        while ((exit = getNextPostDom(exit, shortCut)) != null) {
+            if (isRegion(entry, exit)) {
+                Region newRegion = createRegion(entry, exit);
                 if (lastRegion != null) {
-                    lastRegion.setParent(region);
-                    logger.log(Level.FINEST, "Parent of region {0} is {1}",
-                            new Object[] {lastRegion, region});
+                    lastRegion.setParent(newRegion);
+                     logger.log(Level.FINEST, "Parent of region {0} is {1}",
+                            new Object[] {lastRegion, newRegion});
                 } else {
-                    entry.setParent(region);
+                    entry.setParent(newRegion);
                     logger.log(Level.FINEST, "Parent of BB {0} is {1}",
-                            new Object[] {entry, region});
+                            new Object[] {entry, newRegion});
                 }
-                lastRegion = region;
+                lastRegion = newRegion;
+                lastExit = exit;
+            }
+            if (!domInfo.dominate(entry, exit)) {
+                break;
             }
         }
-    }
 
-    private void detectRegions() {
-        for (BasicBlock node : domInfo.getDominatorsTree().getNodesPostOrder()) {
-            detectRegionsWithEntry(node);
+        if (!lastExit.equals(entry)) {
+            insertShortCut(entry, lastExit, shortCut);
         }
     }
 
-    private Region findRegionWithEntryAndNoParent(BasicBlock bb) {
-        for (Region region : regions) {
-            if (region.getEntry().equals(bb) && region.getParent() == null) {
-                return region;
-            }
+    private void detectRegions(Map<BasicBlock, BasicBlock> shortCut) {
+        for (BasicBlock bb : domInfo.getDominatorsTree().getNodesPostOrder()) {
+            detectRegionsWithEntry(bb, shortCut);
         }
-        return null;
     }
 
-    private void build(BasicBlock bb, Region region) {
-        Region region2 = region;
-        while (bb.equals(region2.getExit())) {
-            region2 = region2.getParent();
+    private Region getTopMostParent(Region region) {
+        while (region.getParent() != null) {
+            region = region.getParent();
         }
-        Region child = findRegionWithEntryAndNoParent(bb);
-        if (child != null) {
+        return region;
+    }
+
+    private void buildRegionTree(BasicBlock bb, Region region) {
+        while (bb.equals(region.getExit())) {
+            region = region.getParent();
+        }
+        Region newRegion = bb2region.get(bb);
+        if (newRegion != null) {
+            Region topMostParent = getTopMostParent(newRegion);
             logger.log(Level.FINEST, "Parent of region {0} is {1}",
-                    new Object[] {child, region2});
-            child.setParent(region2);
-            region2 = bb.getParent();
+                    new Object[] {topMostParent, region});
+            topMostParent.setParent(region);
+            region = newRegion;
         } else {
             logger.log(Level.FINEST, "Parent of BB {0} is {1}",
-                    new Object[] {bb, region2});
-            bb.setParent(region2);
+                    new Object[] {bb, newRegion});
+            bb.setParent(region);
+            bb2region.put(bb, region);
         }
         for (BasicBlock c : domInfo.getDominatorsTree().getChildren(bb)) {
-            build(c, region2);
+            buildRegionTree(c, region);
+        }
+    }
+
+    private void findNonCanonicalRegions(Region region) {
+        Set<Region> childrenBefore = new HashSet<Region>(region.getChildren());
+        if (region.getChildCount() > 1) {
+            boolean found = true;
+            while (found) {
+                found = false;
+                for (Region child1 : region.getChildren()) {
+                    for (Region child2 : region.getChildren()) {
+                        if (!child1.equals(child2)) {
+                            if (isNonCanonicalRegion(child1, child2)) {
+                                Region newRegion = new Region(child1.getEntry(),
+                                                              child2.getExit(),
+                                                              ParentType.UNDEFINED);
+                                logger.log(Level.FINER, "New non canonical region {0}", newRegion);
+                                child1.setParent(newRegion);
+                                child2.setParent(newRegion);
+                                newRegion.setParent(region);
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (found) {
+                        break;
+                    }
+                }
+            }
+        }
+        for (Region child : childrenBefore) {
+            findNonCanonicalRegions(child);
         }
     }
 
@@ -199,14 +240,41 @@ public class RPST {
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             bb.setParent(null);
         }
-        detectRegions();
-        build(domInfo.getDominatorsTree().getRoot(), topLevelRegion);
+        Map<BasicBlock, BasicBlock> shortCut = new HashMap<BasicBlock, BasicBlock>();
+        detectRegions(shortCut);
+        rootRegion = new Region(cfg.getEntryBlock(), null, ParentType.ROOT);
+        buildRegionTree(cfg.getEntryBlock(), rootRegion);
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             Region oldParent = bb.getParent();
             Region newParent = new Region(bb, bb, ParentType.BASIC_BLOCK);
             bb.setParent(newParent);
             newParent.setParent(oldParent);
         }
+        findNonCanonicalRegions(rootRegion);
+    }
+
+    /**
+     * Get a non canonical region from two canonical regions.
+     */
+    private boolean isNonCanonicalRegion(Region region1, Region region2) {
+        if (!region1.getExit().equals(region2.getEntry())) {
+            return false;
+        }
+        if (region2.getChildCount() == 0) {
+            return false;
+        }
+        // basic blocks of merged region
+        Set<BasicBlock> basicBlocks = new HashSet<BasicBlock>();
+        basicBlocks.addAll(region1.getBasicBlocks());
+        basicBlocks.addAll(region2.getBasicBlocks());
+        basicBlocks.add(region2.getExit());
+        if (!basicBlocks.containsAll(cfg.getSuccessorsOf(region1.getExit()))) {
+            return false;
+        }
+        if (!basicBlocks.containsAll(cfg.getPredecessorsOf(region1.getExit()))) {
+            return false;
+        }
+        return true;
     }
 
     private void visitRegionPostOrder(Region region, List<Region> regionsPostOrder) {
@@ -217,14 +285,14 @@ public class RPST {
     }
 
     public List<Region> getRegionsPostOrder() {
-        List<Region> regionsPostOrder = new ArrayList<Region>(regions.size());
-        visitRegionPostOrder(topLevelRegion, regionsPostOrder);
+        List<Region> regionsPostOrder = new ArrayList<Region>();
+        visitRegionPostOrder(rootRegion, regionsPostOrder);
         return regionsPostOrder;
     }
 
     public void print(Appendable out) {
         try {
-            print(out, topLevelRegion, 0);
+            print(out, rootRegion, 0);
         } catch (IOException e) {
             logger.log(Level.SEVERE, e.toString(), e);
         }
@@ -254,39 +322,40 @@ public class RPST {
     }
 
     private void exportRegion(Writer writer, Region region, int indentLevel) throws IOException {
-        String clusterName = "cluster_" + Integer.toString(System.identityHashCode(region));
-        writeSpace(writer, indentLevel);
-        writer.append("subgraph ").append(clusterName).append(" {\n");
-        writeSpace(writer, indentLevel+1);
-        writer.append("fontsize=\"10\";\n");
-        writeSpace(writer, indentLevel+1);
-        writer.append("labeljust=\"left\";\n");
-        if (region.getParentType() != null) {
-            writeSpace(writer, indentLevel+1);
-            writer.append("label=\"").append(region.getParentType().toString())
-                    .append(" ").append(region.toString()).append("\";\n");
-        }
         if (region.isBasicBlock()) {
             BasicBlock bb = region.getEntry();
             writeSpace(writer, indentLevel);
             writer.append("  ")
                     .append(Integer.toString(System.identityHashCode(bb)))
                     .append(" ");
-            Map<String, String> attrs = VERTEX_ATTRIBUTE_FACTORY.getAttributes(bb);
+            Map<String, String> attrs = RangeDOTAttributeFactory.INSTANCE.getAttributes(bb);
             GraphvizUtil.writeAttributes(writer, attrs);
             writeSpace(writer, indentLevel);
             writer.append("\n");
+        } else {
+            String clusterName = "cluster_" + Integer.toString(System.identityHashCode(region));
+            writeSpace(writer, indentLevel);
+            writer.append("subgraph ").append(clusterName).append(" {\n");
+            writeSpace(writer, indentLevel+1);
+            writer.append("fontsize=\"10\";\n");
+            writeSpace(writer, indentLevel+1);
+            writer.append("labeljust=\"left\";\n");
+            if (region.getParentType() != null) {
+                writeSpace(writer, indentLevel+1);
+                writer.append("label=\"").append(region.getParentType().toString())
+                        .append(" ").append(region.toString()).append("\";\n");
+            }
+            for (Region child : region.getChildren()) {
+                exportRegion(writer, child, indentLevel+1);
+            }
+            writeSpace(writer, indentLevel);
+            writer.append("}\n");
         }
-        for (Region child : region.getChildren()) {
-            exportRegion(writer, child, indentLevel+1);
-        }
-        writeSpace(writer, indentLevel);
-        writer.append("}\n");
     }
 
     public void export(Writer writer) throws IOException {
         writer.append("digraph ").append("RPST").append(" {\n");
-        exportRegion(writer, topLevelRegion, 1);
+        exportRegion(writer, rootRegion, 1);
         for (Edge edge : cfg.getEdges()) {
             BasicBlock source = cfg.getEdgeSource(edge);
             BasicBlock target = cfg.getEdgeTarget(edge);

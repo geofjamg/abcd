@@ -724,7 +724,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public void export(Writer writer) throws IOException {
         graph.export(writer, "\"" + name + "\"",
-                     new RangeDOTAttributeFactory(),
+                     RangeDOTAttributeFactory.INSTANCE,
                      new EdgeDOTAttributeFactory());
     }
 

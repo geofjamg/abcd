@@ -542,7 +542,6 @@ public class AbstractSyntaxTreeBuilder {
                 new Object[] {region, region.getParentType()});
 
         switch (region.getParentType()) {
-            case ROOT:
             case TRIVIAL:
                 buildAST(region.getFirstChild(), blockStmt);
                 break;
@@ -553,15 +552,17 @@ public class AbstractSyntaxTreeBuilder {
                     RegionTACInstVisitor visitor = new RegionTACInstVisitor();
                     bb.getInstructions().accept(visitor, blockStmt);
                 }
-                if (bb.hasAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT)) {
+                if (bb.hasAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_SOURCE)) {
                     blockStmt.add(new BreakStatement("L" + bb.getData()));
                 }
                 break;
             }
 
+            case ROOT:
             case SEQUENCE: {
-                buildAST(region.getFirstChild(ChildType.FIRST), blockStmt);
-                buildAST(region.getFirstChild(ChildType.SECOND), blockStmt);
+                for (Region child : region.getChildren()) {
+                    buildAST(child, blockStmt);
+                }
                 break;
             }
 

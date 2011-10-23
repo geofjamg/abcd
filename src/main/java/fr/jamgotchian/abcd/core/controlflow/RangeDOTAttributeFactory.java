@@ -26,6 +26,8 @@ import java.util.Map;
  */
 public class RangeDOTAttributeFactory implements DOTAttributeFactory<BasicBlock> {
 
+    public static final RangeDOTAttributeFactory INSTANCE = new RangeDOTAttributeFactory();
+
     public Map<String, String> getAttributes(BasicBlock bb) {
         Map<String, String> attrs = new HashMap<String, String>(4);
         attrs.put("shape", "box");

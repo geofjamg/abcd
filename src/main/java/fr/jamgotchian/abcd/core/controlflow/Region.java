@@ -96,6 +96,15 @@ public class Region {
         return children;
     }
 
+    public Region getEntryChild() {
+        for (Region child : children) {
+            if (child.getEntry().equals(entry)) {
+                return child;
+            }
+        }
+        throw new IllegalStateException("Should not happen");
+    }
+
     public Region getFirstChild() {
         if (children.isEmpty()) {
             return null;

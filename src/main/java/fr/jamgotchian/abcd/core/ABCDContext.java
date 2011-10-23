@@ -320,7 +320,7 @@ public class ABCDContext {
                 rpst.print(builder);
                 logger.log(Level.FINER, "RPST :\n{0}", builder.toString());
 
-                Region rootRegion = rpst.getTopLevelRegion();
+                Region rootRegion = rpst.getRootRegion();
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build AST of " + methodSignature, '='));

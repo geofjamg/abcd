@@ -87,23 +87,24 @@ public class RegionAnalysis {
 
     private boolean checkSequenceRegion(Region region) {
         logger.log(Level.FINEST, "Check sequence region {0}", region);
-        if (region.getChildCount() == 2) {
-            Iterator<Region> it = region.getChildren().iterator();
-            Region child1 = it.next();
-            Region child2 = it.next();
-            if (child2.getEntry().equals(child1.getExit())
-                    && Objects.equal(region.getExit(), child2.getExit())) {
-                region.setParentType(ParentType.SEQUENCE);
-                child1.setChildType(ChildType.FIRST);
-                child2.setChildType(ChildType.SECOND);
-                return true;
-            } else if (child1.getEntry().equals(child2.getExit())
-                    && Objects.equal(region.getExit(), child1.getExit())) {
-                region.setParentType(ParentType.SEQUENCE);
-                child2.setChildType(ChildType.FIRST);
-                child1.setChildType(ChildType.SECOND);
-                return true;
-            }
+        if (region.getChildCount() != 2) {
+            return false;
+        }
+        Iterator<Region> it = region.getChildren().iterator();
+        Region child1 = it.next();
+        Region child2 = it.next();
+        if (child2.getEntry().equals(child1.getExit())
+                && Objects.equal(region.getExit(), child2.getExit())) {
+            region.setParentType(ParentType.SEQUENCE);
+            child1.setChildType(ChildType.FIRST);
+            child2.setChildType(ChildType.SECOND);
+            return true;
+        } else if (child1.getEntry().equals(child2.getExit())
+                && Objects.equal(region.getExit(), child1.getExit())) {
+            region.setParentType(ParentType.SEQUENCE);
+            child2.setChildType(ChildType.FIRST);
+            child1.setChildType(ChildType.SECOND);
+            return true;
         }
         return false;
     }
@@ -159,7 +160,7 @@ public class RegionAnalysis {
                 }
             }
             if (ifRegion != null && thenRegion != null) {
-                if (region.getExit().equals(thenRegion.getExit())) {
+                if (Objects.equal(region.getExit(), thenRegion.getExit())) {
                     Edge thenEdge = cfg.getEdge(ifRegion.getEntry(), thenRegion.getEntry());
                     Edge elseEdge = cfg.getEdge(ifRegion.getEntry(), region.getExit());
                     if (thenEdge != null && elseEdge != null) {
@@ -294,9 +295,9 @@ public class RegionAnalysis {
         Set<Region> inlinedFinallyRegions = new HashSet<Region>();
         if (finallyRegion != null) {
             for (Region child : region.getChildren()) {
-                if ((child.getExit().equals(region.getExit())
-                        || child.getExit().hasAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT))
-                        && !child.equals(finallyRegion)) {
+                if (!child.equals(finallyRegion)
+                        && (child.getExit().equals(region.getExit())
+                        || child.getExit().hasAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_TARGET))) {
                     if (child.deepEquals(finallyRegion)) {
                         inlinedFinallyRegions.add(child);
                     }
@@ -335,8 +336,8 @@ public class RegionAnalysis {
 
         region.setParentType(ParentType.TRY_CATCH_FINALLY);
         region.removeChildren();
-        Region rootRegion = subRpst.getTopLevelRegion();
-        Region tryRegion = rootRegion.getFirstChild();
+        Region rootRegion = subRpst.getRootRegion();
+        Region tryRegion = rootRegion.getEntryChild();
         tryRegion.setChildType(ChildType.TRY);
         region.addChild(tryRegion);
         for (Region handlerRegion : handlerRegions) {
@@ -424,21 +425,22 @@ public class RegionAnalysis {
                         Edge joinEdge = entry.getValue();
                         logger.log(Level.FINER, "Transform exit edge {0} to {1}",
                                 new Object[] {subCfg.toString(exitEdge), subCfg.toString(joinEdge)});
-                        BasicBlock s = subCfg.getEdgeSource(exitEdge);
-                        BasicBlock t = subCfg.getEdgeTarget(joinEdge);
+                        BasicBlock source = subCfg.getEdgeSource(exitEdge);
+                        BasicBlock target = subCfg.getEdgeTarget(joinEdge);
                         subCfg.removeEdge(exitEdge);
-                        if (s.getType() == BasicBlockType.JUMP_IF) {
+                        target.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_TARGET);
+                        if (source.getType() == BasicBlockType.JUMP_IF) {
                             BasicBlock empty = new BasicBlockImpl(BasicBlockType.EMPTY);
                             subCfg.addBasicBlock(empty);
-                            subCfg.addEdge(s, empty, exitEdge);
-                            subCfg.addEdge(empty, t);
-                            empty.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT);
+                            subCfg.addEdge(source, empty, exitEdge);
+                            subCfg.addEdge(empty, target).addAttribute(EdgeAttribute.FAKE_EDGE);
+                            empty.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_SOURCE);
                             empty.setData(breakLabelCount);
                         } else {
-                            subCfg.addEdge(s, t, exitEdge);
+                            subCfg.addEdge(source, target, exitEdge);
                             exitEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                            s.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT);
-                            s.setData(breakLabelCount);
+                            source.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_SOURCE);
+                            source.setData(breakLabelCount);
                         }
                     }
                     break;
@@ -450,7 +452,7 @@ public class RegionAnalysis {
         RPST rpst = checkRegions(subCfg);
         region.setParentType(ParentType.BREAK_LABEL);
         region.setData(breakLabelCount++);
-        Region rootRegion = rpst.getTopLevelRegion();
+        Region rootRegion = rpst.getRootRegion();
         Region bodyRegion = rootRegion.getFirstChild();
         region.removeChildren();
         region.addChild(bodyRegion);
@@ -458,7 +460,7 @@ public class RegionAnalysis {
     }
 
     private RPST checkRegions(ControlFlowGraph cfg) {
-        logger.log(Level.FINER, "*** Check regions for CFG ({0}, {1}) ***",
+        logger.log(Level.FINER, "***** Start checking regions for CFG ({0}, {1}) *****",
                 new Object[] {cfg.getEntryBlock(), cfg.getExitBlock()});
 
         // for debug
@@ -487,6 +489,8 @@ public class RegionAnalysis {
                 }
             }
         }
+        logger.log(Level.FINER, "***** Stop checking regions for CFG ({0}, {1}) *****",
+                new Object[] {cfg.getEntryBlock(), cfg.getExitBlock()});
         return rpst;
     }
 
