@@ -56,7 +56,7 @@ public class OutputUtil {
 
     public static String toText(ControlFlowGraph cfg, BasicBlock bb) {
         StringWriter writer = new StringWriter();
-        new BytecodeWriter(new TextInstnWriter(writer)).visit(bb, cfg);
+        new BytecodeWriter(new TextInstnWriter(writer)).visit(cfg.getInstructions(), bb, cfg.getLabelManager());
         return writer.toString();
     }
 
@@ -64,19 +64,19 @@ public class OutputUtil {
         StringWriter writer = new StringWriter();
         ControlFlowGraph cfg = new ControlFlowGraphImpl("tmp", instructions);
         BasicBlock bb = cfg.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next();
-        new InstnPrintVisitor(new TextInstnWriter(writer)).visit(bb, cfg);
+        new InstnPrintVisitor(new TextInstnWriter(writer)).visit(cfg.getInstructions(), bb, cfg.getLabelManager());
         return writer.toString();
     }
 
     public static String toHTML(ControlFlowGraph cfg, BasicBlock bb) {
         StringWriter writer = new StringWriter();
-        new BytecodeWriter(new HTMLInstnWriter(writer)).visit(bb, cfg);
+        new BytecodeWriter(new HTMLInstnWriter(writer)).visit(cfg.getInstructions(), bb, cfg.getLabelManager());
         return writer.toString();
     }
 
     public static String toDOTHTMLLike(ControlFlowGraph cfg, BasicBlock bb) {
         StringWriter writer = new StringWriter();
-        new BytecodeWriter(new DOTHTMLLikeInstnWriter(writer)).visit(bb, cfg);
+        new BytecodeWriter(new DOTHTMLLikeInstnWriter(writer)).visit(cfg.getInstructions(), bb, cfg.getLabelManager());
         return writer.toString();
     }
 
@@ -84,7 +84,7 @@ public class OutputUtil {
         StringWriter writer = new StringWriter();
         ControlFlowGraph cfg = new ControlFlowGraphImpl("tmp", instructions);
         BasicBlock bb = cfg.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next();
-        new InstnPrintVisitor(new HTMLInstnWriter(writer)).visit(bb, cfg);
+        new InstnPrintVisitor(new HTMLInstnWriter(writer)).visit(cfg.getInstructions(), bb, cfg.getLabelManager());
         return writer.toString();
     }
 }

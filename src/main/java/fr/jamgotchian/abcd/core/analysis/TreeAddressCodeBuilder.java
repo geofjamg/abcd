@@ -122,7 +122,7 @@ public class TreeAddressCodeBuilder {
         BasicBlock3ACBuilder builder
                 = new BasicBlock3ACBuilder(classNameFactory, tmpVarFactory,
                                            outputStack, instFactory);
-        builder.visit(block, cfg);
+        builder.visit(cfg.getInstructions(), block, cfg.getLabelManager());
         block.setOutputStack(outputStack);
 
         if (block.getOutputStack().size() > 0) {

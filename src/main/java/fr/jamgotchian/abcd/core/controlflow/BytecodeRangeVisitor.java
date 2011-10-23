@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
+import org.objectweb.asm.tree.InsnList;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.util.Range;
@@ -74,7 +75,7 @@ public abstract class BytecodeRangeVisitor {
 
     public abstract void after(BasicBlock bb);
 
-    public void visit(BasicBlock bb, ControlFlowGraph cfg) {
+    public void visit(InsnList instructions, BasicBlock bb, LabelManager labelManager) {
 
         before(bb);
 
@@ -82,7 +83,7 @@ public abstract class BytecodeRangeVisitor {
 
         if (range != null) {
             for (int position : range) {
-                AbstractInsnNode abstractNode = cfg.getInstructions().get(position);
+                AbstractInsnNode abstractNode = instructions.get(position);
 
                 switch (abstractNode.getType()) {
                     case FIELD_INSN: {
@@ -116,13 +117,13 @@ public abstract class BytecodeRangeVisitor {
 
                     case JUMP_INSN: {
                         JumpInsnNode node = (JumpInsnNode) abstractNode;
-                        visitJumpInsn(bb, position, node, cfg.getLabelManager());
+                        visitJumpInsn(bb, position, node, labelManager);
                         break;
                     }
 
                     case LABEL: {
                         LabelNode node = (LabelNode) abstractNode;
-                        visitLabel(bb, position, node, cfg.getLabelManager());
+                        visitLabel(bb, position, node, labelManager);
                         break;
                     }
 
@@ -139,7 +140,7 @@ public abstract class BytecodeRangeVisitor {
 
                     case LOOKUPSWITCH_INSN: {
                         LookupSwitchInsnNode node = (LookupSwitchInsnNode) abstractNode;
-                        visitLookupSwitchInsn(bb, position, node, cfg.getLabelManager());
+                        visitLookupSwitchInsn(bb, position, node, labelManager);
                         break;
                     }
 
@@ -157,7 +158,7 @@ public abstract class BytecodeRangeVisitor {
 
                     case TABLESWITCH_INSN: {
                         TableSwitchInsnNode node = (TableSwitchInsnNode) abstractNode;
-                        visitTableSwitchInsn(bb, position, node, cfg.getLabelManager());
+                        visitTableSwitchInsn(bb, position, node, labelManager);
                         break;
                     }
 
