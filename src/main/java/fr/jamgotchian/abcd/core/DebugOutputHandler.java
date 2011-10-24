@@ -17,10 +17,12 @@
 package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.RangeDOTAttributeFactory;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.EdgeDOTAttributeFactory;
 import fr.jamgotchian.abcd.core.controlflow.RPST;
+import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -58,14 +60,38 @@ public class DebugOutputHandler extends DefaultOutputHandler {
     }
 
     @Override
-    public void controlFlowGraphBuilt(ControlFlowGraph graph) {
+    public void writeRawCFG(ControlFlowGraph cfg, DOTAttributeFactory<BasicBlock> attributeFactory) {
 
-        String baseName = outputDir.getPath() + "/" + graph.getName();
+        String baseName = outputDir.getPath() + "/" + cfg.getName();
+
+        try {
+            Writer writer = new FileWriter(baseName + "_RAWCFG.dot");
+            try {
+                cfg.export(writer);
+            } finally {
+                writer.close();
+            }
+
+            writer = new FileWriter(baseName + "_BC.dot");
+            try {
+                cfg.export(writer, attributeFactory, new EdgeDOTAttributeFactory());
+            } finally {
+                writer.close();
+            }
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, e.toString(), e);
+        }
+    }
+
+    @Override
+    public void writeCFG(ControlFlowGraph cfg) {
+
+        String baseName = outputDir.getPath() + "/" + cfg.getName();
 
         try {
             Writer writer = new FileWriter(baseName + "_DFST.dot");
             try {
-                graph.getDFST()
+                cfg.getDFST()
                         .export(writer, "DFST",
                                 RangeDOTAttributeFactory.INSTANCE,
                                 new EdgeDOTAttributeFactory());
@@ -75,41 +101,24 @@ public class DebugOutputHandler extends DefaultOutputHandler {
 
             writer = new FileWriter(baseName + "_CFG.dot");
             try {
-                graph.export(writer);
-            } finally {
-                writer.close();
-            }
-
-            writer = new FileWriter(baseName + "_BC.dot");
-            try {
-                graph.exportBytecode(writer);
+                cfg.export(writer);
             } finally {
                 writer.close();
             }
 
             writer = new FileWriter(baseName + "_DT.dot");
             try {
-                graph.getDominatorInfo().getDominatorsTree()
+                cfg.getDominatorInfo().getDominatorsTree()
                         .export(writer, "DT",
                                 new RangeDOTAttributeFactory(),
                                 new EdgeDOTAttributeFactory(false));
             } finally {
                 writer.close();
             }
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, e.toString(), e);
-        }
-    }
 
-    @Override
-    public void treeAddressCodeBuilt(ControlFlowGraph graph) {
-
-        String baseName = outputDir.getPath() + "/" + graph.getName();
-
-        try {
-            Writer writer = new FileWriter(baseName + "_PDT.dot");
+            writer = new FileWriter(baseName + "_PDT.dot");
             try {
-                graph.getPostDominatorInfo().getPostDominatorsTree()
+                cfg.getPostDominatorInfo().getPostDominatorsTree()
                         .export(writer, "PDT",
                                 RangeDOTAttributeFactory.INSTANCE,
                                 new EdgeDOTAttributeFactory(false));
@@ -119,7 +128,7 @@ public class DebugOutputHandler extends DefaultOutputHandler {
 
             writer = new FileWriter(baseName + "_TAC.dot");
             try {
-                graph.exportTAC(writer);
+                cfg.exportTAC(writer);
             } finally {
                 writer.close();
             }
@@ -129,7 +138,7 @@ public class DebugOutputHandler extends DefaultOutputHandler {
     }
 
     @Override
-    public void rpstBuilt(RPST rpst) {
+    public void writeRPST(RPST rpst) {
 
         String baseName = outputDir.getPath() + "/" + rpst.getCFG().getName();
 

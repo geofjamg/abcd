@@ -16,9 +16,11 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
+import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import java.util.HashMap;
 import java.util.Map;
+import org.objectweb.asm.tree.InsnList;
 
 /**
  *
@@ -26,17 +28,20 @@ import java.util.Map;
  */
 public class BytecodeDOTAttributeFactory implements DOTAttributeFactory<BasicBlock> {
 
-    private final ControlFlowGraph cfg;
+    private final InsnList instructions;
 
-    public BytecodeDOTAttributeFactory(ControlFlowGraph cfg) {
-        this.cfg = cfg;
+    private final LabelManager labelManager;
+
+    public BytecodeDOTAttributeFactory(InsnList instructions, LabelManager labelManager) {
+        this.instructions = instructions;
+        this.labelManager = labelManager;
     }
 
     public Map<String, String> getAttributes(BasicBlock bb) {
         Map<String, String> attrs = new HashMap<String, String>(3);
         attrs.put("shape", "box");
         attrs.put("color", "black");
-        attrs.put("label", "< " + OutputUtil.toDOTHTMLLike(cfg, bb) + " >");
+        attrs.put("label", "< " + OutputUtil.toDOTHTMLLike(instructions, bb, labelManager) + " >");
         return attrs;
     }
 }

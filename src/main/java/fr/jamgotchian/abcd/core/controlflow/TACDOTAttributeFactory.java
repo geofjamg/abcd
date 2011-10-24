@@ -26,6 +26,8 @@ import java.util.Map;
  */
 public class TACDOTAttributeFactory implements DOTAttributeFactory<BasicBlock> {
 
+    public static final TACDOTAttributeFactory INSTANCE = new TACDOTAttributeFactory();
+
     public Map<String, String> getAttributes(BasicBlock bb) {
         Map<String, String> attrs = new HashMap<String, String>(3);
         attrs.put("shape", "box");

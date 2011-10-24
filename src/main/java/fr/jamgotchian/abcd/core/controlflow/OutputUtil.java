@@ -18,13 +18,13 @@
 package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.output.DOTHTMLLikeInstnWriter;
 import fr.jamgotchian.abcd.core.output.HTMLInstnWriter;
 import fr.jamgotchian.abcd.core.output.InstnWriter;
 import fr.jamgotchian.abcd.core.output.TextInstnWriter;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.logging.Logger;
 import org.objectweb.asm.tree.InsnList;
 
 /**
@@ -32,8 +32,6 @@ import org.objectweb.asm.tree.InsnList;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class OutputUtil {
-
-    private static final Logger logger = Logger.getLogger(OutputUtil.class.getName());
 
     private OutputUtil() {
     }
@@ -54,37 +52,37 @@ public class OutputUtil {
         }
     }
 
-    public static String toText(ControlFlowGraph cfg, BasicBlock bb) {
+    public static String toText(InsnList instructions, BasicBlock bb, LabelManager labelManager) {
         StringWriter writer = new StringWriter();
-        new BytecodeWriter(new TextInstnWriter(writer)).visit(cfg.getInstructions(), bb, cfg.getLabelManager());
+        new BytecodeWriter(new TextInstnWriter(writer)).visit(instructions, bb, labelManager);
         return writer.toString();
     }
 
     public static String toText(InsnList instructions) {
         StringWriter writer = new StringWriter();
-        ControlFlowGraph cfg = new ControlFlowGraphImpl("tmp", instructions);
+        ControlFlowGraph cfg = new ControlFlowGraphImpl("tmp", instructions.size()-1);
         BasicBlock bb = cfg.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next();
-        new InstnPrintVisitor(new TextInstnWriter(writer)).visit(cfg.getInstructions(), bb, cfg.getLabelManager());
+        new InstnPrintVisitor(new TextInstnWriter(writer)).visit(instructions, bb, new LabelManager());
         return writer.toString();
     }
 
-    public static String toHTML(ControlFlowGraph cfg, BasicBlock bb) {
+    public static String toHTML(InsnList instructions, BasicBlock bb, LabelManager labelManager) {
         StringWriter writer = new StringWriter();
-        new BytecodeWriter(new HTMLInstnWriter(writer)).visit(cfg.getInstructions(), bb, cfg.getLabelManager());
+        new BytecodeWriter(new HTMLInstnWriter(writer)).visit(instructions, bb, labelManager);
         return writer.toString();
     }
 
-    public static String toDOTHTMLLike(ControlFlowGraph cfg, BasicBlock bb) {
+    public static String toDOTHTMLLike(InsnList instructions, BasicBlock bb, LabelManager labelManager) {
         StringWriter writer = new StringWriter();
-        new BytecodeWriter(new DOTHTMLLikeInstnWriter(writer)).visit(cfg.getInstructions(), bb, cfg.getLabelManager());
+        new BytecodeWriter(new DOTHTMLLikeInstnWriter(writer)).visit(instructions, bb, labelManager);
         return writer.toString();
     }
 
     public static String toHTML(InsnList instructions) {
         StringWriter writer = new StringWriter();
-        ControlFlowGraph cfg = new ControlFlowGraphImpl("tmp", instructions);
+        ControlFlowGraph cfg = new ControlFlowGraphImpl("tmp", instructions.size()-1);
         BasicBlock bb = cfg.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next();
-        new InstnPrintVisitor(new HTMLInstnWriter(writer)).visit(cfg.getInstructions(), bb, cfg.getLabelManager());
+        new InstnPrintVisitor(new HTMLInstnWriter(writer)).visit(instructions, bb, new LabelManager());
         return writer.toString();
     }
 }

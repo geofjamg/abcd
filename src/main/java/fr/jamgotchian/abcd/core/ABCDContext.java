@@ -43,6 +43,9 @@ import fr.jamgotchian.abcd.core.analysis.LocalVariableTypeAnalyser;
 import fr.jamgotchian.abcd.core.analysis.LogicalOperatorBuilder;
 import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
 import fr.jamgotchian.abcd.core.analysis.TernaryOperatorBuilder;
+import fr.jamgotchian.abcd.core.common.LabelManager;
+import fr.jamgotchian.abcd.core.controlflow.BytecodeDOTAttributeFactory;
+import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphBuilderImpl;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.controlflow.OutputUtil;
@@ -124,7 +127,7 @@ public class ABCDContext {
 
         decompileInnerClass(_class, classRootDir, importManager, handler);
 
-        handler.abstractSyntaxTreeBuilt(compilUnit);
+        handler.writeAST(compilUnit);
     }
 
     private Class createClass(ClassNode cn, ImportManager importManager) {
@@ -260,7 +263,8 @@ public class ABCDContext {
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build Control flow graph of " + methodSignature, '='));
-                ControlFlowGraph cfg = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
+                ControlFlowGraphBuilder cfgBuilder = new ControlFlowGraphBuilderImpl(methodSignature, mn);
+                ControlFlowGraph cfg = cfgBuilder.build();
                 cfg.compact();
                 cfg.analyseLoops();
 
@@ -278,7 +282,9 @@ public class ABCDContext {
                     var.setName(table.getName(var.getID().getIndex(), 0));
                 }
 
-                handler.controlFlowGraphBuilt(cfg);
+                LabelManager labelManager = new LabelManager();
+
+                handler.writeRawCFG(cfg, new BytecodeDOTAttributeFactory(mn.instructions, labelManager));
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build 3AC instructions of " + methodSignature, '='));
@@ -287,7 +293,7 @@ public class ABCDContext {
                 TACInstFactory instFactory = new TACInstFactory();
 
                 BasicBlock3ACBuilder bb3ACBuilder
-                    = new BasicBlock3ACBuilderImpl(cfg.getInstructions(), cfg.getLabelManager(),
+                    = new BasicBlock3ACBuilderImpl(mn.instructions, labelManager,
                                                    importManager, tmpVarFactory, instFactory);
 
                 new TreeAddressCodeBuilder(cfg, bb3ACBuilder, importManager, tmpVarFactory,
@@ -313,14 +319,14 @@ public class ABCDContext {
                 new LocalVariableTypeAnalyser(cfg, method, importManager,
                                               instFactory).analyse();
 
-                handler.treeAddressCodeBuilt(cfg);
+                handler.writeCFG(cfg);
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Analyse regions of " + methodSignature, '='));
 
                 RPST rpst = new RegionAnalysis(cfg).analyse();
 
-                handler.rpstBuilt(rpst);
+                handler.writeRPST(rpst);
 
                 builder = new StringBuilder();
                 rpst.print(builder);

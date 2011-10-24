@@ -17,7 +17,6 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
-import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.Tree;
@@ -27,7 +26,6 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import org.objectweb.asm.tree.InsnList;
 
 /**
  *
@@ -44,6 +42,8 @@ public interface ControlFlowGraph {
     void addEdge(BasicBlock source, BasicBlock target, Edge edge);
 
     Edge addEdge(BasicBlock source, BasicBlock target, boolean exceptional);
+
+    void removeUnreachableBlocks();
 
     void compact();
 
@@ -101,10 +101,6 @@ public interface ControlFlowGraph {
 
     Collection<Edge> getIncomingEdgesOf(BasicBlock block);
 
-    InsnList getInstructions();
-
-    LabelManager getLabelManager();
-
     String getName();
 
     Map<BasicBlock, NaturalLoop> getNaturalLoops();
@@ -158,8 +154,6 @@ public interface ControlFlowGraph {
     void export(Writer writer) throws IOException;
 
     void export(String fileName);
-
-    void exportBytecode(Writer writer) throws IOException;
 
     void exportTAC(Writer writer) throws IOException;
 }

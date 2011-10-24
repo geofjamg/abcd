@@ -17,8 +17,10 @@
 package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.RPST;
+import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 
 /**
  *
@@ -26,11 +28,11 @@ import fr.jamgotchian.abcd.core.controlflow.RPST;
  */
 public interface OutputHandler {
 
-    void controlFlowGraphBuilt(ControlFlowGraph graph);
+    void writeRawCFG(ControlFlowGraph cfg, DOTAttributeFactory<BasicBlock> attributeFactory);
 
-    void treeAddressCodeBuilt(ControlFlowGraph graph);
+    void writeCFG(ControlFlowGraph cfg);
 
-    void rpstBuilt(RPST rpst);
+    void writeRPST(RPST rpst);
 
-    void abstractSyntaxTreeBuilt(CompilationUnit compilUnit);
+    void writeAST(CompilationUnit compilUnit);
 }

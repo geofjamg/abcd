@@ -18,8 +18,10 @@ package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.RPST;
+import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import fr.jamgotchian.abcd.core.output.TextCodeWriter;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -47,16 +49,16 @@ public class DefaultOutputHandler implements OutputHandler {
         this.os = os;
     }
 
-    public void controlFlowGraphBuilt(ControlFlowGraph graph) {
+    public void writeRawCFG(ControlFlowGraph cfg, DOTAttributeFactory<BasicBlock> attributeFactory) {
     }
 
-    public void treeAddressCodeBuilt(ControlFlowGraph graph) {
+    public void writeCFG(ControlFlowGraph cfg) {
     }
 
-    public void rpstBuilt(RPST rpst) {
+    public void writeRPST(RPST rpst) {
     }
 
-    public void abstractSyntaxTreeBuilt(CompilationUnit compilUnit) {
+    public void writeAST(CompilationUnit compilUnit) {
         Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
         try {
             compilUnit.accept(new JavaCompilationUnitWriter(new TextCodeWriter(writer, 4), debug), null);

@@ -18,7 +18,6 @@
 package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
@@ -43,9 +42,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnList;
 
 /**
  *
@@ -56,10 +52,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     private static final Logger logger = Logger.getLogger(ControlFlowGraphImpl.class.getName());
 
     private final String name;
-
-    private InsnList instructions;
-
-    private LabelManager labelManager;
 
     private final BasicBlock entryBlock;
 
@@ -83,15 +75,10 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private static final EdgeFactory<Edge> EDGE_FACTORY = new EdgeFactoryImpl();
 
-    public ControlFlowGraphImpl(String name, InsnList instructions) {
+    public ControlFlowGraphImpl(String name, int instructionCount) {
         this(name, new BasicBlockImpl(Integer.MIN_VALUE, -1, BasicBlockType.ENTRY),
                 new BasicBlockImpl(BasicBlockType.EXIT));
-        if (instructions == null) {
-            throw new IllegalArgumentException("instructions == null");
-        }
-        this.instructions = instructions;
-        labelManager = new LabelManager(instructions);
-        BasicBlock instnBlock = new BasicBlockImpl(0, instructions.size()-1, null);
+        BasicBlock instnBlock = new BasicBlockImpl(0, instructionCount-1, null);
         addBasicBlock(instnBlock);
         addEdge(entryBlock, instnBlock);
     }
@@ -121,14 +108,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public String getName() {
         return name;
-    }
-
-    public InsnList getInstructions() {
-        return instructions;
-    }
-
-    public LabelManager getLabelManager() {
-        return labelManager;
     }
 
     public DirectedGraph<BasicBlock, Edge> getGraph() {
@@ -451,7 +430,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
      * Remove unreachable basic blocks. A basic block is unreachable if it has no
      * predecessors et no successors.
      */
-    private void removeUnreachableBlocks() {
+    public void removeUnreachableBlocks() {
         for (BasicBlock block : new HashSet<BasicBlock>(graph.getVertices())) {
             if (!block.equals(entryBlock) && !block.equals(exitBlock)
                     && graph.getIncomingEdgesOf(block).isEmpty()
@@ -464,62 +443,43 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     /**
-     * Remove unnecessary basic blocks. A basic block is unnecessary if it does
-     * not contains bytecode instructions except JUMP, GOTO, FRAME, LABEL OR LINE.
+     * Remove unnecessary basic blocks.
      */
     private void removeUnnecessaryBlock() {
-        Set<BasicBlock> blocksToRemove = new HashSet<BasicBlock>();
-        for (BasicBlock block : graph.getVertices()) {
-            if (getPredecessorCountOf(block) >= 1 &&
-                getNormalSuccessorCountOf(block) == 1) {
-                Range range = block.getRange();
-                boolean remove = true;
-                TACInstSeq tacInsts = block.getInstructions();
+        Set<BasicBlock> toRemove = new HashSet<BasicBlock>();
+        for (BasicBlock bb : graph.getVertices()) {
+            if (getPredecessorCountOf(bb) >= 1 &&
+                getNormalSuccessorCountOf(bb) == 1) {
+                boolean remove = false;
+                TACInstSeq tacInsts = bb.getInstructions();
                 if (tacInsts != null) {
+                    remove = true;
                     for (TACInst inst : tacInsts) {
                         if (!inst.isIgnored()) {
                             remove = false;
                             break;
                         }
                     }
-                } else {
-                    if (range != null && range.size() > 0) {
-                        AbstractInsnNode node = instructions.get(range.getLast());
-                        if (node.getType() == AbstractInsnNode.JUMP_INSN &&
-                            node.getOpcode() == Opcodes.GOTO) {
-                            for (int i = range.getFirst(); i <= range.getLast()-1; i++) {
-                                node = instructions.get(i);
-                                if (node.getType() != AbstractInsnNode.FRAME &&
-                                    node.getType() != AbstractInsnNode.LABEL &&
-                                    node.getType() != AbstractInsnNode.LINE) {
-                                    remove = false;
-                                    break;
-                                }
-                            }
-                        } else {
-                            remove = false;
-                        }
-                    }
                 }
                 if (remove) {
-                    blocksToRemove.add(block);
+                    toRemove.add(bb);
                 }
             }
         }
 
-        for (BasicBlock block : blocksToRemove) {
-            Edge outgoingEdge = getFirstNormalOutgoingEdgeOf(block);
+        for (BasicBlock bb : toRemove) {
+            Edge outgoingEdge = getFirstNormalOutgoingEdgeOf(bb);
             BasicBlock successor = graph.getEdgeTarget(outgoingEdge);
-            Collection<Edge> incomingEdges = graph.getIncomingEdgesOf(block);
+            Collection<Edge> incomingEdges = graph.getIncomingEdgesOf(bb);
             for (Edge incomingEdge : new ArrayList<Edge>(incomingEdges)) {
                 BasicBlock predecessor = graph.getEdgeSource(incomingEdge);
                 graph.removeEdge(incomingEdge);
                 graph.addEdge(predecessor, successor, incomingEdge);
             }
             graph.removeEdge(outgoingEdge);
-            graph.removeVertex(block);
+            graph.removeVertex(bb);
 
-            logger.log(Level.FINER, "Remove unnecessary block {0}", block);
+            logger.log(Level.FINER, "Remove unnecessary BB {0}", bb);
         }
     }
 
@@ -738,15 +698,9 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
     }
 
-    public void exportBytecode(Writer writer) throws IOException {
-        graph.export(writer, "\"" + name + "\"",
-                     new BytecodeDOTAttributeFactory(this),
-                     new EdgeDOTAttributeFactory());
-    }
-
     public void exportTAC(Writer writer) throws IOException {
         graph.export(writer, "\"" + name + "\"",
-                     new TACDOTAttributeFactory(),
+                     TACDOTAttributeFactory.INSTANCE,
                      new EdgeDOTAttributeFactory());
     }
 
