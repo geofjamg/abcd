@@ -34,7 +34,7 @@ import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
 import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.controlflow.ThrowInst;
 import fr.jamgotchian.abcd.core.controlflow.VariableStack;
-import fr.jamgotchian.abcd.core.controlflow.util.TACInstWriter;
+import fr.jamgotchian.abcd.core.controlflow.TACInstWriter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -82,9 +82,9 @@ public class TreeAddressCodeBuilder {
         magicString = new StringConst("MAGIC", classNameFactory);
     }
 
-    private void processBlock(BasicBlock block, List<VariableStack> inputStacks) {
+    private void processBlock(BasicBlock bb, List<VariableStack> inputStacks) {
 
-        logger.log(Level.FINER, "------ Process block {0} ------", block);
+        logger.log(Level.FINER, "------ Process block {0} ------", bb);
 
         VariableStack inputStack = null;
         if (inputStacks.isEmpty()) {
@@ -92,45 +92,45 @@ public class TreeAddressCodeBuilder {
         } else if (inputStacks.size() == 1) {
             inputStack = inputStacks.get(0).clone();
         } else {
-            inputStack = mergeStacks(inputStacks, block);
+            inputStack = mergeStacks(inputStacks, bb);
         }
 
-        block.setInputStack(inputStack.clone());
+        bb.setInputStack(inputStack.clone());
 
         VariableStack outputStack = inputStack.clone();
 
-        if (block.hasAttribute(BasicBlockAttribute.EXCEPTION_HANDLER_ENTRY)) {
-            Variable exceptionVar = tmpVarFactory.create(block);
+        if (bb.hasAttribute(BasicBlockAttribute.EXCEPTION_HANDLER_ENTRY)) {
+            Variable exceptionVar = tmpVarFactory.create(bb);
             TACInst tmpInst;
-            if (block.hasAttribute(BasicBlockAttribute.FINALLY_ENTRY)) {
+            if (bb.hasAttribute(BasicBlockAttribute.FINALLY_ENTRY)) {
                 finallyTmpVars.add(exceptionVar);
                 tmpInst = instFactory.newAssignConst(exceptionVar, magicString);
             } else { // catch
-                ExceptionHandlerInfo info = (ExceptionHandlerInfo) block.getData();
+                ExceptionHandlerInfo info = (ExceptionHandlerInfo) bb.getData();
                 catchTmpVars.add(exceptionVar);
                 ClassName className = classNameFactory.newClassName(info.getClassName());
                 tmpInst = instFactory.newNewObject(exceptionVar, JavaType.newRefType(className));
             }
-            BasicBlock3ACBuilder.addInst(block, tmpInst);
+            bb.getInstructions().add(tmpInst);
             outputStack.push(exceptionVar);
         }
 
-        if (block.getInputStack().size() > 0) {
-            logger.log(Level.FINEST, ">>> Input stack : {0}", block.getInputStack());
+        if (bb.getInputStack().size() > 0) {
+            logger.log(Level.FINEST, ">>> Input stack : {0}", bb.getInputStack());
         }
 
         BasicBlock3ACBuilder builder
                 = new BasicBlock3ACBuilder(classNameFactory, tmpVarFactory,
                                            outputStack, instFactory);
-        builder.visit(cfg.getInstructions(), block, cfg.getLabelManager());
-        block.setOutputStack(outputStack);
+        builder.visit(cfg.getInstructions(), bb, cfg.getLabelManager());
+        bb.setOutputStack(outputStack);
 
-        if (block.getOutputStack().size() > 0) {
-            logger.log(Level.FINEST, "<<< Output stack : {0}", block.getOutputStack());
+        if (bb.getOutputStack().size() > 0) {
+            logger.log(Level.FINEST, "<<< Output stack : {0}", bb.getOutputStack());
         }
     }
 
-    private VariableStack mergeStacks(List<VariableStack> stacks, BasicBlock block) {
+    private VariableStack mergeStacks(List<VariableStack> stacks, BasicBlock bb) {
         if (stacks.size() <= 1) {
             throw new ABCDException("stacks.size() <= 1");
         }
@@ -159,8 +159,8 @@ public class TreeAddressCodeBuilder {
             if (vars.size() == 1) {
                 stacksMerge.push(vars.iterator().next());
             } else {
-                Variable result = tmpVarFactory.create(block);
-                BasicBlock3ACBuilder.addInst(block, instFactory.newChoice(result, vars));
+                Variable result = tmpVarFactory.create(bb);
+                bb.getInstructions().add(instFactory.newChoice(result, vars));
                 stacksMerge.push(result);
             }
         }

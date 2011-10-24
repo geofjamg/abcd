@@ -20,8 +20,6 @@ package fr.jamgotchian.abcd.core.analysis;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
@@ -31,7 +29,6 @@ import fr.jamgotchian.abcd.core.controlflow.ByteConst;
 import fr.jamgotchian.abcd.core.controlflow.ClassConst;
 import fr.jamgotchian.abcd.core.controlflow.DoubleConst;
 import fr.jamgotchian.abcd.core.controlflow.FloatConst;
-import fr.jamgotchian.abcd.core.controlflow.TACInst;
 import fr.jamgotchian.abcd.core.controlflow.IntConst;
 import fr.jamgotchian.abcd.core.controlflow.LongConst;
 import fr.jamgotchian.abcd.core.controlflow.MethodSignature;
@@ -42,7 +39,6 @@ import fr.jamgotchian.abcd.core.controlflow.Variable;
 import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
 import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.controlflow.TACUnaryOperator;
-import fr.jamgotchian.abcd.core.controlflow.util.TACInstWriter;
 import fr.jamgotchian.abcd.core.controlflow.VariableStack;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
@@ -68,8 +64,6 @@ import org.objectweb.asm.tree.VarInsnNode;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
-
-    private static final Logger logger = Logger.getLogger(BasicBlock3ACBuilder.class.getName());
 
     public static final JavaType[] ATYPES = {
         null,
@@ -104,11 +98,6 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
         this.instFactory = instFactory;
     }
 
-    static void addInst(BasicBlock bb, TACInst inst) {
-        logger.log(Level.FINER, "Add inst : {0}", TACInstWriter.toText(inst));
-        bb.getInstructions().add(inst);
-    }
-
     public void before(BasicBlock bb) {
     }
 
@@ -120,7 +109,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case GETSTATIC: {
                 ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newGetStaticField(tmpVar, className, fieldName, fieldType));
+                bb.getInstructions().add(instFactory.newGetStaticField(tmpVar, className, fieldName, fieldType));
                 stack.push(tmpVar);
                 break;
             }
@@ -128,14 +117,14 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case PUTSTATIC: {
                 ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
                 Variable tmpVar = stack.pop();
-                addInst(bb, instFactory.newSetStaticField(className, fieldName, fieldType, tmpVar));
+                bb.getInstructions().add(instFactory.newSetStaticField(className, fieldName, fieldType, tmpVar));
                 break;
             }
 
             case GETFIELD: {
                 Variable resultVar = tmpVarFactory.create(bb);
                 Variable objVar = stack.pop();
-                addInst(bb, instFactory.newGetField(resultVar, objVar, fieldName, fieldType));
+                bb.getInstructions().add(instFactory.newGetField(resultVar, objVar, fieldName, fieldType));
                 stack.push(resultVar);
                 break;
             }
@@ -143,7 +132,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case PUTFIELD: {
                 Variable valueVar = stack.pop();
                 Variable objVar = stack.pop();
-                addInst(bb, instFactory.newSetField(objVar, fieldName, fieldType, valueVar));
+                bb.getInstructions().add(instFactory.newSetField(objVar, fieldName, fieldType, valueVar));
                 break;
             }
         }
@@ -151,13 +140,13 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
 
     public void visitIincInsn(BasicBlock bb, int position, IincInsnNode node) {
         Variable tmpVar = tmpVarFactory.create(bb);
-        addInst(bb, instFactory.newAssignVar(tmpVar, new Variable(node.var, bb, position)));
+        bb.getInstructions().add(instFactory.newAssignVar(tmpVar, new Variable(node.var, bb, position)));
         Variable tmpValue = tmpVarFactory.create(bb);
-        addInst(bb, instFactory.newAssignConst(tmpValue, new IntConst(Math.abs(node.incr))));
+        bb.getInstructions().add(instFactory.newAssignConst(tmpValue, new IntConst(Math.abs(node.incr))));
         Variable tmpResult = tmpVarFactory.create(bb);
         TACBinaryOperator binOp = node.incr > 0 ? TACBinaryOperator.PLUS : TACBinaryOperator.MINUS;
-        addInst(bb, instFactory.newBinary(tmpResult, binOp, tmpVar, tmpValue));
-        addInst(bb, instFactory.newAssignVar(new Variable(node.var, bb, position), tmpResult));
+        bb.getInstructions().add(instFactory.newBinary(tmpResult, binOp, tmpVar, tmpValue));
+        bb.getInstructions().add(instFactory.newAssignVar(new Variable(node.var, bb, position), tmpResult));
     }
 
     public void visitInsn(BasicBlock bb, int position, InsnNode node) {
@@ -167,105 +156,105 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
 
             case ACONST_NULL: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new NullConst(classNameFactory)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new NullConst(classNameFactory)));
                 stack.push(tmpVar);
                 break;
             }
 
             case ICONST_M1: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new IntConst(1)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(1)));
                 stack.push(tmpVar);
                 break;
             }
 
             case ICONST_0: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new IntConst(0)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(0)));
                 stack.push(tmpVar);
                 break;
             }
 
             case ICONST_1: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new IntConst(1)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(1)));
                 stack.push(tmpVar);
                 break;
             }
 
             case ICONST_2: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new IntConst(2)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(2)));
                 stack.push(tmpVar);
                 break;
             }
 
             case ICONST_3: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new IntConst(3)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(3)));
                 stack.push(tmpVar);
                 break;
             }
 
             case ICONST_4: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new IntConst(4)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(4)));
                 stack.push(tmpVar);
                 break;
             }
 
             case ICONST_5: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new IntConst(5)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(5)));
                 stack.push(tmpVar);
                 break;
             }
 
             case LCONST_0: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new LongConst(0)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new LongConst(0)));
                 stack.push(tmpVar);
                 break;
             }
 
             case LCONST_1: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new LongConst(1)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new LongConst(1)));
                 stack.push(tmpVar);
                 break;
             }
 
             case FCONST_0: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new FloatConst(0f)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new FloatConst(0f)));
                 stack.push(tmpVar);
                 break;
             }
 
             case FCONST_1: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new FloatConst(1f)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new FloatConst(1f)));
                 stack.push(tmpVar);
                 break;
             }
 
             case FCONST_2: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new FloatConst(2f)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new FloatConst(2f)));
                 stack.push(tmpVar);
                 break;
             }
 
             case DCONST_0: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new DoubleConst(0d)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new DoubleConst(0d)));
                 stack.push(tmpVar);
                 break;
             }
 
             case DCONST_1: {
                 Variable tmpVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpVar, new DoubleConst(1d)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new DoubleConst(1d)));
                 stack.push(tmpVar);
                 break;
             }
@@ -281,7 +270,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable arrayIndex = stack.pop();
                 Variable arrayVar = stack.pop();
                 Variable tmpResultVar = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newGetArray(tmpResultVar, arrayVar, arrayIndex));
+                bb.getInstructions().add(instFactory.newGetArray(tmpResultVar, arrayVar, arrayIndex));
                 stack.push(tmpResultVar);
                 break;
             }
@@ -297,7 +286,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable valueVar = stack.pop();
                 Variable indexVar = stack.pop();
                 Variable arrayVar = stack.pop();
-                addInst(bb, instFactory.newSetArray(arrayVar, indexVar, valueVar));
+                bb.getInstructions().add(instFactory.newSetArray(arrayVar, indexVar, valueVar));
                 break;
             }
 
@@ -345,7 +334,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.PLUS, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.PLUS, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -357,7 +346,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.MINUS, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.MINUS, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -369,7 +358,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.MUL, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.MUL, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -381,7 +370,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.DIV, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.DIV, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -393,7 +382,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.REMAINDER, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.REMAINDER, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -403,7 +392,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case FNEG:
             case DNEG: {
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newUnary(tmpResult, TACUnaryOperator.MINUS, stack.pop()));
+                bb.getInstructions().add(instFactory.newUnary(tmpResult, TACUnaryOperator.MINUS, stack.pop()));
                 stack.push(tmpResult);
                 break;
             }
@@ -413,7 +402,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.SHIFT_LEFT, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.SHIFT_LEFT, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -423,7 +412,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.SHIFT_RIGHT, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.SHIFT_RIGHT, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -433,7 +422,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.LOGICAL_SHIFT_RIGHT, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.LOGICAL_SHIFT_RIGHT, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -443,7 +432,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.AND, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.AND, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -453,7 +442,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.OR, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.OR, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -463,7 +452,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.XOR, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.XOR, left, right));
                 stack.push(tmpResult);
                 break;
             }
@@ -471,7 +460,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case I2L: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.LONG));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.LONG));
                 stack.push(tmpResult);
                 break;
             }
@@ -479,7 +468,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case I2F: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.FLOAT));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.FLOAT));
                 stack.push(tmpResult);
                 break;
             }
@@ -487,7 +476,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case I2D: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.DOUBLE));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.DOUBLE));
                 stack.push(tmpResult);
                 break;
             }
@@ -495,7 +484,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case L2I: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.INT));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.INT));
                 stack.push(tmpResult);
                 break;
             }
@@ -503,7 +492,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case L2F: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.FLOAT));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.FLOAT));
                 stack.push(tmpResult);
                 break;
             }
@@ -511,7 +500,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case L2D: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.DOUBLE));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.DOUBLE));
                 stack.push(tmpResult);
                 break;
             }
@@ -519,7 +508,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case F2I: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.INT));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.INT));
                 stack.push(tmpResult);
                 break;
             }
@@ -527,14 +516,14 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case F2L: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.LONG));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.LONG));
                 break;
             }
 
             case F2D: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.DOUBLE));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.DOUBLE));
                 stack.push(tmpResult);
                 break;
             }
@@ -542,7 +531,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case D2I: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.INT));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.INT));
                 stack.push(tmpResult);
                 break;
             }
@@ -550,7 +539,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case D2L: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.LONG));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.LONG));
                 stack.push(tmpResult);
                 break;
             }
@@ -558,7 +547,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case D2F: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.FLOAT));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.FLOAT));
                 stack.push(tmpResult);
                 break;
             }
@@ -566,7 +555,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case I2B: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.BYTE));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.BYTE));
                 stack.push(tmpResult);
                 break;
             }
@@ -574,7 +563,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case I2C: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.CHAR));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.CHAR));
                 stack.push(tmpResult);
                 break;
             }
@@ -582,7 +571,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case I2S: {
                 Variable tmpResult = tmpVarFactory.create(bb);
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newCast(tmpResult, var, JavaType.SHORT));
+                bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.SHORT));
                 stack.push(tmpResult);
                 break;
             }
@@ -595,7 +584,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable value2 = stack.pop();
                 Variable value1 = stack.pop();
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.MINUS, value1, value2));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.MINUS, value1, value2));
                 stack.push(tmpResult);
                 break;
             }
@@ -605,31 +594,31 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case FRETURN:
             case DRETURN:
             case ARETURN:
-                addInst(bb, instFactory.newReturn(stack.pop()));
+                bb.getInstructions().add(instFactory.newReturn(stack.pop()));
                 break;
 
             case RETURN:
-                addInst(bb, instFactory.newReturn());
+                bb.getInstructions().add(instFactory.newReturn());
                 break;
 
             case ARRAYLENGTH: {
                 Variable result = tmpVarFactory.create(bb);
                 Variable arrayVar = stack.pop();
-                addInst(bb, instFactory.newArrayLength(result, arrayVar));
+                bb.getInstructions().add(instFactory.newArrayLength(result, arrayVar));
                 stack.push(result);
                 break;
             }
 
             case ATHROW:
-                addInst(bb, instFactory.newThrow(stack.pop()));
+                bb.getInstructions().add(instFactory.newThrow(stack.pop()));
                 break;
 
             case MONITORENTER:
-                addInst(bb, instFactory.newMonitorEnter(stack.pop()));
+                bb.getInstructions().add(instFactory.newMonitorEnter(stack.pop()));
                 break;
 
             case MONITOREXIT:
-                addInst(bb, instFactory.newMonitorExit(stack.pop()));
+                bb.getInstructions().add(instFactory.newMonitorExit(stack.pop()));
                 break;
         }
     }
@@ -638,15 +627,15 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
         Variable tmpVar = tmpVarFactory.create(bb);
         switch (node.getOpcode()) {
             case BIPUSH:
-                addInst(bb, instFactory.newAssignConst(tmpVar, new ByteConst((byte) node.operand)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new ByteConst((byte) node.operand)));
                 break;
 
             case SIPUSH:
-                addInst(bb, instFactory.newAssignConst(tmpVar, new ShortConst((short) node.operand)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new ShortConst((short) node.operand)));
                 break;
 
             case NEWARRAY:
-                addInst(bb, instFactory.newNewArray(tmpVar, ATYPES[node.operand],
+                bb.getInstructions().add(instFactory.newNewArray(tmpVar, ATYPES[node.operand],
                                                        Collections.singletonList(stack.pop())));
                 break;
         }
@@ -660,49 +649,49 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
         switch(node.getOpcode()) {
             case IFEQ: {
                 Variable tmpZero = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpZero, new IntConst(0)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, stack.pop(), tmpZero));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, stack.pop(), tmpZero));
                 break;
             }
 
             case IFNE: {
                 Variable tmpZero = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpZero, new IntConst(0)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.NE, stack.pop(), tmpZero));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.NE, stack.pop(), tmpZero));
                 break;
             }
 
             case IFLT: {
                 Variable tmpZero = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpZero, new IntConst(0)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.LT, stack.pop(), tmpZero));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.LT, stack.pop(), tmpZero));
                 break;
             }
 
             case IFGE: {
                 Variable tmpZero = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpZero, new IntConst(0)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.GE, stack.pop(), tmpZero));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.GE, stack.pop(), tmpZero));
                 break;
             }
 
             case IFGT: {
                 Variable tmpZero = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpZero, new IntConst(0)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.GT, stack.pop(), tmpZero));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.GT, stack.pop(), tmpZero));
                 break;
             }
 
             case IFLE: {
                 Variable tmpZero = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpZero, new IntConst(0)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpZero, new IntConst(0)));
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.LE, stack.pop(), tmpZero));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.LE, stack.pop(), tmpZero));
                 break;
             }
 
@@ -710,7 +699,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, left, right));
                 break;
             }
 
@@ -718,7 +707,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.NE, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.NE, left, right));
                 break;
             }
 
@@ -726,7 +715,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.LT, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.LT, left, right));
                 break;
             }
 
@@ -734,7 +723,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.GE, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.GE, left, right));
                 break;
             }
 
@@ -742,7 +731,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.GT, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.GT, left, right));
                 break;
             }
 
@@ -750,7 +739,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.LE, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.LE, left, right));
                 break;
             }
 
@@ -758,7 +747,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, left, right));
                 break;
             }
 
@@ -766,7 +755,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
                 Variable right = stack.pop();
                 Variable left = stack.pop();
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.NE, left, right));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.NE, left, right));
                 break;
             }
 
@@ -778,25 +767,25 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
 
             case IFNULL: {
                 Variable tmpNull = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpNull, new NullConst(classNameFactory)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpNull, new NullConst(classNameFactory)));
                 stack.push(tmpNull);
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, stack.pop(), tmpNull));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, stack.pop(), tmpNull));
                 break;
             }
 
             case IFNONNULL: {
                 Variable tmpNull = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newAssignConst(tmpNull, new NullConst(classNameFactory)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpNull, new NullConst(classNameFactory)));
                 stack.push(tmpNull);
                 tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newBinary(tmpResult, TACBinaryOperator.NE, stack.pop(), tmpNull));
+                bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.NE, stack.pop(), tmpNull));
                 break;
             }
         }
 
         if (tmpResult != null) {
-            addInst(bb, instFactory.newJumpIf(tmpResult.clone()));
+            bb.getInstructions().add(instFactory.newJumpIf(tmpResult.clone()));
         }
     }
 
@@ -807,23 +796,23 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
         Variable tmpVar = tmpVarFactory.create(bb);
         if (node.cst instanceof Type) {
             ClassName className = classNameFactory.newClassName(((Type)node.cst).getClassName());
-            addInst(bb, instFactory.newAssignConst(tmpVar, new ClassConst(className, classNameFactory)));
+            bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new ClassConst(className, classNameFactory)));
         } else if (node.cst instanceof Integer) {
-            addInst(bb, instFactory.newAssignConst(tmpVar, new IntConst((Integer) node.cst)));
+            bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst((Integer) node.cst)));
         } else if (node.cst instanceof Long) {
-            addInst(bb, instFactory.newAssignConst(tmpVar, new LongConst((Long) node.cst)));
+            bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new LongConst((Long) node.cst)));
         } else if (node.cst instanceof Float) {
-            addInst(bb, instFactory.newAssignConst(tmpVar, new FloatConst((Float) node.cst)));
+            bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new FloatConst((Float) node.cst)));
         } else if (node.cst instanceof Double) {
-            addInst(bb, instFactory.newAssignConst(tmpVar, new DoubleConst((Double) node.cst)));
+            bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new DoubleConst((Double) node.cst)));
         } else if (node.cst instanceof String) {
-            addInst(bb, instFactory.newAssignConst(tmpVar, new StringConst(node.cst.toString(), classNameFactory)));
+            bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new StringConst(node.cst.toString(), classNameFactory)));
         }
         stack.push(tmpVar);
     }
 
     public void visitLookupSwitchInsn(BasicBlock bb, int position, LookupSwitchInsnNode node, LabelManager labelManager) {
-        addInst(bb, instFactory.newSwitch(stack.pop()));
+        bb.getInstructions().add(instFactory.newSwitch(stack.pop()));
     }
 
     public void visitMethodInsn(BasicBlock bb, int position, MethodInsnNode node) {
@@ -852,14 +841,14 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC: {
                 Variable objVar = stack.pop();
-                addInst(bb, instFactory.newCallMethod(resultVar, objVar, signature,
+                bb.getInstructions().add(instFactory.newCallMethod(resultVar, objVar, signature,
                                                          args));
                 break;
             }
 
             case INVOKESTATIC: {
                 ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
-                addInst(bb, instFactory.newCallStaticMethod(resultVar, className,
+                bb.getInstructions().add(instFactory.newCallStaticMethod(resultVar, className,
                                                                signature, args));
                 break;
             }
@@ -877,12 +866,12 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             dimensions.add(0, stack.pop());
         }
         Variable tmpResult = tmpVarFactory.create(bb);
-        addInst(bb, instFactory.newNewArray(tmpResult, javaType, dimensions));
+        bb.getInstructions().add(instFactory.newNewArray(tmpResult, javaType, dimensions));
         stack.push(tmpResult);
     }
 
     public void visitTableSwitchInsn(BasicBlock bb, int position, TableSwitchInsnNode node, LabelManager labelManager) {
-        addInst(bb, instFactory.newSwitch(stack.pop()));
+        bb.getInstructions().add(instFactory.newSwitch(stack.pop()));
     }
 
     public void visitTypeInsnInsn(BasicBlock bb, int position, TypeInsnNode node) {
@@ -891,14 +880,14 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
         switch (node.getOpcode()) {
             case NEW: {
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newNewObject(tmpResult, type));
+                bb.getInstructions().add(instFactory.newNewObject(tmpResult, type));
                 stack.push(tmpResult);
                 break;
             }
 
             case ANEWARRAY: {
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newNewArray(tmpResult, type,
+                bb.getInstructions().add(instFactory.newNewArray(tmpResult, type,
                                          Collections.singletonList(stack.pop())));
                 stack.push(tmpResult);
                 break;
@@ -909,7 +898,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
 
             case INSTANCEOF: {
                 Variable tmpResult = tmpVarFactory.create(bb);
-                addInst(bb, instFactory.newInstanceOf(tmpResult, stack.pop(), type));
+                bb.getInstructions().add(instFactory.newInstanceOf(tmpResult, stack.pop(), type));
                 stack.push(tmpResult);
                 break;
             }
@@ -925,7 +914,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case ALOAD: {
                 Variable tmpVar = tmpVarFactory.create(bb);
                 stack.push(tmpVar);
-                addInst(bb, instFactory.newAssignVar(tmpVar, new Variable(node.var, bb, position)));
+                bb.getInstructions().add(instFactory.newAssignVar(tmpVar, new Variable(node.var, bb, position)));
                 break;
             }
 
@@ -935,7 +924,7 @@ public class BasicBlock3ACBuilder extends BytecodeRangeVisitor {
             case DSTORE:
             case ASTORE: {
                 Variable var = stack.pop();
-                addInst(bb, instFactory.newAssignVar(new Variable(node.var, bb, position), var));
+                bb.getInstructions().add(instFactory.newAssignVar(new Variable(node.var, bb, position), var));
                 break;
             }
 

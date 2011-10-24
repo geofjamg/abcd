@@ -55,7 +55,7 @@ import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
 import fr.jamgotchian.abcd.core.controlflow.UnaryInst;
 import fr.jamgotchian.abcd.core.controlflow.Variable;
 import fr.jamgotchian.abcd.core.controlflow.VariableID;
-import fr.jamgotchian.abcd.core.controlflow.util.EmptyTACInstVisitor;
+import fr.jamgotchian.abcd.core.controlflow.EmptyTACInstVisitor;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;

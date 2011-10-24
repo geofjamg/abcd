@@ -16,8 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
-import fr.jamgotchian.abcd.core.controlflow.util.TACInstComparator;
-import fr.jamgotchian.abcd.core.controlflow.util.VariableMapping;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;

@@ -21,12 +21,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class TACInstSeq implements Iterable<TACInst> {
+
+    private static final Logger logger = Logger.getLogger(TACInstSeq.class.getName());
 
     private final List<TACInst> insts;
 
@@ -43,6 +47,7 @@ public class TACInstSeq implements Iterable<TACInst> {
     }
 
     public void add(TACInst inst) {
+        logger.log(Level.FINER, "Add inst : {0}", TACInstWriter.toText(inst));
         insts.add(inst);
     }
 

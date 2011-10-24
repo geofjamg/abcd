@@ -33,7 +33,7 @@ import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
 import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
 import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.controlflow.Variable;
-import fr.jamgotchian.abcd.core.controlflow.util.TACInstWriter;
+import fr.jamgotchian.abcd.core.controlflow.TACInstWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
