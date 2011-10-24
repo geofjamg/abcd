@@ -59,6 +59,8 @@ public class TreeAddressCodeBuilder {
 
     private final ControlFlowGraph cfg;
 
+    private final BasicBlock3ACBuilder builder;
+
     private final ClassNameFactory classNameFactory;
 
     private final TemporaryVariableFactory tmpVarFactory;
@@ -70,10 +72,12 @@ public class TreeAddressCodeBuilder {
     private final Set<Variable> catchTmpVars;
 
     public TreeAddressCodeBuilder(ControlFlowGraph cfg,
+                                  BasicBlock3ACBuilder builder,
                                   ClassNameFactory classNameFactory,
                                   TemporaryVariableFactory tmpVarFactory,
                                   TACInstFactory instFactory) {
         this.cfg = cfg;
+        this.builder = builder;
         this.classNameFactory = classNameFactory;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
@@ -119,10 +123,7 @@ public class TreeAddressCodeBuilder {
             logger.log(Level.FINEST, ">>> Input stack : {0}", bb.getInputStack());
         }
 
-        BasicBlock3ACBuilder builder
-                = new BasicBlock3ACBuilder(classNameFactory, tmpVarFactory,
-                                           outputStack, instFactory);
-        builder.visit(cfg.getInstructions(), bb, cfg.getLabelManager());
+        builder.build(bb, outputStack);
         bb.setOutputStack(outputStack);
 
         if (bb.getOutputStack().size() > 0) {

@@ -18,6 +18,8 @@
 package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
+import fr.jamgotchian.abcd.core.analysis.BasicBlock3ACBuilder;
+import fr.jamgotchian.abcd.core.analysis.BasicBlock3ACBuilderImpl;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.LocalVariableTable;
@@ -258,25 +260,25 @@ public class ABCDContext {
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build Control flow graph of " + methodSignature, '='));
-                ControlFlowGraph graph = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
-                graph.compact();
-                graph.analyseLoops();
+                ControlFlowGraph cfg = new ControlFlowGraphBuilder().build(mn, methodSignature.toString());
+                cfg.compact();
+                cfg.analyseLoops();
 
                 StringBuilder builder = new StringBuilder();
-                graph.getExceptionTable().print(builder);
+                cfg.getExceptionTable().print(builder);
                 logger.log(Level.FINER, "Exception table :\n{0}", builder.toString());
 
                 builder = new StringBuilder();
-                graph.getLocalVariableTable().print(builder);
+                cfg.getLocalVariableTable().print(builder);
                 logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
 
-                LocalVariableTable table = graph.getLocalVariableTable();
+                LocalVariableTable table = cfg.getLocalVariableTable();
                 for (LocalVariableDeclaration decl : method.getArguments()) {
                     LocalVariable var = decl.getVariable();
                     var.setName(table.getName(var.getID().getIndex(), 0));
                 }
 
-                handler.controlFlowGraphBuilt(graph);
+                handler.controlFlowGraphBuilt(cfg);
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build 3AC instructions of " + methodSignature, '='));
@@ -284,35 +286,39 @@ public class ABCDContext {
                 TemporaryVariableFactory tmpVarFactory = new TemporaryVariableFactory();
                 TACInstFactory instFactory = new TACInstFactory();
 
-                new TreeAddressCodeBuilder(graph, importManager, tmpVarFactory,
+                BasicBlock3ACBuilder bb3ACBuilder
+                    = new BasicBlock3ACBuilderImpl(cfg.getInstructions(), cfg.getLabelManager(),
+                                                   importManager, tmpVarFactory, instFactory);
+
+                new TreeAddressCodeBuilder(cfg, bb3ACBuilder, importManager, tmpVarFactory,
                                            instFactory).build();
 
-                graph.compact();
-                graph.analyseLoops();
-                graph.addFakeEdges();
+                cfg.compact();
+                cfg.analyseLoops();
+                cfg.addFakeEdges();
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build complex logical operators " + methodSignature, '='));
 
-                new LogicalOperatorBuilder(graph, tmpVarFactory, instFactory).builder();
+                new LogicalOperatorBuilder(cfg, tmpVarFactory, instFactory).builder();
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build ternary operators " + methodSignature, '='));
 
                 // must be done after complex logical operators building because
                 // of ternary operator with complex condition
-                new TernaryOperatorBuilder(graph, tmpVarFactory, instFactory).build();
+                new TernaryOperatorBuilder(cfg, tmpVarFactory, instFactory).build();
 
                 // analyse local variables types
-                new LocalVariableTypeAnalyser(graph, method, importManager,
+                new LocalVariableTypeAnalyser(cfg, method, importManager,
                                               instFactory).analyse();
 
-                handler.treeAddressCodeBuilt(graph);
+                handler.treeAddressCodeBuilt(cfg);
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Analyse regions of " + methodSignature, '='));
 
-                RPST rpst = new RegionAnalysis(graph).analyse();
+                RPST rpst = new RegionAnalysis(cfg).analyse();
 
                 handler.rpstBuilt(rpst);
 
@@ -324,7 +330,7 @@ public class ABCDContext {
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build AST of " + methodSignature, '='));
-                new AbstractSyntaxTreeBuilder(graph, importManager,
+                new AbstractSyntaxTreeBuilder(cfg, importManager,
                                               rootRegion, method.getBody()).build();
 
                 // refactor AST
