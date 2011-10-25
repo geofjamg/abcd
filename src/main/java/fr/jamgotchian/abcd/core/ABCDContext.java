@@ -45,10 +45,10 @@ import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
 import fr.jamgotchian.abcd.core.analysis.TernaryOperatorBuilder;
 import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.controlflow.BytecodeDOTAttributeFactory;
-import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphBuilderImpl;
+import fr.jamgotchian.abcd.core.controlflow.BytecodeControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.controlflow.OutputUtil;
+import fr.jamgotchian.abcd.core.controlflow.BytecodeUtil;
 import fr.jamgotchian.abcd.core.controlflow.RPST;
 import fr.jamgotchian.abcd.core.controlflow.Region;
 import fr.jamgotchian.abcd.core.controlflow.RegionAnalysis;
@@ -259,11 +259,11 @@ public class ABCDContext {
                 logger.log(Level.FINE, "\n\n{0}\n",
                         ConsoleUtil.printTitledSeparator("Decompile method " + methodSignature, '%'));
 
-                logger.log(Level.FINER, "Bytecode :\n{0}", OutputUtil.toText(mn.instructions));
+                logger.log(Level.FINER, "Bytecode :\n{0}", BytecodeUtil.toText(mn.instructions));
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build Control flow graph of " + methodSignature, '='));
-                ControlFlowGraphBuilder cfgBuilder = new ControlFlowGraphBuilderImpl(methodSignature, mn);
+                ControlFlowGraphBuilder cfgBuilder = new BytecodeControlFlowGraphBuilder(methodSignature, mn);
                 ControlFlowGraph cfg = cfgBuilder.build();
                 cfg.compact();
                 cfg.analyseLoops();
@@ -351,7 +351,7 @@ public class ABCDContext {
                 StringBuilder msg = new StringBuilder();
                 msg.append(Exceptions.printStackTrace(exc))
                    .append("\n")
-                   .append(OutputUtil.toText(mn.instructions));
+                   .append(BytecodeUtil.toText(mn.instructions));
 
                 method.getBody().add(new CommentStatement("\n" + msg.toString()));
                 method.getBody().add(Statements.createThrowErrorStmt(InternalError.class,

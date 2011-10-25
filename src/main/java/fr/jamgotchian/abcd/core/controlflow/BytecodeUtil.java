@@ -31,9 +31,9 @@ import org.objectweb.asm.tree.InsnList;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class OutputUtil {
+public class BytecodeUtil {
 
-    private OutputUtil() {
+    private BytecodeUtil() {
     }
 
     private static class InstnPrintVisitor extends BytecodeWriter {

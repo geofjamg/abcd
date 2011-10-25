@@ -38,13 +38,13 @@ import org.objectweb.asm.tree.TableSwitchInsnNode;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ControlFlowGraphBuilderImpl extends ControlFlowGraphBuilder {
+public class BytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder {
 
     private final MethodNode mn;
 
     private final Map<LabelNode, Integer> labelNodeIndex;
 
-    public ControlFlowGraphBuilderImpl(String methodName, MethodNode mn) {
+    public BytecodeControlFlowGraphBuilder(String methodName, MethodNode mn) {
         super(methodName);
         this.mn = mn;
         labelNodeIndex = new HashMap<LabelNode, Integer>();

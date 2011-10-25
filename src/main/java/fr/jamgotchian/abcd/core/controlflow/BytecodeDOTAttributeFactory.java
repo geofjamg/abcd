@@ -41,7 +41,7 @@ public class BytecodeDOTAttributeFactory implements DOTAttributeFactory<BasicBlo
         Map<String, String> attrs = new HashMap<String, String>(3);
         attrs.put("shape", "box");
         attrs.put("color", "black");
-        attrs.put("label", "< " + OutputUtil.toDOTHTMLLike(instructions, bb, labelManager) + " >");
+        attrs.put("label", "< " + BytecodeUtil.toDOTHTMLLike(instructions, bb, labelManager) + " >");
         return attrs;
     }
 }
