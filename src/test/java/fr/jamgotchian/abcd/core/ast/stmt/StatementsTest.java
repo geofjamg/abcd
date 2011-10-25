@@ -19,7 +19,7 @@ package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
-import fr.jamgotchian.abcd.core.controlflow.VariableID;
+import fr.jamgotchian.abcd.core.ir.VariableID;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.Iterator;
 import org.junit.Assert;

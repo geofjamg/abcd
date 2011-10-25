@@ -18,7 +18,7 @@
 package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
-import fr.jamgotchian.abcd.core.controlflow.CaseValues;
+import fr.jamgotchian.abcd.core.ir.CaseValues;
 import java.util.ArrayList;
 import java.util.List;
 

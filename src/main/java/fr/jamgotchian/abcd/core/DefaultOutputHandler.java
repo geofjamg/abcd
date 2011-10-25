@@ -18,9 +18,9 @@ package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.controlflow.RPST;
+import fr.jamgotchian.abcd.core.ir.BasicBlock;
+import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
+import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import fr.jamgotchian.abcd.core.output.TextCodeWriter;
 import java.io.BufferedOutputStream;

@@ -17,11 +17,11 @@
 package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.RangeDOTAttributeFactory;
-import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.controlflow.EdgeDOTAttributeFactory;
-import fr.jamgotchian.abcd.core.controlflow.RPST;
+import fr.jamgotchian.abcd.core.ir.BasicBlock;
+import fr.jamgotchian.abcd.core.ir.RangeDOTAttributeFactory;
+import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
+import fr.jamgotchian.abcd.core.ir.EdgeDOTAttributeFactory;
+import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import java.io.File;
 import java.io.FileWriter;

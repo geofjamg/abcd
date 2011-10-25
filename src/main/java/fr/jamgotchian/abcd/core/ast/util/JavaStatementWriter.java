@@ -39,7 +39,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.ThrowStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
-import fr.jamgotchian.abcd.core.controlflow.CaseValues;
+import fr.jamgotchian.abcd.core.ir.CaseValues;
 import fr.jamgotchian.abcd.core.output.CodeWriter;
 import java.util.Iterator;
 
