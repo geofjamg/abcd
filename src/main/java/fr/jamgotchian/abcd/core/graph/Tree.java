@@ -64,14 +64,14 @@ public interface Tree<N, E> extends Iterable<N>, GraphvizDigraph<N, E> {
     List<N> getNodesPostOrder();
 
     void export(Writer writer, String name,
-                DOTAttributeFactory<N> nodeAttrFactory,
-                DOTAttributeFactory<E> edgeAttrFactory) throws IOException;
+                GraphvizRenderer<N> nodeRenderer,
+                GraphvizRenderer<E> edgeRenderer) throws IOException;
 
     void export(Writer writer, String name) throws IOException;
 
     void export(String fileName, String name,
-                DOTAttributeFactory<N> nodeAttrFactory,
-                DOTAttributeFactory<E> edgeAttrFactory);
+                GraphvizRenderer<N> nodeRenderer,
+                GraphvizRenderer<E> edgeRenderer);
 
     void export(String fileName, String name);
 }

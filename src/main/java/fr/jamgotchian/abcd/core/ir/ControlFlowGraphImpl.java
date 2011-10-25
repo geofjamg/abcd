@@ -20,7 +20,7 @@ package fr.jamgotchian.abcd.core.ir;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
+import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
@@ -52,6 +52,15 @@ import java.util.logging.Logger;
 public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private static final Logger logger = Logger.getLogger(ControlFlowGraphImpl.class.getName());
+
+    private static final IRGraphvizRenderer IR_GRAPHVIZ_RENDERER
+            = new IRGraphvizRenderer();
+
+    private static final EdgeGraphvizRenderer EDGE_GRAPHVIZ_RENDERER
+            = new EdgeGraphvizRenderer();
+
+    private static final RangeGraphvizRenderer RANGE_GRAPHVIZ_RENDERER
+            = new RangeGraphvizRenderer();
 
     private final String name;
 
@@ -679,15 +688,14 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public void export(Writer writer,
-                       DOTAttributeFactory<BasicBlock> vertexAttrFactory,
-                       DOTAttributeFactory<Edge> edgeAttrFactory) throws IOException {
-        graph.export(writer, "\"" + name + "\"", vertexAttrFactory, edgeAttrFactory);
+                       GraphvizRenderer<BasicBlock> bbRenderer,
+                       GraphvizRenderer<Edge> edgeRenderer) throws IOException {
+        graph.export(writer, "\"" + name + "\"", bbRenderer, edgeRenderer);
     }
 
     public void export(Writer writer) throws IOException {
-        graph.export(writer, "\"" + name + "\"",
-                     RangeDOTAttributeFactory.INSTANCE,
-                     new EdgeDOTAttributeFactory());
+        graph.export(writer, "\"" + name + "\"", RANGE_GRAPHVIZ_RENDERER,
+                     EDGE_GRAPHVIZ_RENDERER);
     }
 
     public void export(String fileName) {
@@ -701,9 +709,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public void exportInst(Writer writer) throws IOException {
-        graph.export(writer, "\"" + name + "\"",
-                     IRDOTAttributeFactory.INSTANCE,
-                     new EdgeDOTAttributeFactory());
+        graph.export(writer, "\"" + name + "\"", IR_GRAPHVIZ_RENDERER,
+                     EDGE_GRAPHVIZ_RENDERER);
     }
 
     public String toString(Collection<Edge> edges) {

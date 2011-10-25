@@ -80,8 +80,8 @@ public interface DirectedGraph<V, E> extends GraphvizDigraph<V, E> {
     Tree<V, E> getReversePostOrderDFST(V root, boolean invert);
 
     void export(Writer writer, String name,
-                DOTAttributeFactory<V> nodeAttrFactory,
-                DOTAttributeFactory<E> edgeAttrFactory) throws IOException;
+                GraphvizRenderer<V> vertexRenderer,
+                GraphvizRenderer<E> edgeRenderer) throws IOException;
 
     void export(Writer writer, String name) throws IOException;
 

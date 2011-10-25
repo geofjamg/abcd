@@ -19,7 +19,7 @@ package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
-import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
+import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.util.Range;
@@ -150,8 +150,8 @@ public interface ControlFlowGraph {
     void addFakeEdges();
 
     void export(Writer writer,
-                DOTAttributeFactory<BasicBlock> vertexAttrFactory,
-                DOTAttributeFactory<Edge> edgeAttrFactory) throws IOException;
+                GraphvizRenderer<BasicBlock> bbRenderer,
+                GraphvizRenderer<Edge> edgeRenderer) throws IOException;
 
     void export(Writer writer) throws IOException;
 

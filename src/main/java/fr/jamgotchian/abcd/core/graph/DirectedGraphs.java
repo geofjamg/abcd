@@ -65,16 +65,16 @@ public class DirectedGraphs {
         }
 
         public void export(Writer writer, String name,
-                           DOTAttributeFactory<V> nodeAttrFactory,
-                           DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
-            delegate.export(writer, name, nodeAttrFactory, edgeAttrFactory);
+                           GraphvizRenderer<V> nodeRenderer,
+                           GraphvizRenderer<E> edgeRenderer) throws IOException {
+            delegate.export(writer, name, nodeRenderer, edgeRenderer);
         }
 
         public void export(Writer writer, String name,
-                           DOTAttributeFactory<V> vertexAttrFactory,
-                           DOTAttributeFactory<E> edgeAttrFactory,
+                           GraphvizRenderer<V> vertexRenderer,
+                           GraphvizRenderer<E> edgeRenderer,
                            boolean isSubgraph) throws IOException {
-            delegate.export(writer, name, vertexAttrFactory, edgeAttrFactory, isSubgraph);
+            delegate.export(writer, name, vertexRenderer, edgeRenderer, isSubgraph);
         }
 
         public void export(Writer writer, String name) throws IOException {
@@ -355,16 +355,16 @@ public class DirectedGraphs {
         }
 
         public void export(Writer writer, String name,
-                           DOTAttributeFactory<V> nodeAttrFactory,
-                           DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
-            delegate.export(writer, name, nodeAttrFactory, edgeAttrFactory);
+                           GraphvizRenderer<V> vertexRenderer,
+                           GraphvizRenderer<E> edgeRenderer) throws IOException {
+            delegate.export(writer, name, vertexRenderer, edgeRenderer);
         }
 
         public void export(Writer writer, String name,
-                           DOTAttributeFactory<V> vertexAttrFactory,
-                           DOTAttributeFactory<E> edgeAttrFactory,
+                           GraphvizRenderer<V> vertexRenderer,
+                           GraphvizRenderer<E> edgeRenderer,
                            boolean isSubgraph) throws IOException {
-            delegate.export(writer, name, vertexAttrFactory, edgeAttrFactory, isSubgraph);
+            delegate.export(writer, name, vertexRenderer, edgeRenderer, isSubgraph);
         }
     }
 

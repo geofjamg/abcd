@@ -37,6 +37,12 @@ import java.util.Set;
  */
 class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
+    private final GraphvizRenderer<V> VERTEX_GRAPHVIZ_RENDERER
+            = new DefaultGraphvizRenderer<V>();
+
+    private final GraphvizRenderer<E> EDGE_GRAPHVIZ_RENDERER
+            = new DefaultGraphvizRenderer<E>();
+
     private static class Connection<V> {
 
         private final V source;
@@ -408,19 +414,18 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
     }
 
     public void export(Writer writer, String name) throws IOException {
-        export(writer, name, new DefaultDOTAttributeFactory<V>(),
-                             new DefaultDOTAttributeFactory<E>());
+        export(writer, name, VERTEX_GRAPHVIZ_RENDERER, EDGE_GRAPHVIZ_RENDERER);
     }
 
     public void export(Writer writer, String name,
-                       DOTAttributeFactory<V> nodeAttrFactory,
-                       DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
-        export(writer, name, nodeAttrFactory, edgeAttrFactory, false);
+                       GraphvizRenderer<V> vertexRenderer,
+                       GraphvizRenderer<E> edgeRenderer) throws IOException {
+        export(writer, name, vertexRenderer, edgeRenderer, false);
     }
 
     public void export(Writer writer, String name,
-                       DOTAttributeFactory<V> vertexAttrFactory,
-                       DOTAttributeFactory<E> edgeAttrFactory,
+                       GraphvizRenderer<V> vertexRenderer,
+                       GraphvizRenderer<E> edgeRenderer,
                        boolean isSubgraph) throws IOException {
         if (isSubgraph) {
             String clusterName = GraphvizUtil.getClusterID(this);
@@ -433,13 +438,13 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
             if (node instanceof GraphvizDigraph) {
                 @SuppressWarnings("unchecked")
                 GraphvizDigraph<V, E> subgraph = ((GraphvizDigraph<V, E>) node);
-                subgraph.export(writer, node.toString(), vertexAttrFactory,
-                                  edgeAttrFactory, true);
+                subgraph.export(writer, node.toString(), vertexRenderer,
+                                  edgeRenderer, true);
             } else {
                 writer.append("  ")
                         .append(GraphvizUtil.getSimpleVertexID(this, node))
                         .append(" ");
-                GraphvizUtil.writeAttributes(writer, vertexAttrFactory.getAttributes(node));
+                GraphvizUtil.writeAttributes(writer, vertexRenderer.getAttributes(node));
                 writer.append("\n");
             }
         }
@@ -450,7 +455,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
                     .append(GraphvizUtil.getVertexID(this, source))
                     .append(" -> ")
                     .append(GraphvizUtil.getVertexID(this, target));
-            GraphvizUtil.writeAttributes(writer, edgeAttrFactory.getAttributes(edge));
+            GraphvizUtil.writeAttributes(writer, edgeRenderer.getAttributes(edge));
             writer.append("\n");
         }
         writer.append("}\n");

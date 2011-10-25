@@ -21,7 +21,7 @@ import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.RPST;
-import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
+import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.output.TextCodeWriter;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -49,7 +49,7 @@ public class DefaultOutputHandler implements OutputHandler {
         this.os = os;
     }
 
-    public void writeRawCFG(ControlFlowGraph cfg, DOTAttributeFactory<BasicBlock> attributeFactory) {
+    public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bbRenderer) {
     }
 
     public void writeCFG(ControlFlowGraph cfg) {

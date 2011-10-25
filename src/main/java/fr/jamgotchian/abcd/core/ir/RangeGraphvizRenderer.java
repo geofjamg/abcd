@@ -16,7 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
+import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,9 +24,7 @@ import java.util.Map;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class RangeDOTAttributeFactory implements DOTAttributeFactory<BasicBlock> {
-
-    public static final RangeDOTAttributeFactory INSTANCE = new RangeDOTAttributeFactory();
+public class RangeGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
 
     public Map<String, String> getAttributes(BasicBlock bb) {
         Map<String, String> attrs = new HashMap<String, String>(4);

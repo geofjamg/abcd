@@ -47,7 +47,7 @@ import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.ir.Region;
 import fr.jamgotchian.abcd.core.ir.RegionAnalysis;
 import fr.jamgotchian.abcd.core.ir.bytecode.LabelManager;
-import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeDOTAttributeFactory;
+import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeGraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeUtil;
 import fr.jamgotchian.abcd.core.type.ClassName;
@@ -284,7 +284,7 @@ public class ABCDContext {
 
                 LabelManager labelManager = new LabelManager();
 
-                handler.writeRawCFG(cfg, new BytecodeDOTAttributeFactory(mn.instructions, labelManager));
+                handler.writeRawCFG(cfg, new BytecodeGraphvizRenderer(mn.instructions, labelManager));
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Build IR instructions of " + methodSignature, '='));

@@ -16,7 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
+import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,15 +24,15 @@ import java.util.Map;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class EdgeDOTAttributeFactory implements DOTAttributeFactory<Edge> {
+public class EdgeGraphvizRenderer implements GraphvizRenderer<Edge> {
 
     private final boolean useConstraints;
 
-    public EdgeDOTAttributeFactory(boolean useConstraints) {
+    public EdgeGraphvizRenderer(boolean useConstraints) {
         this.useConstraints = useConstraints;
     }
 
-    public EdgeDOTAttributeFactory() {
+    public EdgeGraphvizRenderer() {
         this(true);
     }
 

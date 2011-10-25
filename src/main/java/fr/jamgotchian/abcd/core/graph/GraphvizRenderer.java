@@ -16,16 +16,13 @@
  */
 package fr.jamgotchian.abcd.core.graph;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class EmptyDOTAttributeFactory<O> implements DOTAttributeFactory<O> {
+public interface GraphvizRenderer<O> {
 
-    public Map<String, String> getAttributes(O object) {
-        return Collections.emptyMap();
-    }
+    Map<String, String> getAttributes(O object);
 }

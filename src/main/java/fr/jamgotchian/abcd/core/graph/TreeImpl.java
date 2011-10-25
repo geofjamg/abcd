@@ -40,6 +40,12 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     private static final Logger logger = Logger.getLogger(TreeImpl.class.getName());
 
+    private final GraphvizRenderer<N> NODE_GRAPHVIZ_RENDERER
+            = new DefaultGraphvizRenderer<N>();
+
+    private final GraphvizRenderer<E> EDGE_GRAPHVIZ_RENDERER
+            = new DefaultGraphvizRenderer<E>();
+
     private static class Connection<N> {
 
         private final N source;
@@ -302,11 +308,11 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     public void export(String fileName, String name,
-                       DOTAttributeFactory<N> nodeAttrFactory,
-                       DOTAttributeFactory<E> edgeAttrFactory) {
+                       GraphvizRenderer<N> nodeRenderer,
+                       GraphvizRenderer<E> edgeRenderer) {
         try {
             Writer writer = new FileWriter(fileName);
-            export(writer, name, nodeAttrFactory, edgeAttrFactory);
+            export(writer, name, nodeRenderer, edgeRenderer);
             writer.close();
         } catch (IOException e) {
             logger.log(Level.SEVERE, e.toString(), e);
@@ -324,19 +330,18 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     public void export(Writer writer, String name) throws IOException {
-        export(writer, name, new DefaultDOTAttributeFactory<N>(),
-                             new DefaultDOTAttributeFactory<E>());
+        export(writer, name, NODE_GRAPHVIZ_RENDERER, EDGE_GRAPHVIZ_RENDERER);
     }
 
     public void export(Writer writer, String name,
-                       DOTAttributeFactory<N> nodeAttrFactory,
-                       DOTAttributeFactory<E> edgeAttrFactory) throws IOException {
-        export(writer, name, nodeAttrFactory, edgeAttrFactory, false);
+                       GraphvizRenderer<N> nodeRenderer,
+                       GraphvizRenderer<E> edgeRenderer) throws IOException {
+        export(writer, name, nodeRenderer, edgeRenderer, false);
     }
 
     public void export(Writer writer, String name,
-                       DOTAttributeFactory<N> nodeAttrFactory,
-                       DOTAttributeFactory<E> edgeAttrFactory,
+                       GraphvizRenderer<N> nodeRenderer,
+                       GraphvizRenderer<E> edgeRenderer,
                        boolean isSubgraph) throws IOException {
         if (isSubgraph) {
             String clusterName = GraphvizUtil.getClusterID(this);
@@ -349,13 +354,13 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             if (node instanceof GraphvizDigraph) {
                 @SuppressWarnings("unchecked")
                 GraphvizDigraph<N, E> subgraph = ((GraphvizDigraph<N, E>) node);
-                subgraph.export(writer, node.toString(), nodeAttrFactory,
-                                  edgeAttrFactory, true);
+                subgraph.export(writer, node.toString(), nodeRenderer,
+                                  edgeRenderer, true);
             } else {
                 writer.append("  ")
                         .append(GraphvizUtil.getSimpleVertexID(this, node))
                         .append(" ");
-                GraphvizUtil.writeAttributes(writer, nodeAttrFactory.getAttributes(node));
+                GraphvizUtil.writeAttributes(writer, nodeRenderer.getAttributes(node));
                 writer.append("\n");
             }
         }
@@ -366,7 +371,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
                     .append(GraphvizUtil.getVertexID(this, source))
                     .append(" -> ")
                     .append(GraphvizUtil.getVertexID(this, target));
-            GraphvizUtil.writeAttributes(writer, edgeAttrFactory.getAttributes(edge));
+            GraphvizUtil.writeAttributes(writer, edgeRenderer.getAttributes(edge));
             writer.append("\n");
         }
         writer.append("}\n");

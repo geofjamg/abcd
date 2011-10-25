@@ -50,8 +50,11 @@ public class RPST {
 
     private static final Logger logger = Logger.getLogger(RPST.class.getName());
 
-    private static final EdgeDOTAttributeFactory EDGE_ATTRIBUTE_FACTORY
-            = new EdgeDOTAttributeFactory(false);
+    private static final EdgeGraphvizRenderer EDGE_GRAPHVIZ_RENDERER
+            = new EdgeGraphvizRenderer(false);
+
+    private static final RangeGraphvizRenderer RANGE_GRAPHIZ_RENDERER
+            = new RangeGraphvizRenderer();
 
     private final ControlFlowGraph cfg;
 
@@ -349,7 +352,7 @@ public class RPST {
             writer.append("  ")
                     .append(Integer.toString(System.identityHashCode(bb)))
                     .append(" ");
-            Map<String, String> attrs = RangeDOTAttributeFactory.INSTANCE.getAttributes(bb);
+            Map<String, String> attrs = RANGE_GRAPHIZ_RENDERER.getAttributes(bb);
             GraphvizUtil.writeAttributes(writer, attrs);
             writeSpace(writer, indentLevel);
             writer.append("\n");
@@ -384,7 +387,7 @@ public class RPST {
                     .append(Integer.toString(System.identityHashCode(source)))
                     .append(" -> ")
                     .append(Integer.toString(System.identityHashCode(target)));
-            GraphvizUtil.writeAttributes(writer, EDGE_ATTRIBUTE_FACTORY.getAttributes(edge));
+            GraphvizUtil.writeAttributes(writer, EDGE_GRAPHVIZ_RENDERER.getAttributes(edge));
             writer.append("\n");
         }
         writer.append("}\n");

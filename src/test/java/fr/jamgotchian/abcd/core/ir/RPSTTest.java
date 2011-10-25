@@ -121,8 +121,8 @@ public class RPSTTest {
 
         Writer writer = new FileWriter("/tmp/RPSTTest_CFG.dot");
         try {
-            cfg.export(writer, RangeDOTAttributeFactory.INSTANCE,
-                               new EdgeDOTAttributeFactory(false));
+            cfg.export(writer, new RangeGraphvizRenderer(),
+                               new EdgeGraphvizRenderer(false));
         } finally {
             writer.close();
         }

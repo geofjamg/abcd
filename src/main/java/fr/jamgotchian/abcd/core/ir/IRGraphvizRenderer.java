@@ -14,34 +14,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.ir.bytecode;
+package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.ir.BasicBlock;
-import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
+import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import java.util.HashMap;
 import java.util.Map;
-import org.objectweb.asm.tree.InsnList;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BytecodeDOTAttributeFactory implements DOTAttributeFactory<BasicBlock> {
-
-    private final InsnList instructions;
-
-    private final LabelManager labelManager;
-
-    public BytecodeDOTAttributeFactory(InsnList instructions, LabelManager labelManager) {
-        this.instructions = instructions;
-        this.labelManager = labelManager;
-    }
+public class IRGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
 
     public Map<String, String> getAttributes(BasicBlock bb) {
         Map<String, String> attrs = new HashMap<String, String>(3);
         attrs.put("shape", "box");
         attrs.put("color", "black");
-        attrs.put("label", "< " + BytecodeUtil.toDOTHTMLLike(instructions, bb, labelManager) + " >");
+        StringBuilder builder = new StringBuilder();
+        builder.append("< ");
+        if (bb.getType() == BasicBlockType.ENTRY
+                || bb.getType() == BasicBlockType.EXIT) {
+            builder.append("<font color=\"black\">").append(bb.getType()).append("</font>");
+        } else {
+            builder.append(IRInstWriter.toDOTHTMLLike(bb.getRange(),
+                    bb.getInstructions(),
+                    bb.getInputStack(),
+                    bb.getOutputStack()));
+        }
+        builder.append(" >");
+        attrs.put("label", builder.toString());
         return attrs;
     }
 }

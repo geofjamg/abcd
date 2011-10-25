@@ -20,7 +20,7 @@ import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.RPST;
-import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
+import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 
 /**
  *
@@ -28,7 +28,7 @@ import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
  */
 public interface OutputHandler {
 
-    void writeRawCFG(ControlFlowGraph cfg, DOTAttributeFactory<BasicBlock> attributeFactory);
+    void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bbRenderer);
 
     void writeCFG(ControlFlowGraph cfg);
 

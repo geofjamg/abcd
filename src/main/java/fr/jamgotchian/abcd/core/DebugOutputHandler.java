@@ -18,11 +18,11 @@ package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
-import fr.jamgotchian.abcd.core.ir.RangeDOTAttributeFactory;
+import fr.jamgotchian.abcd.core.ir.RangeGraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.ir.EdgeDOTAttributeFactory;
+import fr.jamgotchian.abcd.core.ir.EdgeGraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.RPST;
-import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
+import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -36,6 +36,15 @@ import java.util.logging.Level;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class DebugOutputHandler extends DefaultOutputHandler {
+
+    private static final EdgeGraphvizRenderer EDGE_GRAPHVIZ_RENDERER
+            = new EdgeGraphvizRenderer();
+
+    private static final EdgeGraphvizRenderer EDGE_GRAPHVIZ_RENDERER_FALSE
+            = new EdgeGraphvizRenderer(false);
+
+    private static final RangeGraphvizRenderer RANGE_GRAPHVIZ_RENDERER
+            = new RangeGraphvizRenderer();
 
     private final File outputDir;
 
@@ -60,7 +69,7 @@ public class DebugOutputHandler extends DefaultOutputHandler {
     }
 
     @Override
-    public void writeRawCFG(ControlFlowGraph cfg, DOTAttributeFactory<BasicBlock> attributeFactory) {
+    public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bbRenderer) {
 
         String baseName = outputDir.getPath() + "/" + cfg.getName();
 
@@ -74,7 +83,7 @@ public class DebugOutputHandler extends DefaultOutputHandler {
 
             writer = new FileWriter(baseName + "_BC.dot");
             try {
-                cfg.export(writer, attributeFactory, new EdgeDOTAttributeFactory());
+                cfg.export(writer, bbRenderer, EDGE_GRAPHVIZ_RENDERER);
             } finally {
                 writer.close();
             }
@@ -91,10 +100,8 @@ public class DebugOutputHandler extends DefaultOutputHandler {
         try {
             Writer writer = new FileWriter(baseName + "_DFST.dot");
             try {
-                cfg.getDFST()
-                        .export(writer, "DFST",
-                                RangeDOTAttributeFactory.INSTANCE,
-                                new EdgeDOTAttributeFactory());
+                cfg.getDFST().export(writer, "DFST", RANGE_GRAPHVIZ_RENDERER,
+                                     EDGE_GRAPHVIZ_RENDERER);
             } finally {
                 writer.close();
             }
@@ -109,9 +116,8 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             writer = new FileWriter(baseName + "_DT.dot");
             try {
                 cfg.getDominatorInfo().getDominatorsTree()
-                        .export(writer, "DT",
-                                new RangeDOTAttributeFactory(),
-                                new EdgeDOTAttributeFactory(false));
+                        .export(writer, "DT", RANGE_GRAPHVIZ_RENDERER,
+                                EDGE_GRAPHVIZ_RENDERER_FALSE);
             } finally {
                 writer.close();
             }
@@ -120,8 +126,8 @@ public class DebugOutputHandler extends DefaultOutputHandler {
             try {
                 cfg.getPostDominatorInfo().getPostDominatorsTree()
                         .export(writer, "PDT",
-                                RangeDOTAttributeFactory.INSTANCE,
-                                new EdgeDOTAttributeFactory(false));
+                                RANGE_GRAPHVIZ_RENDERER,
+                                EDGE_GRAPHVIZ_RENDERER_FALSE);
             } finally {
                 writer.close();
             }
