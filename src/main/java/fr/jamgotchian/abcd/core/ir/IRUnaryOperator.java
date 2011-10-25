@@ -22,57 +22,25 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public enum TACBinaryOperator {
-    PLUS,
+public enum IRUnaryOperator {
     MINUS,
-    MUL,
-    DIV,
-    EQ,
-    NE,
-    LT,
-    GT,
-    LE,
-    GE,
-    REMAINDER,
-    SHIFT_LEFT,
-    SHIFT_RIGHT,
-    LOGICAL_SHIFT_RIGHT,
-    AND,
-    OR,
-    XOR;
+    NOT,
+    NONE; // needed to invert NOT operator
 
-    public static TACBinaryOperator invert(TACBinaryOperator op) {
+    public static IRUnaryOperator getInverse(IRUnaryOperator op) {
         switch (op) {
-            case PLUS:
             case MINUS:
-            case MUL:
-            case DIV:
-            case REMAINDER:
-            case SHIFT_LEFT:
-            case SHIFT_RIGHT:
                 return op;
-            case LE:
-                return GT;
-            case LT:
-                return GE;
-            case GE:
-                return LT;
-            case GT:
-                return LE;
-            case EQ:
-                return NE;
-            case NE:
-                return EQ;
-            case AND:
-                return OR;
-            case OR:
-                return AND;
+            case NOT:
+                return NONE;
+            case NONE:
+                return NOT;
             default:
                 throw new ABCDException("Impossible to invert " + op);
         }
     }
 
-    public TACBinaryOperator invert() {
-        return invert(this);
+    public IRUnaryOperator getInverse() {
+        return getInverse(this);
     }
 }

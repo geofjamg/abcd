@@ -23,7 +23,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ReturnInst extends TACInstImpl {
+public class ReturnInst extends IRInstImpl {
 
     private final Variable var;
 
@@ -47,7 +47,7 @@ public class ReturnInst extends TACInstImpl {
         }
     }
 
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
+    public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
 }

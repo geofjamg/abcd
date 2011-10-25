@@ -16,7 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.analysis;
 
-import fr.jamgotchian.abcd.core.ir.LiveVariablesAnalysis;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.expr.ArrayCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignOperator;
@@ -43,7 +42,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
-import fr.jamgotchian.abcd.core.ir.TACInstSeq;
+import fr.jamgotchian.abcd.core.ir.IRInstSeq;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.ArrayLengthInst;
@@ -87,12 +86,13 @@ import fr.jamgotchian.abcd.core.ir.SetStaticFieldInst;
 import fr.jamgotchian.abcd.core.ir.ShortConst;
 import fr.jamgotchian.abcd.core.ir.StringConst;
 import fr.jamgotchian.abcd.core.ir.SwitchInst;
-import fr.jamgotchian.abcd.core.ir.TACInst;
+import fr.jamgotchian.abcd.core.ir.IRInst;
 import fr.jamgotchian.abcd.core.ir.ThrowInst;
 import fr.jamgotchian.abcd.core.ir.UnaryInst;
 import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.ir.VariableID;
-import fr.jamgotchian.abcd.core.ir.EmptyTACInstVisitor;
+import fr.jamgotchian.abcd.core.ir.EmptyIRInstVisitor;
+import fr.jamgotchian.abcd.core.ir.LiveVariablesAnalysis;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -123,9 +123,9 @@ public class AbstractSyntaxTreeBuilder {
 
     private final Map<VariableID, Expression> expressions;
 
-    private class RegionTACInstVisitor extends EmptyTACInstVisitor<Void, BlockStatement> {
+    private class RegionIRInstVisitor extends EmptyIRInstVisitor<Void, BlockStatement> {
 
-        private RegionTACInstVisitor() {
+        private RegionIRInstVisitor() {
         }
 
         private Expression getVarExpr(Variable var) {
@@ -153,8 +153,8 @@ public class AbstractSyntaxTreeBuilder {
         }
 
         @Override
-        public Void visit(TACInstSeq seq, BlockStatement arg) {
-            for (TACInst inst : seq) {
+        public Void visit(IRInstSeq seq, BlockStatement arg) {
+            for (IRInst inst : seq) {
                 if (!inst.isIgnored()) {
                     inst.accept(this, arg);
                 }
@@ -555,7 +555,7 @@ public class AbstractSyntaxTreeBuilder {
             case BASIC_BLOCK: {
                 BasicBlock bb = region.getEntry();
                 if (bb.getType() != BasicBlockType.EMPTY) {
-                    RegionTACInstVisitor visitor = new RegionTACInstVisitor();
+                    RegionIRInstVisitor visitor = new RegionIRInstVisitor();
                     bb.getInstructions().accept(visitor, blockStmt);
                 }
                 if (bb.hasAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_SOURCE)) {

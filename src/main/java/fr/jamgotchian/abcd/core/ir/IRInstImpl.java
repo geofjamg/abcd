@@ -20,7 +20,7 @@ package fr.jamgotchian.abcd.core.ir;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class TACInstImpl implements TACInst {
+public abstract class IRInstImpl implements IRInst {
 
     private boolean ignored;
 

@@ -40,7 +40,7 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
 
     private static Set<Variable> getDefs(BasicBlock block) {
         Set<Variable> defs = new HashSet<Variable>();
-        for (TACInst inst : block.getInstructions()) {
+        for (IRInst inst : block.getInstructions()) {
             if (inst instanceof DefInst) {
                 defs.add(((DefInst) inst).getResult());
             }
@@ -50,7 +50,7 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
 
     private static Set<Variable> getUses(BasicBlock block) {
         Set<Variable> uses = new HashSet<Variable>();
-        for (TACInst inst : block.getInstructions()) {
+        for (IRInst inst : block.getInstructions()) {
             uses.addAll(inst.getUses());
         }
         return uses;

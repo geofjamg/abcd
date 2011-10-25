@@ -25,11 +25,11 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TACInstFactory {
+public class IRInstFactory {
 
     private int defID = 0;
 
-    public TACInstFactory() {
+    public IRInstFactory() {
     }
 
     public ArrayLengthInst newArrayLength(Variable result, Variable array) {
@@ -44,7 +44,7 @@ public class TACInstFactory {
         return new AssignVarInst(defID++, result, value);
     }
 
-    public BinaryInst newBinary(Variable result, TACBinaryOperator operator,
+    public BinaryInst newBinary(Variable result, IRBinaryOperator operator,
                                 Variable var1, Variable var2) {
         return new BinaryInst(defID++, result, operator, var1, var2);
     }
@@ -147,7 +147,7 @@ public class TACInstFactory {
         return new ThrowInst(var);
     }
 
-    public UnaryInst newUnary(Variable result, TACUnaryOperator operator, Variable var) {
+    public UnaryInst newUnary(Variable result, IRUnaryOperator operator, Variable var) {
         return new UnaryInst(defID++, result, operator, var);
     }
 }

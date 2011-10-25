@@ -126,9 +126,9 @@ public class DebugOutputHandler extends DefaultOutputHandler {
                 writer.close();
             }
 
-            writer = new FileWriter(baseName + "_TAC.dot");
+            writer = new FileWriter(baseName + "_INST.dot");
             try {
-                cfg.exportTAC(writer);
+                cfg.exportInst(writer);
             } finally {
                 writer.close();
             }

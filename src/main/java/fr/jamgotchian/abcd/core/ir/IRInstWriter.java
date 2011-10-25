@@ -37,14 +37,14 @@ import java.util.logging.Logger;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TACInstWriter implements TACInstVisitor<Void, Void> {
+public class IRInstWriter implements IRInstVisitor<Void, Void> {
 
-    private static final Logger logger = Logger.getLogger(TACInstWriter.class.getName());
+    private static final Logger logger = Logger.getLogger(IRInstWriter.class.getName());
 
-    public static String toString(TACInst inst, CodeWriterFactory factory) {
+    public static String toString(IRInst inst, CodeWriterFactory factory) {
         Writer writer = new StringWriter();
         try {
-            inst.accept(new TACInstWriter(factory.create(writer)), null);
+            inst.accept(new IRInstWriter(factory.create(writer)), null);
         } finally {
             try {
                 writer.close();
@@ -55,16 +55,16 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
         return writer.toString();
     }
 
-    public static String toText(TACInst inst) {
+    public static String toText(IRInst inst) {
         return toString(inst, new TextCodeWriterFactory());
     }
 
-    public static String toHTML(TACInst inst) {
+    public static String toHTML(IRInst inst) {
         return toString(inst, new HTMLCodeWriterFactory());
     }
 
     public static String toString(Range range,
-                                  TACInstSeq seq,
+                                  IRInstSeq seq,
                                   VariableStack inputStack,
                                   VariableStack outputStack,
                                   CodeWriterFactory factory) {
@@ -78,7 +78,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
                                                   Color.ORANGE));
             }
             codeWriter.before(infosBefore);
-            seq.accept(new TACInstWriter(codeWriter), null);
+            seq.accept(new IRInstWriter(codeWriter), null);
             List<ColoredString> infosAfter = new ArrayList<ColoredString>(1);
             if (outputStack != null && outputStack.size() > 0) {
                 infosAfter.add(new ColoredString("Output stack : " + outputStack,
@@ -96,7 +96,7 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
     }
 
     public static String toDOTHTMLLike(Range range,
-                                       TACInstSeq seq,
+                                       IRInstSeq seq,
                                        VariableStack inputStack,
                                        VariableStack outputStack) {
         return toString(range, seq, inputStack, outputStack, new DOTHTMLLikeCodeWriterFactory());
@@ -104,13 +104,13 @@ public class TACInstWriter implements TACInstVisitor<Void, Void> {
 
     private final CodeWriter writer;
 
-    private TACInstWriter(CodeWriter writer) {
+    private IRInstWriter(CodeWriter writer) {
         this.writer = writer;
     }
 
-    public Void visit(TACInstSeq insts, Void arg) {
-        for (Iterator<TACInst> it = insts.iterator(); it.hasNext();) {
-            TACInst inst = it.next();
+    public Void visit(IRInstSeq insts, Void arg) {
+        for (Iterator<IRInst> it = insts.iterator(); it.hasNext();) {
+            IRInst inst = it.next();
             if (inst.isIgnored()) {
                 writer.setEnabled(false);
             }

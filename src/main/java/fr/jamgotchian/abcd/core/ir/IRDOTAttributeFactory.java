@@ -24,9 +24,9 @@ import java.util.Map;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TACDOTAttributeFactory implements DOTAttributeFactory<BasicBlock> {
+public class IRDOTAttributeFactory implements DOTAttributeFactory<BasicBlock> {
 
-    public static final TACDOTAttributeFactory INSTANCE = new TACDOTAttributeFactory();
+    public static final IRDOTAttributeFactory INSTANCE = new IRDOTAttributeFactory();
 
     public Map<String, String> getAttributes(BasicBlock bb) {
         Map<String, String> attrs = new HashMap<String, String>(3);
@@ -38,7 +38,7 @@ public class TACDOTAttributeFactory implements DOTAttributeFactory<BasicBlock> {
                 || bb.getType() == BasicBlockType.EXIT) {
             builder.append("<font color=\"black\">").append(bb.getType()).append("</font>");
         } else {
-            builder.append(TACInstWriter.toDOTHTMLLike(bb.getRange(),
+            builder.append(IRInstWriter.toDOTHTMLLike(bb.getRange(),
                     bb.getInstructions(),
                     bb.getInputStack(),
                     bb.getOutputStack()));

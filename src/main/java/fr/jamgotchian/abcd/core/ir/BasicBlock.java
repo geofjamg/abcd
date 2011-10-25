@@ -39,9 +39,9 @@ public interface BasicBlock {
 
     void setOrder(int order);
 
-    TACInstSeq getInstructions();
+    IRInstSeq getInstructions();
 
-    void setInstructions(TACInstSeq instructions);
+    void setInstructions(IRInstSeq instructions);
 
     VariableStack getInputStack();
 

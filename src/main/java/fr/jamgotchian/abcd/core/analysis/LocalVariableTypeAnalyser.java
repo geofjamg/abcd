@@ -16,7 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.analysis;
 
-import fr.jamgotchian.abcd.core.ir.SSAFormConverter;
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
@@ -50,13 +49,14 @@ import fr.jamgotchian.abcd.core.ir.SetArrayInst;
 import fr.jamgotchian.abcd.core.ir.SetFieldInst;
 import fr.jamgotchian.abcd.core.ir.SetStaticFieldInst;
 import fr.jamgotchian.abcd.core.ir.SwitchInst;
-import fr.jamgotchian.abcd.core.ir.TACInst;
-import fr.jamgotchian.abcd.core.ir.TACInstFactory;
-import fr.jamgotchian.abcd.core.ir.TACInstSeq;
+import fr.jamgotchian.abcd.core.ir.IRInst;
+import fr.jamgotchian.abcd.core.ir.IRInstFactory;
+import fr.jamgotchian.abcd.core.ir.IRInstSeq;
 import fr.jamgotchian.abcd.core.ir.UnaryInst;
 import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.ir.VariableID;
-import fr.jamgotchian.abcd.core.ir.EmptyTACInstVisitor;
+import fr.jamgotchian.abcd.core.ir.EmptyIRInstVisitor;
+import fr.jamgotchian.abcd.core.ir.SSAFormConverter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -87,17 +87,17 @@ public class LocalVariableTypeAnalyser {
 
     private final ClassNameFactory classNameFactory;
 
-    private final TACInstFactory instFactory;
+    private final IRInstFactory instFactory;
 
     private final Map<VariableID, Set<JavaType>> possibleTypes
             = new HashMap<VariableID, Set<JavaType>>();
 
-    private class Visitor extends EmptyTACInstVisitor<Boolean, Void> {
+    private class Visitor extends EmptyIRInstVisitor<Boolean, Void> {
 
         @Override
-        public Boolean visit(TACInstSeq seq, Void arg) {
+        public Boolean visit(IRInstSeq seq, Void arg) {
             Boolean change = Boolean.FALSE;
-            for (TACInst inst : seq) {
+            for (IRInst inst : seq) {
             if (Boolean.TRUE.equals(inst.accept(this, arg))) {
                     change = Boolean.TRUE;
                 }
@@ -425,7 +425,7 @@ public class LocalVariableTypeAnalyser {
 
     public LocalVariableTypeAnalyser(ControlFlowGraph graph, Method method,
                                      ClassNameFactory classNameFactory,
-                                     TACInstFactory instFactory) {
+                                     IRInstFactory instFactory) {
         this.graph = graph;
         this.method = method;
         this.classNameFactory = classNameFactory;
@@ -513,7 +513,7 @@ public class LocalVariableTypeAnalyser {
 
         // check that all variable have been types correctly
         for (BasicBlock bb : graph.getBasicBlocks()) {
-            for (TACInst inst : bb.getInstructions()) {
+            for (IRInst inst : bb.getInstructions()) {
                 if (inst instanceof DefInst) {
                     Variable v = ((DefInst) inst).getResult();
                     assert v.getType() == null;
@@ -539,7 +539,7 @@ public class LocalVariableTypeAnalyser {
         LocalVariableTable table = graph.getLocalVariableTable();
         Set<Variable> variables = new HashSet<Variable>();
         for (BasicBlock block : graph.getBasicBlocks()) {
-            for (TACInst inst : block.getInstructions()) {
+            for (IRInst inst : block.getInstructions()) {
                 if (inst instanceof DefInst) {
                     Variable def = ((DefInst) inst).getResult();
                     if (!def.isTemporary()) {

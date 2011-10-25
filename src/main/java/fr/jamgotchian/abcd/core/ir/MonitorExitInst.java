@@ -23,7 +23,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class MonitorExitInst extends TACInstImpl {
+public class MonitorExitInst extends IRInstImpl {
 
     private final Variable obj;
 
@@ -39,7 +39,7 @@ public class MonitorExitInst extends TACInstImpl {
         return Collections.singleton(obj);
     }
 
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
+    public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
 }

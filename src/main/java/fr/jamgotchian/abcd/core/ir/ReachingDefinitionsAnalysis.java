@@ -41,7 +41,7 @@ public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBl
         super(CFG.getGraph(), CFG.getEntryBlock());
 
         for (BasicBlock block : CFG.getBasicBlocks()) {
-            for (TACInst inst : block.getInstructions()) {
+            for (IRInst inst : block.getInstructions()) {
                 if (inst instanceof DefInst) {
                     DefInst def = (DefInst) inst;
                     defs.put(def.getDefID(), def.getResult().getID());
@@ -68,7 +68,7 @@ public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBl
             reachingDef.put(defs.get(defID), defID);
         }
 
-        for (TACInst inst : block.getInstructions()) {
+        for (IRInst inst : block.getInstructions()) {
             if (inst instanceof DefInst) {
                 DefInst def = (DefInst) inst;
                 Variable result = def.getResult();

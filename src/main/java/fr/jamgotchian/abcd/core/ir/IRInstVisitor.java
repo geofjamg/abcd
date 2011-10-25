@@ -20,9 +20,9 @@ package fr.jamgotchian.abcd.core.ir;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface TACInstVisitor<R, A> {
+public interface IRInstVisitor<R, A> {
 
-    R visit(TACInstSeq seq, A arg);
+    R visit(IRInstSeq seq, A arg);
 
     R visit(ArrayLengthInst inst, A arg);
 

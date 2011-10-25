@@ -36,7 +36,7 @@ class BasicBlockImpl implements BasicBlock {
 
     private int loopLevel;
 
-    private TACInstSeq instructions;
+    private IRInstSeq instructions;
 
     private VariableStack inputStack;
 
@@ -96,11 +96,11 @@ class BasicBlockImpl implements BasicBlock {
         this.loopLevel = loopLevel;
     }
 
-    public TACInstSeq getInstructions() {
+    public IRInstSeq getInstructions() {
         return instructions;
     }
 
-    public void setInstructions(TACInstSeq instructions) {
+    public void setInstructions(IRInstSeq instructions) {
         this.instructions = instructions;
     }
 

@@ -16,31 +16,19 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.common.ABCDException;
+import java.util.Set;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public enum TACUnaryOperator {
-    MINUS,
-    NOT,
-    NONE; // needed to invert NOT operator
+public interface IRInst {
 
-    public static TACUnaryOperator getInverse(TACUnaryOperator op) {
-        switch (op) {
-            case MINUS:
-                return op;
-            case NOT:
-                return NONE;
-            case NONE:
-                return NOT;
-            default:
-                throw new ABCDException("Impossible to invert " + op);
-        }
-    }
+    boolean isIgnored();
 
-    public TACUnaryOperator getInverse() {
-        return getInverse(this);
-    }
+    void setIgnored(boolean ignored);
+
+    Set<Variable> getUses();
+
+    <R, A> R accept(IRInstVisitor<R, A> visitor, A arg);
 }

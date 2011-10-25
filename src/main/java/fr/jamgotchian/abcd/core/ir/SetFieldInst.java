@@ -24,7 +24,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SetFieldInst extends TACInstImpl {
+public class SetFieldInst extends IRInstImpl {
 
     private final Variable object;
 
@@ -61,7 +61,7 @@ public class SetFieldInst extends TACInstImpl {
         return Sets.newHashSet(object, value);
     }
 
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
+    public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
 }

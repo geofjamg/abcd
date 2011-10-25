@@ -42,19 +42,19 @@ public class SSAFormConverter {
 
     private final ControlFlowGraph graph;
 
-    private final TACInstFactory instFactory;
+    private final IRInstFactory instFactory;
 
     private Multimap<BasicBlock, Integer> liveVariables;
 
     private Multimap<Integer, BasicBlock> defBlocks;
 
-    public SSAFormConverter(ControlFlowGraph graph, TACInstFactory instFactory) {
+    public SSAFormConverter(ControlFlowGraph graph, IRInstFactory instFactory) {
         this.graph = graph;
         this.instFactory = instFactory;
     }
 
     private static boolean containsDef(BasicBlock block, int defIndex) {
-        for (TACInst inst : block.getInstructions()) {
+        for (IRInst inst : block.getInstructions()) {
             if (inst instanceof DefInst) {
                 Variable def = ((DefInst) inst).getResult();
                 if (def.getIndex() == defIndex) {
@@ -117,7 +117,7 @@ public class SSAFormConverter {
         // generated version in current block
         Set<Integer> generatedVersion = new HashSet<Integer>();
 
-        for (TACInst inst : n.getInstructions()) {
+        for (IRInst inst : n.getInstructions()) {
             // for each use of the variable rename with the current version
             // (version on top of version stack)
             if (!(inst instanceof PhiInst)) {
@@ -144,7 +144,7 @@ public class SSAFormConverter {
 
         // fill in phi function parameters of successor blocks
         for (BasicBlock y : graph.getSuccessorsOf(n)) {
-            for (TACInst inst : y.getInstructions()) {
+            for (IRInst inst : y.getInstructions()) {
                 if (inst instanceof PhiInst) {
                     int j = new ArrayList<BasicBlock>(graph.getPredecessorsOf(y)).indexOf(n);
                     int version = versionStack.peek();
@@ -168,12 +168,12 @@ public class SSAFormConverter {
         }
     }
 
-    private static void addInst(BasicBlock b, TACInst inst) {
-        TACInstSeq insts = b.getInstructions();
+    private static void addInst(BasicBlock b, IRInst inst) {
+        IRInstSeq insts = b.getInstructions();
         if (insts.isEmpty()) {
             insts.add(inst);
         } else {
-            TACInst lastInst = insts.get(insts.size()-1);
+            IRInst lastInst = insts.get(insts.size()-1);
             if (lastInst instanceof JumpIfInst) {
                 insts.insertAt(insts.size()-1, inst);
             } else {
@@ -186,9 +186,9 @@ public class SSAFormConverter {
         for (BasicBlock b : graph.getBasicBlocks()) {
             List<BasicBlock> predecessors
                     = new ArrayList<BasicBlock>(graph.getPredecessorsOf(b));
-            TACInstSeq insts = b.getInstructions();
-            for (Iterator<TACInst> it = insts.iterator(); it.hasNext();) {
-                TACInst inst = it.next();
+            IRInstSeq insts = b.getInstructions();
+            for (Iterator<IRInst> it = insts.iterator(); it.hasNext();) {
+                IRInst inst = it.next();
                 if (inst instanceof PhiInst) {
                     PhiInst phiInst = (PhiInst) inst;
                     for (int i = 0; i < phiInst.getArgs().size(); i++) {
@@ -225,7 +225,7 @@ public class SSAFormConverter {
         // fill map containing all definitions and its basic block
         defBlocks = HashMultimap.create();
         for (BasicBlock block : graph.getBasicBlocks()) {
-            for (TACInst inst : block.getInstructions()) {
+            for (IRInst inst : block.getInstructions()) {
                 if (inst instanceof DefInst) {
                     Variable def = ((DefInst) inst).getResult();
                     defBlocks.put(def.getIndex(), block);

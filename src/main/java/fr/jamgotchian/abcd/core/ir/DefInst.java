@@ -20,7 +20,7 @@ package fr.jamgotchian.abcd.core.ir;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class DefInst extends TACInstImpl {
+public abstract class DefInst extends IRInstImpl {
 
     private final int defID;
 

@@ -43,11 +43,11 @@ public class TernaryOperatorBuilder {
 
     private final TemporaryVariableFactory tmpVarFactory;
 
-    private final TACInstFactory instFactory;
+    private final IRInstFactory instFactory;
 
     public TernaryOperatorBuilder(ControlFlowGraph CFG,
                                   TemporaryVariableFactory tmpVarFactory,
-                                  TACInstFactory instFactory) {
+                                  IRInstFactory instFactory) {
         this.cfg = CFG;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
@@ -55,16 +55,16 @@ public class TernaryOperatorBuilder {
 
     public void build() {
         for (BasicBlock joinBlock : cfg.getDFST()) {
-            TACInstSeq joinInsts = joinBlock.getInstructions();
+            IRInstSeq joinInsts = joinBlock.getInstructions();
 
             for (int i = 0; i < joinInsts.size(); i++) {
-                TACInst inst = joinInsts.get(i);
+                IRInst inst = joinInsts.get(i);
                 if (!(inst instanceof ChoiceInst)) {
                     continue;
                 }
                 ChoiceInst choiceInst = (ChoiceInst) inst;
 
-                List<TACInst> replacement = new ArrayList<TACInst>();
+                List<IRInst> replacement = new ArrayList<IRInst>();
 
                 boolean change = true;
                 while (change) {
@@ -115,14 +115,14 @@ public class TernaryOperatorBuilder {
                                     ConditionalInst condInst
                                             = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
                                     logger.log(Level.FINER, "Replace inst at {0} of {1} : {2}",
-                                            new Object[]{i, joinBlock, TACInstWriter.toText(condInst)});
+                                            new Object[]{i, joinBlock, IRInstWriter.toText(condInst)});
                                     replacement.add(condInst);
                                 } else {
                                     Variable resultVar = tmpVarFactory.create(forkBlock);
                                     ConditionalInst condInst
                                             = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
                                     logger.log(Level.FINER, "Insert inst at {0} of {1} : {2}",
-                                            new Object[]{i, joinBlock, TACInstWriter.toText(condInst)});
+                                            new Object[]{i, joinBlock, IRInstWriter.toText(condInst)});
                                     replacement.add(condInst);
                                     choiceInst.getChoices().add(resultVar);
                                 }

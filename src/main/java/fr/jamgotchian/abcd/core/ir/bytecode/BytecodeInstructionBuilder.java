@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
-import fr.jamgotchian.abcd.core.ir.BasicBlock3ACBuilder;
+import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.ByteConst;
 import fr.jamgotchian.abcd.core.ir.ClassConst;
 import fr.jamgotchian.abcd.core.ir.DoubleConst;
@@ -33,9 +33,9 @@ import fr.jamgotchian.abcd.core.ir.MethodSignature;
 import fr.jamgotchian.abcd.core.ir.NullConst;
 import fr.jamgotchian.abcd.core.ir.ShortConst;
 import fr.jamgotchian.abcd.core.ir.StringConst;
-import fr.jamgotchian.abcd.core.ir.TACBinaryOperator;
-import fr.jamgotchian.abcd.core.ir.TACInstFactory;
-import fr.jamgotchian.abcd.core.ir.TACUnaryOperator;
+import fr.jamgotchian.abcd.core.ir.IRBinaryOperator;
+import fr.jamgotchian.abcd.core.ir.IRInstFactory;
+import fr.jamgotchian.abcd.core.ir.IRUnaryOperator;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.ir.VariableStack;
@@ -63,7 +63,7 @@ import org.objectweb.asm.tree.VarInsnNode;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
+public class BytecodeInstructionBuilder implements InstructionBuilder {
 
     public static final JavaType[] ATYPES = {
         null,
@@ -88,7 +88,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
 
     private final TemporaryVariableFactory tmpVarFactory;
 
-    private final TACInstFactory instFactory;
+    private final IRInstFactory instFactory;
 
     private class BytecodeRangeVisitorImpl extends BytecodeRangeVisitor {
 
@@ -144,7 +144,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
             Variable tmpValue = tmpVarFactory.create(bb);
             bb.getInstructions().add(instFactory.newAssignConst(tmpValue, new IntConst(Math.abs(node.incr))));
             Variable tmpResult = tmpVarFactory.create(bb);
-            TACBinaryOperator binOp = node.incr > 0 ? TACBinaryOperator.PLUS : TACBinaryOperator.MINUS;
+            IRBinaryOperator binOp = node.incr > 0 ? IRBinaryOperator.PLUS : IRBinaryOperator.MINUS;
             bb.getInstructions().add(instFactory.newBinary(tmpResult, binOp, tmpVar, tmpValue));
             bb.getInstructions().add(instFactory.newAssignVar(new Variable(node.var, bb, position), tmpResult));
         }
@@ -334,7 +334,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.PLUS, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.PLUS, left, right));
                     stack.push(tmpResult);
                     break;
                 }
@@ -346,7 +346,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.MINUS, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.MINUS, left, right));
                     stack.push(tmpResult);
                     break;
                 }
@@ -358,7 +358,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.MUL, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.MUL, left, right));
                     stack.push(tmpResult);
                     break;
                 }
@@ -370,7 +370,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.DIV, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.DIV, left, right));
                     stack.push(tmpResult);
                     break;
                 }
@@ -382,7 +382,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.REMAINDER, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.REMAINDER, left, right));
                     stack.push(tmpResult);
                     break;
                 }
@@ -392,7 +392,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                 case FNEG:
                 case DNEG: {
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newUnary(tmpResult, TACUnaryOperator.MINUS, stack.pop()));
+                    bb.getInstructions().add(instFactory.newUnary(tmpResult, IRUnaryOperator.MINUS, stack.pop()));
                     stack.push(tmpResult);
                     break;
                 }
@@ -402,7 +402,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.SHIFT_LEFT, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.SHIFT_LEFT, left, right));
                     stack.push(tmpResult);
                     break;
                 }
@@ -412,7 +412,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.SHIFT_RIGHT, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.SHIFT_RIGHT, left, right));
                     stack.push(tmpResult);
                     break;
                 }
@@ -422,7 +422,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.LOGICAL_SHIFT_RIGHT, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.LOGICAL_SHIFT_RIGHT, left, right));
                     stack.push(tmpResult);
                     break;
                 }
@@ -432,7 +432,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.AND, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.AND, left, right));
                     stack.push(tmpResult);
                     break;
                 }
@@ -442,7 +442,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.OR, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.OR, left, right));
                     stack.push(tmpResult);
                     break;
                 }
@@ -452,7 +452,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.XOR, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.XOR, left, right));
                     stack.push(tmpResult);
                     break;
                 }
@@ -584,7 +584,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable value2 = stack.pop();
                     Variable value1 = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.MINUS, value1, value2));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.MINUS, value1, value2));
                     stack.push(tmpResult);
                     break;
                 }
@@ -651,7 +651,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable tmpZero = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpZero, new IntConst(0)));
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, stack.pop(), tmpZero));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.EQ, stack.pop(), tmpZero));
                     break;
                 }
 
@@ -659,7 +659,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable tmpZero = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpZero, new IntConst(0)));
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.NE, stack.pop(), tmpZero));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.NE, stack.pop(), tmpZero));
                     break;
                 }
 
@@ -667,7 +667,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable tmpZero = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpZero, new IntConst(0)));
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.LT, stack.pop(), tmpZero));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.LT, stack.pop(), tmpZero));
                     break;
                 }
 
@@ -675,7 +675,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable tmpZero = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpZero, new IntConst(0)));
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.GE, stack.pop(), tmpZero));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.GE, stack.pop(), tmpZero));
                     break;
                 }
 
@@ -683,7 +683,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable tmpZero = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpZero, new IntConst(0)));
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.GT, stack.pop(), tmpZero));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.GT, stack.pop(), tmpZero));
                     break;
                 }
 
@@ -691,7 +691,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable tmpZero = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpZero, new IntConst(0)));
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.LE, stack.pop(), tmpZero));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.LE, stack.pop(), tmpZero));
                     break;
                 }
 
@@ -699,7 +699,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.EQ, left, right));
                     break;
                 }
 
@@ -707,7 +707,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.NE, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.NE, left, right));
                     break;
                 }
 
@@ -715,7 +715,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.LT, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.LT, left, right));
                     break;
                 }
 
@@ -723,7 +723,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.GE, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.GE, left, right));
                     break;
                 }
 
@@ -731,7 +731,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.GT, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.GT, left, right));
                     break;
                 }
 
@@ -739,7 +739,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.LE, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.LE, left, right));
                     break;
                 }
 
@@ -747,7 +747,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.EQ, left, right));
                     break;
                 }
 
@@ -755,7 +755,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.NE, left, right));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.NE, left, right));
                     break;
                 }
 
@@ -770,7 +770,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     bb.getInstructions().add(instFactory.newAssignConst(tmpNull, new NullConst(classNameFactory)));
                     stack.push(tmpNull);
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.EQ, stack.pop(), tmpNull));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.EQ, stack.pop(), tmpNull));
                     break;
                 }
 
@@ -779,7 +779,7 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
                     bb.getInstructions().add(instFactory.newAssignConst(tmpNull, new NullConst(classNameFactory)));
                     stack.push(tmpNull);
                     tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, TACBinaryOperator.NE, stack.pop(), tmpNull));
+                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.NE, stack.pop(), tmpNull));
                     break;
                 }
             }
@@ -938,11 +938,11 @@ public class BasicBlock3ACBuilderImpl implements BasicBlock3ACBuilder {
 
     }
 
-    public BasicBlock3ACBuilderImpl(InsnList instructions,
+    public BytecodeInstructionBuilder(InsnList instructions,
                                     LabelManager labelManager,
                                     ClassNameFactory classNameFactory,
                                     TemporaryVariableFactory tmpVarFactory,
-                                    TACInstFactory instFactory) {
+                                    IRInstFactory instFactory) {
         this.instructions = instructions;
         this.labelManager = labelManager;
         this.classNameFactory = classNameFactory;

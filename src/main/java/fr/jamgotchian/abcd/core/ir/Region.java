@@ -214,7 +214,7 @@ public class Region {
             if (isBasicBlock()) {
                 BasicBlock bb = entry;
                 BasicBlock otherBb = other.getEntry();
-                return TACInstComparator.equal(bb.getInstructions(),
+                return IRInstComparator.equal(bb.getInstructions(),
                                                otherBb.getInstructions(),
                                                mapping);
             } else {

@@ -55,7 +55,7 @@ public class ConditionalInst extends DefInst {
         return Sets.newHashSet(cond, then, _else);
     }
 
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
+    public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
 }

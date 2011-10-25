@@ -23,7 +23,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ThrowInst extends TACInstImpl {
+public class ThrowInst extends IRInstImpl {
 
     private final Variable var;
 
@@ -39,7 +39,7 @@ public class ThrowInst extends TACInstImpl {
         return Collections.singleton(var);
     }
 
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
+    public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
 }

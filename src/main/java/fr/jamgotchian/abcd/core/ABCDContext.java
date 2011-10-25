@@ -33,14 +33,14 @@ import fr.jamgotchian.abcd.core.ast.util.Refactorer;
 import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.analysis.LocalVariableTypeAnalyser;
 import fr.jamgotchian.abcd.core.ir.LogicalOperatorBuilder;
-import fr.jamgotchian.abcd.core.ir.TreeAddressCodeBuilder;
+import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
 import fr.jamgotchian.abcd.core.ir.TernaryOperatorBuilder;
-import fr.jamgotchian.abcd.core.ir.BasicBlock3ACBuilder;
-import fr.jamgotchian.abcd.core.ir.bytecode.BasicBlock3ACBuilderImpl;
+import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
+import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeInstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.LocalVariableTable;
-import fr.jamgotchian.abcd.core.ir.TACInstFactory;
+import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.ir.VariableID;
 import fr.jamgotchian.abcd.core.ir.RPST;
@@ -287,16 +287,16 @@ public class ABCDContext {
                 handler.writeRawCFG(cfg, new BytecodeDOTAttributeFactory(mn.instructions, labelManager));
 
                 logger.log(Level.FINE, "\n{0}",
-                        ConsoleUtil.printTitledSeparator("Build 3AC instructions of " + methodSignature, '='));
+                        ConsoleUtil.printTitledSeparator("Build IR instructions of " + methodSignature, '='));
 
                 TemporaryVariableFactory tmpVarFactory = new TemporaryVariableFactory();
-                TACInstFactory instFactory = new TACInstFactory();
+                IRInstFactory instFactory = new IRInstFactory();
 
-                BasicBlock3ACBuilder bb3ACBuilder
-                    = new BasicBlock3ACBuilderImpl(mn.instructions, labelManager,
+                InstructionBuilder bb3ACBuilder
+                    = new BytecodeInstructionBuilder(mn.instructions, labelManager,
                                                    importManager, tmpVarFactory, instFactory);
 
-                new TreeAddressCodeBuilder(cfg, bb3ACBuilder, importManager, tmpVarFactory,
+                new IntermediateRepresentationBuilder(cfg, bb3ACBuilder, importManager, tmpVarFactory,
                                            instFactory).build();
 
                 cfg.compact();

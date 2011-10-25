@@ -16,19 +16,12 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import java.util.Set;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface TACInst {
+public interface InstructionBuilder {
 
-    boolean isIgnored();
+    void build(BasicBlock bb, VariableStack stack);
 
-    void setIgnored(boolean ignored);
-
-    Set<Variable> getUses();
-
-    <R, A> R accept(TACInstVisitor<R, A> visitor, A arg);
 }

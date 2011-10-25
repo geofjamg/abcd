@@ -28,42 +28,42 @@ import java.util.logging.Logger;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TACInstSeq implements Iterable<TACInst> {
+public class IRInstSeq implements Iterable<IRInst> {
 
-    private static final Logger logger = Logger.getLogger(TACInstSeq.class.getName());
+    private static final Logger logger = Logger.getLogger(IRInstSeq.class.getName());
 
-    private final List<TACInst> insts;
+    private final List<IRInst> insts;
 
-    public TACInstSeq() {
-        this(new ArrayList<TACInst>());
+    public IRInstSeq() {
+        this(new ArrayList<IRInst>());
     }
 
-    public TACInstSeq(List<TACInst> insts) {
+    public IRInstSeq(List<IRInst> insts) {
         this.insts = insts;
     }
 
-    public TACInst get(int index) {
+    public IRInst get(int index) {
         return insts.get(index);
     }
 
-    public void add(TACInst inst) {
-        logger.log(Level.FINER, "Add inst : {0}", TACInstWriter.toText(inst));
+    public void add(IRInst inst) {
+        logger.log(Level.FINER, "Add inst : {0}", IRInstWriter.toText(inst));
         insts.add(inst);
     }
 
-    public void addAll(int index, Collection<TACInst> insts) {
+    public void addAll(int index, Collection<IRInst> insts) {
         this.insts.addAll(index, insts);
     }
 
-    public void addAll(TACInstSeq other) {
+    public void addAll(IRInstSeq other) {
         this.insts.addAll(other.insts);
     }
 
-    public TACInst remove(int index) {
+    public IRInst remove(int index) {
         return insts.remove(index);
     }
 
-    public TACInst removeLast() {
+    public IRInst removeLast() {
         if (insts.isEmpty()) {
             return null;
         } else {
@@ -75,10 +75,10 @@ public class TACInstSeq implements Iterable<TACInst> {
         insts.clear();
     }
 
-    public boolean removeIf(Predicate<TACInst> predicate) {
+    public boolean removeIf(Predicate<IRInst> predicate) {
         boolean done = false;
-        for (Iterator<TACInst> it = insts.iterator(); it.hasNext();) {
-            TACInst inst = it.next();
+        for (Iterator<IRInst> it = insts.iterator(); it.hasNext();) {
+            IRInst inst = it.next();
             if (predicate.apply(inst)) {
                 it.remove();
                 done = true;
@@ -87,7 +87,7 @@ public class TACInstSeq implements Iterable<TACInst> {
         return done;
     }
 
-    public void insertAt(int index, TACInst inst) {
+    public void insertAt(int index, IRInst inst) {
         insts.add(index, inst);
     }
 
@@ -99,7 +99,7 @@ public class TACInstSeq implements Iterable<TACInst> {
         return insts.isEmpty();
     }
 
-    public TACInst getLast() {
+    public IRInst getLast() {
         if (insts.isEmpty()) {
             return null;
         } else {
@@ -107,11 +107,11 @@ public class TACInstSeq implements Iterable<TACInst> {
         }
     }
 
-    public Iterator<TACInst> iterator() {
+    public Iterator<IRInst> iterator() {
         return insts.iterator();
     }
 
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
+    public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
 }

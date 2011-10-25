@@ -157,5 +157,5 @@ public interface ControlFlowGraph {
 
     void export(String fileName);
 
-    void exportTAC(Writer writer) throws IOException;
+    void exportInst(Writer writer) throws IOException;
 }

@@ -20,10 +20,10 @@ package fr.jamgotchian.abcd.core.ir;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class EmptyTACInstVisitor<R, A> implements TACInstVisitor<R, A> {
+public class EmptyIRInstVisitor<R, A> implements IRInstVisitor<R, A> {
 
-    public R visit(TACInstSeq seq, A arg) {
-        for (TACInst inst : seq) {
+    public R visit(IRInstSeq seq, A arg) {
+        for (IRInst inst : seq) {
             inst.accept(this, arg);
         }
         return null;

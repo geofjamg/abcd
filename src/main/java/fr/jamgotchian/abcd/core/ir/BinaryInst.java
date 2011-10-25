@@ -25,13 +25,13 @@ import java.util.Set;
  */
 public class BinaryInst extends DefInst {
 
-    private final TACBinaryOperator operator;
+    private final IRBinaryOperator operator;
 
     private final Variable left;
 
     private final Variable right;
 
-    BinaryInst(int defID, Variable result, TACBinaryOperator operator, Variable left,
+    BinaryInst(int defID, Variable result, IRBinaryOperator operator, Variable left,
                Variable right) {
         super(defID, result);
         this.operator = operator;
@@ -39,7 +39,7 @@ public class BinaryInst extends DefInst {
         this.right = right;
     }
 
-    public TACBinaryOperator getOperator() {
+    public IRBinaryOperator getOperator() {
         return operator;
     }
 
@@ -55,7 +55,7 @@ public class BinaryInst extends DefInst {
         return Sets.newHashSet(left, right);
     }
 
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
+    public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
 }

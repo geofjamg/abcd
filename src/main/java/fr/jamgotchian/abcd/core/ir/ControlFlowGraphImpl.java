@@ -453,10 +453,10 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             if (getPredecessorCountOf(bb) >= 1 &&
                 getNormalSuccessorCountOf(bb) == 1) {
                 boolean remove = false;
-                TACInstSeq tacInsts = bb.getInstructions();
-                if (tacInsts != null) {
+                IRInstSeq Insts = bb.getInstructions();
+                if (Insts != null) {
                     remove = true;
-                    for (TACInst inst : tacInsts) {
+                    for (IRInst inst : Insts) {
                         if (!inst.isIgnored()) {
                             remove = false;
                             break;
@@ -514,7 +514,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             BasicBlock target = graph.getEdgeTarget(criticalEdge);
             graph.removeEdge(criticalEdge);
             BasicBlock emptyBlock = new BasicBlockImpl(BasicBlockType.EMPTY);
-            emptyBlock.setInstructions(new TACInstSeq());
+            emptyBlock.setInstructions(new IRInstSeq());
             graph.addVertex(emptyBlock);
             graph.addEdge(source, emptyBlock, criticalEdge);
             graph.addEdge(emptyBlock, target, EDGE_FACTORY.createEdge());
@@ -654,7 +654,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             if (bb.equals(entryBlock) || bb.equals(exitBlock)) {
                 continue;
             }
-            TACInstSeq insts = bb.getInstructions();
+            IRInstSeq insts = bb.getInstructions();
             if (insts == null) {
                 throw new ABCDException("insts == null");
             }
@@ -700,9 +700,9 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
     }
 
-    public void exportTAC(Writer writer) throws IOException {
+    public void exportInst(Writer writer) throws IOException {
         graph.export(writer, "\"" + name + "\"",
-                     TACDOTAttributeFactory.INSTANCE,
+                     IRDOTAttributeFactory.INSTANCE,
                      new EdgeDOTAttributeFactory());
     }
 

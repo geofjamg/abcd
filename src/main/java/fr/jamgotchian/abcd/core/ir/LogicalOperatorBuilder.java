@@ -26,20 +26,20 @@ public class LogicalOperatorBuilder {
 
     private final TemporaryVariableFactory tmpVarFactory;
 
-    private final TACInstFactory instFactory;
+    private final IRInstFactory instFactory;
 
     public LogicalOperatorBuilder(ControlFlowGraph CFG,
                                   TemporaryVariableFactory tmpVarFactory,
-                                  TACInstFactory instFactory) {
+                                  IRInstFactory instFactory) {
         this.CFG = CFG;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
     }
 
     private void agregate(BasicBlock bb1, BasicBlock bb2, BasicBlock trueBB2,
-                          BasicBlock falseBB2, TACBinaryOperator operator, boolean invert2) {
-        TACInstSeq seq1 = bb1.getInstructions();
-        TACInstSeq seq2 = bb2.getInstructions();
+                          BasicBlock falseBB2, IRBinaryOperator operator, boolean invert2) {
+        IRInstSeq seq1 = bb1.getInstructions();
+        IRInstSeq seq2 = bb2.getInstructions();
         JumpIfInst jumpInst1 = (JumpIfInst) seq1.getLast();
         JumpIfInst jumpInst2 = (JumpIfInst) seq2.getLast();
         seq1.removeLast();
@@ -49,7 +49,7 @@ public class LogicalOperatorBuilder {
         Variable cond2;
         if (invert2) {
             cond2 = tmpVarFactory.create(bb1);
-            seq1.add(instFactory.newUnary(cond2, TACUnaryOperator.NOT, jumpInst2.getCond()));
+            seq1.add(instFactory.newUnary(cond2, IRUnaryOperator.NOT, jumpInst2.getCond()));
         } else {
             cond2 = jumpInst2.getCond();
         }
@@ -83,10 +83,10 @@ public class LogicalOperatorBuilder {
                 BasicBlock trueBB2 = CFG.getEdgeTarget(trueEdge2);
                 BasicBlock falseBB2 = CFG.getEdgeTarget(falseEdge2);
                 if (falseBB2.equals(falseBB1)) {
-                    agregate(bb1, bb2, trueBB2, falseBB2, TACBinaryOperator.AND, false);
+                    agregate(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.AND, false);
                     return true;
                 } else if (trueBB2.equals(falseBB1)) {
-                    agregate(bb1, bb2, trueBB2, falseBB2, TACBinaryOperator.AND, true);
+                    agregate(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.AND, true);
                     return true;
                 }
             }
@@ -113,10 +113,10 @@ public class LogicalOperatorBuilder {
                 BasicBlock trueBB2 = CFG.getEdgeTarget(trueEdge2);
                 BasicBlock falseBB2 = CFG.getEdgeTarget(falseEdge2);
                 if (trueBB2.equals(trueBB1)) {
-                    agregate(bb1, bb2, trueBB2, falseBB2, TACBinaryOperator.OR, false);
+                    agregate(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.OR, false);
                     return true;
                 } else if (falseBB2.equals(trueBB1)) {
-                    agregate(bb1, bb2, trueBB2, falseBB2, TACBinaryOperator.OR, true);
+                    agregate(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.OR, true);
                     return true;
                 }
             }

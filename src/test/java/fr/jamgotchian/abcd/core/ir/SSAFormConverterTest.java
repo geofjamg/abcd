@@ -40,7 +40,7 @@ public class SSAFormConverterTest {
 
     private static final Logger logger = Logger.getLogger(SSAFormConverterTest.class.getName());
 
-    private TACInstFactory instFactory;
+    private IRInstFactory instFactory;
 
     public SSAFormConverterTest() {
     }
@@ -69,7 +69,7 @@ public class SSAFormConverterTest {
 
     @Before
     public void setUp() {
-        instFactory = new TACInstFactory();
+        instFactory = new IRInstFactory();
     }
 
     @After
@@ -80,7 +80,7 @@ public class SSAFormConverterTest {
     private BasicBlock newBasicBlock(int id, int... vars) {
         BasicBlock bb = new BasicBlockTestImpl("BB" + id);
         for (int var : vars) {
-            bb.setInstructions(new TACInstSeq());
+            bb.setInstructions(new IRInstSeq());
             bb.getInstructions().add(instFactory.newAssignConst(new Variable(var, bb, -1),
                                                                 new IntConst(0)));
         }
@@ -143,7 +143,7 @@ public class SSAFormConverterTest {
         Assert.assertTrue(Collections3.sameContent(info.getDominanceFrontierOf2(bb7),
                                                    Arrays.asList(bb1)));
 
-        TACInstFactory factory = new TACInstFactory();
+        IRInstFactory factory = new IRInstFactory();
         new SSAFormConverter(graph, factory).convert();
     }
 }

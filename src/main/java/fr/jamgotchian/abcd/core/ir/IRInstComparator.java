@@ -22,31 +22,31 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
+public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
 
-    private final TACInstSeq otherSeq;
+    private final IRInstSeq otherSeq;
 
     private final VariableMapping mapping;
 
-    public static boolean equal(TACInstSeq seq, TACInstSeq otherSeq,
+    public static boolean equal(IRInstSeq seq, IRInstSeq otherSeq,
                                 VariableMapping mapping) {
-        return seq.accept(new TACInstComparator(otherSeq, mapping), null);
+        return seq.accept(new IRInstComparator(otherSeq, mapping), null);
     }
 
-    public TACInstComparator(TACInstSeq otherSeq, VariableMapping mapping) {
+    public IRInstComparator(IRInstSeq otherSeq, VariableMapping mapping) {
         this.otherSeq = otherSeq;
         this.mapping = mapping;
     }
 
-    public Boolean visit(TACInstSeq seq, TACInst arg) {
-        TACInstSeq seqC = new TACInstSeq();
-        for (TACInst inst : seq) {
+    public Boolean visit(IRInstSeq seq, IRInst arg) {
+        IRInstSeq seqC = new IRInstSeq();
+        for (IRInst inst : seq) {
             if (!inst.isIgnored()) {
                 seqC.add(inst);
             }
         }
-        TACInstSeq otherSeqC = new TACInstSeq();
-        for (TACInst inst : otherSeq) {
+        IRInstSeq otherSeqC = new IRInstSeq();
+        for (IRInst inst : otherSeq) {
             if (!inst.isIgnored()) {
                 otherSeqC.add(inst);
             }
@@ -55,8 +55,8 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
             return Boolean.FALSE;
         }
         for (int i = 0; i < seqC.size(); i++) {
-            TACInst inst = seqC.get(i);
-            TACInst otherInst = otherSeqC.get(i);
+            IRInst inst = seqC.get(i);
+            IRInst otherInst = otherSeqC.get(i);
             if (Boolean.FALSE.equals(inst.accept(this, otherInst))) {
                 return Boolean.FALSE;
             }
@@ -64,7 +64,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
         return Boolean.TRUE;
     }
 
-    public Boolean visit(ArrayLengthInst inst, TACInst arg) {
+    public Boolean visit(ArrayLengthInst inst, IRInst arg) {
         if (!(arg instanceof ArrayLengthInst)) {
             return Boolean.FALSE;
         }
@@ -73,7 +73,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.useEqual(inst.getArray(), inst2.getArray());
     }
 
-    public Boolean visit(AssignConstInst inst, TACInst arg) {
+    public Boolean visit(AssignConstInst inst, IRInst arg) {
         if (!(arg instanceof AssignConstInst)) {
             return Boolean.FALSE;
         }
@@ -82,7 +82,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && inst.getConst().equals(inst2.getConst());
     }
 
-    public Boolean visit(AssignVarInst inst, TACInst arg) {
+    public Boolean visit(AssignVarInst inst, IRInst arg) {
         if (!(arg instanceof AssignVarInst)) {
             return Boolean.FALSE;
         }
@@ -91,7 +91,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.useEqual(inst.getValue(), inst2.getValue());
     }
 
-    public Boolean visit(BinaryInst inst, TACInst arg) {
+    public Boolean visit(BinaryInst inst, IRInst arg) {
         if (!(arg instanceof BinaryInst)) {
             return Boolean.FALSE;
         }
@@ -102,7 +102,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && inst.getOperator() == inst2.getOperator();
     }
 
-    public Boolean visit(CallMethodInst inst, TACInst arg) {
+    public Boolean visit(CallMethodInst inst, IRInst arg) {
         if (!(arg instanceof CallMethodInst)) {
             return Boolean.FALSE;
         }
@@ -113,7 +113,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.usesEqual(inst.getArguments(), inst2.getArguments());
     }
 
-    public Boolean visit(CallStaticMethodInst inst, TACInst arg) {
+    public Boolean visit(CallStaticMethodInst inst, IRInst arg) {
         if (!(arg instanceof CallStaticMethodInst)) {
             return Boolean.FALSE;
         }
@@ -124,7 +124,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.usesEqual(inst.getArguments(), inst2.getArguments());
     }
 
-    public Boolean visit(CastInst inst, TACInst arg) {
+    public Boolean visit(CastInst inst, IRInst arg) {
         if (!(arg instanceof CastInst)) {
             return Boolean.FALSE;
         }
@@ -134,7 +134,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.useEqual(inst.getVar(), inst2.getVar());
     }
 
-    public Boolean visit(ConditionalInst inst, TACInst arg) {
+    public Boolean visit(ConditionalInst inst, IRInst arg) {
         if (!(arg instanceof ConditionalInst)) {
             return Boolean.FALSE;
         }
@@ -145,7 +145,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.useEqual(inst.getElse(), inst2.getElse());
     }
 
-    public Boolean visit(GetArrayInst inst, TACInst arg) {
+    public Boolean visit(GetArrayInst inst, IRInst arg) {
         if (!(arg instanceof GetArrayInst)) {
             return Boolean.FALSE;
         }
@@ -155,7 +155,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.useEqual(inst.getIndex(), inst2.getIndex());
     }
 
-    public Boolean visit(SetArrayInst inst, TACInst arg) {
+    public Boolean visit(SetArrayInst inst, IRInst arg) {
         if (!(arg instanceof SetArrayInst)) {
             return Boolean.FALSE;
         }
@@ -165,7 +165,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.useEqual(inst.getValue(), inst2.getValue());
     }
 
-    public Boolean visit(GetFieldInst inst, TACInst arg) {
+    public Boolean visit(GetFieldInst inst, IRInst arg) {
         if (!(arg instanceof GetFieldInst)) {
             return Boolean.FALSE;
         }
@@ -175,7 +175,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && inst.getFieldName().equals(inst2.getFieldName());
     }
 
-    public Boolean visit(SetFieldInst inst, TACInst arg) {
+    public Boolean visit(SetFieldInst inst, IRInst arg) {
         if (!(arg instanceof SetFieldInst)) {
             return Boolean.FALSE;
         }
@@ -185,7 +185,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.defEqual(inst.getValue(), inst2.getValue());
     }
 
-    public Boolean visit(JumpIfInst inst, TACInst arg) {
+    public Boolean visit(JumpIfInst inst, IRInst arg) {
         if (!(arg instanceof JumpIfInst)) {
             return Boolean.FALSE;
         }
@@ -193,7 +193,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
         return mapping.useEqual(inst.getCond(), inst2.getCond());
     }
 
-    public Boolean visit(InstanceOfInst inst, TACInst arg) {
+    public Boolean visit(InstanceOfInst inst, IRInst arg) {
         if (!(arg instanceof InstanceOfInst)) {
             return Boolean.FALSE;
         }
@@ -203,7 +203,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.useEqual(inst.getVar(), inst2.getVar());
     }
 
-    public Boolean visit(MonitorEnterInst inst, TACInst arg) {
+    public Boolean visit(MonitorEnterInst inst, IRInst arg) {
         if (!(arg instanceof MonitorEnterInst)) {
             return Boolean.FALSE;
         }
@@ -211,7 +211,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
         return mapping.useEqual(inst.getObj(), inst2.getObj());
     }
 
-    public Boolean visit(MonitorExitInst inst, TACInst arg) {
+    public Boolean visit(MonitorExitInst inst, IRInst arg) {
         if (!(arg instanceof MonitorExitInst)) {
             return Boolean.FALSE;
         }
@@ -219,7 +219,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
         return mapping.useEqual(inst.getObj(), inst2.getObj());
     }
 
-    public Boolean visit(NewArrayInst inst, TACInst arg) {
+    public Boolean visit(NewArrayInst inst, IRInst arg) {
         if (!(arg instanceof NewArrayInst)) {
             return Boolean.FALSE;
         }
@@ -229,7 +229,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.usesEqual(inst.getDimensions(), inst2.getDimensions());
     }
 
-    public Boolean visit(NewObjectInst inst, TACInst arg) {
+    public Boolean visit(NewObjectInst inst, IRInst arg) {
         if (!(arg instanceof NewObjectInst)) {
             return Boolean.FALSE;
         }
@@ -239,7 +239,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.usesEqual(inst.getArguments(), inst2.getArguments());
     }
 
-    public Boolean visit(ReturnInst inst, TACInst arg) {
+    public Boolean visit(ReturnInst inst, IRInst arg) {
         if (!(arg instanceof ReturnInst)) {
             return Boolean.FALSE;
         }
@@ -247,7 +247,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
         return mapping.useEqual(inst.getVar(), inst2.getVar());
     }
 
-    public Boolean visit(SwitchInst inst, TACInst arg) {
+    public Boolean visit(SwitchInst inst, IRInst arg) {
         if (!(arg instanceof SwitchInst)) {
             return Boolean.FALSE;
         }
@@ -255,7 +255,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
         return mapping.useEqual(inst.getIndex(), inst2.getIndex());
     }
 
-    public Boolean visit(ThrowInst inst, TACInst arg) {
+    public Boolean visit(ThrowInst inst, IRInst arg) {
         if (!(arg instanceof ThrowInst)) {
             return Boolean.FALSE;
         }
@@ -263,7 +263,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
         return mapping.useEqual(inst.getVar(), inst2.getVar());
     }
 
-    public Boolean visit(UnaryInst inst, TACInst arg) {
+    public Boolean visit(UnaryInst inst, IRInst arg) {
         if (!(arg instanceof UnaryInst)) {
             return Boolean.FALSE;
         }
@@ -273,7 +273,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.useEqual(inst.getVar(), inst2.getVar());
     }
 
-    public Boolean visit(ChoiceInst inst, TACInst arg) {
+    public Boolean visit(ChoiceInst inst, IRInst arg) {
         if (!(arg instanceof ChoiceInst)) {
             return Boolean.FALSE;
         }
@@ -282,11 +282,11 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && mapping.usesEqual(inst.getChoices(), inst2.getChoices());
     }
 
-    public Boolean visit(PhiInst inst, TACInst arg) {
+    public Boolean visit(PhiInst inst, IRInst arg) {
         throw new ABCDException("Should not have Phi instruction during finally uninlining");
     }
 
-    public Boolean visit(GetStaticFieldInst inst, TACInst arg) {
+    public Boolean visit(GetStaticFieldInst inst, IRInst arg) {
         if (!(arg instanceof GetStaticFieldInst)) {
             return Boolean.FALSE;
         }
@@ -296,7 +296,7 @@ public class TACInstComparator implements TACInstVisitor<Boolean, TACInst> {
                 && inst.getFieldName().equals(inst2.getFieldName());
     }
 
-    public Boolean visit(SetStaticFieldInst inst, TACInst arg) {
+    public Boolean visit(SetStaticFieldInst inst, IRInst arg) {
         if (!(arg instanceof SetStaticFieldInst)) {
             return Boolean.FALSE;
         }

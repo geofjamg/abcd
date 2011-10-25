@@ -25,17 +25,17 @@ import java.util.Set;
  */
 public class UnaryInst extends DefInst {
 
-    private final TACUnaryOperator operator;
+    private final IRUnaryOperator operator;
 
     private final Variable var;
 
-     UnaryInst(int defID, Variable result, TACUnaryOperator operator, Variable var) {
+     UnaryInst(int defID, Variable result, IRUnaryOperator operator, Variable var) {
         super(defID, result);
         this.operator = operator;
         this.var = var;
     }
 
-    public TACUnaryOperator getOperator() {
+    public IRUnaryOperator getOperator() {
         return operator;
     }
 
@@ -47,7 +47,7 @@ public class UnaryInst extends DefInst {
         return Collections.singleton(var);
     }
 
-    public <R, A> R accept(TACInstVisitor<R, A> visitor, A arg) {
+    public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }
 }

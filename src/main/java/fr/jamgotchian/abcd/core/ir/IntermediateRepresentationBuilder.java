@@ -32,34 +32,34 @@ import java.util.logging.Logger;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TreeAddressCodeBuilder {
+public class IntermediateRepresentationBuilder {
 
     private static final Logger logger
-            = Logger.getLogger(TreeAddressCodeBuilder.class.getName());
+            = Logger.getLogger(IntermediateRepresentationBuilder.class.getName());
 
     private final StringConst magicString;
 
     private final ControlFlowGraph cfg;
 
-    private final BasicBlock3ACBuilder bb3ACbuilder;
+    private final InstructionBuilder instBuilder;
 
     private final ClassNameFactory classNameFactory;
 
     private final TemporaryVariableFactory tmpVarFactory;
 
-    private final TACInstFactory instFactory;
+    private final IRInstFactory instFactory;
 
     private final Set<Variable> finallyTmpVars;
 
     private final Set<Variable> catchTmpVars;
 
-    public TreeAddressCodeBuilder(ControlFlowGraph cfg,
-                                  BasicBlock3ACBuilder bb3ACBuilder,
+    public IntermediateRepresentationBuilder(ControlFlowGraph cfg,
+                                  InstructionBuilder instBuilder,
                                   ClassNameFactory classNameFactory,
                                   TemporaryVariableFactory tmpVarFactory,
-                                  TACInstFactory instFactory) {
+                                  IRInstFactory instFactory) {
         this.cfg = cfg;
-        this.bb3ACbuilder = bb3ACBuilder;
+        this.instBuilder = instBuilder;
         this.classNameFactory = classNameFactory;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
@@ -87,7 +87,7 @@ public class TreeAddressCodeBuilder {
 
         if (bb.hasAttribute(BasicBlockAttribute.EXCEPTION_HANDLER_ENTRY)) {
             Variable exceptionVar = tmpVarFactory.create(bb);
-            TACInst tmpInst;
+            IRInst tmpInst;
             if (bb.hasAttribute(BasicBlockAttribute.FINALLY_ENTRY)) {
                 finallyTmpVars.add(exceptionVar);
                 tmpInst = instFactory.newAssignConst(exceptionVar, magicString);
@@ -105,7 +105,7 @@ public class TreeAddressCodeBuilder {
             logger.log(Level.FINEST, ">>> Input stack : {0}", bb.getInputStack());
         }
 
-        bb3ACbuilder.build(bb, outputStack);
+        instBuilder.build(bb, outputStack);
         bb.setOutputStack(outputStack);
 
         if (bb.getOutputStack().size() > 0) {
@@ -159,10 +159,10 @@ public class TreeAddressCodeBuilder {
                 continue;
             }
 
-            TACInstSeq seq = bb.getInstructions();
+            IRInstSeq seq = bb.getInstructions();
             for (int i = 0; i < seq.size()-1; i++) {
-                TACInst inst = seq.get(i);
-                TACInst inst2 = seq.get(i+1);
+                IRInst inst = seq.get(i);
+                IRInst inst2 = seq.get(i+1);
 
                 boolean remove = false;
                 Variable excVar = null;
@@ -196,8 +196,8 @@ public class TreeAddressCodeBuilder {
                     ((ExceptionHandlerInfo) bb.getData()).setVariable(excVar);
                     logger.log(Level.FINEST, "Cleanup exception handler (bb={0}, excVar={1}) :",
                             new Object[] {bb, excVar});
-                    logger.log(Level.FINEST, "  Remove inst : {0}", TACInstWriter.toText(inst));
-                    logger.log(Level.FINEST, "  Remove inst : {0}", TACInstWriter.toText(inst2));
+                    logger.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst));
+                    logger.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst2));
                     inst.setIgnored(true);
                     inst2.setIgnored(true);
                 }
@@ -205,10 +205,10 @@ public class TreeAddressCodeBuilder {
         }
 
         for (BasicBlock bb : cfg.getBasicBlocks()) {
-            TACInstSeq seq = bb.getInstructions();
+            IRInstSeq seq = bb.getInstructions();
             for (int i = 0; i < seq.size()-1; i++) {
-                TACInst inst = seq.get(i);
-                TACInst inst2 = seq.get(i+1);
+                IRInst inst = seq.get(i);
+                IRInst inst2 = seq.get(i+1);
 
                 boolean remove = false;
 
@@ -226,8 +226,8 @@ public class TreeAddressCodeBuilder {
 
                 if (remove) {
                     logger.log(Level.FINEST, "Cleanup finally rethrow (excVar={0}) :", excVar);
-                    logger.log(Level.FINEST, "  Remove inst : {0}", TACInstWriter.toText(inst));
-                    logger.log(Level.FINEST, "  Remove inst : {0}", TACInstWriter.toText(inst2));
+                    logger.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst));
+                    logger.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst2));
                     inst.setIgnored(true);
                     inst2.setIgnored(true);
                 }
@@ -237,7 +237,7 @@ public class TreeAddressCodeBuilder {
 
     public void build() {
         for (BasicBlock bb : cfg.getBasicBlocks()) {
-            bb.setInstructions(new TACInstSeq());
+            bb.setInstructions(new IRInstSeq());
         }
 
         List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(cfg.getDFST().getNodes());
