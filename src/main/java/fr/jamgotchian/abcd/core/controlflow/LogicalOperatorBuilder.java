@@ -14,19 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.analysis;
-
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
-import fr.jamgotchian.abcd.core.controlflow.TACBinaryOperator;
-import fr.jamgotchian.abcd.core.controlflow.JumpIfInst;
-import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
-import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
-import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
-import fr.jamgotchian.abcd.core.controlflow.TACUnaryOperator;
-import fr.jamgotchian.abcd.core.controlflow.Variable;
+package fr.jamgotchian.abcd.core.controlflow;
 
 /**
  *

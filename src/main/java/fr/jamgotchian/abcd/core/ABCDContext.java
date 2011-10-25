@@ -18,8 +18,8 @@
 package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
-import fr.jamgotchian.abcd.core.analysis.BasicBlock3ACBuilder;
-import fr.jamgotchian.abcd.core.analysis.BasicBlock3ACBuilderImpl;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock3ACBuilder;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock3ACBuilderImpl;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.controlflow.LocalVariableTable;
@@ -40,9 +40,9 @@ import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.util.Refactorer;
 import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.analysis.LocalVariableTypeAnalyser;
-import fr.jamgotchian.abcd.core.analysis.LogicalOperatorBuilder;
-import fr.jamgotchian.abcd.core.analysis.TreeAddressCodeBuilder;
-import fr.jamgotchian.abcd.core.analysis.TernaryOperatorBuilder;
+import fr.jamgotchian.abcd.core.controlflow.LogicalOperatorBuilder;
+import fr.jamgotchian.abcd.core.controlflow.TreeAddressCodeBuilder;
+import fr.jamgotchian.abcd.core.controlflow.TernaryOperatorBuilder;
 import fr.jamgotchian.abcd.core.common.LabelManager;
 import fr.jamgotchian.abcd.core.controlflow.BytecodeDOTAttributeFactory;
 import fr.jamgotchian.abcd.core.controlflow.BytecodeControlFlowGraphBuilder;

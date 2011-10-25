@@ -16,8 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>

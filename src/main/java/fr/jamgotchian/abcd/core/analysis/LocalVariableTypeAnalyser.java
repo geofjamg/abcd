@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.analysis;
 
+import fr.jamgotchian.abcd.core.controlflow.SSAFormConverter;
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;

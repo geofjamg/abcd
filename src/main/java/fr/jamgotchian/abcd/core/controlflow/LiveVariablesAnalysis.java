@@ -14,16 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.analysis;
+package fr.jamgotchian.abcd.core.controlflow;
 
 import com.google.common.collect.Sets;
-import fr.jamgotchian.abcd.core.controlflow.BackwardDataFlowAnalysis;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.controlflow.DefInst;
-import fr.jamgotchian.abcd.core.controlflow.Variable;
-import fr.jamgotchian.abcd.core.controlflow.TACInst;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.HashSet;
 import java.util.Map;

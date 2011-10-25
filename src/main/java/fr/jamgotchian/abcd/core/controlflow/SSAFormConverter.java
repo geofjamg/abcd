@@ -14,23 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.analysis;
+package fr.jamgotchian.abcd.core.controlflow;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.controlflow.DominatorInfo;
-import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.controlflow.DefInst;
-import fr.jamgotchian.abcd.core.controlflow.JumpIfInst;
-import fr.jamgotchian.abcd.core.controlflow.Variable;
-import fr.jamgotchian.abcd.core.controlflow.PhiInst;
-import fr.jamgotchian.abcd.core.controlflow.TACInst;
-import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
-import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
-import fr.jamgotchian.abcd.core.controlflow.VariableID;
 import fr.jamgotchian.abcd.core.util.Counter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;

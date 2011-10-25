@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.analysis;
 
+import fr.jamgotchian.abcd.core.controlflow.SSAFormConverter;
 import fr.jamgotchian.abcd.core.ABCDContext;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.controlflow.BasicBlockTestImpl;

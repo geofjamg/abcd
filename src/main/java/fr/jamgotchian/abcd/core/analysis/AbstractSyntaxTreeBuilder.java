@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.analysis;
 
+import fr.jamgotchian.abcd.core.controlflow.LiveVariablesAnalysis;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.expr.ArrayCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignOperator;

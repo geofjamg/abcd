@@ -16,36 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
-import fr.jamgotchian.abcd.core.controlflow.ArrayLengthInst;
-import fr.jamgotchian.abcd.core.controlflow.AssignConstInst;
-import fr.jamgotchian.abcd.core.controlflow.AssignVarInst;
-import fr.jamgotchian.abcd.core.controlflow.BinaryInst;
-import fr.jamgotchian.abcd.core.controlflow.CallMethodInst;
-import fr.jamgotchian.abcd.core.controlflow.CallStaticMethodInst;
-import fr.jamgotchian.abcd.core.controlflow.CastInst;
-import fr.jamgotchian.abcd.core.controlflow.ChoiceInst;
-import fr.jamgotchian.abcd.core.controlflow.ConditionalInst;
-import fr.jamgotchian.abcd.core.controlflow.GetArrayInst;
-import fr.jamgotchian.abcd.core.controlflow.GetFieldInst;
-import fr.jamgotchian.abcd.core.controlflow.GetStaticFieldInst;
-import fr.jamgotchian.abcd.core.controlflow.InstanceOfInst;
-import fr.jamgotchian.abcd.core.controlflow.JumpIfInst;
-import fr.jamgotchian.abcd.core.controlflow.MonitorEnterInst;
-import fr.jamgotchian.abcd.core.controlflow.MonitorExitInst;
-import fr.jamgotchian.abcd.core.controlflow.NewArrayInst;
-import fr.jamgotchian.abcd.core.controlflow.NewObjectInst;
-import fr.jamgotchian.abcd.core.controlflow.PhiInst;
-import fr.jamgotchian.abcd.core.controlflow.ReturnInst;
-import fr.jamgotchian.abcd.core.controlflow.SetArrayInst;
-import fr.jamgotchian.abcd.core.controlflow.SetFieldInst;
-import fr.jamgotchian.abcd.core.controlflow.SetStaticFieldInst;
-import fr.jamgotchian.abcd.core.controlflow.SwitchInst;
-import fr.jamgotchian.abcd.core.controlflow.TACInst;
-import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
-import fr.jamgotchian.abcd.core.controlflow.TACInstVisitor;
-import fr.jamgotchian.abcd.core.controlflow.ThrowInst;
-import fr.jamgotchian.abcd.core.controlflow.UnaryInst;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>

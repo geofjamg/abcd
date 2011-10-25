@@ -16,8 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
-import fr.jamgotchian.abcd.core.controlflow.Variable;
-import fr.jamgotchian.abcd.core.controlflow.VariableID;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

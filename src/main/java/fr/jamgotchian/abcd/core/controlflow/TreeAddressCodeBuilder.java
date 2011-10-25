@@ -14,27 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.analysis;
+package fr.jamgotchian.abcd.core.controlflow;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.controlflow.AssignConstInst;
-import fr.jamgotchian.abcd.core.controlflow.AssignVarInst;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
-import fr.jamgotchian.abcd.core.controlflow.BasicBlockAttribute;
-import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.controlflow.Edge;
-import fr.jamgotchian.abcd.core.controlflow.EdgeAttribute;
-import fr.jamgotchian.abcd.core.controlflow.ExceptionHandlerInfo;
-import fr.jamgotchian.abcd.core.controlflow.NewObjectInst;
-import fr.jamgotchian.abcd.core.controlflow.StringConst;
-import fr.jamgotchian.abcd.core.controlflow.Variable;
-import fr.jamgotchian.abcd.core.controlflow.TACInst;
-import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
-import fr.jamgotchian.abcd.core.controlflow.TACInstSeq;
-import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
-import fr.jamgotchian.abcd.core.controlflow.ThrowInst;
-import fr.jamgotchian.abcd.core.controlflow.VariableStack;
-import fr.jamgotchian.abcd.core.controlflow.TACInstWriter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
