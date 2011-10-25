@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
+import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
+import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.common.ABCDException;

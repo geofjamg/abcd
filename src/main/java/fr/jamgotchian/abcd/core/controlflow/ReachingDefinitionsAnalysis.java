@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
+import fr.jamgotchian.abcd.core.graph.ForwardDataFlowAnalysis;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import fr.jamgotchian.abcd.core.util.Sets;
 import java.util.HashMap;

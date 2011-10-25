@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.controlflow;
+package fr.jamgotchian.abcd.core.graph;
 
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,15 +24,15 @@ import java.util.Map;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class ForwardDataFlowAnalysis<N, E, V> {
+public abstract class BackwardDataFlowAnalysis<N, E, V> {
 
     private final DirectedGraph<N, E> graph;
 
-    private final N entryNode;
+    private final N exitNode;
 
-    public ForwardDataFlowAnalysis(DirectedGraph<N, E> graph, N entryNode) {
+    public BackwardDataFlowAnalysis(DirectedGraph<N, E> graph, N exitNode) {
         this.graph = graph;
-        this.entryNode = entryNode;
+        this.exitNode = exitNode;
     }
 
     public DirectedGraph<N, E> getGraph() {
@@ -44,26 +43,26 @@ public abstract class ForwardDataFlowAnalysis<N, E, V> {
         Map<N, V> values = new HashMap<N, V>();
 
         for (N node : graph.getVertices()) {
-           values.put(node, getInitValue(node, node.equals(entryNode)));
+           values.put(node, getInitValue(node, node.equals(exitNode)));
         }
 
         boolean change = true;
         while (change) {
             change = false;
             for (N n : graph.getVertices()) {
-                if (!n.equals(entryNode)) {
-                    V outBefore = values.get(n);
-                    V in = null;
-                    for (N p : graph.getPredecessorsOf(n)) {
-                        if (in == null) {
-                            in = values.get(p);
+                if (!n.equals(exitNode)) {
+                    V inBefore = values.get(n);
+                    V out = null;
+                    for (N s : graph.getSuccessorsOf(n)) {
+                        if (out == null) {
+                            out = values.get(s);
                         } else {
-                            in = combineValues(in, values.get(p));
+                            out = combineValues(out, values.get(s));
                         }
                     }
-                    V out = applyTranferFunction(n, in);
-                    if (!valuesEqual(outBefore, out)) {
-                        values.put(n, out);
+                    V in = applyTranferFunction(n, out);
+                    if (!valuesEqual(inBefore, in)) {
+                        values.put(n, in);
                         change = true;
                     }
                 }
@@ -72,11 +71,11 @@ public abstract class ForwardDataFlowAnalysis<N, E, V> {
         return values;
     }
 
-    protected abstract V getInitValue(N node, boolean isEntryNode);
+    protected abstract V getInitValue(N node, boolean isExitNode);
 
     protected abstract V combineValues(V value1, V value2);
 
-    protected abstract V applyTranferFunction(N node, V inValue);
+    protected abstract V applyTranferFunction(N node, V outValue);
 
     protected abstract boolean valuesEqual(V value1, V value2);
 }

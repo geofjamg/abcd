@@ -17,6 +17,8 @@
 
 package fr.jamgotchian.abcd.core.controlflow;
 
+import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
+import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;

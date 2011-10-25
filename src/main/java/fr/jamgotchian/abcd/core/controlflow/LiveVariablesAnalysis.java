@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
+import fr.jamgotchian.abcd.core.graph.BackwardDataFlowAnalysis;
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.HashSet;

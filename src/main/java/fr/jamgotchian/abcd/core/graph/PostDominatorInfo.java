@@ -15,13 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.controlflow;
+package fr.jamgotchian.abcd.core.graph;
 
-import fr.jamgotchian.abcd.core.graph.EdgeFactory;
-import fr.jamgotchian.abcd.core.graph.DirectedGraph;
-import fr.jamgotchian.abcd.core.graph.MutableTree;
-import fr.jamgotchian.abcd.core.graph.Tree;
-import fr.jamgotchian.abcd.core.graph.Trees;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;

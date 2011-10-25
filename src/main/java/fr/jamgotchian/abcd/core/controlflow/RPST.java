@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.controlflow;
 
+import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
+import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.graph.GraphvizUtil;
 import fr.jamgotchian.abcd.core.util.Sets;
 import java.io.FileWriter;
