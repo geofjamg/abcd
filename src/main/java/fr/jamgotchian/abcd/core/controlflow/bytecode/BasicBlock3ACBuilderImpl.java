@@ -15,13 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.controlflow;
+package fr.jamgotchian.abcd.core.controlflow.bytecode;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.common.LabelManager;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock3ACBuilder;
+import fr.jamgotchian.abcd.core.controlflow.ByteConst;
+import fr.jamgotchian.abcd.core.controlflow.ClassConst;
+import fr.jamgotchian.abcd.core.controlflow.DoubleConst;
+import fr.jamgotchian.abcd.core.controlflow.FloatConst;
+import fr.jamgotchian.abcd.core.controlflow.IntConst;
+import fr.jamgotchian.abcd.core.controlflow.LongConst;
+import fr.jamgotchian.abcd.core.controlflow.MethodSignature;
+import fr.jamgotchian.abcd.core.controlflow.NullConst;
+import fr.jamgotchian.abcd.core.controlflow.ShortConst;
+import fr.jamgotchian.abcd.core.controlflow.StringConst;
+import fr.jamgotchian.abcd.core.controlflow.TACBinaryOperator;
+import fr.jamgotchian.abcd.core.controlflow.TACInstFactory;
+import fr.jamgotchian.abcd.core.controlflow.TACUnaryOperator;
+import fr.jamgotchian.abcd.core.controlflow.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.controlflow.Variable;
+import fr.jamgotchian.abcd.core.controlflow.VariableStack;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;

@@ -14,9 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.controlflow;
+package fr.jamgotchian.abcd.core.controlflow.bytecode;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.controlflow.CaseValues;
+import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphBuilder;
+import fr.jamgotchian.abcd.core.controlflow.ExceptionTable;
+import fr.jamgotchian.abcd.core.controlflow.LocalVariableTable;
 import fr.jamgotchian.abcd.core.util.Range;
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -15,10 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.controlflow;
+package fr.jamgotchian.abcd.core.controlflow.bytecode;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.common.LabelManager;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
+import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraph;
+import fr.jamgotchian.abcd.core.controlflow.ControlFlowGraphImpl;
 import fr.jamgotchian.abcd.core.output.DOTHTMLLikeInstnWriter;
 import fr.jamgotchian.abcd.core.output.HTMLInstnWriter;
 import fr.jamgotchian.abcd.core.output.InstnWriter;

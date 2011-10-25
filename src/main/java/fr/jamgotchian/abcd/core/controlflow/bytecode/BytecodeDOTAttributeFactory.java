@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.controlflow;
+package fr.jamgotchian.abcd.core.controlflow.bytecode;
 
-import fr.jamgotchian.abcd.core.common.LabelManager;
+import fr.jamgotchian.abcd.core.controlflow.BasicBlock;
 import fr.jamgotchian.abcd.core.graph.DOTAttributeFactory;
 import java.util.HashMap;
 import java.util.Map;

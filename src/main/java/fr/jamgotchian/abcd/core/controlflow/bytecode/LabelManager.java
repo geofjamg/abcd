@@ -15,8 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.common;
+package fr.jamgotchian.abcd.core.controlflow.bytecode;
 
+import fr.jamgotchian.abcd.core.common.Label;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -30,7 +31,7 @@ import static org.objectweb.asm.tree.AbstractInsnNode.*;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class LabelManager {
-        
+
     private final Map<LabelNode, Label> labels = new IdentityHashMap<LabelNode, Label>();
 
     public LabelManager() {
@@ -53,9 +54,9 @@ public class LabelManager {
                     break;
                 }
             }
-        }        
+        }
     }
-    
+
     final public Label getLabel(LabelNode node) {
         Label label = labels.get(node);
         if (label == null) {
@@ -64,7 +65,7 @@ public class LabelManager {
         }
         return label;
     }
-    
+
     public void clear() {
         labels.clear();
     }
