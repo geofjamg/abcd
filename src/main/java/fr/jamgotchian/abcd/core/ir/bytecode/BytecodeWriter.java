@@ -20,7 +20,6 @@ package fr.jamgotchian.abcd.core.ir.bytecode;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.BasicBlockType;
-import fr.jamgotchian.abcd.core.output.InstnWriter;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;

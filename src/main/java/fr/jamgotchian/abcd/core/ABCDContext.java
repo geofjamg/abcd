@@ -50,9 +50,9 @@ import fr.jamgotchian.abcd.core.ir.bytecode.LabelManager;
 import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeGraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeUtil;
+import fr.jamgotchian.abcd.core.ir.bytecode.ASMUtil;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.util.ASMUtil;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
 import java.io.File;
@@ -292,11 +292,11 @@ public class ABCDContext {
                 TemporaryVariableFactory tmpVarFactory = new TemporaryVariableFactory();
                 IRInstFactory instFactory = new IRInstFactory();
 
-                InstructionBuilder bb3ACBuilder
+                InstructionBuilder instBuilder
                     = new BytecodeInstructionBuilder(mn.instructions, labelManager,
                                                    importManager, tmpVarFactory, instFactory);
 
-                new IntermediateRepresentationBuilder(cfg, bb3ACBuilder, importManager, tmpVarFactory,
+                new IntermediateRepresentationBuilder(cfg, instBuilder, importManager, tmpVarFactory,
                                            instFactory).build();
 
                 cfg.compact();

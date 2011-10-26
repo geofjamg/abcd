@@ -15,8 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.util;
+package fr.jamgotchian.abcd.core.ir.bytecode;
 
+import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;

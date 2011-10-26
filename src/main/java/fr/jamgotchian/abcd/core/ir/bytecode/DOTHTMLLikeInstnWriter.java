@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.output;
+package fr.jamgotchian.abcd.core.ir.bytecode;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -25,7 +25,7 @@ import static org.objectweb.asm.util.AbstractVisitor.*;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class DOTHTMLLikeInstnWriter extends HTMLInstnWriter {
-       
+
     public DOTHTMLLikeInstnWriter(Writer writer) {
         super(writer);
     }

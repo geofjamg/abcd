@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.output;
+package fr.jamgotchian.abcd.core.ir.bytecode;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -28,9 +28,9 @@ import java.util.List;
 public interface InstnWriter {
 
     void begin() throws IOException;
-    
+
     void writeEol() throws IOException;
-    
+
     void write(String name, Color color) throws IOException;
 
     void writeFieldOrMethodInstn(int index, int opcode, String scope, String name) throws IOException;
