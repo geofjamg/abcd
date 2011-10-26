@@ -47,11 +47,15 @@ public interface ControlFlowGraph {
 
     void removeUnreachableBlocks();
 
-    void compact();
+    void removeUnnecessaryBlock() ;
 
     void removeCriticalEdges();
 
-    void analyseLoops();
+    void updateDominatorInfo();
+
+    void updatePostDominatorInfo();
+
+    void updateLoopInfo();
 
     boolean containsEdge(BasicBlock source, BasicBlock target);
 

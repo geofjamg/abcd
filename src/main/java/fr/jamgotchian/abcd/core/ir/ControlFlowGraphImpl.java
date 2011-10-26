@@ -401,19 +401,9 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return graph.getEdgeTarget(edge);
     }
 
-    /**
-     * Compact the control flow graph i.e. remove unreachable and unnecessary
-     * basic blocks.
-     */
-    public void compact() {
-        removeUnreachableBlocks();
-        removeUnnecessaryBlock();
-    }
-
-    public void analyseLoops() {
-        logger.log(Level.FINER, "Analyse loops");
+    public void updateLoopInfo() {
+        logger.log(Level.FINER, "Update loop info");
         performDepthFirstSearch();
-        dominatorInfo = DominatorInfo.create(graph, entryBlock, EDGE_FACTORY);
         for (Edge e : getEdges()) {
             e.resetState();
         }
@@ -456,7 +446,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     /**
      * Remove unnecessary basic blocks.
      */
-    private void removeUnnecessaryBlock() {
+    public void removeUnnecessaryBlock() {
         Set<BasicBlock> toRemove = new HashSet<BasicBlock>();
         for (BasicBlock bb : graph.getVertices()) {
             if (getPredecessorCountOf(bb) >= 1 &&
@@ -683,8 +673,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 logger.log(Level.FINEST, "Add fake edge {0}", graph.toString(fakeEdge));
             }
         }
-
-        postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY);
     }
 
     public void export(Writer writer,

@@ -484,13 +484,6 @@ public class LocalVariableTypeAnalyser {
 
 
     public void analyse() {
-        graph.compact();
-        graph.removeCriticalEdges();
-        graph.analyseLoops();
-
-        // convert to SSA form
-        new SSAFormConverter(graph, instFactory).convert();
-
         // find type of this
         ClassName thisClassName = classNameFactory.newClassName(method.getClazz().getQualifiedName());
         getPossibleTypes(new VariableID(0)).add(JavaType.newRefType(thisClassName));
@@ -557,9 +550,5 @@ public class LocalVariableTypeAnalyser {
         }
 
         printVariableName(variables);
-
-        // to remove empty basic blocks added tu remove critical edges
-        graph.compact();
-        graph.analyseLoops();
     }
 }

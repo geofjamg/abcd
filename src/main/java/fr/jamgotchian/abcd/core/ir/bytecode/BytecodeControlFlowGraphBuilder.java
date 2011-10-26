@@ -17,6 +17,8 @@
 package fr.jamgotchian.abcd.core.ir.bytecode;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
+import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.CaseValues;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.ExceptionTable;
@@ -46,11 +48,15 @@ public class BytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder {
 
     private final MethodNode mn;
 
+    private final LabelManager labelManager;
+
     private final Map<LabelNode, Integer> labelNodeIndex;
 
-    public BytecodeControlFlowGraphBuilder(String methodName, MethodNode mn) {
+    public BytecodeControlFlowGraphBuilder(String methodName, MethodNode mn,
+                                           LabelManager labelManager) {
         super(methodName);
         this.mn = mn;
+        this.labelManager = labelManager;
         labelNodeIndex = new HashMap<LabelNode, Integer>();
         for (int i = 0; i < mn.instructions.size(); i++) {
             AbstractInsnNode node = mn.instructions.get(i);
@@ -63,6 +69,11 @@ public class BytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder {
     @Override
     protected int getInstructionCount() {
         return mn.instructions.size();
+    }
+
+    @Override
+    protected GraphvizRenderer<BasicBlock> getGraphizRenderer() {
+        return new BytecodeGraphvizRenderer(mn.instructions, labelManager);
     }
 
     @Override

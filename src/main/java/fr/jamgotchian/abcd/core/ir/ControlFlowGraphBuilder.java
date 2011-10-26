@@ -17,6 +17,8 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
+import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.Range;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,7 +47,10 @@ public abstract class ControlFlowGraphBuilder {
         this.methodName = methodName;
     }
 
-    public ControlFlowGraph build() {
+    public ControlFlowGraph build(OutputHandler handler) {
+        logger.log(Level.FINE, "\n{0}",
+                ConsoleUtil.printTitledSeparator("Build CFG of " + methodName, '='));
+
         cfg = new ControlFlowGraphImpl(methodName, getInstructionCount());
 
         ExceptionTable table = getExceptionTable();
@@ -58,8 +63,14 @@ public abstract class ControlFlowGraphBuilder {
         cfg.setLocalVariableTable(getLocalVariableTable());
 
         cfg.removeUnreachableBlocks();
+        cfg.updateDominatorInfo();
+        cfg.updateLoopInfo();
+
+        handler.writeRawCFG(cfg, getGraphizRenderer());
 
         removeUnnecessaryBasicBlocks();
+        cfg.updateDominatorInfo();
+        cfg.updateLoopInfo();
 
         return cfg;
     }
@@ -67,6 +78,8 @@ public abstract class ControlFlowGraphBuilder {
     protected abstract void analyseInstructions();
 
     protected abstract int getInstructionCount();
+
+    protected abstract GraphvizRenderer<BasicBlock> getGraphizRenderer();
 
     protected abstract ExceptionTable getExceptionTable();
 

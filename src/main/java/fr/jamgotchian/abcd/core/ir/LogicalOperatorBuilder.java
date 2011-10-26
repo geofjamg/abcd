@@ -16,22 +16,29 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.util.ConsoleUtil;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class LogicalOperatorBuilder {
 
-    private final ControlFlowGraph CFG;
+    private static final Logger logger
+            = Logger.getLogger(LogicalOperatorBuilder.class.getName());
+
+    private final ControlFlowGraph cfg;
 
     private final TemporaryVariableFactory tmpVarFactory;
 
     private final IRInstFactory instFactory;
 
-    public LogicalOperatorBuilder(ControlFlowGraph CFG,
+    public LogicalOperatorBuilder(ControlFlowGraph cfg,
                                   TemporaryVariableFactory tmpVarFactory,
                                   IRInstFactory instFactory) {
-        this.CFG = CFG;
+        this.cfg = cfg;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
     }
@@ -59,17 +66,17 @@ public class LogicalOperatorBuilder {
                                        jumpInst1.getCond(),
                                        cond2));
         seq1.add(instFactory.newJumpIf(agregatedCond));
-        CFG.removeBasicBlock(bb2);
-        CFG.addEdge(bb1, trueBB2).setValue(invert2 ? Boolean.FALSE : Boolean.TRUE);
-        CFG.addEdge(bb1, falseBB2).setValue(invert2 ? Boolean.TRUE : Boolean.FALSE);
+        cfg.removeBasicBlock(bb2);
+        cfg.addEdge(bb1, trueBB2).setValue(invert2 ? Boolean.FALSE : Boolean.TRUE);
+        cfg.addEdge(bb1, falseBB2).setValue(invert2 ? Boolean.TRUE : Boolean.FALSE);
     }
 
     private boolean checkAnd(BasicBlock bb1, Edge trueEdge1, Edge falseEdge1) {
-        BasicBlock bb2 = CFG.getEdgeTarget(trueEdge1);
+        BasicBlock bb2 = cfg.getEdgeTarget(trueEdge1);
         if (bb2.getInstructions().getLast() instanceof JumpIfInst) {
             Edge trueEdge2 = null;
             Edge falseEdge2 = null;
-            for (Edge e : CFG.getOutgoingEdgesOf(bb2)) {
+            for (Edge e : cfg.getOutgoingEdgesOf(bb2)) {
                 if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                     break;
                 } else if (Boolean.TRUE.equals(e.getValue())) {
@@ -79,9 +86,9 @@ public class LogicalOperatorBuilder {
                 }
             }
             if (trueEdge2 != null && falseEdge2 != null) {
-                BasicBlock falseBB1 = CFG.getEdgeTarget(falseEdge1);
-                BasicBlock trueBB2 = CFG.getEdgeTarget(trueEdge2);
-                BasicBlock falseBB2 = CFG.getEdgeTarget(falseEdge2);
+                BasicBlock falseBB1 = cfg.getEdgeTarget(falseEdge1);
+                BasicBlock trueBB2 = cfg.getEdgeTarget(trueEdge2);
+                BasicBlock falseBB2 = cfg.getEdgeTarget(falseEdge2);
                 if (falseBB2.equals(falseBB1)) {
                     agregate(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.AND, false);
                     return true;
@@ -95,11 +102,11 @@ public class LogicalOperatorBuilder {
     }
 
     private boolean checkOr(BasicBlock bb1, Edge trueEdge1, Edge falseEdge1) {
-        BasicBlock bb2 = CFG.getEdgeTarget(falseEdge1);
+        BasicBlock bb2 = cfg.getEdgeTarget(falseEdge1);
         if (bb2.getInstructions().getLast() instanceof JumpIfInst) {
             Edge trueEdge2 = null;
             Edge falseEdge2 = null;
-            for (Edge e : CFG.getOutgoingEdgesOf(bb2)) {
+            for (Edge e : cfg.getOutgoingEdgesOf(bb2)) {
                 if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                     break;
                 } else if (Boolean.TRUE.equals(e.getValue())) {
@@ -109,9 +116,9 @@ public class LogicalOperatorBuilder {
                 }
             }
             if (trueEdge2 != null && falseEdge2 != null) {
-                BasicBlock trueBB1 = CFG.getEdgeTarget(trueEdge1);
-                BasicBlock trueBB2 = CFG.getEdgeTarget(trueEdge2);
-                BasicBlock falseBB2 = CFG.getEdgeTarget(falseEdge2);
+                BasicBlock trueBB1 = cfg.getEdgeTarget(trueEdge1);
+                BasicBlock trueBB2 = cfg.getEdgeTarget(trueEdge2);
+                BasicBlock falseBB2 = cfg.getEdgeTarget(falseEdge2);
                 if (trueBB2.equals(trueBB1)) {
                     agregate(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.OR, false);
                     return true;
@@ -125,14 +132,17 @@ public class LogicalOperatorBuilder {
     }
 
     public void builder() {
+        logger.log(Level.FINE, "\n{0}",
+                ConsoleUtil.printTitledSeparator("Build complex logical operators " + cfg.getName(), '='));
+
         boolean change = true;
         while (change) {
             change = false;
-            for (BasicBlock bb1 : CFG.getDFST().getNodes()) {
+            for (BasicBlock bb1 : cfg.getDFST().getNodes()) {
                 if (bb1.getInstructions().getLast() instanceof JumpIfInst) {
                     Edge trueEdge1 = null;
                     Edge falseEdge1 = null;
-                    for (Edge e : CFG.getOutgoingEdgesOf(bb1)) {
+                    for (Edge e : cfg.getOutgoingEdgesOf(bb1)) {
                         if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                             break;
                         } else if (Boolean.TRUE.equals(e.getValue())) {
@@ -154,7 +164,5 @@ public class LogicalOperatorBuilder {
                 }
             }
         }
-
-        CFG.analyseLoops();
     }
 }

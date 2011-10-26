@@ -106,7 +106,7 @@ public class ControlFlowGraphImplTest {
         graph.addEdge(b10, b7);
         graph.addEdge(b8, b3);
         graph.addEdge(b9, b1);
-        graph.analyseLoops();
+        graph.updateLoopInfo();
 
         printDFST(graph);
         printEdgeCategory(graph);
@@ -145,7 +145,7 @@ public class ControlFlowGraphImplTest {
         graph.addEdge(b2, b3);
         graph.addEdge(b3, b2);
         try {
-            graph.analyseLoops();
+            graph.updateLoopInfo();
             fail("Should throw an exception because of irreducible control flow");
         } catch (ABCDException exc) {
         }
@@ -193,7 +193,7 @@ public class ControlFlowGraphImplTest {
         graph.addEdge(b5, b7);
         graph.addEdge(b6, b5);
         graph.addEdge(b7, b2);
-        graph.analyseLoops();
+        graph.updateLoopInfo();
 
         printDFST(graph);
         printEdgeCategory(graph);
@@ -268,7 +268,7 @@ public class ControlFlowGraphImplTest {
         graph.addEdge(b11, b12);
         graph.addEdge(b12, b13);
         graph.addEdge(b13, b14);
-        graph.analyseLoops();
+        graph.updateLoopInfo();
 
         printEdgeCategory(graph);
         printNaturalLoops(graph);

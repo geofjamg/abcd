@@ -16,14 +16,21 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.graph.DominatorInfo;
+import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
+import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,7 +46,7 @@ public class IntermediateRepresentationBuilder {
 
     private final StringConst magicString;
 
-    private final ControlFlowGraph cfg;
+    private final ControlFlowGraphBuilder cfgBuilder;
 
     private final InstructionBuilder instBuilder;
 
@@ -49,16 +56,18 @@ public class IntermediateRepresentationBuilder {
 
     private final IRInstFactory instFactory;
 
+    private ControlFlowGraph cfg;
+
     private final Set<Variable> finallyTmpVars;
 
     private final Set<Variable> catchTmpVars;
 
-    public IntermediateRepresentationBuilder(ControlFlowGraph cfg,
-                                  InstructionBuilder instBuilder,
-                                  ClassNameFactory classNameFactory,
-                                  TemporaryVariableFactory tmpVarFactory,
-                                  IRInstFactory instFactory) {
-        this.cfg = cfg;
+    public IntermediateRepresentationBuilder(ControlFlowGraphBuilder cfgBuilder,
+                                             InstructionBuilder instBuilder,
+                                             ClassNameFactory classNameFactory,
+                                             TemporaryVariableFactory tmpVarFactory,
+                                             IRInstFactory instFactory) {
+        this.cfgBuilder = cfgBuilder;
         this.instBuilder = instBuilder;
         this.classNameFactory = classNameFactory;
         this.tmpVarFactory = tmpVarFactory;
@@ -235,7 +244,10 @@ public class IntermediateRepresentationBuilder {
         }
     }
 
-    public void build() {
+    private void buildInst() {
+        logger.log(Level.FINE, "\n{0}",
+                        ConsoleUtil.printTitledSeparator("Build instructions of " + cfg.getName(), '='));
+
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             bb.setInstructions(new IRInstSeq());
         }
@@ -243,10 +255,10 @@ public class IntermediateRepresentationBuilder {
         List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(cfg.getDFST().getNodes());
         while (blocksToProcess.size() > 0) {
             for (Iterator<BasicBlock> it = blocksToProcess.iterator(); it.hasNext();) {
-                BasicBlock block = it.next();
+                BasicBlock bb = it.next();
 
                 List<VariableStack> inputStacks = new ArrayList<VariableStack>();
-                for (Edge incomingEdge : cfg.getIncomingEdgesOf(block)) {
+                for (Edge incomingEdge : cfg.getIncomingEdgesOf(bb)) {
                     if (incomingEdge.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
                         continue;
                     }
@@ -254,11 +266,163 @@ public class IntermediateRepresentationBuilder {
                     inputStacks.add(pred.getOutputStack().clone());
                 }
 
-                processBlock(block, inputStacks);
+                processBlock(bb, inputStacks);
                 it.remove();
             }
         }
 
+        // cleanup exception handler by removing fake instructions
         cleanupExceptionHandlers();
+    }
+
+    /**
+     * Replace choice instructions by conditional instructions (ternary operator)
+     */
+    public void replaceChoiceInst() {
+        logger.log(Level.FINE, "\n{0}",
+                ConsoleUtil.printTitledSeparator("Build ternary operators " + cfg.getName(), '='));
+
+        for (BasicBlock joinBlock : cfg.getDFST()) {
+            IRInstSeq joinInsts = joinBlock.getInstructions();
+
+            for (int i = 0; i < joinInsts.size(); i++) {
+                IRInst inst = joinInsts.get(i);
+                if (!(inst instanceof ChoiceInst)) {
+                    continue;
+                }
+                ChoiceInst choiceInst = (ChoiceInst) inst;
+
+                List<IRInst> replacement = new ArrayList<IRInst>();
+
+                boolean change = true;
+                while (change) {
+                    change = false;
+
+                    Multimap<BasicBlock, Variable> forkBlocks
+                            = HashMultimap.create();
+                    for (Variable var : choiceInst.getChoices()) {
+                        BasicBlock block = var.getBasicBlock();
+                        DominatorInfo<BasicBlock, Edge> domInfo = cfg.getDominatorInfo();
+                        BasicBlock forkBlock = domInfo.getDominatorsTree().getParent(block);
+                        forkBlocks.put(forkBlock, var);
+                    }
+
+                    for (Map.Entry<BasicBlock, Collection<Variable>> entry
+                            : forkBlocks.asMap().entrySet()) {
+                        BasicBlock forkBlock = entry.getKey();
+                        Collection<Variable> vars = entry.getValue();
+                        if (forkBlock.getType() == BasicBlockType.JUMP_IF
+                                && vars.size() == 2) {
+                            Iterator<Variable> it = vars.iterator();
+                            Variable var1 = it.next();
+                            Variable var2 = it.next();
+
+                            BasicBlock block1 = var1.getBasicBlock();
+                            BasicBlock block2 = var2.getBasicBlock();
+                            PostDominatorInfo<BasicBlock, Edge> postDomInfo = cfg.getPostDominatorInfo();
+                            Edge forkEdge1 = postDomInfo.getPostDominanceFrontierOf(block1).iterator().next();
+                            Edge forkEdge2 = postDomInfo.getPostDominanceFrontierOf(block2).iterator().next();
+                            Variable thenVar = null;
+                            Variable elseVar = null;
+                            if (Boolean.TRUE.equals(forkEdge1.getValue())
+                                    && Boolean.FALSE.equals(forkEdge2.getValue())) {
+                                thenVar = var1;
+                                elseVar = var2;
+                            } else if (Boolean.FALSE.equals(forkEdge1.getValue())
+                                    && Boolean.TRUE.equals(forkEdge2.getValue())) {
+                                thenVar = var2;
+                                elseVar = var1;
+                            }
+                            if (thenVar != null && elseVar != null) {
+                                JumpIfInst jumpIfInst = (JumpIfInst) forkBlock.getInstructions().getLast();
+                                choiceInst.getChoices().remove(thenVar);
+                                choiceInst.getChoices().remove(elseVar);
+                                Variable condVar = jumpIfInst.getCond().clone();
+                                if (choiceInst.getChoices().isEmpty()) {
+                                    Variable resultVar = choiceInst.getResult();
+                                    ConditionalInst condInst
+                                            = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
+                                    logger.log(Level.FINER, "Replace inst at {0} of {1} : {2}",
+                                            new Object[]{i, joinBlock, IRInstWriter.toText(condInst)});
+                                    replacement.add(condInst);
+                                } else {
+                                    Variable resultVar = tmpVarFactory.create(forkBlock);
+                                    ConditionalInst condInst
+                                            = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
+                                    logger.log(Level.FINER, "Insert inst at {0} of {1} : {2}",
+                                            new Object[]{i, joinBlock, IRInstWriter.toText(condInst)});
+                                    replacement.add(condInst);
+                                    choiceInst.getChoices().add(resultVar);
+                                }
+
+                                change = true;
+                            } else {
+                                throw new ABCDException("Conditional instruction building error");
+                            }
+                        } else if (forkBlock.getType() == BasicBlockType.SWITCH
+                                && vars.size() > 2) {
+                            throw new ABCDException("TODO");
+                        }
+                    }
+                }
+
+                if (replacement.size() > 0) {
+                    joinInsts.remove(i);
+                    joinInsts.addAll(i, replacement);
+                }
+            }
+        }
+    }
+
+    public ControlFlowGraph build(OutputHandler handler) {
+        // build control flow graph from bytecode
+        cfg = cfgBuilder.build(handler);
+
+        StringBuilder builder = new StringBuilder();
+        cfg.getExceptionTable().print(builder);
+        logger.log(Level.FINER, "Exception table :\n{0}", builder.toString());
+
+        builder = new StringBuilder();
+        cfg.getLocalVariableTable().print(builder);
+        logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
+
+        // build IR instructions for each basic block
+        buildInst();
+
+        cfg.removeUnnecessaryBlock();
+        cfg.updateDominatorInfo();
+        cfg.updateLoopInfo();
+        cfg.addFakeEdges();
+        cfg.updatePostDominatorInfo();
+
+        // create and / or instructions
+        new LogicalOperatorBuilder(cfg, tmpVarFactory, instFactory).builder();
+
+        cfg.updateDominatorInfo();
+        cfg.updatePostDominatorInfo();
+        cfg.updateLoopInfo();
+
+        // must be done after complex logical operators building because
+        // of ternary operator with complex condition
+        replaceChoiceInst();
+
+        // need to remove critical edges to convert to SSA
+        cfg.removeCriticalEdges();
+        cfg.updateDominatorInfo();
+        cfg.updatePostDominatorInfo();
+        cfg.updateLoopInfo();
+
+        // convert to SSA form
+        new SSAFormConverter(cfg, instFactory).convert();
+
+        // to remove empty basic blocks added tu remove critical edges
+        cfg.removeUnnecessaryBlock();
+        cfg.updateDominatorInfo();
+        cfg.updatePostDominatorInfo();
+        cfg.updateLoopInfo();
+
+        handler.writeCFG(cfg);
+
+        return cfg;
     }
 }

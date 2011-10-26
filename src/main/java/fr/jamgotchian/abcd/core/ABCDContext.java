@@ -32,9 +32,7 @@ import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.util.Refactorer;
 import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.analysis.LocalVariableTypeAnalyser;
-import fr.jamgotchian.abcd.core.ir.LogicalOperatorBuilder;
 import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
-import fr.jamgotchian.abcd.core.ir.TernaryOperatorBuilder;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeInstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
@@ -43,11 +41,11 @@ import fr.jamgotchian.abcd.core.ir.LocalVariableTable;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.ir.VariableID;
+import fr.jamgotchian.abcd.core.ir.OutputHandler;
 import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.ir.Region;
 import fr.jamgotchian.abcd.core.ir.RegionAnalysis;
 import fr.jamgotchian.abcd.core.ir.bytecode.LabelManager;
-import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeGraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeUtil;
 import fr.jamgotchian.abcd.core.ir.bytecode.ASMUtil;
@@ -261,65 +259,35 @@ public class ABCDContext {
 
                 logger.log(Level.FINER, "Bytecode :\n{0}", BytecodeUtil.toText(mn.instructions));
 
-                logger.log(Level.FINE, "\n{0}",
-                        ConsoleUtil.printTitledSeparator("Build Control flow graph of " + methodSignature, '='));
-                ControlFlowGraphBuilder cfgBuilder = new BytecodeControlFlowGraphBuilder(methodSignature, mn);
-                ControlFlowGraph cfg = cfgBuilder.build();
-                cfg.compact();
-                cfg.analyseLoops();
+                LabelManager labelManager = new LabelManager();
 
-                StringBuilder builder = new StringBuilder();
-                cfg.getExceptionTable().print(builder);
-                logger.log(Level.FINER, "Exception table :\n{0}", builder.toString());
+                ControlFlowGraphBuilder cfgBuilder
+                        = new BytecodeControlFlowGraphBuilder(methodSignature, mn, labelManager);
 
-                builder = new StringBuilder();
-                cfg.getLocalVariableTable().print(builder);
-                logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
+                TemporaryVariableFactory tmpVarFactory = new TemporaryVariableFactory();
+
+                IRInstFactory instFactory = new IRInstFactory();
+
+                InstructionBuilder instBuilder
+                    = new BytecodeInstructionBuilder(mn.instructions, labelManager,
+                                                     importManager, tmpVarFactory, instFactory);
+
+                ControlFlowGraph cfg
+                        = new IntermediateRepresentationBuilder(cfgBuilder,
+                                                                instBuilder,
+                                                                importManager,
+                                                                tmpVarFactory,
+                                                                instFactory).build(handler);
+
+                // analyse local variables types
+                new LocalVariableTypeAnalyser(cfg, method, importManager,
+                                              instFactory).analyse();
 
                 LocalVariableTable table = cfg.getLocalVariableTable();
                 for (LocalVariableDeclaration decl : method.getArguments()) {
                     LocalVariable var = decl.getVariable();
                     var.setName(table.getName(var.getID().getIndex(), 0));
                 }
-
-                LabelManager labelManager = new LabelManager();
-
-                handler.writeRawCFG(cfg, new BytecodeGraphvizRenderer(mn.instructions, labelManager));
-
-                logger.log(Level.FINE, "\n{0}",
-                        ConsoleUtil.printTitledSeparator("Build IR instructions of " + methodSignature, '='));
-
-                TemporaryVariableFactory tmpVarFactory = new TemporaryVariableFactory();
-                IRInstFactory instFactory = new IRInstFactory();
-
-                InstructionBuilder instBuilder
-                    = new BytecodeInstructionBuilder(mn.instructions, labelManager,
-                                                   importManager, tmpVarFactory, instFactory);
-
-                new IntermediateRepresentationBuilder(cfg, instBuilder, importManager, tmpVarFactory,
-                                           instFactory).build();
-
-                cfg.compact();
-                cfg.analyseLoops();
-                cfg.addFakeEdges();
-
-                logger.log(Level.FINE, "\n{0}",
-                        ConsoleUtil.printTitledSeparator("Build complex logical operators " + methodSignature, '='));
-
-                new LogicalOperatorBuilder(cfg, tmpVarFactory, instFactory).builder();
-
-                logger.log(Level.FINE, "\n{0}",
-                        ConsoleUtil.printTitledSeparator("Build ternary operators " + methodSignature, '='));
-
-                // must be done after complex logical operators building because
-                // of ternary operator with complex condition
-                new TernaryOperatorBuilder(cfg, tmpVarFactory, instFactory).build();
-
-                // analyse local variables types
-                new LocalVariableTypeAnalyser(cfg, method, importManager,
-                                              instFactory).analyse();
-
-                handler.writeCFG(cfg);
 
                 logger.log(Level.FINE, "\n{0}",
                         ConsoleUtil.printTitledSeparator("Analyse regions of " + methodSignature, '='));
@@ -328,7 +296,7 @@ public class ABCDContext {
 
                 handler.writeRPST(rpst);
 
-                builder = new StringBuilder();
+                StringBuilder builder = new StringBuilder();
                 rpst.print(builder);
                 logger.log(Level.FINER, "RPST :\n{0}", builder.toString());
 

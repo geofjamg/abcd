@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core;
 
+import fr.jamgotchian.abcd.core.ir.OutputHandler;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
