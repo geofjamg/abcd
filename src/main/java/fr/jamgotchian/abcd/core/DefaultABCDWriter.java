@@ -16,7 +16,7 @@
  */
 package fr.jamgotchian.abcd.core;
 
-import fr.jamgotchian.abcd.core.ir.OutputHandler;
+import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
@@ -36,21 +36,21 @@ import java.util.logging.Logger;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DefaultOutputHandler implements OutputHandler {
+public class DefaultABCDWriter implements ABCDWriter {
 
     protected final static Logger logger
-            = Logger.getLogger(DefaultOutputHandler.class.getName());
+            = Logger.getLogger(DefaultABCDWriter.class.getName());
 
     private final boolean debug;
 
     private final OutputStream os;
 
-    public DefaultOutputHandler(boolean debug, OutputStream os) {
+    public DefaultABCDWriter(boolean debug, OutputStream os) {
         this.debug = debug;
         this.os = os;
     }
 
-    public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bbRenderer) {
+    public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bytecodeRenderer) {
     }
 
     public void writeCFG(ControlFlowGraph cfg) {

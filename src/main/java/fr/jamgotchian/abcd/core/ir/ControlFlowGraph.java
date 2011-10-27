@@ -151,8 +151,6 @@ public interface ControlFlowGraph {
 
     void setExceptionTable(ExceptionTable exceptionTable);
 
-    void addFakeEdges();
-
     void export(Writer writer,
                 GraphvizRenderer<BasicBlock> bbRenderer,
                 GraphvizRenderer<Edge> edgeRenderer) throws IOException;

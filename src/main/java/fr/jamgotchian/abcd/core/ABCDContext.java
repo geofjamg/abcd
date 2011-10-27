@@ -41,7 +41,7 @@ import fr.jamgotchian.abcd.core.ir.LocalVariableTable;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.ir.VariableID;
-import fr.jamgotchian.abcd.core.ir.OutputHandler;
+import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.ir.Region;
 import fr.jamgotchian.abcd.core.ir.RegionAnalysis;
@@ -92,12 +92,12 @@ public class ABCDContext {
             Arrays.<Refactorer>asList(new ForLoopRefactorer()));
 
     public static void decompile(File classFile, OutputStream os) throws IOException {
-        new ABCDContext().decompileFile(classFile, new DefaultOutputHandler(DEBUG, os));
+        new ABCDContext().decompileFile(classFile, new DefaultABCDWriter(DEBUG, os));
     }
 
     public static void analyse(File classFile, OutputStream os,
                                File outputDir) throws IOException {
-        new ABCDContext().decompileFile(classFile, new DebugOutputHandler(DEBUG, os, outputDir));
+        new ABCDContext().decompileFile(classFile, new DebugABCDWriter(DEBUG, os, outputDir));
     }
 
     private final Map<String, String> innerClasses = new HashMap<String, String>();
@@ -105,10 +105,10 @@ public class ABCDContext {
     public ABCDContext() {
     }
 
-    private void decompileFile(File classFile, OutputHandler handler) throws IOException {
+    private void decompileFile(File classFile, ABCDWriter writer) throws IOException {
         ImportManager importManager = new ImportManager();
 
-        Class _class = decompileClass(classFile, importManager, handler);
+        Class _class = decompileClass(classFile, importManager, writer);
 
         CompilationUnit compilUnit = new CompilationUnit(_class.getPackage(), importManager);
         compilUnit.getClasses().add(_class);
@@ -123,9 +123,9 @@ public class ABCDContext {
             classRootDir = classRootDir.getParentFile();
         }
 
-        decompileInnerClass(_class, classRootDir, importManager, handler);
+        decompileInnerClass(_class, classRootDir, importManager, writer);
 
-        handler.writeAST(compilUnit);
+        writer.writeAST(compilUnit);
     }
 
     private Class createClass(ClassNode cn, ImportManager importManager) {
@@ -235,15 +235,15 @@ public class ABCDContext {
     }
 
     private Class decompileClass(File classFile, ImportManager importManager,
-                                 OutputHandler handler) throws IOException {
+                                 ABCDWriter writer) throws IOException {
         ClassNode cn = new ClassNode();
         ClassReader cr = new ClassReader(new FileInputStream(classFile));
         cr.accept(cn, 0);
 
         Class _class = createClass(cn, importManager);
 
-        logger.log(Level.FINE, "\n\n{0}\n",
-                ConsoleUtil.printTitledSeparator("Decompile class " + _class.getQualifiedName(), '#'));
+        ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Decompile class {0}",
+                '#', _class.getQualifiedName());
 
         List<String> errorMsgs = new ArrayList<String>();
 
@@ -254,8 +254,10 @@ public class ABCDContext {
             String methodSignature = method.getSignature();
 
             try {
-                logger.log(Level.FINE, "\n\n{0}\n",
-                        ConsoleUtil.printTitledSeparator("Decompile method " + methodSignature, '%'));
+                logger.log(Level.FINE, "");
+                ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Decompile method {0}",
+                        '%', methodSignature);
+                logger.log(Level.FINE, "");
 
                 logger.log(Level.FINER, "Bytecode :\n{0}", BytecodeUtil.toText(mn.instructions));
 
@@ -277,7 +279,7 @@ public class ABCDContext {
                                                                 instBuilder,
                                                                 importManager,
                                                                 tmpVarFactory,
-                                                                instFactory).build(handler);
+                                                                instFactory).build(writer);
 
                 // analyse local variables types
                 new LocalVariableTypeAnalyser(cfg, method, importManager,
@@ -289,12 +291,12 @@ public class ABCDContext {
                     var.setName(table.getName(var.getID().getIndex(), 0));
                 }
 
-                logger.log(Level.FINE, "\n{0}",
-                        ConsoleUtil.printTitledSeparator("Analyse regions of " + methodSignature, '='));
+                ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Analyse regions of {0}",
+                        '=', methodSignature);
 
                 RPST rpst = new RegionAnalysis(cfg).analyse();
 
-                handler.writeRPST(rpst);
+                writer.writeRPST(rpst);
 
                 StringBuilder builder = new StringBuilder();
                 rpst.print(builder);
@@ -302,8 +304,9 @@ public class ABCDContext {
 
                 Region rootRegion = rpst.getRootRegion();
 
-                logger.log(Level.FINE, "\n{0}",
-                        ConsoleUtil.printTitledSeparator("Build AST of " + methodSignature, '='));
+                ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Build AST of {0}",
+                        '=', methodSignature);
+
                 new AbstractSyntaxTreeBuilder(cfg, importManager,
                                               rootRegion, method.getBody()).build();
 
@@ -330,8 +333,9 @@ public class ABCDContext {
             }
         }
 
-        logger.log(Level.FINE, "\n\n{0}\n",
-                ConsoleUtil.printTitledSeparator("Summary " + _class.getQualifiedName(), '#'));
+        ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Summary {0}",
+                        '#', _class.getQualifiedName());
+
         logger.log(Level.FINE, "Succeed : {0}/{1}",
                 new Object[]{cn.methods.size() - errorMsgs.size(), cn.methods.size()});
         StringBuilder errorStr = new StringBuilder();
@@ -388,7 +392,7 @@ public class ABCDContext {
 
     private void decompileInnerClass(Class outerClass, File classRootDir,
                                      ImportManager importManager,
-                                     OutputHandler handler) throws IOException {
+                                     ABCDWriter writer) throws IOException {
         String outerClassName = outerClass.getQualifiedName();
         for (Map.Entry<String, String> entry : innerClasses.entrySet()) {
             String innerClassName = entry.getKey();
@@ -396,10 +400,10 @@ public class ABCDContext {
                 String innerClassFileName = classRootDir.getAbsolutePath() + '/'
                         + innerClassName.replace('.', '/') + ".class";
                 File innerClassFile = new File(innerClassFileName);
-                Class innerClass = decompileClass(innerClassFile, importManager, handler);
+                Class innerClass = decompileClass(innerClassFile, importManager, writer);
                 outerClass.addInnerClass(innerClass);
 
-                decompileInnerClass(innerClass, classRootDir, importManager, handler);
+                decompileInnerClass(innerClass, classRootDir, importManager, writer);
             }
         }
     }

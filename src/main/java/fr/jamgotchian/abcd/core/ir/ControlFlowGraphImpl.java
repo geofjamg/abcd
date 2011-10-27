@@ -648,33 +648,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
     }
 
-    public void addFakeEdges() {
-        for (BasicBlock bb : getBasicBlocks()) {
-            if (bb.equals(entryBlock) || bb.equals(exitBlock)) {
-                continue;
-            }
-            IRInstSeq insts = bb.getInstructions();
-            if (insts == null) {
-                throw new ABCDException("insts == null");
-            }
-            if (graph.getSuccessorCountOf(bb) == 0
-                    && insts.getLast() instanceof ThrowInst) {
-                Edge fakeEdge = EDGE_FACTORY.createEdge();
-                fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                graph.addEdge(bb, exitBlock, fakeEdge);
-                logger.log(Level.FINEST, "Add fake edge {0}", graph.toString(fakeEdge));
-            }
-        }
-        for (NaturalLoop loop : naturalLoops.values()) {
-            if (loop.getExits().isEmpty()) { // infinite loop
-                Edge fakeEdge = EDGE_FACTORY.createEdge();
-                fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                graph.addEdge(loop.getHead(), exitBlock, fakeEdge);
-                logger.log(Level.FINEST, "Add fake edge {0}", graph.toString(fakeEdge));
-            }
-        }
-    }
-
     public void export(Writer writer,
                        GraphvizRenderer<BasicBlock> bbRenderer,
                        GraphvizRenderer<Edge> edgeRenderer) throws IOException {

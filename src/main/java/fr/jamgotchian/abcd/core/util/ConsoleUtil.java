@@ -18,6 +18,8 @@ package fr.jamgotchian.abcd.core.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -30,7 +32,8 @@ public class ConsoleUtil {
     private ConsoleUtil() {
     }
 
-    public static String printTitledSeparator(String title, char separator) {
+    public static void logTitledSeparator(Logger logger, Level level, String title,
+                                          char separator, Object... param) {
         StringBuilder builder = new StringBuilder(SEPARATOR_WIDTH);
         int remaining = SEPARATOR_WIDTH - title.length() - 2;
         remaining = Math.max(remaining, 4);
@@ -43,7 +46,15 @@ public class ConsoleUtil {
         for (int i = 0; i < after; i++) {
             builder.append(separator);
         }
-        return builder.toString();
+        logger.log(level, builder.toString(), param);
+    }
+
+    public static void logSeparator(Logger logger, Level level, char separator) {
+        StringBuilder builder = new StringBuilder(SEPARATOR_WIDTH);
+        for (int i = 0; i < SEPARATOR_WIDTH; i++) {
+            builder.append(separator);
+        }
+        logger.log(level, builder.toString());
     }
 
     public static String printTable(List<String>... columns) {

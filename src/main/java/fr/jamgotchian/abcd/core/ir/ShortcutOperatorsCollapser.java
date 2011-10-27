@@ -24,10 +24,10 @@ import java.util.logging.Logger;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LogicalOperatorBuilder {
+public class ShortcutOperatorsCollapser {
 
     private static final Logger logger
-            = Logger.getLogger(LogicalOperatorBuilder.class.getName());
+            = Logger.getLogger(ShortcutOperatorsCollapser.class.getName());
 
     private final ControlFlowGraph cfg;
 
@@ -35,16 +35,17 @@ public class LogicalOperatorBuilder {
 
     private final IRInstFactory instFactory;
 
-    public LogicalOperatorBuilder(ControlFlowGraph cfg,
-                                  TemporaryVariableFactory tmpVarFactory,
-                                  IRInstFactory instFactory) {
+    public ShortcutOperatorsCollapser(ControlFlowGraph cfg,
+                                      TemporaryVariableFactory tmpVarFactory,
+                                      IRInstFactory instFactory) {
         this.cfg = cfg;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
     }
 
-    private void agregate(BasicBlock bb1, BasicBlock bb2, BasicBlock trueBB2,
-                          BasicBlock falseBB2, IRBinaryOperator operator, boolean invert2) {
+    private void collapseOperator(BasicBlock bb1, BasicBlock bb2,
+                                  BasicBlock trueBB2, BasicBlock falseBB2,
+                                  IRBinaryOperator operator, boolean invert2) {
         IRInstSeq seq1 = bb1.getInstructions();
         IRInstSeq seq2 = bb2.getInstructions();
         JumpIfInst jumpInst1 = (JumpIfInst) seq1.getLast();
@@ -90,10 +91,10 @@ public class LogicalOperatorBuilder {
                 BasicBlock trueBB2 = cfg.getEdgeTarget(trueEdge2);
                 BasicBlock falseBB2 = cfg.getEdgeTarget(falseEdge2);
                 if (falseBB2.equals(falseBB1)) {
-                    agregate(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.AND, false);
+                    collapseOperator(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.AND, false);
                     return true;
                 } else if (trueBB2.equals(falseBB1)) {
-                    agregate(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.AND, true);
+                    collapseOperator(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.AND, true);
                     return true;
                 }
             }
@@ -120,10 +121,10 @@ public class LogicalOperatorBuilder {
                 BasicBlock trueBB2 = cfg.getEdgeTarget(trueEdge2);
                 BasicBlock falseBB2 = cfg.getEdgeTarget(falseEdge2);
                 if (trueBB2.equals(trueBB1)) {
-                    agregate(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.OR, false);
+                    collapseOperator(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.OR, false);
                     return true;
                 } else if (falseBB2.equals(trueBB1)) {
-                    agregate(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.OR, true);
+                    collapseOperator(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.OR, true);
                     return true;
                 }
             }
@@ -131,9 +132,9 @@ public class LogicalOperatorBuilder {
         return false;
     }
 
-    public void builder() {
-        logger.log(Level.FINE, "\n{0}",
-                ConsoleUtil.printTitledSeparator("Build complex logical operators " + cfg.getName(), '='));
+    public void collapse() {
+        ConsoleUtil.logTitledSeparator(logger, Level.FINE,
+                "Collapse shortcut operators of {0}", '=', cfg.getName());
 
         boolean change = true;
         while (change) {

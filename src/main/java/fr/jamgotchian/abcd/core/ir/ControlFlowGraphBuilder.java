@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.Range;
@@ -47,26 +48,29 @@ public abstract class ControlFlowGraphBuilder {
         this.methodName = methodName;
     }
 
-    public ControlFlowGraph build(OutputHandler handler) {
-        logger.log(Level.FINE, "\n{0}",
-                ConsoleUtil.printTitledSeparator("Build CFG of " + methodName, '='));
+    public ControlFlowGraph build(ABCDWriter writer) {
+        ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Build CFG of {0}",
+                '=', methodName);
 
         cfg = new ControlFlowGraphImpl(methodName, getInstructionCount());
 
         ExceptionTable table = getExceptionTable();
-        cfg.setExceptionTable(table);
+        cfg.setExceptionTable(getExceptionTable());
+        printExceptionTable(table);
 
         analyseInstructions();
 
         analyseExceptionTable(table);
 
-        cfg.setLocalVariableTable(getLocalVariableTable());
+        LocalVariableTable table2 = getLocalVariableTable();
+        cfg.setLocalVariableTable(table2);
+        printLocalVariableTable(table2);
 
         cfg.removeUnreachableBlocks();
         cfg.updateDominatorInfo();
         cfg.updateLoopInfo();
 
-        handler.writeRawCFG(cfg, getGraphizRenderer());
+        writer.writeRawCFG(cfg, getGraphizRenderer());
 
         removeUnnecessaryBasicBlocks();
         cfg.updateDominatorInfo();
@@ -109,6 +113,18 @@ public abstract class ControlFlowGraphBuilder {
                 cfg.addEdge(block, catchEntryBlock, true);
             }
         }
+    }
+
+    private void printExceptionTable(ExceptionTable table) {
+        StringBuilder builder = new StringBuilder();
+        table.print(builder);
+        logger.log(Level.FINER, "Exception table :\n{0}", builder.toString());
+    }
+
+    private void printLocalVariableTable(LocalVariableTable table) {
+        StringBuilder builder = new StringBuilder();
+        table.print(builder);
+        logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
     }
 
     protected void analyseJumpInst(int currentInstIdx, int labelInstIdx) {

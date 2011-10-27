@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import com.google.common.base.Predicate;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 
 /**
@@ -39,18 +40,16 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
     }
 
     public Boolean visit(IRInstSeq seq, IRInst arg) {
-        IRInstSeq seqC = new IRInstSeq();
-        for (IRInst inst : seq) {
-            if (!inst.isIgnored()) {
-                seqC.add(inst);
+        IRInstSeq seqC = seq.copyIf(new Predicate<IRInst>() {
+            public boolean apply(IRInst inst) {
+                return !inst.isIgnored();
             }
-        }
-        IRInstSeq otherSeqC = new IRInstSeq();
-        for (IRInst inst : otherSeq) {
-            if (!inst.isIgnored()) {
-                otherSeqC.add(inst);
+        });
+        IRInstSeq otherSeqC = otherSeq.copyIf(new Predicate<IRInst>() {
+            public boolean apply(IRInst inst) {
+                return !inst.isIgnored();
             }
-        }
+        });
         if (seqC.size() != otherSeqC.size()) {
             return Boolean.FALSE;
         }

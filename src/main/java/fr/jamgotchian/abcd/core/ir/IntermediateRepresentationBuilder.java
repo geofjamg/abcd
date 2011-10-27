@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.common.ABCDException;
@@ -77,9 +78,9 @@ public class IntermediateRepresentationBuilder {
         magicString = new StringConst("MAGIC", classNameFactory);
     }
 
-    private void processBlock(BasicBlock bb, List<VariableStack> inputStacks) {
+    private void processBB(BasicBlock bb, List<VariableStack> inputStacks) {
 
-        logger.log(Level.FINER, "------ Process block {0} ------", bb);
+        logger.log(Level.FINER, "Process {0}", bb);
 
         VariableStack inputStack = null;
         if (inputStacks.isEmpty()) {
@@ -245,8 +246,8 @@ public class IntermediateRepresentationBuilder {
     }
 
     private void buildInst() {
-        logger.log(Level.FINE, "\n{0}",
-                        ConsoleUtil.printTitledSeparator("Build instructions of " + cfg.getName(), '='));
+        ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Build instructions of {0}",
+                '=', cfg.getName());
 
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             bb.setInstructions(new IRInstSeq());
@@ -266,7 +267,7 @@ public class IntermediateRepresentationBuilder {
                     inputStacks.add(pred.getOutputStack().clone());
                 }
 
-                processBlock(bb, inputStacks);
+                processBB(bb, inputStacks);
                 it.remove();
             }
         }
@@ -278,9 +279,9 @@ public class IntermediateRepresentationBuilder {
     /**
      * Replace choice instructions by conditional instructions (ternary operator)
      */
-    public void replaceChoiceInst() {
-        logger.log(Level.FINE, "\n{0}",
-                ConsoleUtil.printTitledSeparator("Build ternary operators " + cfg.getName(), '='));
+    public void resolveChoiceInst() {
+        ConsoleUtil.logTitledSeparator(logger, Level.FINE,
+                "Resolve choice instructions of {0}", '=', cfg.getName());
 
         for (BasicBlock joinBlock : cfg.getDFST()) {
             IRInstSeq joinInsts = joinBlock.getInstructions();
@@ -374,37 +375,58 @@ public class IntermediateRepresentationBuilder {
         }
     }
 
-    public ControlFlowGraph build(OutputHandler handler) {
+    public void addFakeEdges() {
+        for (BasicBlock bb : cfg.getBasicBlocks()) {
+            if (bb.equals(cfg.getEntryBlock()) || bb.equals(cfg.getExitBlock())) {
+                continue;
+            }
+            IRInstSeq insts = bb.getInstructions();
+            if (insts == null) {
+                throw new ABCDException("insts == null");
+            }
+            if (cfg.getSuccessorCountOf(bb) == 0
+                    && insts.getLast() instanceof ThrowInst) {
+                Edge fakeEdge = cfg.addEdge(bb, cfg.getExitBlock());
+                fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
+                logger.log(Level.FINEST, "Add fake edge {0}", cfg.toString(fakeEdge));
+            }
+        }
+        for (NaturalLoop loop : cfg.getNaturalLoops().values()) {
+            if (loop.getExits().isEmpty()) { // infinite loop
+                Edge fakeEdge = cfg.addEdge(loop.getHead(), cfg.getExitBlock());
+                fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
+                logger.log(Level.FINEST, "Add fake edge {0}", cfg.toString(fakeEdge));
+            }
+        }
+    }
+
+    public ControlFlowGraph build(ABCDWriter writer) {
         // build control flow graph from bytecode
-        cfg = cfgBuilder.build(handler);
+        cfg = cfgBuilder.build(writer);
 
-        StringBuilder builder = new StringBuilder();
-        cfg.getExceptionTable().print(builder);
-        logger.log(Level.FINER, "Exception table :\n{0}", builder.toString());
-
-        builder = new StringBuilder();
-        cfg.getLocalVariableTable().print(builder);
-        logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
-
-        // build IR instructions for each basic block
+        // build basic blocks instructions
         buildInst();
 
         cfg.removeUnnecessaryBlock();
         cfg.updateDominatorInfo();
         cfg.updateLoopInfo();
-        cfg.addFakeEdges();
+
+        // add fake edges to be able to compute post dominance in case of infinite
+        // loops et throw instructions
+        addFakeEdges();
+
         cfg.updatePostDominatorInfo();
 
-        // create and / or instructions
-        new LogicalOperatorBuilder(cfg, tmpVarFactory, instFactory).builder();
+        // collapse shortcut operators (&&, ||)
+        new ShortcutOperatorsCollapser(cfg, tmpVarFactory, instFactory).collapse();
 
         cfg.updateDominatorInfo();
         cfg.updatePostDominatorInfo();
         cfg.updateLoopInfo();
 
-        // must be done after complex logical operators building because
-        // of ternary operator with complex condition
-        replaceChoiceInst();
+        // must be done after collapsing shortcut operators because of conditional
+        // instruction with shortcut operators in the condition
+        resolveChoiceInst();
 
         // need to remove critical edges to convert to SSA
         cfg.removeCriticalEdges();
@@ -421,7 +443,7 @@ public class IntermediateRepresentationBuilder {
         cfg.updatePostDominatorInfo();
         cfg.updateLoopInfo();
 
-        handler.writeCFG(cfg);
+        writer.writeCFG(cfg);
 
         return cfg;
     }

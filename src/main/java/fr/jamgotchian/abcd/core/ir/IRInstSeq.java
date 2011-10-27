@@ -87,6 +87,16 @@ public class IRInstSeq implements Iterable<IRInst> {
         return done;
     }
 
+    public IRInstSeq copyIf(Predicate<IRInst> predicate) {
+        List<IRInst> copy = new ArrayList<IRInst>(insts.size());
+        for (IRInst inst : insts) {
+            if (predicate.apply(inst)) {
+                copy.add(inst);
+            }
+        }
+        return new IRInstSeq(copy);
+    }
+
     public void insertAt(int index, IRInst inst) {
         insts.add(index, inst);
     }

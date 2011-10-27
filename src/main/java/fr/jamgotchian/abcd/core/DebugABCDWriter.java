@@ -35,7 +35,7 @@ import java.util.logging.Level;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DebugOutputHandler extends DefaultOutputHandler {
+public class DebugABCDWriter extends DefaultABCDWriter {
 
     private static final EdgeGraphvizRenderer EDGE_GRAPHVIZ_RENDERER
             = new EdgeGraphvizRenderer();
@@ -48,7 +48,7 @@ public class DebugOutputHandler extends DefaultOutputHandler {
 
     private final File outputDir;
 
-    public DebugOutputHandler(boolean debug, OutputStream os, File outputDir) {
+    public DebugABCDWriter(boolean debug, OutputStream os, File outputDir) {
         super(debug, os);
         if (!outputDir.exists()) {
             throw new ABCDException(outputDir + " does not exist");
@@ -69,7 +69,7 @@ public class DebugOutputHandler extends DefaultOutputHandler {
     }
 
     @Override
-    public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bbRenderer) {
+    public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bytecodeRenderer) {
 
         String baseName = outputDir.getPath() + "/" + cfg.getName();
 
@@ -83,7 +83,7 @@ public class DebugOutputHandler extends DefaultOutputHandler {
 
             writer = new FileWriter(baseName + "_BC.dot");
             try {
-                cfg.export(writer, bbRenderer, EDGE_GRAPHVIZ_RENDERER);
+                cfg.export(writer, bytecodeRenderer, EDGE_GRAPHVIZ_RENDERER);
             } finally {
                 writer.close();
             }
