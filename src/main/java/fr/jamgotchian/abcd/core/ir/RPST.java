@@ -152,7 +152,9 @@ public class RPST {
     private Region createRegion(BasicBlock entry, BasicBlock exit) {
         assert entry != null && exit != null;
         Region newRegion = new Region(entry, exit, ParentType.UNDEFINED);
-        bb2region.put(entry, newRegion);
+        if (!bb2region.containsKey(entry)) {
+            bb2region.put(entry, newRegion);
+        }
         logger.log(Level.FINER, "New Region {0}", newRegion);
         return newRegion;
     }
