@@ -27,6 +27,7 @@ import fr.jamgotchian.abcd.core.ast.expr.TypeExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ASTUnaryOperator;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.BreakStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.DoWhileStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
@@ -611,8 +612,8 @@ public class AbstractSyntaxTreeBuilder {
                 break;
             }
 
-            case SINGLE_EXIT_LOOP:
-            case SINGLE_EXIT_LOOP_INVERTED_COND: {
+            case WHILE_LOOP:
+            case WHILE_LOOP_INVERTED_COND: {
                 BlockStatement bodyBlockStmt = new BlockStatement();
                 buildAST(region.getFirstChild(ChildType.LOOP_HEAD), bodyBlockStmt);
                 IfStatement ifStmt = (IfStatement) bodyBlockStmt.getLast();
@@ -628,6 +629,15 @@ public class AbstractSyntaxTreeBuilder {
                     buildAST(region.getFirstChild(ChildType.LOOP_TAIL), bodyBlockStmt);
                     blockStmt.add(new WhileStatement(Expressions.newBooleanExpr(true), bodyBlockStmt));
                 }
+                break;
+            }
+
+            case DO_WHILE_LOOP: {
+                BlockStatement bodyBlockStmt = new BlockStatement();
+                buildAST(region.getFirstChild(), bodyBlockStmt);
+                IfStatement ifStmt = (IfStatement) bodyBlockStmt.getLast();
+                ifStmt.remove();
+                blockStmt.add(new DoWhileStatement(bodyBlockStmt, ifStmt.getCondition()));
                 break;
             }
 

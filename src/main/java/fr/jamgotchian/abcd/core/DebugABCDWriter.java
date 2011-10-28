@@ -70,6 +70,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
 
     @Override
     public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bytecodeRenderer) {
+        assert cfg != null;
 
         String baseName = outputDir.getPath() + "/" + cfg.getName();
 
@@ -94,6 +95,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
 
     @Override
     public void writeCFG(ControlFlowGraph cfg) {
+        assert cfg != null;
 
         String baseName = outputDir.getPath() + "/" + cfg.getName();
 
@@ -145,6 +147,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
 
     @Override
     public void writeRPST(RPST rpst) {
+        assert rpst != null;
 
         String baseName = outputDir.getPath() + "/" + rpst.getCFG().getName();
 

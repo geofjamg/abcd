@@ -284,7 +284,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public boolean isBasicBlockReachable(BasicBlock block) {
-        return graph.getIncomingEdgesOf(block).size() > 0 || graph.getOutgoingEdgesOf(block).size() > 0;
+        return graph.getIncomingEdgesOf(block).size() > 0
+                || graph.getOutgoingEdgesOf(block).size() > 0;
     }
 
     public Collection<BasicBlock> getNonEmptyBasicBlocks() {
@@ -451,10 +452,9 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         for (BasicBlock bb : graph.getVertices()) {
             if (getPredecessorCountOf(bb) >= 1 &&
                 getNormalSuccessorCountOf(bb) == 1) {
-                boolean remove = false;
+                boolean remove = true;
                 IRInstSeq Insts = bb.getInstructions();
                 if (Insts != null) {
-                    remove = true;
                     for (IRInst inst : Insts) {
                         if (!inst.isIgnored()) {
                             remove = false;

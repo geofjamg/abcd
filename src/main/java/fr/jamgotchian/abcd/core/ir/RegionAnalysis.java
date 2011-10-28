@@ -110,8 +110,8 @@ public class RegionAnalysis {
         return false;
     }
 
-    private boolean checkSingleExitLoopRegion(ControlFlowGraph cfg, Region region) {
-        logger.log(Level.FINEST, "Check single exit loop region {0}", region);
+    private boolean checkWhileLoopRegion(ControlFlowGraph cfg, Region region) {
+        logger.log(Level.FINEST, "Check while loop region {0}", region);
         if (region.getChildCount() == 2) {
             Region headRegion = null;
             Region tailRegion = null;
@@ -130,19 +130,30 @@ public class RegionAnalysis {
                             && exitEdge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
                         if (Boolean.TRUE.equals(exitEdge.getValue())
                                 && Boolean.FALSE.equals(bodyEdge.getValue())) {
-                            region.setParentType(ParentType.SINGLE_EXIT_LOOP);
+                            region.setParentType(ParentType.WHILE_LOOP);
                             headRegion.setChildType(ChildType.LOOP_HEAD);
                             tailRegion.setChildType(ChildType.LOOP_TAIL);
                             return true;
                         } else if (Boolean.FALSE.equals(exitEdge.getValue())
                                 && Boolean.TRUE.equals(bodyEdge.getValue())) {
-                            region.setParentType(ParentType.SINGLE_EXIT_LOOP_INVERTED_COND);
+                            region.setParentType(ParentType.WHILE_LOOP_INVERTED_COND);
                             headRegion.setChildType(ChildType.LOOP_HEAD);
                             tailRegion.setChildType(ChildType.LOOP_TAIL);
                             return true;
                         }
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    private boolean checkDoWhileLoopRegion(ControlFlowGraph cfg, Region region) {
+        logger.log(Level.FINEST, "Check do while loop region {0}", region);
+        if (region.getChildCount() == 1) {
+            if (region.getEntry().getType() == BasicBlockType.JUMP_IF) {
+                region.setParentType(ParentType.DO_WHILE_LOOP);
+                return true;
             }
         }
         return false;
@@ -498,12 +509,13 @@ public class RegionAnalysis {
 
         for (Region region : rpst.getRegionsPostOrder()) {
             if (region.getParentType() == ParentType.UNDEFINED) {
-                if (!(checkTrivialRegion(region)
-                        || checkIfThenElseRegion(cfg, region)
+                if (!(checkIfThenElseRegion(cfg, region)
                         || checkIfThenRegion(cfg, region)
                         || checkSwitchCaseRegion(cfg, region)
                         || checkSequenceRegion(region)
-                        || checkSingleExitLoopRegion(cfg, region)
+                        || checkWhileLoopRegion(cfg, region)
+                        || checkDoWhileLoopRegion(cfg, region)
+                        || checkTrivialRegion(region)
                         || checkTryCatchFinally(cfg, region)
                         || checkBreakLabelRegion(cfg, region))) {
                     logger.log(Level.FINER, "***** Analysis failed for CFG ({0}, {1}) *****",

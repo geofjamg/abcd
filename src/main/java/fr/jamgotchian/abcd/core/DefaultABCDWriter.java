@@ -60,6 +60,8 @@ public class DefaultABCDWriter implements ABCDWriter {
     }
 
     public void writeAST(CompilationUnit compilUnit) {
+        assert compilUnit != null;
+        
         Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
         try {
             compilUnit.accept(new JavaCompilationUnitWriter(new TextCodeWriter(writer, 4), debug), null);
