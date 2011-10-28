@@ -160,4 +160,6 @@ public interface ControlFlowGraph {
     void export(String fileName);
 
     void exportInst(Writer writer) throws IOException;
+
+    ControlFlowGraph clone();
 }

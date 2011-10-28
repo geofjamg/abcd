@@ -51,7 +51,7 @@ public class RPST {
     private static final Logger logger = Logger.getLogger(RPST.class.getName());
 
     private static final EdgeGraphvizRenderer EDGE_GRAPHVIZ_RENDERER
-            = new EdgeGraphvizRenderer(false);
+            = new EdgeGraphvizRenderer(true);
 
     private static final RangeGraphvizRenderer RANGE_GRAPHIZ_RENDERER
             = new RangeGraphvizRenderer();

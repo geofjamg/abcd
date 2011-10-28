@@ -49,7 +49,7 @@ public class RegionAnalysis {
         this.cfg0 = cfg0;
     }
 
-    private ControlFlowGraphImpl createSubCFG(ControlFlowGraph cfg, Region region) {
+    private ControlFlowGraph createSubCFG(ControlFlowGraph cfg, Region region) {
         if (region.getEntry() == null
                 || region.getExit() == null
                 || region.getEntry().equals(region.getExit())
@@ -319,7 +319,7 @@ public class RegionAnalysis {
         }
 
         // build control flow subgraph
-        ControlFlowGraphImpl subCfg = createSubCFG(cfg, region);
+        ControlFlowGraph subCfg = createSubCFG(cfg, region);
         if (subCfg == null) {
             return false;
         }
@@ -365,52 +365,90 @@ public class RegionAnalysis {
         return true;
     }
 
-    private Map<Edge, Edge> findJoinEdges(ControlFlowGraph subCfg, Edge mainExitEdge) {
+    private Map<Edge, Edge> analyseAbruptEdges(ControlFlowGraph subCfg, Edge exitEdge,
+                                               List<Edge> abruptEdges) {
         Map<Edge, Edge> joinEdges = new HashMap<Edge, Edge>();
-        BasicBlock source = subCfg.getEdgeSource(mainExitEdge);
+        BasicBlock source = subCfg.getEdgeSource(exitEdge);
         Tree<BasicBlock, Edge> domTree = subCfg.getDominatorInfo().getDominatorsTree();
         PostDominatorInfo<BasicBlock, Edge> postDomInfo = subCfg.getPostDominatorInfo();
-        for (Edge exitEdge : subCfg.getIncomingEdgesOf(subCfg.getExitBlock())) {
-            if (!exitEdge.equals(mainExitEdge)) {
-                Edge joinEdge = null;
-                for (BasicBlock forkBB = subCfg.getEdgeSource(exitEdge);
-                        forkBB != null;
-                        forkBB = domTree.getParent(forkBB)) {
-                    if (forkBB.getType() == BasicBlockType.JUMP_IF) {
-                        Collection<Edge> edges = subCfg.getNormalOutgoingEdgesOf(forkBB);
-                        Iterator<Edge> itE = edges.iterator();
-                        Edge edge1 = itE.next();
-                        Edge edge2 = itE.next();
-                        BasicBlock bb1 = subCfg.getEdgeTarget(edge1);
-                        BasicBlock bb2 = subCfg.getEdgeTarget(edge2);
-                        if (bb1.equals(subCfg.getExitBlock())) {
-                            joinEdge = edge2;
-                        } else if (bb2.equals(subCfg.getExitBlock())) {
-                            joinEdge = edge1;
-                        } else if (postDomInfo.postDominates(source, bb1)
-                                && !postDomInfo.postDominates(source, bb2)) {
-                            joinEdge = edge1;
-                        } else if (postDomInfo.postDominates(source, bb2)
-                                && !postDomInfo.postDominates(source, bb1)) {
-                            joinEdge = edge2;
-                        }
-                        if (joinEdge != null) {
-                            break;
-                        }
+        for (Edge abruptEdge : abruptEdges) {
+            Edge joinEdge = null;
+            for (BasicBlock forkBB = subCfg.getEdgeSource(abruptEdge);
+                    forkBB != null;
+                    forkBB = domTree.getParent(forkBB)) {
+                if (forkBB.getType() == BasicBlockType.JUMP_IF) {
+                    Collection<Edge> edges = subCfg.getNormalOutgoingEdgesOf(forkBB);
+                    Iterator<Edge> itE = edges.iterator();
+                    Edge edge1 = itE.next();
+                    Edge edge2 = itE.next();
+                    BasicBlock bb1 = subCfg.getEdgeTarget(edge1);
+                    BasicBlock bb2 = subCfg.getEdgeTarget(edge2);
+                    if (bb1.equals(subCfg.getExitBlock())) {
+                        joinEdge = edge2;
+                    } else if (bb2.equals(subCfg.getExitBlock())) {
+                        joinEdge = edge1;
+                    } else if (postDomInfo.postDominates(source, bb1)
+                            && !postDomInfo.postDominates(source, bb2)) {
+                        joinEdge = edge1;
+                    } else if (postDomInfo.postDominates(source, bb2)
+                            && !postDomInfo.postDominates(source, bb1)) {
+                        joinEdge = edge2;
+                    }
+                    if (joinEdge != null) {
+                        break;
                     }
                 }
-                if (joinEdge == null) {
-                    return null;
-                }
-                joinEdges.put(exitEdge, joinEdge);
             }
+            if (joinEdge == null) {
+                return null;
+            }
+            joinEdges.put(abruptEdge, joinEdge);
         }
         return joinEdges;
     }
 
+    /**
+     * Create smoothed sub control flow graph by replacing abrupt edges by
+     * smooth edges
+     */
+    private ControlFlowGraph createSmoothedSubCfg(ControlFlowGraph subCfg,
+                                                  Edge exitEdge,
+                                                  Map<Edge, Edge> joinEdges) {
+        ControlFlowGraph cloneSubCfg = subCfg.clone();
+        logger.log(Level.FINER, "Exit edge is {0}", cloneSubCfg.toString(exitEdge));
+        for (Map.Entry<Edge, Edge> entry : joinEdges.entrySet()) {
+            Edge abruptEdge = entry.getKey();
+            Edge joinEdge = entry.getValue();
+            logger.log(Level.FINER, "Remove abrupt edge {0} (joinEdge is {1})",
+                    new Object[] {cloneSubCfg.toString(abruptEdge), cloneSubCfg.toString(joinEdge)});
+            BasicBlock source = cloneSubCfg.getEdgeSource(abruptEdge);
+            BasicBlock target = cloneSubCfg.getEdgeTarget(joinEdge);
+            cloneSubCfg.removeEdge(abruptEdge);
+            target.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_TARGET);
+            if (source.getType() == BasicBlockType.JUMP_IF) {
+                BasicBlock empty = new BasicBlockImpl(BasicBlockType.EMPTY);
+                cloneSubCfg.addBasicBlock(empty);
+                cloneSubCfg.addEdge(source, empty, abruptEdge);
+                cloneSubCfg.addEdge(empty, target).addAttribute(EdgeAttribute.FAKE_EDGE);
+                empty.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_SOURCE);
+                empty.setData(breakLabelCount);
+            } else {
+                cloneSubCfg.addEdge(source, target, abruptEdge);
+                abruptEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
+                source.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_SOURCE);
+                source.setData(breakLabelCount);
+            }
+            logger.log(Level.FINER, "Add smooth edge {0}", cloneSubCfg.toString(abruptEdge));
+        }
+        cloneSubCfg.updateDominatorInfo();
+        cloneSubCfg.updatePostDominatorInfo();
+        cloneSubCfg.updateLoopInfo();
+        return cloneSubCfg;
+    }
+
     private boolean checkBreakLabelRegion(ControlFlowGraph cfg, Region region) {
         logger.log(Level.FINEST, "Check break label region {0}", region);
-        ControlFlowGraphImpl subCfg = createSubCFG(cfg, region);
+        ControlFlowGraph subCfg = createSubCFG(cfg, region);
         if (subCfg == null) {
             return false;
         }
@@ -418,47 +456,31 @@ public class RegionAnalysis {
         subCfg.updatePostDominatorInfo();
         for (BasicBlock bb : subCfg.getDominatorInfo().getDominatorsTree()) {
             if (subCfg.containsEdge(bb, subCfg.getExitBlock())) {
-                Edge mainExitEdge = subCfg.getEdge(bb, subCfg.getExitBlock());
-                Map<Edge, Edge> joinEdges = findJoinEdges(subCfg, mainExitEdge);
+                // this edge is the exit and the others are abrupt edges
+                Edge exitEdge = subCfg.getEdge(bb, subCfg.getExitBlock());
+                List<Edge> abruptEdges
+                        = new ArrayList<Edge>(subCfg.getIncomingEdgesOf(subCfg.getExitBlock()));
+                abruptEdges.remove(exitEdge);
+                // find join edges, join edges are needed to remove abrupt edges
+                Map<Edge, Edge> joinEdges = analyseAbruptEdges(subCfg, exitEdge, abruptEdges);
                 if (joinEdges != null) {
-                    logger.log(Level.FINER, "Keep exit edge : {0}", subCfg.toString(mainExitEdge));
-                    for (Map.Entry<Edge, Edge> entry : joinEdges.entrySet()) {
-                        Edge exitEdge = entry.getKey();
-                        Edge joinEdge = entry.getValue();
-                        logger.log(Level.FINER, "Transform exit edge {0} to {1}",
-                                new Object[] {subCfg.toString(exitEdge), subCfg.toString(joinEdge)});
-                        BasicBlock source = subCfg.getEdgeSource(exitEdge);
-                        BasicBlock target = subCfg.getEdgeTarget(joinEdge);
-                        subCfg.removeEdge(exitEdge);
-                        target.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_TARGET);
-                        if (source.getType() == BasicBlockType.JUMP_IF) {
-                            BasicBlock empty = new BasicBlockImpl(BasicBlockType.EMPTY);
-                            subCfg.addBasicBlock(empty);
-                            subCfg.addEdge(source, empty, exitEdge);
-                            subCfg.addEdge(empty, target).addAttribute(EdgeAttribute.FAKE_EDGE);
-                            empty.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_SOURCE);
-                            empty.setData(breakLabelCount);
-                        } else {
-                            subCfg.addEdge(source, target, exitEdge);
-                            exitEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                            source.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_SOURCE);
-                            source.setData(breakLabelCount);
-                        }
+                    // create a smoothed sub cfg by removing abrupt edges
+                    ControlFlowGraph smoothedSubCfg
+                            = createSmoothedSubCfg(subCfg, exitEdge, joinEdges);
+                    RPST rpst = checkRegions(smoothedSubCfg);
+                    if (rpst != null) {
+                        region.setParentType(ParentType.BREAK_LABEL);
+                        region.setData(breakLabelCount++);
+                        Region rootRegion = rpst.getRootRegion();
+                        Region bodyRegion = rootRegion.getEntryChild();
+                        region.removeChildren();
+                        region.addChild(bodyRegion);
+                        return true;
                     }
-                    break;
                 }
             }
         }
-        subCfg.updateDominatorInfo();
-        subCfg.updatePostDominatorInfo();
-        RPST rpst = checkRegions(subCfg);
-        region.setParentType(ParentType.BREAK_LABEL);
-        region.setData(breakLabelCount++);
-        Region rootRegion = rpst.getRootRegion();
-        Region bodyRegion = rootRegion.getEntryChild();
-        region.removeChildren();
-        region.addChild(bodyRegion);
-        return true;
+        return false;
     }
 
     private RPST checkRegions(ControlFlowGraph cfg) {
@@ -484,14 +506,16 @@ public class RegionAnalysis {
                         || checkSingleExitLoopRegion(cfg, region)
                         || checkTryCatchFinally(cfg, region)
                         || checkBreakLabelRegion(cfg, region))) {
-                    throw new ABCDException("Region analysis failed");
+                    logger.log(Level.FINER, "***** Analysis failed for CFG ({0}, {1}) *****",
+                            new Object[] {cfg.getEntryBlock(), cfg.getExitBlock()});
+                    return null;
                 } else {
                     logger.log(Level.FINER, "Found {0} region {1}",
                             new Object[] {region.getParentType(), region});
                 }
             }
         }
-        logger.log(Level.FINER, "***** Stop checking regions for CFG ({0}, {1}) *****",
+        logger.log(Level.FINER, "***** Analysis succeed for CFG ({0}, {1}) *****",
                 new Object[] {cfg.getEntryBlock(), cfg.getExitBlock()});
         return rpst;
     }
@@ -499,6 +523,10 @@ public class RegionAnalysis {
     public RPST analyse() {
         iSubgraph = 0;
         breakLabelCount = 0;
-        return checkRegions(cfg0);
+        RPST rpst = checkRegions(cfg0);
+        if (rpst == null) {
+            throw new ABCDException("Region analysis failed");
+        }
+        return rpst;
     }
 }

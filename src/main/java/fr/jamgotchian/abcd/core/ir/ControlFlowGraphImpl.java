@@ -598,7 +598,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 }
 
                 case RETREATING: {
-                    throw new ABCDException("Irreducible control flow detected");
+                    logger.warning("Irreducible control flow detected");
                 }
             }
         }
@@ -696,6 +696,22 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     public void setExceptionTable(ExceptionTable exceptionTable) {
         this.exceptionTable = exceptionTable;
+    }
+
+    @Override
+    public ControlFlowGraph clone() {
+        ControlFlowGraph clone = new ControlFlowGraphImpl(name, entryBlock, exitBlock);
+        for (BasicBlock bb : getBasicBlocks()) {
+            if (!bb.equals(entryBlock) && !bb.equals(exitBlock)) {
+                clone.addBasicBlock(bb);
+            }
+        }
+        for (Edge e : getEdges()) {
+            clone.addEdge(getEdgeSource(e), getEdgeTarget(e), e);
+        }
+        clone.setExceptionTable(exceptionTable);
+        clone.setLocalVariableTable(localVariableTable);
+        return clone;
     }
 
     @Override
