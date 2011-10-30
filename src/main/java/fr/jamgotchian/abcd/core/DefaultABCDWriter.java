@@ -23,7 +23,7 @@ import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
-import fr.jamgotchian.abcd.core.output.TextCodeWriter;
+import fr.jamgotchian.abcd.core.code.TextCodeWriter;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -61,7 +61,7 @@ public class DefaultABCDWriter implements ABCDWriter {
 
     public void writeAST(CompilationUnit compilUnit) {
         assert compilUnit != null;
-        
+
         Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
         try {
             compilUnit.accept(new JavaCompilationUnitWriter(new TextCodeWriter(writer, 4), debug), null);

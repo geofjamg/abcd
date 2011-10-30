@@ -16,12 +16,12 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.output.CodeWriter;
-import fr.jamgotchian.abcd.core.output.CodeWriterFactory;
-import fr.jamgotchian.abcd.core.output.ColoredString;
-import fr.jamgotchian.abcd.core.output.DOTHTMLLikeCodeWriterFactory;
-import fr.jamgotchian.abcd.core.output.HTMLCodeWriterFactory;
-import fr.jamgotchian.abcd.core.output.TextCodeWriterFactory;
+import fr.jamgotchian.abcd.core.code.CodeWriter;
+import fr.jamgotchian.abcd.core.code.CodeWriterFactory;
+import fr.jamgotchian.abcd.core.code.ColoredString;
+import fr.jamgotchian.abcd.core.code.DOTHTMLLikeCodeWriterFactory;
+import fr.jamgotchian.abcd.core.code.HTMLCodeWriterFactory;
+import fr.jamgotchian.abcd.core.code.TextCodeWriterFactory;
 import fr.jamgotchian.abcd.core.util.Range;
 import java.awt.Color;
 import java.io.IOException;

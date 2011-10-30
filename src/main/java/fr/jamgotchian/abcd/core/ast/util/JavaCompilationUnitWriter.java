@@ -22,7 +22,7 @@ import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.CompilationUnitVisitor;
 import fr.jamgotchian.abcd.core.ast.Package;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
-import fr.jamgotchian.abcd.core.output.CodeWriter;
+import fr.jamgotchian.abcd.core.code.CodeWriter;
 
 /**
  *

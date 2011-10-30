@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.output;
+package fr.jamgotchian.abcd.core.code;
 
 import java.io.Writer;
 
@@ -22,7 +22,10 @@ import java.io.Writer;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface CodeWriterFactory {
+public class DOTHTMLLikeCodeWriterFactory implements CodeWriterFactory {
 
-    CodeWriter create(Writer writer);
+    public CodeWriter create(Writer writer) {
+        return new DOTHTMLLikeCodeWriter(writer);
+    }
+
 }

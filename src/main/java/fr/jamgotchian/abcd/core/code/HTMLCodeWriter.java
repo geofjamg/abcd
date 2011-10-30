@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.output;
+package fr.jamgotchian.abcd.core.code;
 
 import fr.jamgotchian.abcd.core.util.Colors;
 import java.awt.Color;

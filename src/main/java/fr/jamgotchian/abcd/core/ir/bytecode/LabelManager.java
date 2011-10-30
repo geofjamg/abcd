@@ -17,7 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ir.bytecode;
 
-import fr.jamgotchian.abcd.core.output.Label;
+import fr.jamgotchian.abcd.core.code.Label;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import org.objectweb.asm.tree.AbstractInsnNode;

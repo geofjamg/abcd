@@ -14,35 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.output;
+package fr.jamgotchian.abcd.core.code;
 
-import java.awt.Color;
+import java.io.Writer;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ColoredString {
+public interface CodeWriterFactory {
 
-    private final String value;
-
-    private final Color color;
-
-    public ColoredString(String value, Color color) {
-        this.value = value;
-        this.color = color;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public Color getColor() {
-        return color;
-    }
-
-    @Override
-    public String toString() {
-        return value;
-    }
+    CodeWriter create(Writer writer);
 }

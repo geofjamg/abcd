@@ -23,7 +23,7 @@ import fr.jamgotchian.abcd.core.ast.Field;
 import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
-import fr.jamgotchian.abcd.core.output.CodeWriter;
+import fr.jamgotchian.abcd.core.code.CodeWriter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import java.util.List;
 import javax.lang.model.element.Modifier;

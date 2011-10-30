@@ -19,7 +19,7 @@ package fr.jamgotchian.abcd.core.ir.bytecode;
 
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.BasicBlockType;
-import fr.jamgotchian.abcd.core.output.CodeWriter;
+import fr.jamgotchian.abcd.core.code.CodeWriter;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.IincInsnNode;
 import org.objectweb.asm.tree.InsnNode;
