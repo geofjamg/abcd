@@ -14,9 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.analysis;
+package fr.jamgotchian.abcd.core.ast;
 
-import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.expr.ArrayCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.AssignOperator;
 import fr.jamgotchian.abcd.core.ast.expr.ASTBinaryOperator;
