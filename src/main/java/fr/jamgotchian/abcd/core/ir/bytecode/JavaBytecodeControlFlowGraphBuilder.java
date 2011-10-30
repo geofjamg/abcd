@@ -42,7 +42,7 @@ import org.objectweb.asm.tree.TableSwitchInsnNode;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder {
+public class JavaBytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder {
 
     private final MethodNode mn;
 
@@ -50,7 +50,7 @@ public class BytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder {
 
     private final Map<LabelNode, Integer> labelNodeIndex;
 
-    public BytecodeControlFlowGraphBuilder(String methodName, MethodNode mn,
+    public JavaBytecodeControlFlowGraphBuilder(String methodName, MethodNode mn,
                                            LabelManager labelManager) {
         super(methodName);
         this.mn = mn;
@@ -71,7 +71,7 @@ public class BytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder {
 
     @Override
     protected GraphvizRenderer<BasicBlock> getGraphizRenderer() {
-        return new BytecodeGraphvizRenderer(mn.instructions, labelManager);
+        return new JavaBytecodeGraphvizRenderer(mn.instructions, labelManager);
     }
 
     @Override

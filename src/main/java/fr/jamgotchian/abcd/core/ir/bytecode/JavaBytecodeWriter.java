@@ -39,11 +39,11 @@ import static org.objectweb.asm.util.AbstractVisitor.*;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BytecodeWriter extends BytecodeRangeVisitor {
+public class JavaBytecodeWriter extends JavaBytecodeVisitor {
 
     protected final CodeWriter writer;
 
-    public BytecodeWriter(CodeWriter writer) {
+    public JavaBytecodeWriter(CodeWriter writer) {
         this.writer = writer;
     }
 

@@ -43,7 +43,7 @@ import static org.objectweb.asm.tree.AbstractInsnNode.*;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class BytecodeRangeVisitor {
+public abstract class JavaBytecodeVisitor {
 
     public abstract void before(BasicBlock bb);
 

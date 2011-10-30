@@ -26,13 +26,13 @@ import org.objectweb.asm.tree.InsnList;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BytecodeGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
+public class JavaBytecodeGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
 
     private final InsnList instructions;
 
     private final LabelManager labelManager;
 
-    public BytecodeGraphvizRenderer(InsnList instructions, LabelManager labelManager) {
+    public JavaBytecodeGraphvizRenderer(InsnList instructions, LabelManager labelManager) {
         this.instructions = instructions;
         this.labelManager = labelManager;
     }
@@ -41,7 +41,7 @@ public class BytecodeGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
         Map<String, String> attrs = new HashMap<String, String>(3);
         attrs.put("shape", "box");
         attrs.put("color", "black");
-        attrs.put("label", "< " + BytecodeUtil.toDOTHTMLLike(instructions, bb, labelManager) + " >");
+        attrs.put("label", "< " + JavaBytecodeUtil.toDOTHTMLLike(instructions, bb, labelManager) + " >");
         return attrs;
     }
 }

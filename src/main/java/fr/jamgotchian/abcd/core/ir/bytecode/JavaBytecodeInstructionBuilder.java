@@ -63,7 +63,7 @@ import org.objectweb.asm.tree.VarInsnNode;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BytecodeInstructionBuilder implements InstructionBuilder {
+public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
     public static final JavaType[] ATYPES = {
         null,
@@ -90,7 +90,7 @@ public class BytecodeInstructionBuilder implements InstructionBuilder {
 
     private final IRInstFactory instFactory;
 
-    private class BytecodeRangeVisitorImpl extends BytecodeRangeVisitor {
+    private class BytecodeRangeVisitorImpl extends JavaBytecodeVisitor {
 
         private final VariableStack stack;
 
@@ -938,7 +938,7 @@ public class BytecodeInstructionBuilder implements InstructionBuilder {
 
     }
 
-    public BytecodeInstructionBuilder(InsnList instructions,
+    public JavaBytecodeInstructionBuilder(InsnList instructions,
                                     LabelManager labelManager,
                                     ClassNameFactory classNameFactory,
                                     TemporaryVariableFactory tmpVarFactory,

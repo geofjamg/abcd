@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.analysis.AbstractSyntaxTreeBuilder;
+import fr.jamgotchian.abcd.core.analysis.LocalVariableTypeAnalyser;
 import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.Field;
@@ -31,23 +32,22 @@ import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.util.Refactorer;
 import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
-import fr.jamgotchian.abcd.core.analysis.LocalVariableTypeAnalyser;
+import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
-import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeInstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.LocalVariableTable;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.ir.VariableID;
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.ir.Region;
 import fr.jamgotchian.abcd.core.ir.RegionAnalysis;
 import fr.jamgotchian.abcd.core.ir.bytecode.LabelManager;
-import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeControlFlowGraphBuilder;
-import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeUtil;
+import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeControlFlowGraphBuilder;
+import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeInstructionBuilder;
+import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeUtil;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
@@ -153,7 +153,7 @@ public class ABCDContext {
         }
 
         // class modifiers
-        Set<Modifier> classModifiers = BytecodeUtil.getModifiers(cn.access);
+        Set<Modifier> classModifiers = JavaBytecodeUtil.getModifiers(cn.access);
         classModifiers.remove(Modifier.SYNCHRONIZED); // ???
 
         Class _class = new Class(_package, simpleClassName, superClassName, classModifiers);
@@ -168,7 +168,7 @@ public class ABCDContext {
             Type fieldType = Type.getType(fn.desc);
             JavaType javaFieldType = JavaType.newType(fieldType, importManager);
 
-            _class.addField(new Field(BytecodeUtil.getModifiers(fn.access),
+            _class.addField(new Field(JavaBytecodeUtil.getModifiers(fn.access),
                                       fn.name,
                                       javaFieldType));
         }
@@ -209,7 +209,7 @@ public class ABCDContext {
         }
 
         // method modifiers
-        Set<Modifier> methodModifiers = BytecodeUtil.getModifiers(mn.access);
+        Set<Modifier> methodModifiers = JavaBytecodeUtil.getModifiers(mn.access);
 
         // parameters
         boolean isMethodStatic = methodModifiers.contains(Modifier.STATIC);
@@ -258,19 +258,19 @@ public class ABCDContext {
                         '%', methodSignature);
                 logger.log(Level.FINE, "");
 
-                logger.log(Level.FINER, "Bytecode :\n{0}", BytecodeUtil.toText(mn.instructions));
+                logger.log(Level.FINER, "Bytecode :\n{0}", JavaBytecodeUtil.toText(mn.instructions));
 
                 LabelManager labelManager = new LabelManager();
 
                 ControlFlowGraphBuilder cfgBuilder
-                        = new BytecodeControlFlowGraphBuilder(methodSignature, mn, labelManager);
+                        = new JavaBytecodeControlFlowGraphBuilder(methodSignature, mn, labelManager);
 
                 TemporaryVariableFactory tmpVarFactory = new TemporaryVariableFactory();
 
                 IRInstFactory instFactory = new IRInstFactory();
 
                 InstructionBuilder instBuilder
-                    = new BytecodeInstructionBuilder(mn.instructions, labelManager,
+                    = new JavaBytecodeInstructionBuilder(mn.instructions, labelManager,
                                                      importManager, tmpVarFactory, instFactory);
 
                 ControlFlowGraph cfg
@@ -321,7 +321,7 @@ public class ABCDContext {
                 StringBuilder msg = new StringBuilder();
                 msg.append(Exceptions.printStackTrace(exc))
                    .append("\n")
-                   .append(BytecodeUtil.toText(mn.instructions));
+                   .append(JavaBytecodeUtil.toText(mn.instructions));
 
                 method.getBody().add(new CommentStatement("\n" + msg.toString()));
                 method.getBody().add(Statements.createThrowErrorStmt(InternalError.class,
