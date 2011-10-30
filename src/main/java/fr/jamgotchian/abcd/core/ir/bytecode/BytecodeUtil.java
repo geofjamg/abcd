@@ -23,16 +23,75 @@ import fr.jamgotchian.abcd.core.ir.ControlFlowGraphImpl;
 import fr.jamgotchian.abcd.core.output.DOTHTMLLikeCodeWriter;
 import fr.jamgotchian.abcd.core.output.HTMLCodeWriter;
 import fr.jamgotchian.abcd.core.output.TextCodeWriter;
+import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.lang.model.element.Modifier;
 import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.Opcodes;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class BytecodeUtil {
+public class BytecodeUtil implements Opcodes {
 
     private BytecodeUtil() {
+    }
+
+    public static Set<Modifier> getModifiers(int access) {
+        Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
+
+        if ((access & ACC_ABSTRACT) != 0) {
+            modifiers.add(Modifier.ABSTRACT);
+        }
+        if ((access & ACC_FINAL) != 0) {
+            modifiers.add(Modifier.FINAL);
+        }
+        if ((access & ACC_NATIVE) != 0) {
+            modifiers.add(Modifier.NATIVE);
+        }
+        if ((access & ACC_PRIVATE) != 0) {
+            modifiers.add(Modifier.PRIVATE);
+        }
+        if ((access & ACC_PROTECTED) != 0) {
+            modifiers.add(Modifier.PROTECTED);
+        }
+        if ((access & ACC_PUBLIC) != 0) {
+            modifiers.add(Modifier.PUBLIC);
+        }
+        if ((access & ACC_STATIC) != 0) {
+            modifiers.add(Modifier.STATIC);
+        }
+        if ((access & ACC_SYNCHRONIZED) != 0) {
+            modifiers.add(Modifier.SYNCHRONIZED);
+        }
+        if ((access & ACC_TRANSIENT) != 0) {
+            modifiers.add(Modifier.TRANSIENT);
+        }
+        if ((access & ACC_VOLATILE) != 0) {
+            modifiers.add(Modifier.VOLATILE);
+        }
+        return modifiers;
+    }
+
+    public static void printInnerClasses(Map<String, String> innerClasses, StringBuilder builder) {
+        int rowCount = innerClasses.size()+1;
+        List<String> innerClassColumn = new ArrayList<String>(rowCount);
+        List<String> outerClassColumn = new ArrayList<String>(rowCount);
+        innerClassColumn.add("Inner class");
+        outerClassColumn.add("Outer class");
+        for (Map.Entry<String, String> entry : innerClasses.entrySet()) {
+            String innerClass = entry.getKey();
+            String outerClass = entry.getValue();
+            innerClassColumn.add(innerClass);
+            outerClassColumn.add(outerClass);
+        }
+        ConsoleUtil.printTable(builder, innerClassColumn, outerClassColumn);
     }
 
     public static String toText(InsnList instructions, BasicBlock bb, LabelManager labelManager) {

@@ -48,7 +48,6 @@ import fr.jamgotchian.abcd.core.ir.RegionAnalysis;
 import fr.jamgotchian.abcd.core.ir.bytecode.LabelManager;
 import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.bytecode.BytecodeUtil;
-import fr.jamgotchian.abcd.core.ir.bytecode.ASMUtil;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
@@ -154,7 +153,7 @@ public class ABCDContext {
         }
 
         // class modifiers
-        Set<Modifier> classModifiers = ASMUtil.getModifiers(cn.access);
+        Set<Modifier> classModifiers = BytecodeUtil.getModifiers(cn.access);
         classModifiers.remove(Modifier.SYNCHRONIZED); // ???
 
         Class _class = new Class(_package, simpleClassName, superClassName, classModifiers);
@@ -169,7 +168,7 @@ public class ABCDContext {
             Type fieldType = Type.getType(fn.desc);
             JavaType javaFieldType = JavaType.newType(fieldType, importManager);
 
-            _class.addField(new Field(ASMUtil.getModifiers(fn.access),
+            _class.addField(new Field(BytecodeUtil.getModifiers(fn.access),
                                       fn.name,
                                       javaFieldType));
         }
@@ -210,7 +209,7 @@ public class ABCDContext {
         }
 
         // method modifiers
-        Set<Modifier> methodModifiers = ASMUtil.getModifiers(mn.access);
+        Set<Modifier> methodModifiers = BytecodeUtil.getModifiers(mn.access);
 
         // parameters
         boolean isMethodStatic = methodModifiers.contains(Modifier.STATIC);
