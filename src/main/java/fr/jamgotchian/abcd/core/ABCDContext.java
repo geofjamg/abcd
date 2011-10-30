@@ -18,7 +18,6 @@
 package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.ast.AbstractSyntaxTreeBuilder;
-import fr.jamgotchian.abcd.core.analysis.LocalVariableTypeAnalyser;
 import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.Field;

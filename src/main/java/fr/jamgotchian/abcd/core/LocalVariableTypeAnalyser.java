@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.analysis;
+package fr.jamgotchian.abcd.core;
 
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.ast.Method;
@@ -56,7 +56,6 @@ import fr.jamgotchian.abcd.core.ir.UnaryInst;
 import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.ir.VariableID;
 import fr.jamgotchian.abcd.core.ir.EmptyIRInstVisitor;
-import fr.jamgotchian.abcd.core.ir.SSAFormConverter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
