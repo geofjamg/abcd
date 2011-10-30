@@ -37,12 +37,14 @@ public class DOTHTMLLikeCodeWriter extends HTMLCodeWriter {
     public void before(List<ColoredString> infos) {
         try {
             writer.write("<table border=\"0\">");
-            for (ColoredString info : infos) {
-                writer.write("<tr><td align=\"left\" balign=\"left\" bgcolor=\"");
-                writer.write(Colors.toString(info.getColor()));
-                writer.write("\">");
-                writer.write(info.getValue());
-                writer.write("</td></tr>");
+            if (infos != null) {
+                for (ColoredString info : infos) {
+                    writer.write("<tr><td align=\"left\" balign=\"left\" bgcolor=\"");
+                    writer.write(Colors.toString(info.getColor()));
+                    writer.write("\">");
+                    writer.write(info.getValue());
+                    writer.write("</td></tr>");
+                }
             }
             writer.write("<tr><td align=\"left\" balign=\"left\">");
         } catch(IOException exc) {
@@ -54,12 +56,14 @@ public class DOTHTMLLikeCodeWriter extends HTMLCodeWriter {
     public void after(List<ColoredString> infos) {
         try {
             writer.write("</td></tr>");
-            for (ColoredString info : infos) {
-                writer.write("<tr><td align=\"left\" balign=\"left\" bgcolor=\"");
-                writer.write(Colors.toString(info.getColor()));
-                writer.write("\">");
-                writer.write(info.getValue());
-                writer.write("</td></tr>");
+            if (infos != null) {
+                for (ColoredString info : infos) {
+                    writer.write("<tr><td align=\"left\" balign=\"left\" bgcolor=\"");
+                    writer.write(Colors.toString(info.getColor()));
+                    writer.write("\">");
+                    writer.write(info.getValue());
+                    writer.write("</td></tr>");
+                }
             }
             writer.write("</table>");
         } catch(IOException exc) {

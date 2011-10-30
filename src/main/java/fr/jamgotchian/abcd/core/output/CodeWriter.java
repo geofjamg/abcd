@@ -32,6 +32,8 @@ public abstract class CodeWriter {
 
     protected static final Logger logger = Logger.getLogger(CodeWriter.class.getName());
 
+    private static final int INDEX_PADDING = 4;
+
     private static final int DEFAULT_IDENT = 4;
 
     protected final Writer writer;
@@ -88,6 +90,20 @@ public abstract class CodeWriter {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
         indentNeeded = true;
+        return this;
+    }
+
+    public CodeWriter writeIndex(int index) {
+        StringBuilder builder = new StringBuilder(INDEX_PADDING);
+        String indexStr = "";
+        if (index != -1) {
+            indexStr = String.format("%d:", index);
+        }
+        builder.append(indexStr);
+        for(int i = indexStr.length(); i < INDEX_PADDING; i++) {
+            builder.append(" ");
+        }
+        write(builder.toString());
         return this;
     }
 

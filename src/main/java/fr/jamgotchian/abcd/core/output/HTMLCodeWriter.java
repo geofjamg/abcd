@@ -89,6 +89,22 @@ public class HTMLCodeWriter extends CodeWriter {
     }
 
     @Override
+    public CodeWriter writeIndex(int index) {
+        try {
+            writer.write("<font color=\"gray\">");
+        } catch(IOException exc) {
+            logger.log(Level.SEVERE, exc.toString(), exc);
+        }
+        super.writeIndex(index);
+        try {
+            writer.write("</font>");
+        } catch(IOException exc) {
+            logger.log(Level.SEVERE, exc.toString(), exc);
+        }
+        return this;
+    }
+
+    @Override
     public CodeWriter writeLabel(Label label) {
         try {
             writer.write("<font color=\"");
