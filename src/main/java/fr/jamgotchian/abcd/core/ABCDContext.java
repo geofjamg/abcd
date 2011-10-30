@@ -47,6 +47,7 @@ import fr.jamgotchian.abcd.core.ir.bytecode.LabelManager;
 import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeInstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeUtil;
+import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeWriter;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
@@ -257,7 +258,7 @@ public class ABCDContext {
                         '%', methodSignature);
                 logger.log(Level.FINE, "");
 
-                logger.log(Level.FINER, "Bytecode :\n{0}", JavaBytecodeUtil.toText(mn.instructions));
+                logger.log(Level.FINER, "Bytecode :\n{0}", JavaBytecodeWriter.toText(mn.instructions));
 
                 LabelManager labelManager = new LabelManager();
 
@@ -270,7 +271,7 @@ public class ABCDContext {
 
                 InstructionBuilder instBuilder
                     = new JavaBytecodeInstructionBuilder(mn.instructions, labelManager,
-                                                     importManager, tmpVarFactory, instFactory);
+                                                         importManager, tmpVarFactory, instFactory);
 
                 ControlFlowGraph cfg
                         = new IntermediateRepresentationBuilder(cfgBuilder,
@@ -320,7 +321,7 @@ public class ABCDContext {
                 StringBuilder msg = new StringBuilder();
                 msg.append(Exceptions.printStackTrace(exc))
                    .append("\n")
-                   .append(JavaBytecodeUtil.toText(mn.instructions));
+                   .append(JavaBytecodeWriter.toText(mn.instructions));
 
                 method.getBody().add(new CommentStatement("\n" + msg.toString()));
                 method.getBody().add(Statements.createThrowErrorStmt(InternalError.class,

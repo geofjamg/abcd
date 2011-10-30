@@ -17,21 +17,13 @@
 
 package fr.jamgotchian.abcd.core.ir.bytecode;
 
-import fr.jamgotchian.abcd.core.ir.BasicBlock;
-import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.ir.ControlFlowGraphImpl;
-import fr.jamgotchian.abcd.core.code.DOTHTMLLikeCodeWriter;
-import fr.jamgotchian.abcd.core.code.HTMLCodeWriter;
-import fr.jamgotchian.abcd.core.code.TextCodeWriter;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
-import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.Opcodes;
 
 /**
@@ -92,39 +84,5 @@ public class JavaBytecodeUtil implements Opcodes {
             outerClassColumn.add(outerClass);
         }
         ConsoleUtil.printTable(builder, innerClassColumn, outerClassColumn);
-    }
-
-    public static String toText(InsnList instructions, BasicBlock bb, LabelManager labelManager) {
-        StringWriter writer = new StringWriter();
-        new JavaBytecodeWriter(new TextCodeWriter(writer)).visit(instructions, bb, labelManager);
-        return writer.toString();
-    }
-
-    public static String toText(InsnList instructions) {
-        StringWriter writer = new StringWriter();
-        ControlFlowGraph cfg = new ControlFlowGraphImpl("tmp", instructions.size()-1);
-        BasicBlock bb = cfg.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next();
-        new JavaBytecodeWriter(new TextCodeWriter(writer)).visit(instructions, bb, new LabelManager());
-        return writer.toString();
-    }
-
-    public static String toHTML(InsnList instructions, BasicBlock bb, LabelManager labelManager) {
-        StringWriter writer = new StringWriter();
-        new JavaBytecodeWriter(new HTMLCodeWriter(writer)).visit(instructions, bb, labelManager);
-        return writer.toString();
-    }
-
-    public static String toDOTHTMLLike(InsnList instructions, BasicBlock bb, LabelManager labelManager) {
-        StringWriter writer = new StringWriter();
-        new JavaBytecodeWriter(new DOTHTMLLikeCodeWriter(writer)).visit(instructions, bb, labelManager);
-        return writer.toString();
-    }
-
-    public static String toHTML(InsnList instructions) {
-        StringWriter writer = new StringWriter();
-        ControlFlowGraph cfg = new ControlFlowGraphImpl("tmp", instructions.size()-1);
-        BasicBlock bb = cfg.getBasicBlocksWithinRange(0, instructions.size()-1).iterator().next();
-        new JavaBytecodeWriter(new HTMLCodeWriter(writer)).visit(instructions, bb, new LabelManager());
-        return writer.toString();
     }
 }

@@ -17,13 +17,19 @@
 
 package fr.jamgotchian.abcd.core.ir.bytecode;
 
+import fr.jamgotchian.abcd.core.code.DOTHTMLLikeCodeWriter;
+import fr.jamgotchian.abcd.core.code.HTMLCodeWriter;
+import fr.jamgotchian.abcd.core.code.TextCodeWriter;
+import fr.jamgotchian.abcd.core.ir.BasicBlockImpl;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.BasicBlockType;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
+import java.io.StringWriter;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.IincInsnNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
@@ -40,6 +46,38 @@ import static org.objectweb.asm.util.AbstractVisitor.*;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class JavaBytecodeWriter extends JavaBytecodeVisitor {
+
+    public static String toText(InsnList instructions, BasicBlock bb, LabelManager labelManager) {
+        StringWriter writer = new StringWriter();
+        new JavaBytecodeWriter(new TextCodeWriter(writer)).visit(instructions, bb, labelManager);
+        return writer.toString();
+    }
+
+    public static String toText(InsnList instructions) {
+        StringWriter writer = new StringWriter();
+        BasicBlock bb = new BasicBlockImpl(0, instructions.size()-1, null);
+        new JavaBytecodeWriter(new TextCodeWriter(writer)).visit(instructions, bb, new LabelManager());
+        return writer.toString();
+    }
+
+    public static String toHTML(InsnList instructions, BasicBlock bb, LabelManager labelManager) {
+        StringWriter writer = new StringWriter();
+        new JavaBytecodeWriter(new HTMLCodeWriter(writer)).visit(instructions, bb, labelManager);
+        return writer.toString();
+    }
+
+    public static String toHTML(InsnList instructions) {
+        StringWriter writer = new StringWriter();
+        BasicBlock bb = new BasicBlockImpl(0, instructions.size()-1, null);
+        new JavaBytecodeWriter(new HTMLCodeWriter(writer)).visit(instructions, bb, new LabelManager());
+        return writer.toString();
+    }
+
+    public static String toDOTHTMLLike(InsnList instructions, BasicBlock bb, LabelManager labelManager) {
+        StringWriter writer = new StringWriter();
+        new JavaBytecodeWriter(new DOTHTMLLikeCodeWriter(writer)).visit(instructions, bb, labelManager);
+        return writer.toString();
+    }
 
     protected final CodeWriter writer;
 

@@ -26,7 +26,7 @@ import fr.jamgotchian.abcd.core.util.RangeImpl;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class BasicBlockImpl implements BasicBlock {
+public class BasicBlockImpl implements BasicBlock {
 
     private final Range range;
 
@@ -48,7 +48,7 @@ class BasicBlockImpl implements BasicBlock {
 
     private Object data;
 
-    BasicBlockImpl(Range range, BasicBlockType type) {
+    public BasicBlockImpl(Range range, BasicBlockType type) {
         this.range = range;
         this.type = type;
         order = -1;
@@ -56,15 +56,15 @@ class BasicBlockImpl implements BasicBlock {
         attributes = EnumSet.noneOf(BasicBlockAttribute.class);
     }
 
-    BasicBlockImpl(int firstInstn, int lastInstn, BasicBlockType type) {
+    public BasicBlockImpl(int firstInstn, int lastInstn, BasicBlockType type) {
         this(new RangeImpl(firstInstn, lastInstn), type);
     }
 
-    BasicBlockImpl(BasicBlockType type) {
+    public BasicBlockImpl(BasicBlockType type) {
         this(null, type);
     }
 
-    BasicBlockImpl() {
+    public BasicBlockImpl() {
         this(null, null);
     }
 

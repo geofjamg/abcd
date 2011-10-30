@@ -41,7 +41,7 @@ public class JavaBytecodeGraphvizRenderer implements GraphvizRenderer<BasicBlock
         Map<String, String> attrs = new HashMap<String, String>(3);
         attrs.put("shape", "box");
         attrs.put("color", "black");
-        attrs.put("label", "< " + JavaBytecodeUtil.toDOTHTMLLike(instructions, bb, labelManager) + " >");
+        attrs.put("label", "< " + JavaBytecodeWriter.toDOTHTMLLike(instructions, bb, labelManager) + " >");
         return attrs;
     }
 }
