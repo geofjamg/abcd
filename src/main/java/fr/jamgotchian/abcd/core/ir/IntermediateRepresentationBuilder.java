@@ -402,7 +402,13 @@ public class IntermediateRepresentationBuilder {
 
     public ControlFlowGraph build(ABCDWriter writer) {
         // build control flow graph from bytecode
-        cfg = cfgBuilder.build(writer);
+        cfg = cfgBuilder.build();
+
+        cfg.removeUnreachableBlocks();
+        cfg.updateDominatorInfo();
+        cfg.updateLoopInfo();
+
+        writer.writeRawCFG(cfg, cfgBuilder.getGraphizRenderer());
 
         // build basic blocks instructions
         buildInst();

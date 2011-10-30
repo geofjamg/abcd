@@ -23,12 +23,10 @@ import fr.jamgotchian.abcd.core.ir.CaseValues;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.ExceptionTable;
 import fr.jamgotchian.abcd.core.ir.LocalVariableTable;
-import fr.jamgotchian.abcd.core.util.Range;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.objectweb.asm.Opcodes;
 import static org.objectweb.asm.Opcodes.*;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -216,30 +214,5 @@ public class BytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder {
                 }
             }
         }
-    }
-
-    /**
-     * A basic block is unnecessary if it does not contains bytecode instructions
-     * except JUMP, GOTO, FRAME, LABEL OR LINE.
-     */
-    @Override
-    protected boolean isUnnecessaryBasicBlock(Range range) {
-        boolean unnecessary = true;
-        AbstractInsnNode lastNode = mn.instructions.get(range.getLast());
-        if (lastNode.getType() == AbstractInsnNode.JUMP_INSN
-                && lastNode.getOpcode() == Opcodes.GOTO) {
-            for (int i = range.getFirst(); i <= range.getLast()-1; i++) {
-                AbstractInsnNode node = mn.instructions.get(i);
-                if (node.getType() != AbstractInsnNode.FRAME &&
-                    node.getType() != AbstractInsnNode.LABEL &&
-                    node.getType() != AbstractInsnNode.LINE) {
-                    unnecessary = false;
-                    break;
-                }
-            }
-        } else {
-            unnecessary = false;
-        }
-        return unnecessary;
     }
 }

@@ -48,7 +48,7 @@ public abstract class ControlFlowGraphBuilder {
         this.methodName = methodName;
     }
 
-    public ControlFlowGraph build(ABCDWriter writer) {
+    public ControlFlowGraph build() {
         ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Build CFG of {0}",
                 '=', methodName);
 
@@ -66,16 +66,6 @@ public abstract class ControlFlowGraphBuilder {
         cfg.setLocalVariableTable(table2);
         printLocalVariableTable(table2);
 
-        cfg.removeUnreachableBlocks();
-        cfg.updateDominatorInfo();
-        cfg.updateLoopInfo();
-
-        writer.writeRawCFG(cfg, getGraphizRenderer());
-
-        removeUnnecessaryBasicBlocks();
-        cfg.updateDominatorInfo();
-        cfg.updateLoopInfo();
-
         return cfg;
     }
 
@@ -88,8 +78,6 @@ public abstract class ControlFlowGraphBuilder {
     protected abstract ExceptionTable getExceptionTable();
 
     protected abstract LocalVariableTable getLocalVariableTable();
-
-    protected abstract boolean isUnnecessaryBasicBlock(Range range);
 
     protected void analyseExceptionTable(ExceptionTable table) {
         for (ExceptionTable.Entry entry : table.getEntries()) {
@@ -254,37 +242,5 @@ public abstract class ControlFlowGraphBuilder {
 
         logger.log(Level.FINER, "  Switch : switch={0}, cases={1}",
                 new Object[]{switchBlock, caseBlocks});
-    }
-
-    private void removeUnnecessaryBasicBlocks() {
-        Set<BasicBlock> toRemove = new HashSet<BasicBlock>();
-        for (BasicBlock bb : cfg.getBasicBlocks()) {
-            if (cfg.getPredecessorCountOf(bb) >= 1 &&
-                cfg.getNormalSuccessorCountOf(bb) == 1) {
-                Range range = bb.getRange();
-                boolean remove = true;
-                if (range != null && range.size() > 0) {
-                    remove = isUnnecessaryBasicBlock(range);
-                }
-                if (remove) {
-                    toRemove.add(bb);
-                }
-            }
-        }
-
-        for (BasicBlock bb : toRemove) {
-            Edge outgoingEdge = cfg.getFirstNormalOutgoingEdgeOf(bb);
-            BasicBlock successor = cfg.getEdgeTarget(outgoingEdge);
-            Collection<Edge> incomingEdges = cfg.getIncomingEdgesOf(bb);
-            for (Edge incomingEdge : new ArrayList<Edge>(incomingEdges)) {
-                BasicBlock predecessor = cfg.getEdgeSource(incomingEdge);
-                cfg.removeEdge(incomingEdge);
-                cfg.addEdge(predecessor, successor, incomingEdge);
-            }
-            cfg.removeEdge(outgoingEdge);
-            cfg.removeBasicBlock(bb);
-
-            logger.log(Level.FINER, "Remove unnecessary BB {0}", bb);
-        }
     }
 }
