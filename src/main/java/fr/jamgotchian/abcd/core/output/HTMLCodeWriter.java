@@ -17,7 +17,6 @@
 
 package fr.jamgotchian.abcd.core.output;
 
-import fr.jamgotchian.abcd.core.common.Label;
 import fr.jamgotchian.abcd.core.util.Colors;
 import java.awt.Color;
 import java.io.IOException;

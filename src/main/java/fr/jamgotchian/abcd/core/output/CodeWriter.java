@@ -17,7 +17,6 @@
 
 package fr.jamgotchian.abcd.core.output;
 
-import fr.jamgotchian.abcd.core.common.Label;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
