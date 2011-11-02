@@ -24,9 +24,11 @@ import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.code.TextCodeWriter;
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.logging.Level;
@@ -43,11 +45,17 @@ public class DefaultABCDWriter implements ABCDWriter {
 
     private final boolean debug;
 
-    private final OutputStream os;
+    private final File outDir;
 
-    public DefaultABCDWriter(boolean debug, OutputStream os) {
+    public DefaultABCDWriter(boolean debug, File outDir) {
         this.debug = debug;
-        this.os = os;
+        this.outDir = outDir;
+        if (!outDir.exists()) {
+            throw new ABCDException(outDir + " does not exist");
+        }
+        if (!outDir.isDirectory()) {
+            throw new ABCDException(outDir + " is not a directory");
+        }
     }
 
     public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bytecodeRenderer) {
@@ -61,16 +69,21 @@ public class DefaultABCDWriter implements ABCDWriter {
 
     public void writeAST(CompilationUnit compilUnit) {
         assert compilUnit != null;
-
-        Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
         try {
-            compilUnit.accept(new JavaCompilationUnitWriter(new TextCodeWriter(writer, 4), debug), null);
-        } finally {
-            try  {
+            File packageDir = new File(outDir.getAbsolutePath() + File.separator
+                    + compilUnit.getPackage().getName().replace('.', File.separatorChar));
+            packageDir.mkdirs();
+            File srcDir = new File(packageDir.getAbsolutePath() + File.separator
+                    + compilUnit.getClasses().get(0).getName() + ".java");
+            FileOutputStream os = new FileOutputStream(srcDir);
+            Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
+            try {
+                compilUnit.accept(new JavaCompilationUnitWriter(new TextCodeWriter(writer, 4), debug), null);
+            } finally {
                 writer.close();
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, e.toString(), e);
             }
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, e.toString(), e);
         }
     }
 }

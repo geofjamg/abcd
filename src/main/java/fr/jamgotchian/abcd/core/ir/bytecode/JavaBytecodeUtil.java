@@ -17,8 +17,10 @@
 
 package fr.jamgotchian.abcd.core.ir.bytecode;
 
+import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -71,18 +73,22 @@ public class JavaBytecodeUtil implements Opcodes {
         return modifiers;
     }
 
-    public static void printInnerClasses(Map<String, String> innerClasses, StringBuilder builder) {
-        int rowCount = innerClasses.size()+1;
-        List<String> innerClassColumn = new ArrayList<String>(rowCount);
-        List<String> outerClassColumn = new ArrayList<String>(rowCount);
-        innerClassColumn.add("Inner class");
+    public static void printInnerClasses(Multimap<String, String> innerClasses,
+                                         StringBuilder builder) {
+        List<String> outerClassColumn = new ArrayList<String>();
+        List<String> innerClassColumn = new ArrayList<String>();
         outerClassColumn.add("Outer class");
-        for (Map.Entry<String, String> entry : innerClasses.entrySet()) {
-            String innerClass = entry.getKey();
-            String outerClass = entry.getValue();
-            innerClassColumn.add(innerClass);
+        innerClassColumn.add("Inner class");
+        for (Map.Entry<String, Collection<String>> entry : innerClasses.asMap().entrySet()) {
+            String outerClass = entry.getKey();
+            List<String> innerClasses2 = new ArrayList<String>(entry.getValue());
             outerClassColumn.add(outerClass);
+            innerClassColumn.add(innerClasses2.get(0));
+            for (int i = 1; i < innerClasses2.size(); i++) {
+                outerClassColumn.add("");
+                innerClassColumn.add(innerClasses2.get(i));
+            }
         }
-        ConsoleUtil.printTable(builder, innerClassColumn, outerClassColumn);
+        ConsoleUtil.printTable(builder, outerClassColumn, innerClassColumn);
     }
 }

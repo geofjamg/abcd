@@ -20,14 +20,11 @@ package fr.jamgotchian.abcd.core;
 import fr.jamgotchian.abcd.core.ast.AbstractSyntaxTreeBuilder;
 import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
-import fr.jamgotchian.abcd.core.ast.Field;
 import fr.jamgotchian.abcd.core.ast.Method;
-import fr.jamgotchian.abcd.core.ast.Package;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.stmt.CommentStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.Statements;
-import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.util.Refactorer;
 import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
@@ -39,43 +36,21 @@ import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.LocalVariableTable;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
-import fr.jamgotchian.abcd.core.ir.VariableID;
 import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.ir.Region;
 import fr.jamgotchian.abcd.core.ir.RegionAnalysis;
-import fr.jamgotchian.abcd.core.ir.bytecode.LabelManager;
-import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeControlFlowGraphBuilder;
-import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeInstructionBuilder;
-import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeUtil;
-import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeWriter;
-import fr.jamgotchian.abcd.core.type.ClassName;
-import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.Modifier;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.EmptyVisitor;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.MethodNode;
 
 /**
  *
@@ -90,164 +65,33 @@ public class ABCDContext {
     private static List<Refactorer> REFACTORERS = Collections.unmodifiableList(
             Arrays.<Refactorer>asList(new ForLoopRefactorer()));
 
-    public static void decompile(File classFile, OutputStream os) throws IOException {
-        new ABCDContext().decompileFile(classFile, new DefaultABCDWriter(DEBUG, os));
-    }
-
-    public static void analyse(File classFile, OutputStream os,
-                               File outputDir) throws IOException {
-        new ABCDContext().decompileFile(classFile, new DebugABCDWriter(DEBUG, os, outputDir));
-    }
-
-    private final Map<String, String> innerClasses = new HashMap<String, String>();
-
     public ABCDContext() {
     }
 
-    private void decompileFile(File classFile, ABCDWriter writer) throws IOException {
-        ImportManager importManager = new ImportManager();
+    private void decompile(DataSource dataSrc, ABCDWriter writer) throws IOException {
+        for (ClassFactory classFactory : dataSrc.createClassFactories()) {
+            ImportManager importManager = new ImportManager();
+            Class _class = decompileClass(classFactory, importManager, writer);
 
-        Class _class = decompileClass(classFile, importManager, writer);
+            CompilationUnit compilUnit = new CompilationUnit(_class.getPackage(), importManager);
+            compilUnit.getClasses().add(_class);
 
-        CompilationUnit compilUnit = new CompilationUnit(_class.getPackage(), importManager);
-        compilUnit.getClasses().add(_class);
-
-        File classDir = classFile.getParentFile();
-        analyseInnerClassesFromSyntheticFields(classDir);
-
-        // find class root directory
-        File classRootDir = classDir.getAbsoluteFile();
-        int packageDepth = _class.getPackage().getName().split("\\.").length;
-        for (int i = 0; i < packageDepth; i++) {
-            classRootDir = classRootDir.getParentFile();
+            writer.writeAST(compilUnit);
         }
-
-        decompileInnerClass(_class, classRootDir, importManager, writer);
-
-        writer.writeAST(compilUnit);
     }
 
-    private Class createClass(ClassNode cn, ImportManager importManager) {
-        // package
-        String packageName = "";
-        int lastDotIndex = cn.name.lastIndexOf('/');
-        if (lastDotIndex != -1) {
-            packageName = cn.name.substring(0, lastDotIndex).replace('/', '.');
-        }
-        Package _package = new Package(packageName);
-
-        // class name
-        String className = cn.name.replace('/', '.');
-        String simpleClassName = null;
-        lastDotIndex = className.lastIndexOf('.');
-        if (lastDotIndex != -1) {
-            simpleClassName = className.substring(lastDotIndex+1);
-        } else { // class is in default package
-            simpleClassName = className;
-        }
-
-        // super class name
-        String superClassName = null;
-        if (cn.superName != null) {
-            superClassName = cn.superName.replace('/', '.');
-        }
-
-        // class modifiers
-        Set<Modifier> classModifiers = JavaBytecodeUtil.getModifiers(cn.access);
-        classModifiers.remove(Modifier.SYNCHRONIZED); // ???
-
-        Class _class = new Class(_package, simpleClassName, superClassName, classModifiers);
-
-        // implemented interfaces
-        for (String _interface : (List<String>) cn.interfaces) {
-            _class.addInterface(_interface.replace('/', '.'));
-        }
-
-        // fields
-        for (FieldNode fn : (List<FieldNode>) cn.fields) {
-            Type fieldType = Type.getType(fn.desc);
-            JavaType javaFieldType = JavaType.newType(fieldType, importManager);
-
-            _class.addField(new Field(JavaBytecodeUtil.getModifiers(fn.access),
-                                      fn.name,
-                                      javaFieldType));
-        }
-        return _class;
-    }
-
-    private Method createMethod(ClassNode cn, MethodNode mn, ImportManager importManager) {
-        // return type
-        JavaType javaReturnType = null;
-        if (!"<init>".equals(mn.name)) {
-            Type returnType = Type.getReturnType(mn.desc);
-            javaReturnType = JavaType.newType(returnType, importManager);
-        }
-
-        // method name
-        String methodName;
-        if ("<init>".equals(mn.name)) {
-            String className = cn.name.replace('/', '.');
-            int lastDotIndex = className.lastIndexOf('.');
-            if (lastDotIndex != -1) {
-                methodName = className.substring(lastDotIndex+1);
-            } else {
-                methodName = className;
-            }
-        } else {
-            methodName = mn.name;
-        }
-
-        // contructor or method ?
-        boolean constructor = "<init>".equals(mn.name);
-
-        // throwable exceptions
-        List<ClassName> exceptions = new ArrayList<ClassName>();
-        if (mn.exceptions != null) {
-            for (String exception : (List<String>) mn.exceptions) {
-                exceptions.add(importManager.newClassName(exception.replace('/', '.')));
-            }
-        }
-
-        // method modifiers
-        Set<Modifier> methodModifiers = JavaBytecodeUtil.getModifiers(mn.access);
-
-        // parameters
-        boolean isMethodStatic = methodModifiers.contains(Modifier.STATIC);
-        Type[] argTypes = Type.getArgumentTypes(mn.desc);
-        List<LocalVariableDeclaration> arguments = new ArrayList<LocalVariableDeclaration>(argTypes.length);
-        for(int index = 0; index < argTypes.length; index++) {
-            Type argType = argTypes[index];
-            int localVarIndex = index;
-            // index 0 of local variable table contains this for non static method
-            if (!isMethodStatic) {
-                localVarIndex++;
-            }
-            JavaType javaArgType = JavaType.newType(argType, importManager);
-            LocalVariable var = Expressions.newVarExpr(new VariableID(localVarIndex), "");
-            arguments.add(new LocalVariableDeclaration(var, javaArgType));
-        }
-
-        Method method = new Method(methodName, methodModifiers,
-                                   javaReturnType, arguments, exceptions,
-                                   constructor);
-        return method;
-    }
-
-    private Class decompileClass(File classFile, ImportManager importManager,
+    private Class decompileClass(ClassFactory classFactory, ImportManager importManager,
                                  ABCDWriter writer) throws IOException {
-        ClassNode cn = new ClassNode();
-        ClassReader cr = new ClassReader(new FileInputStream(classFile));
-        cr.accept(cn, 0);
-
-        Class _class = createClass(cn, importManager);
+        Class _class = classFactory.createClass(importManager);
 
         ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Decompile class {0}",
                 '#', _class.getQualifiedName());
 
         List<String> errorMsgs = new ArrayList<String>();
 
-        for (MethodNode mn : (List<MethodNode>) cn.methods) {
-            Method method = createMethod(cn, mn, importManager);
+        Collection<MethodFactory> methodFactories = classFactory.createMethodFactories();
+        for (MethodFactory methodFactory : methodFactories) {
+            Method method = methodFactory.createMethod(importManager);
             _class.addMethod(method);
 
             String methodSignature = method.getSignature();
@@ -258,20 +102,17 @@ public class ABCDContext {
                         '%', methodSignature);
                 logger.log(Level.FINE, "");
 
-                logger.log(Level.FINER, "Bytecode :\n{0}", JavaBytecodeWriter.toText(mn.instructions));
-
-                LabelManager labelManager = new LabelManager();
+                logger.log(Level.FINER, "Bytecode :\n{0}", methodFactory.getBytecodeAsText());
 
                 ControlFlowGraphBuilder cfgBuilder
-                        = new JavaBytecodeControlFlowGraphBuilder(methodSignature, mn, labelManager);
+                        = methodFactory.createCFGBuilder(methodSignature);
 
                 TemporaryVariableFactory tmpVarFactory = new TemporaryVariableFactory();
 
                 IRInstFactory instFactory = new IRInstFactory();
 
                 InstructionBuilder instBuilder
-                    = new JavaBytecodeInstructionBuilder(mn.instructions, labelManager,
-                                                         importManager, tmpVarFactory, instFactory);
+                    = methodFactory.createInstBuilder(importManager, tmpVarFactory, instFactory);
 
                 ControlFlowGraph cfg
                         = new IntermediateRepresentationBuilder(cfgBuilder,
@@ -301,11 +142,10 @@ public class ABCDContext {
                 rpst.print(builder);
                 logger.log(Level.FINER, "RPST :\n{0}", builder.toString());
 
-                Region rootRegion = rpst.getRootRegion();
-
                 ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Build AST of {0}",
                         '=', methodSignature);
 
+                Region rootRegion = rpst.getRootRegion();
                 new AbstractSyntaxTreeBuilder(cfg, importManager,
                                               rootRegion, method.getBody()).build();
 
@@ -321,7 +161,7 @@ public class ABCDContext {
                 StringBuilder msg = new StringBuilder();
                 msg.append(Exceptions.printStackTrace(exc))
                    .append("\n")
-                   .append(JavaBytecodeWriter.toText(mn.instructions));
+                   .append(methodFactory.getBytecodeAsText());
 
                 method.getBody().add(new CommentStatement("\n" + msg.toString()));
                 method.getBody().add(Statements.createThrowErrorStmt(InternalError.class,
@@ -336,101 +176,107 @@ public class ABCDContext {
                         '#', _class.getQualifiedName());
 
         logger.log(Level.FINE, "Succeed : {0}/{1}",
-                new Object[]{cn.methods.size() - errorMsgs.size(), cn.methods.size()});
+                new Object[]{methodFactories.size() - errorMsgs.size(), methodFactories.size()});
         StringBuilder errorStr = new StringBuilder();
         for (String errorMsg : errorMsgs) {
             errorStr.append("  ").append(errorMsg).append("\n");
         }
         logger.log(Level.FINE, "Failed : {0}/{1}\n{2}",
-                new Object[]{errorMsgs.size(), cn.methods.size(),
+                new Object[]{errorMsgs.size(), methodFactories.size(),
                     errorStr.toString()});
 
         return _class;
     }
 
-    private void analyseInnerClassesFromSyntheticFields(File dir) throws IOException {
-        assert dir.isDirectory();
-        logger.log(Level.FINEST, "Analyse inner classes of directory ", dir.getName());
-
-        innerClasses.clear();
-
-        File[] classFiles = dir.listFiles(new FileFilter() {
-
-            public boolean accept(File pathname) {
-                return pathname.getName().endsWith(".class");
-            }
-        });
-
-        for (final File classFile : classFiles) {
-            ClassReader cr = new ClassReader(new FileInputStream(classFile));
-            cr.accept(new EmptyVisitor() {
-
-                private String innerClassName;
-
-                @Override
-                public void visit(int version, int access, String name, String signature,
-                                  String superName, String[] interfaces) {
-                    innerClassName = name.replace('/', '.');
-                }
-
-                @Override
-                public FieldVisitor visitField(int access, String name, String desc,
-                                               String signature, Object value) {
-                    if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
-                        Type type = Type.getType(desc);
-                        if (type.getSort() == Type.OBJECT) {
-                            innerClasses.put(innerClassName, type.getClassName());
-                        }
-                    }
-                    return super.visitField(access, name, desc, signature, value);
-                }
-
-            }, 0);
-        }
-    }
-
-    private void decompileInnerClass(Class outerClass, File classRootDir,
-                                     ImportManager importManager,
-                                     ABCDWriter writer) throws IOException {
-        String outerClassName = outerClass.getQualifiedName();
-        for (Map.Entry<String, String> entry : innerClasses.entrySet()) {
-            String innerClassName = entry.getKey();
-            if (outerClassName.equals(entry.getValue())) {
-                String innerClassFileName = classRootDir.getAbsolutePath() + '/'
-                        + innerClassName.replace('.', '/') + ".class";
-                File innerClassFile = new File(innerClassFileName);
-                Class innerClass = decompileClass(innerClassFile, importManager, writer);
-                outerClass.addInnerClass(innerClass);
-
-                decompileInnerClass(innerClass, classRootDir, importManager, writer);
-            }
-        }
-    }
-
     private static void printUsage() {
         System.out.println("Usage:");
-        System.out.println("    -class <class file> -java <output java file> [-analyse <dir>]");
+        System.out.println("    [options] -class <class file>");
+        System.out.println("             (to decompile a class)");
+        System.out.println("    [options] -jar <jar file>");
+        System.out.println("             (to decompile a jar)");
+        System.out.println("");
+        System.out.println("where [options] include:");
+        System.out.println("");
+        System.out.println("    -d <dir>          Output directory to write java sources");
+        System.out.println("    -classdir <dir>   Directory where to find classes");
+        System.out.println("    -analysedir <dir> Directory where to write analysis data");
         System.exit(1);
+    }
+
+    private static void printError(String msg) {
+        System.err.println(msg);
+        printUsage();
     }
 
     public static void main(String[] args) {
         try {
-            if ((args.length != 4 && args.length != 6)
-                    || !"-class".equals(args[0])
-                    || !"-java".equals(args[2])) {
-                printUsage();
-            }
-            File classFile = new File(args[1]);
-            OutputStream os = new FileOutputStream(args[3]);
-            if (args.length == 6) {
-                if (!"-analyse".equals(args[4])) {
-                    printUsage();
+            String className = null;
+            String jarName = null;
+            String outDirName = null;
+            String classDirName = null;
+            String debugDirName = null;
+            for (int i = 0; i < args.length; i++) {
+                String arg = args[i];
+                if ("-class".equals(arg)) {
+                    className = args[i+1];
+                } else if ("-jar".equals(arg)) {
+                    jarName = args[i+1];
+                } else if ("-classdir".equals(arg)) {
+                    classDirName =  args[i+1];
+                } else if ("-debug".equals(arg)) {
+                    debugDirName = args[i+1];
+                } else if ("-d".equals(arg)) {
+                    outDirName = args[i+1];
                 }
-                File outputDir = new File(args[5]);
-                ABCDContext.analyse(classFile, os, outputDir);
-            } else {
-                ABCDContext.decompile(classFile, os);
             }
+            if (!(className == null ^ jarName == null)) {
+                printError("Should specify -class or -jar option");
+            }
+            if (outDirName == null) {
+                printError("Should specify -d option");
+            }
+            File outDir = new File(outDirName);
+            if (!outDir.isDirectory()) {
+                printError(outDirName + " should be a directory");
+            }
+            if (!outDir.exists()) {
+                printError(outDirName + " does not exist");
+            }
+
+            ABCDWriter writer = null;
+            if (debugDirName != null) {
+                File debugDir = new File(debugDirName);
+                writer = new DebugABCDWriter(DEBUG, outDir, debugDir);
+            } else {
+                writer = new DefaultABCDWriter(DEBUG, outDir);
+            }
+
+            DataSource dataSrc = null;
+            if (className != null) {
+                if (classDirName == null) {
+                    printError("Should specify -classdir option");
+                }
+                File classDir = new File(classDirName);
+                if (!classDir.isDirectory()) {
+                    printError(classDirName + " should be a directory");
+                }
+                if (!classDir.exists()) {
+                    printError(classDirName + " does not exist");
+                }
+                dataSrc = new ClassDataSource(classDir, className);
+            } else { // jarName != null
+                File jarFile = new File(jarName);
+                if (!jarFile.exists()) {
+                    printError(jarFile + " does not exist");
+                }
+                if (!jarFile.isFile()) {
+                    printError(jarFile + " should be a file");
+                }
+                dataSrc = new JarDataSource(new JarFile(jarFile));
+            }
+
+            new ABCDContext().decompile(dataSrc, writer);
+
         } catch (Throwable exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
