@@ -14,8 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core;
+package fr.jamgotchian.abcd.core.bytecode;
 
+import fr.jamgotchian.abcd.core.MethodFactory;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
@@ -26,11 +27,6 @@ import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.ir.VariableID;
-import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeControlFlowGraphBuilder;
-import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeInstructionBuilder;
-import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeUtil;
-import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeWriter;
-import fr.jamgotchian.abcd.core.ir.bytecode.LabelManager;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
@@ -63,7 +59,7 @@ public class JavaBytecodeMethodFactory implements MethodFactory {
         JavaType javaReturnType = null;
         if (!"<init>".equals(mn.name)) {
             Type returnType = Type.getReturnType(mn.desc);
-            javaReturnType = JavaType.newType(returnType, importManager);
+            javaReturnType = JavaBytecodeUtil.newType(returnType, importManager);
         }
 
         // method name
@@ -105,7 +101,7 @@ public class JavaBytecodeMethodFactory implements MethodFactory {
             if (!isMethodStatic) {
                 localVarIndex++;
             }
-            JavaType javaArgType = JavaType.newType(argType, importManager);
+            JavaType javaArgType = JavaBytecodeUtil.newType(argType, importManager);
             LocalVariable var = Expressions.newVarExpr(new VariableID(localVarIndex), "");
             arguments.add(new LocalVariableDeclaration(var, javaArgType));
         }

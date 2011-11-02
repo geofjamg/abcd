@@ -15,9 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.ir.bytecode;
+package fr.jamgotchian.abcd.core.bytecode;
 
 import com.google.common.collect.Multimap;
+import fr.jamgotchian.abcd.core.type.ClassName;
+import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 /**
  *
@@ -71,6 +75,43 @@ public class JavaBytecodeUtil implements Opcodes {
             modifiers.add(Modifier.VOLATILE);
         }
         return modifiers;
+    }
+
+    /**
+     * Convert from ASM type to ABCD type
+     * @param type ASM type
+     * @param factory <code>ClassName</code> factory
+     * @return ABCD type
+     */
+    public static JavaType newType(Type type, ClassNameFactory factory) {
+        switch (type.getSort()) {
+            case Type.VOID:
+                return JavaType.VOID;
+            case Type.BOOLEAN:
+                return JavaType.BOOLEAN;
+            case Type.CHAR:
+                return JavaType.CHAR;
+            case Type.BYTE:
+                return JavaType.BYTE;
+            case Type.SHORT:
+                return JavaType.SHORT;
+            case Type.INT:
+                return JavaType.INT;
+            case Type.FLOAT:
+                return JavaType.FLOAT;
+            case Type.LONG:
+                return JavaType.LONG;
+            case Type.DOUBLE:
+                return JavaType.DOUBLE;
+            case Type.ARRAY:
+                return JavaType.newArrayType(newType(type.getElementType(), factory), type.getDimensions());
+            case Type.OBJECT: {
+                ClassName argClassName = factory.newClassName(type.getClassName());
+                return JavaType.newRefType(argClassName);
+            }
+            default:
+                throw new InternalError();
+        }
     }
 
     public static void printInnerClasses(Multimap<String, String> innerClasses,

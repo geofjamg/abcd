@@ -29,7 +29,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.objectweb.asm.Type;
 
 /**
  *
@@ -119,43 +118,6 @@ public class JavaType {
 
     public static JavaType newArrayType(JavaType arrayElementType, int arrayDimension) {
         return new JavaType(null, null, arrayElementType, arrayDimension);
-    }
-
-    /**
-     * Convert from ASM type to ABCD type
-     * @param type ASM type
-     * @param factory <code>ClassName</code> factory
-     * @return ABCD type
-     */
-    public static JavaType newType(Type type, ClassNameFactory factory) {
-        switch (type.getSort()) {
-            case Type.VOID:
-                return VOID;
-            case Type.BOOLEAN:
-                return BOOLEAN;
-            case Type.CHAR:
-                return CHAR;
-            case Type.BYTE:
-                return BYTE;
-            case Type.SHORT:
-                return SHORT;
-            case Type.INT:
-                return INT;
-            case Type.FLOAT:
-                return FLOAT;
-            case Type.LONG:
-                return LONG;
-            case Type.DOUBLE:
-                return DOUBLE;
-            case Type.ARRAY:
-                return newArrayType(newType(type.getElementType(), factory), type.getDimensions());
-            case Type.OBJECT: {
-                ClassName argClassName = factory.newClassName(type.getClassName());
-                return newRefType(argClassName);
-            }
-            default:
-                throw new InternalError();
-        }
     }
 
     private final PrimitiveType primitiveType;

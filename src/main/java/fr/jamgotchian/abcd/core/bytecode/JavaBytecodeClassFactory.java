@@ -14,13 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core;
+package fr.jamgotchian.abcd.core.bytecode;
 
+import fr.jamgotchian.abcd.core.ClassFactory;
+import fr.jamgotchian.abcd.core.MethodFactory;
 import fr.jamgotchian.abcd.core.ast.Field;
 import fr.jamgotchian.abcd.core.ast.Package;
 import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
-import fr.jamgotchian.abcd.core.ir.bytecode.JavaBytecodeUtil;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,7 +89,7 @@ public class JavaBytecodeClassFactory implements ClassFactory {
         // fields
         for (FieldNode fn : (List<FieldNode>) cn.fields) {
             Type fieldType = Type.getType(fn.desc);
-            JavaType javaFieldType = JavaType.newType(fieldType, importManager);
+            JavaType javaFieldType = JavaBytecodeUtil.newType(fieldType, importManager);
 
             _class.addField(new Field(JavaBytecodeUtil.getModifiers(fn.access),
                                       fn.name,

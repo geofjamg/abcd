@@ -28,6 +28,8 @@ import fr.jamgotchian.abcd.core.ast.stmt.Statements;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.util.Refactorer;
 import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
+import fr.jamgotchian.abcd.core.bytecode.ClassDataSource;
+import fr.jamgotchian.abcd.core.bytecode.JarDataSource;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.ir.bytecode;
+package fr.jamgotchian.abcd.core.bytecode;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -102,7 +102,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         }
 
         public void visitFieldInsn(BasicBlock bb, int position, FieldInsnNode node) {
-            JavaType fieldType = JavaType.newType(Type.getType(node.desc), classNameFactory);
+            JavaType fieldType = JavaBytecodeUtil.newType(Type.getType(node.desc), classNameFactory);
             String fieldName = node.name;
 
             switch (node.getOpcode()) {
@@ -818,7 +818,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         public void visitMethodInsn(BasicBlock bb, int position, MethodInsnNode node) {
             // return type
             Type returnType = Type.getReturnType(node.desc);
-            JavaType returnJavaType = JavaType.newType(returnType, classNameFactory);
+            JavaType returnJavaType = JavaBytecodeUtil.newType(returnType, classNameFactory);
 
             // argument types
             Type[] argTypes = Type.getArgumentTypes(node.desc);
@@ -826,7 +826,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             List<JavaType> argJavaTypes = new ArrayList<JavaType>(argTypes.length);
             for (int i = 0; i < argTypes.length; i++) {
                 args.add(0, stack.pop());
-                argJavaTypes.add(0, JavaType.newType(argTypes[i], classNameFactory));
+                argJavaTypes.add(0, JavaBytecodeUtil.newType(argTypes[i], classNameFactory));
             }
 
             String methodName = node.name;
@@ -860,7 +860,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
         public void visitMultiANewArrayInsn(BasicBlock bb, int position, MultiANewArrayInsnNode node) {
             Type type = Type.getType(node.desc).getElementType();
-            JavaType javaType = JavaType.newType(type, classNameFactory);
+            JavaType javaType = JavaBytecodeUtil.newType(type, classNameFactory);
             List<Variable> dimensions = new ArrayList<Variable>(node.dims);
             for (int i = 0; i < node.dims; i++) {
                 dimensions.add(0, stack.pop());
@@ -875,7 +875,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         }
 
         public void visitTypeInsnInsn(BasicBlock bb, int position, TypeInsnNode node) {
-            JavaType type = JavaType.newType(Type.getObjectType(node.desc), classNameFactory);
+            JavaType type = JavaBytecodeUtil.newType(Type.getObjectType(node.desc), classNameFactory);
 
             switch (node.getOpcode()) {
                 case NEW: {
