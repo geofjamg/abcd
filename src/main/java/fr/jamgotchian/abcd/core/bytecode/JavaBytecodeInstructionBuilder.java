@@ -768,7 +768,6 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case IFNULL: {
                     Variable tmpNull = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpNull, new NullConst(classNameFactory)));
-                    stack.push(tmpNull);
                     tmpResult = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.EQ, stack.pop(), tmpNull));
                     break;
@@ -777,7 +776,6 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case IFNONNULL: {
                     Variable tmpNull = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpNull, new NullConst(classNameFactory)));
-                    stack.push(tmpNull);
                     tmpResult = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.NE, stack.pop(), tmpNull));
                     break;
