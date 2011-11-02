@@ -28,8 +28,8 @@ import fr.jamgotchian.abcd.core.ast.stmt.Statements;
 import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.util.Refactorer;
 import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
-import fr.jamgotchian.abcd.core.bytecode.ClassDataSource;
-import fr.jamgotchian.abcd.core.bytecode.JarDataSource;
+import fr.jamgotchian.abcd.core.bytecode.ClassFileDataSource;
+import fr.jamgotchian.abcd.core.bytecode.JarFileDataSource;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
@@ -265,7 +265,7 @@ public class ABCDContext {
                 if (!classDir.exists()) {
                     printError(classDirName + " does not exist");
                 }
-                dataSrc = new ClassDataSource(classDir, className);
+                dataSrc = new ClassFileDataSource(classDir, className);
             } else { // jarName != null
                 File jarFile = new File(jarName);
                 if (!jarFile.exists()) {
@@ -274,7 +274,7 @@ public class ABCDContext {
                 if (!jarFile.isFile()) {
                     printError(jarFile + " should be a file");
                 }
-                dataSrc = new JarDataSource(new JarFile(jarFile));
+                dataSrc = new JarFileDataSource(new JarFile(jarFile));
             }
 
             new ABCDContext().decompile(dataSrc, writer);

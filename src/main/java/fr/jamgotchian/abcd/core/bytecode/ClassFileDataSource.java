@@ -38,10 +38,10 @@ import org.objectweb.asm.commons.EmptyVisitor;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ClassDataSource implements DataSource {
+public class ClassFileDataSource implements DataSource {
 
     private static final Logger logger
-            = Logger.getLogger(ClassDataSource.class.getName());
+            = Logger.getLogger(ClassFileDataSource.class.getName());
 
     private final File classDir;
 
@@ -84,7 +84,7 @@ public class ClassDataSource implements DataSource {
         }
     }
 
-    public ClassDataSource(File classDir, String className) {
+    public ClassFileDataSource(File classDir, String className) {
         this.classDir = classDir;
         this.className = className;
     }

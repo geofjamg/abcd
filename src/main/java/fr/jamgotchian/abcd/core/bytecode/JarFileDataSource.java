@@ -30,11 +30,11 @@ import java.util.jar.JarFile;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JarDataSource implements DataSource {
+public class JarFileDataSource implements DataSource {
 
     private final JarFile jarFile;
 
-    public JarDataSource(JarFile jarFile) {
+    public JarFileDataSource(JarFile jarFile) {
         this.jarFile = jarFile;
     }
 
