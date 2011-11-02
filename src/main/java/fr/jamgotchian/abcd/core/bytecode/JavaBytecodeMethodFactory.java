@@ -124,6 +124,6 @@ public class JavaBytecodeMethodFactory implements MethodFactory {
     }
 
     public String getBytecodeAsText() {
-        return JavaBytecodeWriter.toText(mn.instructions);
+        return JavaBytecodeWriter.toText(mn.instructions, labelManager);
     }
 }

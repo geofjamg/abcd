@@ -53,10 +53,10 @@ public class JavaBytecodeWriter extends JavaBytecodeVisitor {
         return writer.toString();
     }
 
-    public static String toText(InsnList instructions) {
+    public static String toText(InsnList instructions, LabelManager labelManager) {
         StringWriter writer = new StringWriter();
         BasicBlock bb = new BasicBlockImpl(0, instructions.size()-1, null);
-        new JavaBytecodeWriter(new TextCodeWriter(writer)).visit(instructions, bb, new LabelManager());
+        new JavaBytecodeWriter(new TextCodeWriter(writer)).visit(instructions, bb, labelManager);
         return writer.toString();
     }
 
@@ -66,10 +66,10 @@ public class JavaBytecodeWriter extends JavaBytecodeVisitor {
         return writer.toString();
     }
 
-    public static String toHTML(InsnList instructions) {
+    public static String toHTML(InsnList instructions, LabelManager labelManager) {
         StringWriter writer = new StringWriter();
         BasicBlock bb = new BasicBlockImpl(0, instructions.size()-1, null);
-        new JavaBytecodeWriter(new HTMLCodeWriter(writer)).visit(instructions, bb, new LabelManager());
+        new JavaBytecodeWriter(new HTMLCodeWriter(writer)).visit(instructions, bb, labelManager);
         return writer.toString();
     }
 
@@ -106,7 +106,7 @@ public class JavaBytecodeWriter extends JavaBytecodeVisitor {
         writer.writeLt();
         writer.write(scope);
         writer.write(".");
-        writer.write(fieldOrMethodName);
+        writer.write(writer.removeSpecialCharacters(fieldOrMethodName));
         writer.writeGt();
         writeEol(bb, index);
     }
