@@ -16,10 +16,10 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.type.ClassName;
@@ -83,19 +83,11 @@ public class IntermediateRepresentationBuilder {
         logger.log(Level.FINER, "Process {0}", bb);
 
         VariableStack inputStack = null;
-        if (inputStacks.isEmpty()) {
-            inputStack = new VariableStack();
-        } else if (inputStacks.size() == 1) {
-            inputStack = inputStacks.get(0).clone();
-        } else {
-            inputStack = mergeStacks(inputStacks, bb);
-        }
-
-        bb.setInputStack(inputStack.clone());
-
-        VariableStack outputStack = inputStack.clone();
 
         if (bb.hasAttribute(BasicBlockAttribute.EXCEPTION_HANDLER_ENTRY)) {
+            // at the entry block of an exception handler the stack only contains
+            // the exception variable
+            inputStack = new VariableStack();
             Variable exceptionVar = tmpVarFactory.create(bb);
             IRInst tmpInst;
             if (bb.hasAttribute(BasicBlockAttribute.FINALLY_ENTRY)) {
@@ -108,12 +100,24 @@ public class IntermediateRepresentationBuilder {
                 tmpInst = instFactory.newNewObject(exceptionVar, JavaType.newRefType(className));
             }
             bb.getInstructions().add(tmpInst);
-            outputStack.push(exceptionVar);
+            inputStack.push(exceptionVar);
+        } else {
+            if (inputStacks.isEmpty()) {
+                inputStack = new VariableStack();
+            } else if (inputStacks.size() == 1) {
+                inputStack = inputStacks.get(0).clone();
+            } else {
+                inputStack = mergeStacks(inputStacks, bb);
+            }
         }
+
+        bb.setInputStack(inputStack.clone());
 
         if (bb.getInputStack().size() > 0) {
             logger.log(Level.FINEST, ">>> Input stack : {0}", bb.getInputStack());
         }
+
+        VariableStack outputStack = inputStack.clone();
 
         instBuilder.build(bb, outputStack);
         bb.setOutputStack(outputStack);
