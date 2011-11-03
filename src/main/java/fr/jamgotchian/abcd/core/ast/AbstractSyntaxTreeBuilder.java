@@ -130,7 +130,12 @@ public class AbstractSyntaxTreeBuilder {
 
         private Expression getVarExpr(Variable var) {
             if (var.isTemporary()) {
-                return expressions.get(var.getID());
+                Expression expr = expressions.get(var.getID());
+                if (expr == null) {
+                    throw new IllegalStateException("Expression not found for variable "
+                            + var.getID());
+                }
+                return expr;
             } else {
                 return Expressions.newVarExpr(var.getID(),
                                               var.getName());
