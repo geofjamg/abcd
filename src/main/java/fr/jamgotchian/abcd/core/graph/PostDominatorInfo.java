@@ -17,6 +17,10 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +44,8 @@ public class PostDominatorInfo<N, E> {
     private final EdgeFactory<E> factory;
 
     private Map<N, Set<N>> postDominatorsOf;
+
+    private Map<N, N> immediatePostDominator;
 
     private MutableTree<N, E> postDominatorsTree;
 
@@ -87,7 +93,35 @@ public class PostDominatorInfo<N, E> {
     }
 
     public N getImmediatePostDominatorOf(N n) {
-        return postDominatorsTree.getParent(n);
+        return immediatePostDominator.get(n);
+    }
+
+    private void computeImmediatePostDominators() {
+        // the immediate post dominator of a node n is obtained by choosing the
+        // strict post dominator of n whose post dominator set differs from that
+        // of n only by removal of n.
+        immediatePostDominator = new HashMap<N, N>();
+        for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
+            N n = entry.getKey();
+            if (!n.equals(exitNode)) {
+                Set<N> postDominators = entry.getValue();
+                boolean found = false;
+                for (N pd : postDominators) {
+                    if (!pd.equals(n)
+                            && Collections3.sameContent(Sets.union(postDominatorsOf.get(pd),
+                                                                   Collections.singleton(n)),
+                                                        postDominators)) {
+                        immediatePostDominator.put(n, pd);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    logger.log(Level.WARNING, "Cannot find immediate post dominator of {0}",  n);
+                }
+            }
+        }
+        logger.log(Level.FINEST, "Immediate post dominators {0}", immediatePostDominator);
     }
 
     private void computePostDominanceFrontier() {
@@ -149,9 +183,15 @@ public class PostDominatorInfo<N, E> {
             }
         }
 
+        computeImmediatePostDominators();
+
         // build post-dominators tree
         postDominatorsTree = Trees.newTree(exitNode);
-        DominatorInfo.buildTree(postDominatorsOf, exitNode, postDominatorsTree, factory);
+        Multimap<N, N> children = HashMultimap.create();
+        for (Map.Entry<N, N> entry : immediatePostDominator.entrySet()) {
+            children.put(entry.getValue(), entry.getKey());
+        }
+        DominatorInfo.buildTree(exitNode, postDominatorsTree, children, factory);
         logger.log(Level.FINEST, "Post dominators tree :\n{0}", Trees.toString(postDominatorsTree));
 
         // compute post dominance frontier

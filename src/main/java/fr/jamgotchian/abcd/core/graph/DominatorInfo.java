@@ -17,7 +17,10 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
-import fr.jamgotchian.abcd.core.common.ABCDException;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +44,8 @@ public class DominatorInfo<N, E> {
     private final EdgeFactory<E> factory;
 
     private Map<N, Set<N>> dominatorsOf;
+
+    private Map<N, N> immediateDominator;
 
     private MutableTree<N, E> dominatorsTree;
 
@@ -72,7 +77,7 @@ public class DominatorInfo<N, E> {
     }
 
     public N getImmediateDominatorOf(N n) {
-        return dominatorsTree.getParent(n);
+        return immediateDominator.get(n);
     }
 
     public Tree<N, E> getDominatorsTree() {
@@ -91,28 +96,32 @@ public class DominatorInfo<N, E> {
         return frontier;
     }
 
-    static <N, E> void buildTree(Map<N, Set<N>> dominatorsOf, N parentNode,
-                                 MutableTree<N, E> tree, EdgeFactory<E> factory) {
+    private void computeImmediateDominators() {
+        // the immediate dominator of a node n is obtained by choosing the strict
+        // dominator of n whose dominator set differs from that of n only by removal
+        // of n.
+        immediateDominator = new HashMap<N, N>();
         for (Map.Entry<N, Set<N>> entry : dominatorsOf.entrySet()) {
-            N node = entry.getKey();
-            if (!node.equals(parentNode)) {
+            N n = entry.getKey();
+            if (!n.equals(entryNode)) {
                 Set<N> dominators = entry.getValue();
-                if (dominators.contains(parentNode)) {
-                    if (tree.containsNode(node)) {
-                        if (tree.getSubTree(node).containsNode(parentNode)) {
-                            throw new ABCDException("Cycle detected during dominator tree building : "
-                                    + node + " <-> " + parentNode);
-                        }
-                        tree.setParent(node, parentNode);
-                    } else {
-                        tree.addNode(parentNode, node, factory.createEdge());
+                boolean found = false;
+                for (N d : dominators) {
+                    if (!d.equals(n)
+                            && Collections3.sameContent(Sets.union(dominatorsOf.get(d),
+                                                                   Collections.singleton(n)),
+                                                        dominators)) {
+                        immediateDominator.put(n, d);
+                        found = true;
+                        break;
                     }
+                }
+                if (!found) {
+                    logger.log(Level.WARNING, "Cannot find immediate dominator of {0}",  n);
                 }
             }
         }
-        for (N child : new HashSet<N>(tree.getChildren(parentNode))) {
-            buildTree(dominatorsOf, child, tree, factory);
-        }
+        logger.log(Level.FINEST, "Immediate dominators {0}", immediateDominator);
     }
 
     private void computeDominanceFrontier() {
@@ -139,6 +148,14 @@ public class DominatorInfo<N, E> {
        }
     }
 
+    static <N, E> void buildTree(N parent, MutableTree<N, E> tree,
+                                 Multimap<N, N> children, EdgeFactory<E> factory) {
+        for (N child : children.get(parent)) {
+            tree.addNode(parent, child, factory.createEdge());
+            buildTree(child, tree, children, factory);
+        }
+    }
+
     public void update() {
         logger.log(Level.FINER, "Update dominator info");
 
@@ -149,9 +166,15 @@ public class DominatorInfo<N, E> {
                     new Object[] {entry.getKey(), entry.getValue()});
         }
 
+        computeImmediateDominators();
+
         // build dominators tree
         dominatorsTree = Trees.newTree(entryNode);
-        buildTree(dominatorsOf, entryNode, dominatorsTree, factory);
+        Multimap<N, N> children = HashMultimap.create();
+        for (Map.Entry<N, N> entry : immediateDominator.entrySet()) {
+            children.put(entry.getValue(), entry.getKey());
+        }
+        buildTree(entryNode, dominatorsTree, children, factory);
         logger.log(Level.FINEST, "Dominators tree :\n{0}", Trees.toString(dominatorsTree));
 
         // compute dominance frontier
