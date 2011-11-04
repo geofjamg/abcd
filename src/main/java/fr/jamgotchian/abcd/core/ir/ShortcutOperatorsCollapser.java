@@ -50,6 +50,16 @@ public class ShortcutOperatorsCollapser {
         IRInstSeq seq2 = bb2.getInstructions();
         JumpIfInst jumpInst1 = (JumpIfInst) seq1.getLast();
         JumpIfInst jumpInst2 = (JumpIfInst) seq2.getLast();
+        // all instructions of block 2 will be moved to block 1, so change
+        // basic block link of block 1 variables
+        for (IRInst inst : seq2) {
+            if (inst instanceof DefInst) {
+                ((DefInst) inst).getResult().setBasicBlock(bb1);
+            }
+            for (Variable v : inst.getUses()) {
+                v.setBasicBlock(bb1);
+            }
+        }
         seq1.removeLast();
         seq2.removeLast();
         seq1.addAll(seq2);

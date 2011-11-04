@@ -26,7 +26,7 @@ public class Variable {
 
     private final VariableID ID;
 
-    private final BasicBlock block;
+    private BasicBlock block;
 
     /* position in bytecode array */
     private final int position;
@@ -63,6 +63,10 @@ public class Variable {
 
     public BasicBlock getBasicBlock() {
         return block;
+    }
+
+    public void setBasicBlock(BasicBlock block) {
+        this.block = block;
     }
 
     public int getPosition() {
