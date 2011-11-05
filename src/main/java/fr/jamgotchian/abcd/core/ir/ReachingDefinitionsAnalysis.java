@@ -16,9 +16,9 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.graph.ForwardDataFlowAnalysis;
 import fr.jamgotchian.abcd.core.util.Collections3;
-import fr.jamgotchian.abcd.core.util.Sets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -37,10 +37,10 @@ public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBl
 
     private final Map<Integer, VariableID> defs = new HashMap<Integer, VariableID>();
 
-    public ReachingDefinitionsAnalysis(ControlFlowGraph CFG) {
-        super(CFG.getGraph(), CFG.getEntryBlock());
+    public ReachingDefinitionsAnalysis(ControlFlowGraph cfg) {
+        super(cfg.getGraph(), cfg.getEntryBlock());
 
-        for (BasicBlock block : CFG.getBasicBlocks()) {
+        for (BasicBlock block : cfg.getBasicBlocks()) {
             for (IRInst inst : block.getInstructions()) {
                 if (inst instanceof DefInst) {
                     DefInst def = (DefInst) inst;
@@ -88,7 +88,7 @@ public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBl
 
     @Override
     protected Set<Integer> combineValues(Set<Integer> value1, Set<Integer> value2) {
-        return Sets.intersection(value1, value2);
+        return Sets.union(value1, value2);
     }
 
     @Override

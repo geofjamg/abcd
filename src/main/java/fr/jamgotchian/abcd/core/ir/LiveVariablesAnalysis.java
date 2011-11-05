@@ -34,8 +34,8 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
     private static final Logger logger
             = Logger.getLogger(LiveVariablesAnalysis.class.getName());
 
-    public LiveVariablesAnalysis(ControlFlowGraph CFG) {
-        super(CFG.getGraph(), CFG.getExitBlock());
+    public LiveVariablesAnalysis(ControlFlowGraph cfg) {
+        super(cfg.getGraph(), cfg.getExitBlock());
     }
 
     private static Set<Variable> getDefs(BasicBlock block) {
@@ -74,7 +74,7 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
 
     @Override
     protected Set<Variable> combineValues(Set<Variable> value1, Set<Variable> value2) {
-        return Sets.intersection(value1, value2);
+        return Sets.union(value1, value2);
     }
 
     @Override
