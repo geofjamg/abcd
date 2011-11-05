@@ -148,7 +148,7 @@ public class IntermediateRepresentationBuilder {
         for (int i = 0; i < stacks.size(); i++) {
             toList.add(stacks.get(i).toList());
         }
-        for (int i = 0; i < stacks.get(0).size(); i++) {
+        for (int i = stacks.get(0).size()-1; i >= 0 ; i--) {
             Set<Variable> vars = new HashSet<Variable>(stacks.size());
             for (int j = 0; j < stacks.size(); j++) {
                 vars.add(toList.get(j).get(i));
