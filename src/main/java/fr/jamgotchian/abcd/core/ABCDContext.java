@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Modifier;
 
 /**
  *
@@ -95,6 +96,11 @@ public class ABCDContext {
         for (MethodFactory methodFactory : methodFactories) {
             Method method = methodFactory.createMethod(importManager);
             _class.addMethod(method);
+
+            // TODO : interfaces and abstract methods
+            if (method.getModifiers().contains(Modifier.ABSTRACT)) {
+                continue;
+            }
 
             String methodSignature = method.getSignature();
 
