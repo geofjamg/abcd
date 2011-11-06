@@ -32,5 +32,18 @@
             <artifactId>guava</artifactId>
             <version>r09</version>
         </dependency>
+        <dependency>
+            <groupId>org.jf</groupId>
+            <artifactId>dexlib</artifactId>
+            <version>1.2.7-dev</version>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+          <id>icedrobot.de</id>
+          <url>http://icedrobot.de:8081/nexus/content/repositories/public</url>
+        </repository>
+    </repositories>
+
 </project>

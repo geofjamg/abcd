@@ -31,6 +31,7 @@ import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
 import fr.jamgotchian.abcd.core.bytecode.DataSource;
 import fr.jamgotchian.abcd.core.bytecode.ClassFactory;
+import fr.jamgotchian.abcd.core.bytecode.dalvik.DexFileDataSource;
 import fr.jamgotchian.abcd.core.bytecode.java.ClassFileDataSource;
 import fr.jamgotchian.abcd.core.bytecode.java.JarFileDataSource;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
@@ -205,6 +206,8 @@ public class ABCDContext {
         System.out.println("             (to decompile a class)");
         System.out.println("    [options] -jar <jar file>");
         System.out.println("             (to decompile a jar)");
+        System.out.println("    [options] -dex <dex file>");
+        System.out.println("             (to decompile a dex)");
         System.out.println("");
         System.out.println("where [options] include:");
         System.out.println("");
@@ -223,6 +226,8 @@ public class ABCDContext {
         try {
             String className = null;
             String jarName = null;
+            String dexName = null;
+            int mainOptionCount = 0;
             String outDirName = null;
             String classDirName = null;
             String debugDirName = null;
@@ -230,8 +235,13 @@ public class ABCDContext {
                 String arg = args[i];
                 if ("-class".equals(arg)) {
                     className = args[i+1];
+                    mainOptionCount++;
                 } else if ("-jar".equals(arg)) {
                     jarName = args[i+1];
+                    mainOptionCount++;
+                } else if ("-dex".equals(arg)) {
+                    dexName = args[i+1];
+                    mainOptionCount++;
                 } else if ("-classdir".equals(arg)) {
                     classDirName =  args[i+1];
                 } else if ("-debug".equals(arg)) {
@@ -240,8 +250,8 @@ public class ABCDContext {
                     outDirName = args[i+1];
                 }
             }
-            if (!(className == null ^ jarName == null)) {
-                printError("Should specify -class or -jar option");
+            if (mainOptionCount != 1) {
+                printError("Should specify -class, -jar or -dex option");
             }
             if (outDirName == null) {
                 printError("Should specify -d option");
@@ -275,7 +285,7 @@ public class ABCDContext {
                     printError(classDirName + " does not exist");
                 }
                 dataSrc = new ClassFileDataSource(classDir, className);
-            } else { // jarName != null
+            } else if (jarName != null) {
                 File jarFile = new File(jarName);
                 if (!jarFile.exists()) {
                     printError(jarFile + " does not exist");
@@ -284,6 +294,15 @@ public class ABCDContext {
                     printError(jarFile + " should be a file");
                 }
                 dataSrc = new JarFileDataSource(new JarFile(jarFile));
+            } else { // dexName != null
+                File dexFile = new File(dexName);
+                if (!dexFile.exists()) {
+                    printError(dexName + " does not exist");
+                }
+                if (!dexFile.isFile()) {
+                    printError(dexName + " should be a file");
+                }
+                dataSrc = new DexFileDataSource(dexFile);
             }
 
             new ABCDContext().decompile(dataSrc, writer);

@@ -89,9 +89,13 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     public ControlFlowGraphImpl(String name, int instructionCount) {
         this(name, new BasicBlockImpl(Integer.MIN_VALUE, -1, BasicBlockType.ENTRY),
                 new BasicBlockImpl(BasicBlockType.EXIT));
-        BasicBlock instnBlock = new BasicBlockImpl(0, instructionCount-1, null);
-        addBasicBlock(instnBlock);
-        addEdge(entryBlock, instnBlock);
+        if (instructionCount > 0 ) {
+            BasicBlock instnBlock = new BasicBlockImpl(0, instructionCount-1, null);
+            addBasicBlock(instnBlock);
+            addEdge(entryBlock, instnBlock);
+        } else {
+            addEdge(entryBlock, exitBlock);
+        }
     }
 
     public ControlFlowGraphImpl(String name, BasicBlock entryBlock) {

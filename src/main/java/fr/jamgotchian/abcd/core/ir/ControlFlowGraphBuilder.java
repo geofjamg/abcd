@@ -17,17 +17,11 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
-import fr.jamgotchian.abcd.core.util.Range;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
