@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.bytecode;
+package fr.jamgotchian.abcd.core.bytecode.java;
 
-import fr.jamgotchian.abcd.core.MethodFactory;
+import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;

@@ -14,19 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core;
+package fr.jamgotchian.abcd.core.bytecode;
 
-import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
-import java.util.Collection;
+import fr.jamgotchian.abcd.core.ast.Method;
+import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
+import fr.jamgotchian.abcd.core.ir.IRInstFactory;
+import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
+import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface ClassFactory {
+public interface MethodFactory {
 
-    Class createClass(ImportManager importManager);
+    Method createMethod(ImportManager importManager);
 
-    Collection<MethodFactory> createMethodFactories();
+    ControlFlowGraphBuilder createCFGBuilder(String methodSignature);
+
+    InstructionBuilder createInstBuilder(ImportManager importManager,
+                                         TemporaryVariableFactory tmpVarFactory,
+                                         IRInstFactory instFactory);
+
+    String getBytecodeAsText();
 }

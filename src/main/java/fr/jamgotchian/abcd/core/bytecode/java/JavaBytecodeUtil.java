@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.bytecode;
+package fr.jamgotchian.abcd.core.bytecode.java;
 
 import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.type.ClassName;
