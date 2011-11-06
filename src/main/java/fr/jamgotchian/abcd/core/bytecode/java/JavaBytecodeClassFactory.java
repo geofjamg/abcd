@@ -22,6 +22,7 @@ import fr.jamgotchian.abcd.core.ast.Field;
 import fr.jamgotchian.abcd.core.ast.Package;
 import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
+import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,21 +71,23 @@ public class JavaBytecodeClassFactory implements ClassFactory {
         }
 
         // super class name
-        String superClassName = null;
+        ClassName superClassName = null;
         if (cn.superName != null) {
-            superClassName = cn.superName.replace('/', '.');
+            superClassName = importManager.newClassName(cn.superName.replace('/', '.'));
         }
 
         // class modifiers
         Set<Modifier> classModifiers = JavaBytecodeUtil.getModifiers(cn.access);
         classModifiers.remove(Modifier.SYNCHRONIZED); // ???
 
-        Class _class = new Class(_package, simpleClassName, superClassName, classModifiers);
-
         // implemented interfaces
+        List<ClassName> interfaceNames = new ArrayList<ClassName>();
         for (String _interface : (List<String>) cn.interfaces) {
-            _class.addInterface(_interface.replace('/', '.'));
+            interfaceNames.add(importManager.newClassName(_interface.replace('/', '.')));
         }
+
+        Class _class = new Class(_package, simpleClassName, superClassName,
+                                 interfaceNames, classModifiers);
 
         // fields
         for (FieldNode fn : (List<FieldNode>) cn.fields) {

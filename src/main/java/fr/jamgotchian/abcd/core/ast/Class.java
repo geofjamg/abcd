@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast;
 
+import fr.jamgotchian.abcd.core.type.ClassName;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -32,11 +33,11 @@ public class Class {
 
     private final String name;
 
-    private final String superName;
+    private final ClassName superName;
 
     private final Set<Modifier> modifiers;
 
-    private final List<String> interfaces;
+    private final List<ClassName> interfaces;
 
     private final List<Field> fields;
 
@@ -44,12 +45,13 @@ public class Class {
 
     private final List<Method> methods;
 
-    public Class(Package _package, String name, String superName, Set<Modifier> modifiers) {
+    public Class(Package _package, String name, ClassName superName,
+                 List<ClassName> interfaces, Set<Modifier> modifiers) {
         this._package = _package;
         this.name = name;
         this.superName = superName;
         this.modifiers = modifiers;
-        interfaces = new ArrayList<String>();
+        this.interfaces = interfaces;
         fields = new ArrayList<Field>();
         innerClasses = new ArrayList<Class>();
         methods = new ArrayList<Method>();
@@ -67,7 +69,7 @@ public class Class {
         return name;
     }
 
-    public String getSuperName() {
+    public ClassName getSuperName() {
         return superName;
     }
 
@@ -75,12 +77,8 @@ public class Class {
         return modifiers;
     }
 
-    public List<String> getInterfaces() {
+    public List<ClassName> getInterfaces() {
         return interfaces;
-    }
-
-    public void addInterface(String _interface) {
-        interfaces.add(_interface);
     }
 
     public List<Field> getFields() {

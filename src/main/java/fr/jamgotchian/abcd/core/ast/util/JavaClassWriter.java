@@ -51,7 +51,8 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
             writer.write(mod).writeSpace();
         }
         writer.writeKeyword("class").writeSpace().write(_class.getName());
-        if (_class.getSuperName() != null && !Object.class.getName().equals(_class.getSuperName())) {
+        if (_class.getSuperName() != null
+                && !Object.class.getName().equals(_class.getSuperName().getQualifiedName())) {
             writer.incrIndent();
             writer.newLine().writeKeyword("extends").writeSpace().write(_class.getSuperName());
             writer.decrIndent();
@@ -61,7 +62,7 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
             writer.incrIndent();
             writer.newLine().writeKeyword("implements");
             for (int i = 0; i < _class.getInterfaces().size(); i++) {
-                String _interface = _class.getInterfaces().get(i);
+                ClassName _interface = _class.getInterfaces().get(i);
                 writer.writeSpace().write(_interface);
                 if (i < _class.getInterfaces().size()-1) {
                     writer.write(",");

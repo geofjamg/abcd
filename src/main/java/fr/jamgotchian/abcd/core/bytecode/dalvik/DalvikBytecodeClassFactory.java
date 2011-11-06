@@ -22,6 +22,7 @@ import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.Package;
 import fr.jamgotchian.abcd.core.bytecode.ClassFactory;
 import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
+import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,21 +70,25 @@ public class DalvikBytecodeClassFactory implements ClassFactory {
             simpleClassName = className;
         }
         Package _package = new Package(packageName);
-        String superClassName = null;
+        ClassName superClassName = null;
         if (item.getSuperclass() != null) {
-            superClassName = Type.getType(item.getSuperclass().getTypeDescriptor())
-                    .getClassName();
+            superClassName
+                    = importManager.newClassName(Type.getType(item.getSuperclass().getTypeDescriptor()).getClassName());
         }
         AccessFlags[] accessFlags = AccessFlags.getAccessFlagsForClass(item.getAccessFlags());
         Set<Modifier> classModifiers = DalvikBytecodeUtil.getModifiers(accessFlags);
-        Class _class = new Class(_package, simpleClassName, superClassName, classModifiers);
-
+        List<ClassName> interfaceNames = new ArrayList<ClassName>();
         if (item.getInterfaces() != null) {
             for (TypeIdItem interfaceType : item.getInterfaces().getTypes()) {
-                String interfaceName = Type.getType(interfaceType.getTypeDescriptor()).getClassName();
-                _class.addInterface(interfaceName);
+                ClassName interfaceName
+                        = importManager.newClassName(Type.getType(interfaceType.getTypeDescriptor()).getClassName());
+                interfaceNames.add(interfaceName);
             }
         }
+
+        Class _class = new Class(_package, simpleClassName, superClassName,
+                                 interfaceNames, classModifiers);
+
         for (EncodedField encodedField : item.getClassData().getInstanceFields()) {
             _class.addField(createField(encodedField, importManager));
         }
