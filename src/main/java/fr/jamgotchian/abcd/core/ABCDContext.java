@@ -58,6 +58,15 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 /**
  *
@@ -71,6 +80,46 @@ public class ABCDContext {
 
     private static List<Refactorer> REFACTORERS = Collections.unmodifiableList(
             Arrays.<Refactorer>asList(new ForLoopRefactorer()));
+
+    private static final Options OPTIONS;
+
+    static {
+        Option classFile = OptionBuilder.withArgName("file")
+                            .hasArg()
+                            .withDescription("to decompile a class file")
+                            .create("class");
+        Option jarFile = OptionBuilder.withArgName("file")
+                            .hasArg()
+                            .withDescription("to decompile a jar file")
+                            .create("jar");
+        Option dexFile = OptionBuilder.withArgName("file")
+                            .hasArg()
+                            .withDescription("to decompile a dex file")
+                            .create("dex");
+        OptionGroup file = new OptionGroup();
+        file.addOption(classFile);
+        file.addOption(jarFile);
+        file.addOption(dexFile);
+        file.setRequired(true);
+        Option outputDir = OptionBuilder.withArgName("dir")
+                            .hasArg()
+                            .withDescription("directory where to write java sources")
+                            .isRequired(true)
+                            .create("d");
+        Option classDir = OptionBuilder.withArgName("dir")
+                            .hasArg()
+                            .withDescription("directory where to find classes")
+                            .create("classdir");
+        Option debugDir = OptionBuilder.withArgName("dir")
+                            .hasArg()
+                            .withDescription("directory where to write analysis data")
+                            .create("debug");
+        OPTIONS = new Options();
+        OPTIONS.addOptionGroup(file)
+                .addOption(outputDir)
+                .addOption(classDir)
+                .addOption(debugDir);
+    }
 
     public ABCDContext() {
     }
@@ -201,19 +250,8 @@ public class ABCDContext {
     }
 
     private static void printUsage() {
-        System.out.println("Usage:");
-        System.out.println("    [options] -class <class file>");
-        System.out.println("             (to decompile a class)");
-        System.out.println("    [options] -jar <jar file>");
-        System.out.println("             (to decompile a jar)");
-        System.out.println("    [options] -dex <dex file>");
-        System.out.println("             (to decompile a dex)");
-        System.out.println("");
-        System.out.println("where [options] include:");
-        System.out.println("");
-        System.out.println("    -d <dir>          Output directory to write java sources");
-        System.out.println("    -classdir <dir>   Directory where to find classes");
-        System.out.println("    -analysedir <dir> Directory where to write analysis data");
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("abcd", OPTIONS);
         System.exit(1);
     }
 
@@ -222,91 +260,66 @@ public class ABCDContext {
         printUsage();
     }
 
+    private static void checkDir(File dir) {
+        if (!dir.exists()) {
+            printError(dir + " does not exist");
+        }
+        if (!dir.isDirectory()) {
+            printError(dir + " is not a directory");
+        }
+    }
+
+    private static void checkFile(File file) {
+        if (!file.exists()) {
+            printError(file + " does not exist");
+        }
+        if (!file.isFile()) {
+            printError(file + " is not a file");
+        }
+    }
+
     public static void main(String[] args) {
         try {
-            String className = null;
-            String jarName = null;
-            String dexName = null;
-            int mainOptionCount = 0;
-            String outDirName = null;
-            String classDirName = null;
-            String debugDirName = null;
-            for (int i = 0; i < args.length; i++) {
-                String arg = args[i];
-                if ("-class".equals(arg)) {
-                    className = args[i+1];
-                    mainOptionCount++;
-                } else if ("-jar".equals(arg)) {
-                    jarName = args[i+1];
-                    mainOptionCount++;
-                } else if ("-dex".equals(arg)) {
-                    dexName = args[i+1];
-                    mainOptionCount++;
-                } else if ("-classdir".equals(arg)) {
-                    classDirName =  args[i+1];
-                } else if ("-debug".equals(arg)) {
-                    debugDirName = args[i+1];
-                } else if ("-d".equals(arg)) {
-                    outDirName = args[i+1];
-                }
-            }
-            if (mainOptionCount != 1) {
-                printError("Should specify -class, -jar or -dex option");
-            }
-            if (outDirName == null) {
-                printError("Should specify -d option");
-            }
-            File outDir = new File(outDirName);
-            if (!outDir.isDirectory()) {
-                printError(outDirName + " should be a directory");
-            }
-            if (!outDir.exists()) {
-                printError(outDirName + " does not exist");
-            }
+            CommandLineParser parser = new GnuParser();
+            try {
+                CommandLine line = parser.parse(OPTIONS, args);
+                File outDir = new File(line.getOptionValue("d"));
+                checkDir(outDir);
 
-            ABCDWriter writer = null;
-            if (debugDirName != null) {
-                File debugDir = new File(debugDirName);
-                writer = new DebugABCDWriter(DEBUG, outDir, debugDir);
-            } else {
-                writer = new DefaultABCDWriter(DEBUG, outDir);
+                ABCDWriter writer = null;
+                if (line.hasOption("debug")) {
+                    File debugDir = new File(line.getOptionValue("debug"));
+                    checkDir(debugDir);
+                    writer = new DebugABCDWriter(DEBUG, outDir, debugDir);
+                } else {
+                    writer = new DefaultABCDWriter(DEBUG, outDir);
+                }
+
+                DataSource dataSrc = null;
+                if (line.hasOption("class")) {
+                    String className = line.getOptionValue("class");
+                    if (line.hasOption("classdir")) {
+                        File classDir = new File(line.getOptionValue("classdir"));
+                        checkDir(classDir);
+                        dataSrc = new ClassFileDataSource(classDir, className);
+                    } else {
+                        printError("classdir option is mandatory with class option");
+                    }
+                } else if (line.hasOption("jar")) {
+                    File jarFile = new File(line.getOptionValue("jar"));
+                    checkFile(jarFile);
+                    dataSrc = new JarFileDataSource(new JarFile(jarFile));
+                } else { // line.hasOption("dex")
+                    File dexFile = new File(line.getOptionValue("dex"));
+                    checkFile(dexFile);
+                    dataSrc = new DexFileDataSource(dexFile);
+                }
+
+                new ABCDContext().decompile(dataSrc, writer);
             }
-
-            DataSource dataSrc = null;
-            if (className != null) {
-                if (classDirName == null) {
-                    printError("Should specify -classdir option");
-                }
-                File classDir = new File(classDirName);
-                if (!classDir.isDirectory()) {
-                    printError(classDirName + " should be a directory");
-                }
-                if (!classDir.exists()) {
-                    printError(classDirName + " does not exist");
-                }
-                dataSrc = new ClassFileDataSource(classDir, className);
-            } else if (jarName != null) {
-                File jarFile = new File(jarName);
-                if (!jarFile.exists()) {
-                    printError(jarFile + " does not exist");
-                }
-                if (!jarFile.isFile()) {
-                    printError(jarFile + " should be a file");
-                }
-                dataSrc = new JarFileDataSource(new JarFile(jarFile));
-            } else { // dexName != null
-                File dexFile = new File(dexName);
-                if (!dexFile.exists()) {
-                    printError(dexName + " does not exist");
-                }
-                if (!dexFile.isFile()) {
-                    printError(dexName + " should be a file");
-                }
-                dataSrc = new DexFileDataSource(dexFile);
+            catch(ParseException e) {
+                printError(e.getMessage());
             }
-
-            new ABCDContext().decompile(dataSrc, writer);
-
         } catch (Throwable exc) {
             logger.log(Level.SEVERE, exc.toString(), exc);
         }
