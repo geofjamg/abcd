@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core;
 
+import fr.jamgotchian.abcd.core.Summary.ErrorInfo;
 import fr.jamgotchian.abcd.core.ast.AbstractSyntaxTreeBuilder;
 import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
@@ -125,25 +126,49 @@ public class ABCDContext {
     }
 
     private void decompile(DataSource dataSrc, ABCDWriter writer) throws IOException {
+        Summary summary = new Summary();
         for (ClassFactory classFactory : dataSrc.createClassFactories()) {
             ImportManager importManager = new ImportManager();
-            Class _class = decompileClass(classFactory, importManager, writer);
+            Class _class = decompileClass(classFactory, importManager, writer, summary);
 
             CompilationUnit compilUnit = new CompilationUnit(_class.getPackage(), importManager);
             compilUnit.getClasses().add(_class);
 
             writer.writeAST(compilUnit);
         }
+
+        ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Summary", '#');
+
+        logger.log(Level.FINE, "Number of successes : {0}",
+                Integer.toString(summary.getNumberOfSuccesses()));
+        logger.log(Level.FINE, "Number of failures : {0}",
+                Integer.toString(summary.getNumberOfFailures()));
+        logger.log(Level.FINE, "Number of class perfectly decompiled : {0}",
+                Integer.toString(summary.getNumberOfClassesPerfectlyDecompiled()));
+        logger.log(Level.FINE, "Number of class partially decompiled : {0}",
+                Integer.toString(summary.getNumberOfClassesPartiallyDecompiled()));
+        List<String> errorColumn = new ArrayList<String>(summary.getErrors().size()+1);
+        List<String> classColumn = new ArrayList<String>(summary.getErrors().size()+1);
+        List<String> methodColumn = new ArrayList<String>(summary.getErrors().size()+1);
+        errorColumn.add("Error");
+        classColumn.add("Class");
+        methodColumn.add("Method");
+        for (ErrorInfo error : summary.getErrors()) {
+            errorColumn.add(error.getMessage());
+            classColumn.add(error.getClassName());
+            methodColumn.add(error.getMethodSignature());
+        }
+        logger.log(Level.FINE, "\n{0}", ConsoleUtil.printTable(errorColumn, classColumn, methodColumn));
     }
 
     private Class decompileClass(ClassFactory classFactory, ImportManager importManager,
-                                 ABCDWriter writer) throws IOException {
+                                 ABCDWriter writer, Summary summary) throws IOException {
         Class _class = classFactory.createClass(importManager);
 
         ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Decompile class {0}",
                 '#', _class.getQualifiedName());
 
-        List<String> errorMsgs = new ArrayList<String>();
+        boolean error = false;
 
         Collection<MethodFactory> methodFactories = classFactory.createMethodFactories();
         for (MethodFactory methodFactory : methodFactories) {
@@ -183,8 +208,8 @@ public class ABCDContext {
                                                                 instFactory).build(writer);
 
                 // analyse local variables types
-                new LocalVariableTypeAnalyser(cfg, method, importManager,
-                                              instFactory).analyse();
+//                new LocalVariableTypeAnalyser(cfg, method, importManager,
+//                                              instFactory).analyse();
 
                 LocalVariableTable table = cfg.getLocalVariableTable();
                 for (LocalVariableDeclaration decl : method.getArguments()) {
@@ -215,7 +240,8 @@ public class ABCDContext {
 //                    refactorer.refactor(method.getBody());
 //                }
 
-            } catch (Exception exc) {
+                summary.incrNumberOfSuccesses();
+            } catch (Throwable exc) {
                 logger.log(Level.SEVERE, exc.toString(), exc);
 
                 method.getBody().clear();
@@ -229,22 +255,19 @@ public class ABCDContext {
                                                                      "Decompilation failed",
                                                                      importManager));
 
-                errorMsgs.add(exc.toString() + " (" + methodSignature + ")");
+                error = true;
+                summary.incrNumberOfFailures();
+                summary.addError(new ErrorInfo(_class.getQualifiedName(),
+                                                       methodSignature,
+                                                       exc.toString()));
             }
         }
 
-        ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Summary {0}",
-                        '#', _class.getQualifiedName());
-
-        logger.log(Level.FINE, "Succeed : {0}/{1}",
-                new Object[]{methodFactories.size() - errorMsgs.size(), methodFactories.size()});
-        StringBuilder errorStr = new StringBuilder();
-        for (String errorMsg : errorMsgs) {
-            errorStr.append("  ").append(errorMsg).append("\n");
+        if (error) {
+            summary.incrNumberOfClassesPartiallyDecompiled();
+        } else {
+            summary.incrNumberOfClassesPerfectlyDecompiled();
         }
-        logger.log(Level.FINE, "Failed : {0}/{1}\n{2}",
-                new Object[]{errorMsgs.size(), methodFactories.size(),
-                    errorStr.toString()});
 
         return _class;
     }
@@ -252,7 +275,7 @@ public class ABCDContext {
     private static void printUsage() {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("abcd", OPTIONS);
-        System.exit(1);
+        System.exit(-1);
     }
 
     private static void printError(String msg) {
