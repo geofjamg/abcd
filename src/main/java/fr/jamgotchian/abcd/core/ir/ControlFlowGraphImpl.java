@@ -455,7 +455,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         Set<BasicBlock> toRemove = new HashSet<BasicBlock>();
         for (BasicBlock bb : graph.getVertices()) {
             if (getPredecessorCountOf(bb) >= 1 &&
-                getNormalSuccessorCountOf(bb) == 1) {
+                getNormalSuccessorCountOf(bb) == 1 &&
+                    !getFirstNormalOutgoingEdgeOf(bb).hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
                 boolean remove = true;
                 IRInstSeq Insts = bb.getInstructions();
                 if (Insts != null) {
