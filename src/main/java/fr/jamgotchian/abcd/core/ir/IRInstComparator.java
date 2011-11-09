@@ -181,7 +181,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
         SetFieldInst inst2 = (SetFieldInst) arg;
         return mapping.useEqual(inst.getObject(), inst2.getObject())
                 && inst.getFieldName().equals(inst2.getFieldName())
-                && mapping.defEqual(inst.getValue(), inst2.getValue());
+                && mapping.useEqual(inst.getValue(), inst2.getValue());
     }
 
     public Boolean visit(JumpIfInst inst, IRInst arg) {
