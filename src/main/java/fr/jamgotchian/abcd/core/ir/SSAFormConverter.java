@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Convert IR to pruned SSA form.
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
@@ -47,6 +48,8 @@ public class SSAFormConverter {
     private Multimap<BasicBlock, Integer> liveVariables;
 
     private Multimap<Integer, BasicBlock> defBlocks;
+
+    private Set<Integer> globals;
 
     public SSAFormConverter(ControlFlowGraph graph, IRInstFactory instFactory) {
         this.graph = graph;
@@ -70,29 +73,31 @@ public class SSAFormConverter {
 
         Multimap<Integer, BasicBlock> phi = HashMultimap.create();
         for (int defIndex : defBlocks.keySet()) {
-            Set<BasicBlock> w = new HashSet<BasicBlock>(defBlocks.get(defIndex));
-            while (w.size() > 0) {
-                BasicBlock n = w.iterator().next();
-                w.remove(n);
-                Set<Edge> frontier = dominatorInfo.getDominanceFrontierOf(n);
-                for (Edge e : frontier) {
-                    BasicBlock y = graph.getEdgeTarget(e);
-                    if (!phi.get(defIndex).contains(y)) {
-                        boolean contains = containsDef(y, defIndex);
-                        List<Variable> args = new ArrayList<Variable>();
-                        for (int i = 0; i < graph.getPredecessorCountOf(y); i++) {
-                            args.add(new Variable(defIndex, y, -1));
-                        }
-                        // is definition alive in basic block y ?
-                        if (liveVariables.get(y).contains(defIndex)) {
-                            y.getInstructions()
-                             .insertAt(0, instFactory.newPhi(new Variable(defIndex, y, -1), args));
-                            logger.log(Level.FINEST, "  Add Phi function to {0} for var {1}",
-                                    new Object[] {y, defIndex});
-                        }
-                        phi.put(defIndex, y);
-                        if (!contains) {
-                            w.add(y);
+            if (globals.contains(defIndex)) {
+                Set<BasicBlock> w = new HashSet<BasicBlock>(defBlocks.get(defIndex));
+                while (w.size() > 0) {
+                    BasicBlock n = w.iterator().next();
+                    w.remove(n);
+                    Set<Edge> frontier = dominatorInfo.getDominanceFrontierOf(n);
+                    for (Edge e : frontier) {
+                        BasicBlock y = graph.getEdgeTarget(e);
+                        if (!phi.get(defIndex).contains(y)) {
+                            boolean contains = containsDef(y, defIndex);
+                            List<Variable> args = new ArrayList<Variable>();
+                            for (int i = 0; i < graph.getPredecessorCountOf(y); i++) {
+                                args.add(new Variable(defIndex, y, -1));
+                            }
+                            // is definition alive in basic block y ?
+                            if (liveVariables.get(y).contains(defIndex)) {
+                                y.getInstructions()
+                                 .insertAt(0, instFactory.newPhi(new Variable(defIndex, y, -1), args));
+                                logger.log(Level.FINEST, "  Add Phi function to {0} for var {1}",
+                                        new Object[] {y, defIndex});
+                            }
+                            phi.put(defIndex, y);
+                            if (!contains) {
+                                w.add(y);
+                            }
                         }
                     }
                 }
@@ -102,10 +107,12 @@ public class SSAFormConverter {
 
     private void renameVariables() {
         for (int defIndex : defBlocks.keySet()) {
-            Counter versionCount = new Counter(0);
-            Deque<Integer> versionStack = new ArrayDeque<Integer>();
-            versionStack.push(0);
-            renameVariables(defIndex, graph.getEntryBlock(), versionStack, versionCount);
+            if (globals.contains(defIndex)) {
+                Counter versionCount = new Counter(0);
+                Deque<Integer> versionStack = new ArrayDeque<Integer>();
+                versionStack.push(0);
+                renameVariables(defIndex, graph.getEntryBlock(), versionStack, versionCount);
+            }
         }
     }
 
@@ -168,8 +175,8 @@ public class SSAFormConverter {
         }
     }
 
-    private static void addInst(BasicBlock b, IRInst inst) {
-        IRInstSeq insts = b.getInstructions();
+    private static void addInst(BasicBlock bb, IRInst inst) {
+        IRInstSeq insts = bb.getInstructions();
         if (insts.isEmpty()) {
             insts.add(inst);
         } else {
@@ -183,10 +190,10 @@ public class SSAFormConverter {
     }
 
     private void removePhiFunctions() {
-        for (BasicBlock b : graph.getBasicBlocks()) {
+        for (BasicBlock bb : graph.getBasicBlocks()) {
             List<BasicBlock> predecessors
-                    = new ArrayList<BasicBlock>(graph.getPredecessorsOf(b));
-            IRInstSeq insts = b.getInstructions();
+                    = new ArrayList<BasicBlock>(graph.getPredecessorsOf(bb));
+            IRInstSeq insts = bb.getInstructions();
             for (Iterator<IRInst> it = insts.iterator(); it.hasNext();) {
                 IRInst inst = it.next();
                 if (inst instanceof PhiInst) {
@@ -195,10 +202,8 @@ public class SSAFormConverter {
                         Variable result = phiInst.getResult();
                         Variable v = phiInst.getArgs().get(i);
                         BasicBlock p = predecessors.get(i);
-                        if (!result.getID().equals(v.getID())) {
-                            addInst(p, instFactory.newAssignVar(result.clone(),
-                                                                v /* no need to clone */));
-                        }
+                        addInst(p, instFactory.newAssignVar(result.clone(),
+                                                            v /* no need to clone */));
                     }
                     it.remove();
                 }
@@ -228,10 +233,32 @@ public class SSAFormConverter {
             for (IRInst inst : block.getInstructions()) {
                 if (inst instanceof DefInst) {
                     Variable def = ((DefInst) inst).getResult();
-                    defBlocks.put(def.getIndex(), block);
+                    if (!def.isTemporary()) {
+                        defBlocks.put(def.getIndex(), block);
+                    }
                 }
             }
         }
+
+        // local liveness : ie, used before defined in any basic block
+        globals = new HashSet<Integer>();
+        for (BasicBlock bb : graph.getBasicBlocks()) {
+            Set<Integer> defined = new HashSet<Integer>();
+            for (IRInst inst : bb.getInstructions()) {
+                for (Variable use : inst.getUses()) {
+                    if (!use.isTemporary() && !defined.contains(use.getIndex())) {
+                        globals.add(use.getIndex());
+                    }
+                }
+                if (inst instanceof DefInst) {
+                    Variable def = ((DefInst) inst).getResult();
+                    if (!def.isTemporary()) {
+                        defined.add(def.getIndex());
+                    }
+                }
+            }
+        }
+        logger.log(Level.FINEST, "Local liveness {0}", globals);
 
         insertPhiFunctions();
 
