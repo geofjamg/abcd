@@ -128,6 +128,22 @@ public class AbstractSyntaxTreeBuilder {
         private RegionIRInstVisitor() {
         }
 
+        private boolean isliveAtBB(BasicBlock bb, Variable var) {
+            // is var live in bb ?
+            for (IRInst inst : bb.getInstructions()) {
+                if (inst.getUses().contains(var)) {
+                    return true;
+                }
+            }
+            // is var live at entry of predecessors
+            for (BasicBlock s : cfg.getSuccessorsOf(bb)) {
+                if (liveVariables.get(s).contains(var)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private Expression getVarExpr(Variable var) {
             if (var.isTemporary()) {
                 Expression expr = expressions.get(var.getID());
@@ -270,7 +286,7 @@ public class AbstractSyntaxTreeBuilder {
                 Expression callExpr
                         = Expressions.newMethodExpr(objExpr, inst.getSignature().getMethodName(),
                                                     argsExpr);
-                if (liveVariables.get(bb).contains(resultVar)) {
+                if (isliveAtBB(bb, resultVar)) {
                     expressions.put(resultVar.getID(), callExpr);
                 } else {
                     blockStmt.add(new ExpressionStatement(callExpr));
@@ -292,7 +308,7 @@ public class AbstractSyntaxTreeBuilder {
             Expression callExpr
                     = Expressions.newMethodExpr(typeExpr, inst.getSignature().getMethodName(),
                                                 argsExpr);
-            if (liveVariables.get(bb).contains(resultVar)) {
+            if (isliveAtBB(bb, resultVar)) {
                 expressions.put(resultVar.getID(), callExpr);
             } else {
                 blockStmt.add(new ExpressionStatement(callExpr));
