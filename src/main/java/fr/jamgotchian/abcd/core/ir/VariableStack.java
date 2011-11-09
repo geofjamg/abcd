@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.type.ComputationalType;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -40,8 +41,10 @@ public class VariableStack {
         }
     }
 
-    public void push(Variable v) {
-        stack.push(v.clone());
+    public void push(Variable v, ComputationalType type) {
+        Variable clone = v.clone();
+        clone.setComputationalType(type);
+        stack.push(clone);
     }
 
     public Variable pop() {

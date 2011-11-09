@@ -164,6 +164,33 @@ public class JavaType {
         return arrayDimension;
     }
 
+    public ComputationalType getComputationalType() {
+        if (isReference()) {
+            return ComputationalType.REFERENCE;
+        } else {
+            switch (primitiveType) {
+                case BOOLEAN:
+                case BYTE:
+                case CHAR:
+                case SHORT:
+                case INTEGER:
+                    return ComputationalType.INT;
+
+                case LONG:
+                    return ComputationalType.LONG;
+
+                case FLOAT:
+                    return ComputationalType.FLOAT;
+
+                case DOUBLE:
+                    return ComputationalType.DOUBLE;
+
+                default:
+                    throw new ABCDException("Cannot convert " + this + " to computational type");
+            }
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof JavaType)) {

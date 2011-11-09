@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.type.ComputationalType;
 import fr.jamgotchian.abcd.core.type.JavaType;
 
 /**
@@ -33,6 +34,8 @@ public class Variable {
 
     private JavaType type;
 
+    private ComputationalType computationalType;
+
     private String name;
 
     Variable(VariableID ID, BasicBlock block, int position) {
@@ -43,6 +46,15 @@ public class Variable {
 
     public Variable(int index, BasicBlock block, int position) {
         this(new VariableID(index), block, position);
+    }
+
+    private Variable(Variable other) {
+        ID = other.ID.clone();
+        block = other.block;
+        position = other.position;
+        type = other.type;
+        computationalType = other.computationalType;
+        name = other.name;
     }
 
     public VariableID getID() {
@@ -85,6 +97,14 @@ public class Variable {
         this.type = type;
     }
 
+    public ComputationalType getComputationalType() {
+        return computationalType;
+    }
+
+    public void setComputationalType(ComputationalType computationalType) {
+        this.computationalType = computationalType;
+    }
+
     public String getName() {
         return name;
     }
@@ -109,7 +129,7 @@ public class Variable {
 
     @Override
     public Variable clone() {
-        return new Variable(ID.clone(), block, position);
+        return new Variable(this);
     }
 
     @Override

@@ -24,6 +24,7 @@ import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.ComputationalType;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.ArrayList;
@@ -100,7 +101,7 @@ public class IntermediateRepresentationBuilder {
                 tmpInst = instFactory.newNewObject(exceptionVar, JavaType.newRefType(className));
             }
             bb.getInstructions().add(tmpInst);
-            inputStack.push(exceptionVar);
+            inputStack.push(exceptionVar, ComputationalType.REFERENCE);
         } else {
             if (inputStacks.isEmpty()) {
                 inputStack = new VariableStack();
@@ -154,11 +155,12 @@ public class IntermediateRepresentationBuilder {
                 vars.add(toList.get(j).get(i));
             }
             if (vars.size() == 1) {
-                stacksMerge.push(vars.iterator().next());
+                Variable var1 = vars.iterator().next();
+                stacksMerge.push(var1, var1.getComputationalType());
             } else {
                 Variable result = tmpVarFactory.create(bb);
                 bb.getInstructions().add(instFactory.newChoice(result, vars));
-                stacksMerge.push(result);
+                stacksMerge.push(result, vars.iterator().next().getComputationalType());
             }
         }
 

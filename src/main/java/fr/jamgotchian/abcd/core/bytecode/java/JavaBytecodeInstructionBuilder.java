@@ -41,6 +41,8 @@ import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.ir.VariableStack;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.ComputationalType;
+import static fr.jamgotchian.abcd.core.type.ComputationalType.Category.*;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.*;
@@ -98,6 +100,41 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             this.stack = stack;
         }
 
+        private void pushGetArray(BasicBlock bb, ComputationalType type) {
+            Variable arrayIndex = stack.pop();
+            Variable arrayVar = stack.pop();
+            Variable tmpResultVar = tmpVarFactory.create(bb);
+            bb.getInstructions().add(instFactory.newGetArray(tmpResultVar, arrayVar, arrayIndex));
+            stack.push(tmpResultVar, type);
+        }
+
+        private void pushBinOp(BasicBlock bb, IRBinaryOperator operator, ComputationalType type) {
+            Variable right = stack.pop();
+            Variable left = stack.pop();
+            Variable tmpResult = tmpVarFactory.create(bb);
+            bb.getInstructions().add(instFactory.newBinary(tmpResult, operator, left, right));
+            stack.push(tmpResult, type);
+        }
+
+        private void pushUnaryOp(BasicBlock bb, IRUnaryOperator operator, ComputationalType type) {
+            Variable tmpResult = tmpVarFactory.create(bb);
+            bb.getInstructions().add(instFactory.newUnary(tmpResult, operator, stack.pop()));
+            stack.push(tmpResult, type);
+        }
+
+        private void pushCast(BasicBlock bb, JavaType type) {
+            Variable tmpResult = tmpVarFactory.create(bb);
+            Variable var = stack.pop();
+            bb.getInstructions().add(instFactory.newCast(tmpResult, var, type));
+            stack.push(tmpResult, type.getComputationalType());
+        }
+
+        private void pushAssign(BasicBlock bb, ComputationalType type, Variable var) {
+            Variable tmpVar = tmpVarFactory.create(bb);
+            stack.push(tmpVar, type);
+            bb.getInstructions().add(instFactory.newAssignVar(tmpVar, var));
+        }
+
         public void before(BasicBlock bb) {
         }
 
@@ -110,7 +147,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newGetStaticField(tmpVar, className, fieldName, fieldType));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, fieldType.getComputationalType());
                     break;
                 }
 
@@ -125,7 +162,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     Variable resultVar = tmpVarFactory.create(bb);
                     Variable objVar = stack.pop();
                     bb.getInstructions().add(instFactory.newGetField(resultVar, objVar, fieldName, fieldType));
-                    stack.push(resultVar);
+                    stack.push(resultVar, fieldType.getComputationalType());
                     break;
                 }
 
@@ -135,6 +172,9 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     bb.getInstructions().add(instFactory.newSetField(objVar, fieldName, fieldType, valueVar));
                     break;
                 }
+
+                default:
+                    throw new InternalError();
             }
         }
 
@@ -157,123 +197,130 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case ACONST_NULL: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new NullConst(classNameFactory)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.REFERENCE);
                     break;
                 }
 
                 case ICONST_M1: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(1)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case ICONST_0: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(0)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case ICONST_1: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(1)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case ICONST_2: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(2)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case ICONST_3: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(3)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case ICONST_4: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(4)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case ICONST_5: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst(5)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case LCONST_0: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new LongConst(0)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.LONG);
                     break;
                 }
 
                 case LCONST_1: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new LongConst(1)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.LONG);
                     break;
                 }
 
                 case FCONST_0: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new FloatConst(0f)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.FLOAT);
                     break;
                 }
 
                 case FCONST_1: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new FloatConst(1f)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.FLOAT);
                     break;
                 }
 
                 case FCONST_2: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new FloatConst(2f)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.FLOAT);
                     break;
                 }
 
                 case DCONST_0: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new DoubleConst(0d)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.DOUBLE);
                     break;
                 }
 
                 case DCONST_1: {
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new DoubleConst(1d)));
-                    stack.push(tmpVar);
+                    stack.push(tmpVar, ComputationalType.DOUBLE);
                     break;
                 }
 
                 case IALOAD:
-                case LALOAD:
-                case FALOAD:
-                case DALOAD:
-                case AALOAD:
                 case BALOAD:
                 case CALOAD:
-                case SALOAD: {
-                    Variable arrayIndex = stack.pop();
-                    Variable arrayVar = stack.pop();
-                    Variable tmpResultVar = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newGetArray(tmpResultVar, arrayVar, arrayIndex));
-                    stack.push(tmpResultVar);
+                case SALOAD:
+                    pushGetArray(bb, ComputationalType.INT);
                     break;
-                }
+
+                case LALOAD:
+                    pushGetArray(bb, ComputationalType.LONG);
+                    break;
+
+                case FALOAD:
+                    pushGetArray(bb, ComputationalType.FLOAT);
+                    break;
+
+                case DALOAD:
+                    pushGetArray(bb, ComputationalType.DOUBLE);
+                    break;
+
+                case AALOAD:
+                    pushGetArray(bb, ComputationalType.REFERENCE);
+                    break;
 
                 case IASTORE:
                 case LASTORE:
@@ -290,291 +337,349 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     break;
                 }
 
-                case POP: {
+                case POP:
                     stack.pop();
                     break;
-                }
 
                 case POP2:
-                    throw new ABCDException("TODO");
+                    if (stack.pop().getComputationalType().getCategory() == CATEGORY_1) {
+                        stack.pop();
+                    }
+                    break;
 
                 case DUP: {
                     Variable var = stack.pop();
-                    stack.push(var);
-                    stack.push(var);
+                    stack.push(var, var.getComputationalType());
+                    stack.push(var, var.getComputationalType());
                     break;
                 }
 
                 case DUP_X1: {
                     Variable var1 = stack.pop();
                     Variable var2 = stack.pop();
-                    stack.push(var1);
-                    stack.push(var2);
-                    stack.push(var1);
+                    stack.push(var1, var1.getComputationalType());
+                    stack.push(var2, var2.getComputationalType());
+                    stack.push(var1, var1.getComputationalType());
                     break;
                 }
 
-                case DUP_X2:
-                case DUP2_X1:
-                case DUP2_X2:
-                    throw new ABCDException("TODO");
+                case DUP_X2: {
+                    Variable var1 = stack.pop();
+                    assert var1.getComputationalType().getCategory() == CATEGORY_1;
+                    Variable var2 = stack.pop();
+                    if (var2.getComputationalType().getCategory() == CATEGORY_1) {
+                        // form 1
+                        Variable var3 = stack.pop();
+                        assert var3.getComputationalType().getCategory() == CATEGORY_1;
+                        stack.push(var1, var1.getComputationalType());
+                        stack.push(var3, var3.getComputationalType());
+                        stack.push(var2, var2.getComputationalType());
+                        stack.push(var1, var1.getComputationalType());
+                    } else {
+                        // form 2
+                        stack.push(var1, var1.getComputationalType());
+                        stack.push(var2, var2.getComputationalType());
+                        stack.push(var1, var1.getComputationalType());
+                    }
+                    break;
+                }
+
+                case DUP2: {
+                    Variable var1 = stack.pop();
+                    if (var1.getComputationalType().getCategory() == CATEGORY_2) {
+                        // form 2
+                        stack.push(var1, var1.getComputationalType());
+                        stack.push(var1, var1.getComputationalType());
+                    } else {
+                        // form 1
+                        Variable var2 = stack.pop();
+                        assert var2.getComputationalType().getCategory() == CATEGORY_1;
+                        stack.push(var2, var2.getComputationalType());
+                        stack.push(var1, var1.getComputationalType());
+                        stack.push(var2, var2.getComputationalType());
+                        stack.push(var1, var1.getComputationalType());
+                    }
+                    break;
+                }
+
+                case DUP2_X1: {
+                    Variable var1 = stack.pop();
+                    Variable var2 = stack.pop();
+                    assert var2.getComputationalType().getCategory() == CATEGORY_1;
+                    if (var1.getComputationalType().getCategory() == CATEGORY_2) {
+                        // form 2
+                        stack.push(var1, var1.getComputationalType());
+                        stack.push(var2, var2.getComputationalType());
+                        stack.push(var1, var1.getComputationalType());
+                    } else {
+                        // form 1
+                        Variable var3 = stack.pop();
+                        assert var3.getComputationalType().getCategory() == CATEGORY_1;
+                        stack.push(var2, var2.getComputationalType());
+                        stack.push(var1, var1.getComputationalType());
+                        stack.push(var3, var3.getComputationalType());
+                        stack.push(var2, var2.getComputationalType());
+                        stack.push(var1, var1.getComputationalType());
+                    }
+                    break;
+                }
+
+                case DUP2_X2: {
+                    Variable var1 = stack.pop();
+                    Variable var2 = stack.pop();
+                    if (var1.getComputationalType().getCategory() == CATEGORY_2) {
+                        if (var2.getComputationalType().getCategory() == CATEGORY_2) {
+                            // form 4
+                            stack.push(var1, var1.getComputationalType());
+                            stack.push(var2, var2.getComputationalType());
+                            stack.push(var1, var1.getComputationalType());
+                        } else {
+                            // form 2
+                            Variable var3 = stack.pop();
+                            assert var3.getComputationalType().getCategory() == CATEGORY_1;
+                            stack.push(var1, var1.getComputationalType());
+                            stack.push(var3, var3.getComputationalType());
+                            stack.push(var2, var2.getComputationalType());
+                            stack.push(var1, var1.getComputationalType());
+                        }
+                    } else if (var1.getComputationalType().getCategory() == CATEGORY_1
+                            && var2.getComputationalType().getCategory() == CATEGORY_1) {
+                        Variable var3 = stack.pop();
+                        if (var3.getComputationalType().getCategory() == CATEGORY_2) {
+                            // form 3
+                            stack.push(var2, var2.getComputationalType());
+                            stack.push(var1, var1.getComputationalType());
+                            stack.push(var3, var3.getComputationalType());
+                            stack.push(var2, var2.getComputationalType());
+                            stack.push(var1, var1.getComputationalType());
+                        } else {
+                            // form 1
+                            Variable var4 = stack.pop();
+                            assert var4.getComputationalType().getCategory() == CATEGORY_1;
+                            stack.push(var2, var2.getComputationalType());
+                            stack.push(var1, var1.getComputationalType());
+                            stack.push(var4, var4.getComputationalType());
+                            stack.push(var3, var3.getComputationalType());
+                            stack.push(var2, var2.getComputationalType());
+                            stack.push(var1, var1.getComputationalType());
+                        }
+                    } else {
+                        throw new InternalError();
+                    }
+                    break;
+                }
 
                 case SWAP: {
                     Variable var1 = stack.pop();
                     Variable var2 = stack.pop();
-                    stack.push(var1);
-                    stack.push(var2);
+                    stack.push(var1, var1.getComputationalType());
+                    stack.push(var2, var2.getComputationalType());
                     break;
                 }
 
                 case IADD:
-                case LADD:
-                case FADD:
-                case DADD: {
-                    Variable right = stack.pop();
-                    Variable left = stack.pop();
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.PLUS, left, right));
-                    stack.push(tmpResult);
+                    pushBinOp(bb, IRBinaryOperator.PLUS, ComputationalType.INT);
                     break;
-                }
+
+                case LADD:
+                    pushBinOp(bb, IRBinaryOperator.PLUS, ComputationalType.LONG);
+                    break;
+
+                case FADD:
+                    pushBinOp(bb, IRBinaryOperator.PLUS, ComputationalType.FLOAT);
+                    break;
+
+                case DADD:
+                    pushBinOp(bb, IRBinaryOperator.PLUS, ComputationalType.DOUBLE);
+                    break;
 
                 case ISUB:
-                case LSUB:
-                case FSUB:
-                case DSUB: {
-                    Variable right = stack.pop();
-                    Variable left = stack.pop();
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.MINUS, left, right));
-                    stack.push(tmpResult);
+                    pushBinOp(bb, IRBinaryOperator.MINUS, ComputationalType.INT);
                     break;
-                }
+
+                case LSUB:
+                    pushBinOp(bb, IRBinaryOperator.MINUS, ComputationalType.LONG);
+                    break;
+
+                case FSUB:
+                    pushBinOp(bb, IRBinaryOperator.MINUS, ComputationalType.FLOAT);
+                    break;
+
+                case DSUB:
+                    pushBinOp(bb, IRBinaryOperator.MINUS, ComputationalType.DOUBLE);
+                    break;
 
                 case IMUL:
-                case LMUL:
-                case FMUL:
-                case DMUL: {
-                    Variable right = stack.pop();
-                    Variable left = stack.pop();
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.MUL, left, right));
-                    stack.push(tmpResult);
+                    pushBinOp(bb, IRBinaryOperator.MUL, ComputationalType.INT);
                     break;
-                }
+
+                case LMUL:
+                    pushBinOp(bb, IRBinaryOperator.MUL, ComputationalType.LONG);
+                    break;
+
+                case FMUL:
+                    pushBinOp(bb, IRBinaryOperator.MUL, ComputationalType.FLOAT);
+                    break;
+
+                case DMUL:
+                    pushBinOp(bb, IRBinaryOperator.MUL, ComputationalType.DOUBLE);
+                    break;
 
                 case IDIV:
-                case LDIV:
-                case FDIV:
-                case DDIV: {
-                    Variable right = stack.pop();
-                    Variable left = stack.pop();
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.DIV, left, right));
-                    stack.push(tmpResult);
+                    pushBinOp(bb, IRBinaryOperator.DIV, ComputationalType.INT);
                     break;
-                }
+
+                case LDIV:
+                    pushBinOp(bb, IRBinaryOperator.DIV, ComputationalType.LONG);
+                    break;
+
+                case FDIV:
+                    pushBinOp(bb, IRBinaryOperator.DIV, ComputationalType.FLOAT);
+                    break;
+
+                case DDIV:
+                    pushBinOp(bb, IRBinaryOperator.DIV, ComputationalType.DOUBLE);
+                    break;
 
                 case IREM:
-                case LREM:
-                case FREM:
-                case DREM: {
-                    Variable right = stack.pop();
-                    Variable left = stack.pop();
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.REMAINDER, left, right));
-                    stack.push(tmpResult);
+                    pushBinOp(bb, IRBinaryOperator.REMAINDER, ComputationalType.INT);
                     break;
-                }
+
+                case LREM:
+                    pushBinOp(bb, IRBinaryOperator.REMAINDER, ComputationalType.LONG);
+                    break;
+
+                case FREM:
+                    pushBinOp(bb, IRBinaryOperator.REMAINDER, ComputationalType.FLOAT);
+                    break;
+
+                case DREM:
+                    pushBinOp(bb, IRBinaryOperator.REMAINDER, ComputationalType.DOUBLE);
+                    break;
 
                 case INEG:
-                case LNEG:
-                case FNEG:
-                case DNEG: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newUnary(tmpResult, IRUnaryOperator.MINUS, stack.pop()));
-                    stack.push(tmpResult);
+                    pushUnaryOp(bb, IRUnaryOperator.MINUS, ComputationalType.INT);
                     break;
-                }
+
+                case LNEG:
+                    pushUnaryOp(bb, IRUnaryOperator.MINUS, ComputationalType.LONG);
+                    break;
+
+                case FNEG:
+                    pushUnaryOp(bb, IRUnaryOperator.MINUS, ComputationalType.FLOAT);
+                    break;
+
+                case DNEG:
+                    pushUnaryOp(bb, IRUnaryOperator.MINUS, ComputationalType.DOUBLE);
+                    break;
 
                 case ISHL:
-                case LSHL: {
-                    Variable right = stack.pop();
-                    Variable left = stack.pop();
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.SHIFT_LEFT, left, right));
-                    stack.push(tmpResult);
+                    pushBinOp(bb, IRBinaryOperator.SHIFT_LEFT, ComputationalType.INT);
                     break;
-                }
+
+                case LSHL:
+                    pushBinOp(bb, IRBinaryOperator.SHIFT_LEFT, ComputationalType.LONG);
+                    break;
 
                 case ISHR:
-                case LSHR: {
-                    Variable right = stack.pop();
-                    Variable left = stack.pop();
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.SHIFT_RIGHT, left, right));
-                    stack.push(tmpResult);
+                    pushBinOp(bb, IRBinaryOperator.SHIFT_RIGHT, ComputationalType.INT);
                     break;
-                }
+
+                case LSHR:
+                    pushBinOp(bb, IRBinaryOperator.SHIFT_LEFT, ComputationalType.LONG);
+                    break;
 
                 case IUSHR:
-                case LUSHR: {
-                    Variable right = stack.pop();
-                    Variable left = stack.pop();
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.LOGICAL_SHIFT_RIGHT, left, right));
-                    stack.push(tmpResult);
+                    pushBinOp(bb, IRBinaryOperator.LOGICAL_SHIFT_RIGHT, ComputationalType.INT);
                     break;
-                }
+
+                case LUSHR:
+                    pushBinOp(bb, IRBinaryOperator.LOGICAL_SHIFT_RIGHT, ComputationalType.LONG);
+                    break;
 
                 case IAND:
-                case LAND: {
-                    Variable right = stack.pop();
-                    Variable left = stack.pop();
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.AND, left, right));
-                    stack.push(tmpResult);
+                    pushBinOp(bb, IRBinaryOperator.AND, ComputationalType.INT);
                     break;
-                }
+
+                case LAND:
+                    pushBinOp(bb, IRBinaryOperator.AND, ComputationalType.LONG);
+                    break;
 
                 case IOR:
-                case LOR: {
-                    Variable right = stack.pop();
-                    Variable left = stack.pop();
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.OR, left, right));
-                    stack.push(tmpResult);
+                    pushBinOp(bb, IRBinaryOperator.OR, ComputationalType.INT);
                     break;
-                }
+
+                case LOR:
+                    pushBinOp(bb, IRBinaryOperator.OR, ComputationalType.LONG);
+                    break;
 
                 case IXOR:
-                case LXOR: {
-                    Variable right = stack.pop();
-                    Variable left = stack.pop();
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.XOR, left, right));
-                    stack.push(tmpResult);
+                    pushBinOp(bb, IRBinaryOperator.XOR, ComputationalType.INT);
                     break;
-                }
 
-                case I2L: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.LONG));
-                    stack.push(tmpResult);
+                case LXOR:
+                    pushBinOp(bb, IRBinaryOperator.XOR, ComputationalType.LONG);
                     break;
-                }
 
-                case I2F: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.FLOAT));
-                    stack.push(tmpResult);
+                case I2L:
+                    pushCast(bb, JavaType.LONG);
                     break;
-                }
 
-                case I2D: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.DOUBLE));
-                    stack.push(tmpResult);
+                case I2F:
+                    pushCast(bb, JavaType.FLOAT);
                     break;
-                }
 
-                case L2I: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.INT));
-                    stack.push(tmpResult);
+                case I2D:
+                    pushCast(bb, JavaType.DOUBLE);
                     break;
-                }
 
-                case L2F: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.FLOAT));
-                    stack.push(tmpResult);
+                case L2I:
+                    pushCast(bb, JavaType.INT);
                     break;
-                }
 
-                case L2D: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.DOUBLE));
-                    stack.push(tmpResult);
+                case L2F:
+                    pushCast(bb, JavaType.FLOAT);
                     break;
-                }
 
-                case F2I: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.INT));
-                    stack.push(tmpResult);
+                case L2D:
+                    pushCast(bb, JavaType.DOUBLE);
                     break;
-                }
 
-                case F2L: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.LONG));
+                case F2I:
+                    pushCast(bb, JavaType.INT);
                     break;
-                }
 
-                case F2D: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.DOUBLE));
-                    stack.push(tmpResult);
+                case F2L:
+                    pushCast(bb, JavaType.LONG);
                     break;
-                }
 
-                case D2I: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.INT));
-                    stack.push(tmpResult);
+                case F2D:
+                    pushCast(bb, JavaType.DOUBLE);
                     break;
-                }
 
-                case D2L: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.LONG));
-                    stack.push(tmpResult);
+                case D2I:
+                    pushCast(bb, JavaType.INT);
                     break;
-                }
 
-                case D2F: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.FLOAT));
-                    stack.push(tmpResult);
+                case D2L:
+                    pushCast(bb, JavaType.LONG);
                     break;
-                }
 
-                case I2B: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.BYTE));
-                    stack.push(tmpResult);
+                case D2F:
+                    pushCast(bb, JavaType.FLOAT);
                     break;
-                }
 
-                case I2C: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.CHAR));
-                    stack.push(tmpResult);
+                case I2B:
+                    pushCast(bb, JavaType.BYTE);
                     break;
-                }
 
-                case I2S: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newCast(tmpResult, var, JavaType.SHORT));
-                    stack.push(tmpResult);
+                case I2C:
+                    pushCast(bb, JavaType.CHAR);
                     break;
-                }
+
+                case I2S:
+                    pushCast(bb, JavaType.SHORT);
+                    break;
 
                 case LCMP:
                 case FCMPL:
@@ -585,7 +690,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     Variable value1 = stack.pop();
                     Variable tmpResult = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.MINUS, value1, value2));
-                    stack.push(tmpResult);
+                    stack.push(tmpResult, ComputationalType.INT);
                     break;
                 }
 
@@ -605,7 +710,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     Variable result = tmpVarFactory.create(bb);
                     Variable arrayVar = stack.pop();
                     bb.getInstructions().add(instFactory.newArrayLength(result, arrayVar));
-                    stack.push(result);
+                    stack.push(result, ComputationalType.INT);
                     break;
                 }
 
@@ -620,6 +725,9 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case MONITOREXIT:
                     bb.getInstructions().add(instFactory.newMonitorExit(stack.pop()));
                     break;
+
+                default:
+                    throw new InternalError();
             }
         }
 
@@ -628,18 +736,23 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             switch (node.getOpcode()) {
                 case BIPUSH:
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new ByteConst((byte) node.operand)));
+                    stack.push(tmpVar, ComputationalType.INT);
                     break;
 
                 case SIPUSH:
                     bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new ShortConst((short) node.operand)));
+                    stack.push(tmpVar, ComputationalType.INT);
                     break;
 
                 case NEWARRAY:
                     bb.getInstructions().add(instFactory.newNewArray(tmpVar, ATYPES[node.operand],
                                                            Collections.singletonList(stack.pop())));
+                    stack.push(tmpVar, ComputationalType.REFERENCE);
                     break;
+
+                default:
+                    throw new InternalError();
             }
-            stack.push(tmpVar);
         }
 
         public void visitJumpInsn(BasicBlock bb, int position, JumpInsnNode node, LabelManager labelManager) {
@@ -780,6 +893,9 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.NE, stack.pop(), tmpNull));
                     break;
                 }
+
+                default:
+                    throw new InternalError();
             }
 
             if (tmpResult != null) {
@@ -795,18 +911,25 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             if (node.cst instanceof Type) {
                 ClassName className = classNameFactory.newClassName(((Type)node.cst).getClassName());
                 bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new ClassConst(className, classNameFactory)));
+                stack.push(tmpVar, ComputationalType.REFERENCE);
             } else if (node.cst instanceof Integer) {
                 bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst((Integer) node.cst)));
+                stack.push(tmpVar, ComputationalType.INT);
             } else if (node.cst instanceof Long) {
                 bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new LongConst((Long) node.cst)));
+                stack.push(tmpVar, ComputationalType.LONG);
             } else if (node.cst instanceof Float) {
                 bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new FloatConst((Float) node.cst)));
+                stack.push(tmpVar, ComputationalType.FLOAT);
             } else if (node.cst instanceof Double) {
                 bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new DoubleConst((Double) node.cst)));
+                stack.push(tmpVar, ComputationalType.DOUBLE);
             } else if (node.cst instanceof String) {
                 bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new StringConst(node.cst.toString(), classNameFactory)));
+                stack.push(tmpVar, ComputationalType.REFERENCE);
+            } else {
+                throw new InternalError();
             }
-            stack.push(tmpVar);
         }
 
         public void visitLookupSwitchInsn(BasicBlock bb, int position, LookupSwitchInsnNode node, LabelManager labelManager) {
@@ -850,9 +973,12 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                                                                    signature, args));
                     break;
                 }
+
+                default:
+                    throw new InternalError();
             }
             if (returnType != Type.VOID_TYPE) {
-                stack.push(resultVar);
+                stack.push(resultVar, returnJavaType.getComputationalType());
             }
         }
 
@@ -865,7 +991,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             }
             Variable tmpResult = tmpVarFactory.create(bb);
             bb.getInstructions().add(instFactory.newNewArray(tmpResult, javaType, dimensions));
-            stack.push(tmpResult);
+            stack.push(tmpResult, ComputationalType.REFERENCE);
         }
 
         public void visitTableSwitchInsn(BasicBlock bb, int position, TableSwitchInsnNode node, LabelManager labelManager) {
@@ -879,7 +1005,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case NEW: {
                     Variable tmpResult = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newNewObject(tmpResult, type));
-                    stack.push(tmpResult);
+                    stack.push(tmpResult, ComputationalType.REFERENCE);
                     break;
                 }
 
@@ -887,7 +1013,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     Variable tmpResult = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newNewArray(tmpResult, type,
                                              Collections.singletonList(stack.pop())));
-                    stack.push(tmpResult);
+                    stack.push(tmpResult, ComputationalType.REFERENCE);
                     break;
                 }
 
@@ -897,37 +1023,51 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case INSTANCEOF: {
                     Variable tmpResult = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newInstanceOf(tmpResult, stack.pop(), type));
-                    stack.push(tmpResult);
+                    stack.push(tmpResult, ComputationalType.INT);
                     break;
                 }
+
+                default:
+                    throw new InternalError();
             }
         }
 
         public void visitVarInsn(BasicBlock bb, int position, VarInsnNode node) {
+            Variable var = new Variable(node.var, bb, position);
             switch (node.getOpcode()) {
                 case ILOAD:
-                case LLOAD:
-                case FLOAD:
-                case DLOAD:
-                case ALOAD: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
-                    stack.push(tmpVar);
-                    bb.getInstructions().add(instFactory.newAssignVar(tmpVar, new Variable(node.var, bb, position)));
+                    pushAssign(bb, ComputationalType.INT, var);
                     break;
-                }
+
+                case LLOAD:
+                    pushAssign(bb, ComputationalType.LONG, var);
+                    break;
+
+                case FLOAD:
+                    pushAssign(bb, ComputationalType.FLOAT, var);
+                    break;
+
+                case DLOAD:
+                    pushAssign(bb, ComputationalType.DOUBLE, var);
+                    break;
+
+                case ALOAD:
+                    pushAssign(bb, ComputationalType.REFERENCE, var);
+                    break;
 
                 case ISTORE:
                 case LSTORE:
                 case FSTORE:
                 case DSTORE:
-                case ASTORE: {
-                    Variable var = stack.pop();
-                    bb.getInstructions().add(instFactory.newAssignVar(new Variable(node.var, bb, position), var));
+                case ASTORE:
+                    bb.getInstructions().add(instFactory.newAssignVar(var, stack.pop()));
                     break;
-                }
 
                 case RET:
                     throw new ABCDException("TODO : support RET instruction");
+
+                default:
+                    throw new InternalError();
             }
         }
 
