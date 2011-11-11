@@ -299,7 +299,7 @@ public class IntermediateRepresentationBuilder {
                 }
                 ChoiceInst choiceInst = (ChoiceInst) inst;
 
-                List<IRInst> replacement = new ArrayList<IRInst>();
+                List<IRInst> condInsts = new ArrayList<IRInst>();
 
                 boolean change = true;
                 while (change) {
@@ -351,14 +351,14 @@ public class IntermediateRepresentationBuilder {
                                             = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
                                     logger.log(Level.FINER, "Replace inst at {0} of {1} : {2}",
                                             new Object[]{i, joinBlock, IRInstWriter.toText(condInst)});
-                                    replacement.add(condInst);
+                                    condInsts.add(condInst);
                                 } else {
                                     Variable resultVar = tmpVarFactory.create(forkBlock);
                                     ConditionalInst condInst
                                             = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
                                     logger.log(Level.FINER, "Insert inst at {0} of {1} : {2}",
                                             new Object[]{i, joinBlock, IRInstWriter.toText(condInst)});
-                                    replacement.add(condInst);
+                                    condInsts.add(condInst);
                                     choiceInst.getChoices().add(resultVar);
                                 }
 
@@ -373,9 +373,13 @@ public class IntermediateRepresentationBuilder {
                     }
                 }
 
-                if (replacement.size() > 0) {
+                // replace the choice inst by the list of conditional instructions
+                if (condInsts.size() > 0) {
                     joinInsts.remove(i);
-                    joinInsts.addAll(i, replacement);
+                    joinInsts.addAll(i, condInsts);
+                } else {
+                    throw new ABCDException("Fail to resolve choice instruction "
+                            + IRInstWriter.toText(inst));
                 }
             }
         }
