@@ -22,6 +22,8 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -376,7 +378,7 @@ public class RegionAnalysis {
         return true;
     }
 
-    private Map<Edge, Edge> analyseAbruptEdges(ControlFlowGraph subCfg, Edge exitEdge,
+    private Map<Edge, Edge> findJoinEdges(ControlFlowGraph subCfg, Edge exitEdge,
                                                List<Edge> abruptEdges) {
         Map<Edge, Edge> joinEdges = new HashMap<Edge, Edge>();
         BasicBlock source = subCfg.getEdgeSource(exitEdge);
@@ -459,35 +461,43 @@ public class RegionAnalysis {
 
     private boolean checkBreakLabelRegion(ControlFlowGraph cfg, Region region) {
         logger.log(Level.FINEST, "Check break label region {0}", region);
-        ControlFlowGraph subCfg = createSubCFG(cfg, region);
+        final ControlFlowGraph subCfg = createSubCFG(cfg, region);
         if (subCfg == null) {
             return false;
         }
         subCfg.updateDominatorInfo();
         subCfg.updatePostDominatorInfo();
-        for (BasicBlock bb : subCfg.getDominatorInfo().getDominatorsTree()) {
-            if (subCfg.containsEdge(bb, subCfg.getExitBlock())) {
-                // this edge is the exit and the others are abrupt edges
-                Edge exitEdge = subCfg.getEdge(bb, subCfg.getExitBlock());
-                List<Edge> abruptEdges
-                        = new ArrayList<Edge>(subCfg.getIncomingEdgesOf(subCfg.getExitBlock()));
-                abruptEdges.remove(exitEdge);
-                // find join edges, join edges are needed to remove abrupt edges
-                Map<Edge, Edge> joinEdges = analyseAbruptEdges(subCfg, exitEdge, abruptEdges);
-                if (joinEdges != null) {
-                    // create a smoothed sub cfg by removing abrupt edges
-                    ControlFlowGraph smoothedSubCfg
-                            = createSmoothedSubCfg(subCfg, exitEdge, joinEdges);
-                    RPST rpst = checkRegions(smoothedSubCfg);
-                    if (rpst != null) {
-                        region.setParentType(ParentType.BREAK_LABEL);
-                        region.setData(breakLabelCount++);
-                        Region rootRegion = rpst.getRootRegion();
-                        Region bodyRegion = rootRegion.getEntryChild();
-                        region.removeChildren();
-                        region.addChild(bodyRegion);
-                        return true;
-                    }
+
+        // sort exit edges by dominance of it source basic block
+        List<Edge> exitEdges = new ArrayList<Edge>(subCfg.getIncomingEdgesOf(subCfg.getExitBlock()));
+        Collections.sort(exitEdges, new Comparator<Edge>() {
+            public int compare(Edge e1, Edge e2) {
+                BasicBlock bb1 = subCfg.getEdgeSource(e1);
+                BasicBlock bb2 = subCfg.getEdgeSource(e2);
+                return subCfg.getDominatorInfo().dominates(bb1, bb2) ? 1 : -1;
+            }
+        });
+
+        for (Edge exitEdge : exitEdges) {
+            // the others edges are abrupt edges
+            List<Edge> abruptEdges = new ArrayList<Edge>(exitEdges);
+            abruptEdges.remove(exitEdge);
+
+            // find join edges, join edges are needed to remove abrupt edges
+            Map<Edge, Edge> joinEdges = findJoinEdges(subCfg, exitEdge, abruptEdges);
+            if (joinEdges != null) {
+                // create a smoothed sub cfg by removing abrupt edges
+                ControlFlowGraph smoothedSubCfg
+                        = createSmoothedSubCfg(subCfg, exitEdge, joinEdges);
+                RPST rpst = checkRegions(smoothedSubCfg);
+                if (rpst != null) {
+                    region.setParentType(ParentType.BREAK_LABEL);
+                    region.setData(breakLabelCount++);
+                    Region rootRegion = rpst.getRootRegion();
+                    Region bodyRegion = rootRegion.getEntryChild();
+                    region.removeChildren();
+                    region.addChild(bodyRegion);
+                    return true;
                 }
             }
         }
