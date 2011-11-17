@@ -17,6 +17,8 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.common.ABCDException;
@@ -37,7 +39,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private final RangeMap<Range, BasicBlock> basicBlocks;
 
-    private final Map<BasicBlock, NaturalLoop> naturalLoops;
+    private final Multimap<BasicBlock, NaturalLoop> naturalLoops;
 
     private Tree<BasicBlock, Edge> dfst;
 
@@ -111,7 +112,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         this.exitBlock = exitBlock;
         graph = DirectedGraphs.newDirectedGraph();
         basicBlocks = new RangeMap<Range, BasicBlock>();
-        naturalLoops = new HashMap<BasicBlock, NaturalLoop>();
+        naturalLoops = HashMultimap.create();
         addBasicBlock(entryBlock);
         addBasicBlock(exitBlock);
     }
@@ -157,7 +158,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return dfst;
     }
 
-    public Map<BasicBlock, NaturalLoop> getNaturalLoops() {
+    public Multimap<BasicBlock, NaturalLoop> getNaturalLoops() {
         return naturalLoops;
     }
 
@@ -263,6 +264,16 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         List<BasicBlock> successors = new ArrayList<BasicBlock>();
         for (Edge e : graph.getOutgoingEdgesOf(block)) {
             if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                successors.add(graph.getEdgeTarget(e));
+            }
+        }
+        return successors;
+    }
+
+    public Collection<BasicBlock> getNormalSuccessorsOf(BasicBlock block) {
+        List<BasicBlock> successors = new ArrayList<BasicBlock>();
+        for (Edge e : graph.getOutgoingEdgesOf(block)) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
                 successors.add(graph.getEdgeTarget(e));
             }
         }
@@ -436,39 +447,44 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
      * Remove unreachable basic blocks. A basic block is unreachable if it has no
      * predecessors et no successors.
      */
-    public void removeUnreachableBlocks() {
+    public boolean removeUnreachableBlocks() {
+        boolean removed = false;
         for (BasicBlock block : new HashSet<BasicBlock>(graph.getVertices())) {
             if (!block.equals(entryBlock) && !block.equals(exitBlock)
                     && graph.getIncomingEdgesOf(block).isEmpty()
                     && graph.getOutgoingEdgesOf(block).isEmpty()) {
                 graph.removeVertex(block);
+                removed = true;
 
                 logger.log(Level.FINER, "Remove unreachable block {0}", block);
             }
         }
+        return removed;
     }
 
     /**
      * Remove unnecessary basic blocks.
      */
-    public void removeUnnecessaryBlock() {
+    public boolean removeUnnecessaryBlock() {
         Set<BasicBlock> toRemove = new HashSet<BasicBlock>();
         for (BasicBlock bb : graph.getVertices()) {
-            if (getPredecessorCountOf(bb) >= 1 &&
-                getNormalSuccessorCountOf(bb) == 1 &&
-                    !getFirstNormalOutgoingEdgeOf(bb).hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
-                boolean remove = true;
-                IRInstSeq Insts = bb.getInstructions();
-                if (Insts != null) {
-                    for (IRInst inst : Insts) {
-                        if (!inst.isIgnored()) {
-                            remove = false;
-                            break;
+            if (getNormalSuccessorCountOf(bb) == 1) {
+                if ((getPredecessorCountOf(bb) > 1
+                        && !getFirstNormalOutgoingEdgeOf(bb).hasAttribute(EdgeAttribute.LOOP_BACK_EDGE))
+                        || getPredecessorCountOf(bb) == 1) {
+                    boolean remove = true;
+                    IRInstSeq Insts = bb.getInstructions();
+                    if (Insts != null) {
+                        for (IRInst inst : Insts) {
+                            if (!inst.isIgnored()) {
+                                remove = false;
+                                break;
+                            }
                         }
                     }
-                }
-                if (remove) {
-                    toRemove.add(bb);
+                    if (remove) {
+                        toRemove.add(bb);
+                    }
                 }
             }
         }
@@ -487,6 +503,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
             logger.log(Level.FINER, "Remove unnecessary BB {0}", bb);
         }
+
+        return toRemove.size() > 0;
     }
 
     /**
@@ -497,7 +515,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
      * the edge) in order to insert computations on the edge without affecting
      * any other edges.
      */
-    public void removeCriticalEdges() {
+    public boolean removeCriticalEdges() {
         List<Edge> criticalEdges = new ArrayList<Edge>();
 
         // find critical edges
@@ -523,36 +541,32 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             graph.addEdge(source, emptyBlock, criticalEdge);
             graph.addEdge(emptyBlock, target, EDGE_FACTORY.createEdge());
         }
+
+        return criticalEdges.size() > 0;
     }
 
-    public Matrix<Boolean> calculateAncestorsMatrix(Collection<Edge> edges) {
-        int nodeCount = graph.getVertices().size();
-        Matrix<Boolean> ancestorsMatrix = new Matrix<Boolean>(nodeCount, nodeCount, Boolean.FALSE);
-
-        for (Edge edge : edges) {
-            BasicBlock source = graph.getEdgeSource(edge);
-            BasicBlock target = graph.getEdgeTarget(edge);
-            ancestorsMatrix.setValue(source.getOrder(), target.getOrder(), Boolean.TRUE);
-        }
-
-        // compute the transitive closure of the ancestor matrix
-        for(int i = 0; i < nodeCount; i++) {
-            for(int j = 0; j < nodeCount; j++) {
-                if(Boolean.TRUE.equals(ancestorsMatrix.getValue(i, j))) {
-                    for(int k = 0; k < nodeCount; k++) {
-                        if(Boolean.TRUE.equals(ancestorsMatrix.getValue(j, k))) {
-                            ancestorsMatrix.setValue(i, k, Boolean.TRUE);
-                        }
-                    }
+    public boolean mergeNaturalLoops() {
+        boolean merged = false;
+        for (Map.Entry<BasicBlock, Collection<NaturalLoop>> entry : naturalLoops.asMap().entrySet()) {
+            BasicBlock head = entry.getKey();
+            Collection<NaturalLoop> naturalLoops = entry.getValue();
+            if (naturalLoops.size() > 1) {
+                logger.log(Level.FINEST, "Merge natural loops {0}", naturalLoops);
+                BasicBlock empty = new BasicBlockImpl(BasicBlockType.EMPTY);
+                addBasicBlock(empty);
+                addEdge(empty, head).addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
+                for (NaturalLoop nl : naturalLoops) {
+                    removeEdge(nl.getTail(), nl.getHead());
+                    addEdge(nl.getTail(), empty);
                 }
+                merged = true;
             }
         }
-
-        return ancestorsMatrix;
+        return merged;
     }
 
     private void analyseEdgeCategory() {
-        Matrix<Boolean> ancestorsMatrix = calculateAncestorsMatrix(dfst.getEdges());
+        Matrix<Boolean> ancestorsMatrix = Trees.calculateAncestorsMatrix(dfst);
 
         for (Edge e : graph.getEdges()) {
             BasicBlock source = graph.getEdgeSource(e);
@@ -588,6 +602,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         for (Edge e : graph.getEdges()) {
             switch (e.getCategory()) {
                 case BACK: {
+                    BasicBlock tail = graph.getEdgeSource(e);
                     BasicBlock head = graph.getEdgeTarget(e);
                     BasicBlock v = graph.getEdgeSource(e);
                     Set<BasicBlock> visited = new HashSet<BasicBlock>();
@@ -595,7 +610,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                     List<BasicBlock> body = new ArrayList<BasicBlock>();
                     body.add(head);
                     graph.reversePostOrderDFS(v, visited, body, null, true);
-                    NaturalLoop nl = new NaturalLoop(head, new HashSet<BasicBlock>(body));
+                    NaturalLoop nl = new NaturalLoop(head, tail, new HashSet<BasicBlock>(body));
                     naturalLoops.put(head, nl);
                     e.addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
                     logger.log(Level.FINER, " Found natural loop : {0}", nl);
@@ -612,8 +627,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     private void analyseLoopLevel() {
         // from outermost to innermost loops
         for (BasicBlock loopHead : dfst.getNodes()) {
-            NaturalLoop nl = naturalLoops.get(loopHead);
-            if (nl != null) {
+            for (NaturalLoop nl : naturalLoops.get(loopHead)) {
                 // increase loop level for all blocks of the loop
                 for (BasicBlock block : nl.getBody()) {
                     block.setLoopLevel(block.getLoopLevel()+1);
@@ -626,7 +640,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             if (edge.hasAttribute(EdgeAttribute.SELF_LOOP_EDGE)) {
                 BasicBlock block = graph.getEdgeSource(edge);
 
-                NaturalLoop nl = new NaturalLoop(block, Collections.singleton(block));
+                NaturalLoop nl = new NaturalLoop(block, block, Collections.singleton(block));
                 naturalLoops.put(nl.getHead(), nl);
                 logger.log(Level.FINER, " Found self loop : {0}", nl);
 

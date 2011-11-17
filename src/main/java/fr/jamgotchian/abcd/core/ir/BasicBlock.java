@@ -17,13 +17,14 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.graph.Orderable;
 import fr.jamgotchian.abcd.core.util.Range;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface BasicBlock {
+public interface BasicBlock extends Orderable {
 
     Range getRange();
 
@@ -34,10 +35,6 @@ public interface BasicBlock {
     int getLoopLevel();
 
     void setLoopLevel(int loopLevel);
-
-    int getOrder();
-
-    void setOrder(int order);
 
     IRInstSeq getInstructions();
 

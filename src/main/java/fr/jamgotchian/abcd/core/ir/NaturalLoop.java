@@ -28,18 +28,25 @@ public class NaturalLoop {
 
     private final BasicBlock head;
 
+    private final BasicBlock tail;
+
     private final Set<BasicBlock> body;
 
     private final Set<Edge> exits;
 
-    public NaturalLoop(BasicBlock head, Set<BasicBlock> body) {
+    public NaturalLoop(BasicBlock head, BasicBlock tail, Set<BasicBlock> body) {
         this.head = head;
+        this.tail = tail;
         this.body = body;
         this.exits = new HashSet<Edge>();
     }
 
     public BasicBlock getHead() {
         return head;
+    }
+
+    public BasicBlock getTail() {
+        return tail;
     }
 
     public Set<BasicBlock> getBody() {
@@ -52,6 +59,7 @@ public class NaturalLoop {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "(head=" + head + ", body=" + body + ")";
+        return getClass().getSimpleName() + "(head=" + head + ", tail=" + tail
+                + ", body=" + body + ")";
     }
 }

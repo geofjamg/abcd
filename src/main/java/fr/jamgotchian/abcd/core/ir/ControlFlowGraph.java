@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
+import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
@@ -26,7 +27,6 @@ import fr.jamgotchian.abcd.core.util.Range;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -45,11 +45,13 @@ public interface ControlFlowGraph {
 
     Edge addEdge(BasicBlock source, BasicBlock target, boolean exceptional);
 
-    void removeUnreachableBlocks();
+    boolean removeUnreachableBlocks();
 
-    void removeUnnecessaryBlock() ;
+    boolean removeUnnecessaryBlock() ;
 
-    void removeCriticalEdges();
+    boolean removeCriticalEdges();
+
+    boolean mergeNaturalLoops();
 
     void updateDominatorInfo();
 
@@ -109,7 +111,7 @@ public interface ControlFlowGraph {
 
     String getName();
 
-    Map<BasicBlock, NaturalLoop> getNaturalLoops();
+    Multimap<BasicBlock, NaturalLoop> getNaturalLoops();
 
     Collection<BasicBlock> getNonEmptyBasicBlocks();
 
@@ -128,6 +130,8 @@ public interface ControlFlowGraph {
     int getNormalSuccessorCountOf(BasicBlock block);
 
     Collection<BasicBlock> getSuccessorsOf(BasicBlock block);
+
+    Collection<BasicBlock> getNormalSuccessorsOf(BasicBlock block);
 
     Collection<BasicBlock> getExceptionalSuccessorsOf(BasicBlock block);
 

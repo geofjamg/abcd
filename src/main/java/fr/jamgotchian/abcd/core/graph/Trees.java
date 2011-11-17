@@ -169,4 +169,29 @@ public class Trees {
         }
     }
 
+    public static <N extends Orderable, E> Matrix<Boolean> calculateAncestorsMatrix(Tree<N, E> tree) {
+        int nodeCount = tree.getNodes().size();
+        Matrix<Boolean> ancestorsMatrix = new Matrix<Boolean>(nodeCount, nodeCount, Boolean.FALSE);
+
+        for (E edge : tree.getEdges()) {
+            N source = tree.getEdgeSource(edge);
+            N target = tree.getEdgeTarget(edge);
+            ancestorsMatrix.setValue(source.getOrder(), target.getOrder(), Boolean.TRUE);
+        }
+
+        // compute the transitive closure of the ancestor matrix
+        for(int i = 0; i < nodeCount; i++) {
+            for(int j = 0; j < nodeCount; j++) {
+                if(Boolean.TRUE.equals(ancestorsMatrix.getValue(i, j))) {
+                    for(int k = 0; k < nodeCount; k++) {
+                        if(Boolean.TRUE.equals(ancestorsMatrix.getValue(j, k))) {
+                            ancestorsMatrix.setValue(i, k, Boolean.TRUE);
+                        }
+                    }
+                }
+            }
+        }
+
+        return ancestorsMatrix;
+    }
 }

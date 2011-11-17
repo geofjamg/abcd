@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
+import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.util.Collections3;
@@ -25,7 +26,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import java.util.Arrays;
-import java.util.Map;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,8 +62,8 @@ public class ControlFlowGraphImplTest {
     }
 
     private static void printNaturalLoops(ControlFlowGraph graph) {
-        for (Map.Entry<BasicBlock, NaturalLoop> entry : graph.getNaturalLoops().entrySet()) {
-            System.out.println(entry.getValue());
+        for (NaturalLoop nl : graph.getNaturalLoops().values()) {
+            System.out.println(nl);
         }
     }
 
@@ -127,7 +127,7 @@ public class ControlFlowGraphImplTest {
         assertTrue(Collections3.sameContent(Arrays.asList(b1, b3, b4, b7, b8, b9), dominatorsInfo.getDominatorsOf(b9)));
         assertTrue(Collections3.sameContent(Arrays.asList(b1, b3, b4, b7, b8, b10), dominatorsInfo.getDominatorsOf(b10)));
 
-        Map<BasicBlock, NaturalLoop> naturalLoops = graph.getNaturalLoops();
+        Multimap<BasicBlock, NaturalLoop> naturalLoops = graph.getNaturalLoops();
         printNaturalLoops(graph);
     }
 
@@ -162,7 +162,7 @@ public class ControlFlowGraphImplTest {
         assertTrue(Collections3.sameContent(Arrays.asList(b1, b2), dominatorsInfo.getDominatorsOf(b2)));
         assertTrue(Collections3.sameContent(Arrays.asList(b1, b3), dominatorsInfo.getDominatorsOf(b3)));
 
-        Map<BasicBlock, NaturalLoop> naturalLoops = graph.getNaturalLoops();
+        Multimap<BasicBlock, NaturalLoop> naturalLoops = graph.getNaturalLoops();
         printNaturalLoops(graph);
 
         assertTrue(naturalLoops.isEmpty());
@@ -211,12 +211,12 @@ public class ControlFlowGraphImplTest {
         assertTrue(Collections3.sameContent(Arrays.asList(b1, b2, b3, b5, b6), dominatorsInfo.getDominatorsOf(b6)));
         assertTrue(Collections3.sameContent(Arrays.asList(b1, b2, b3, b5, b7), dominatorsInfo.getDominatorsOf(b7)));
 
-        Map<BasicBlock, NaturalLoop> naturalLoops = graph.getNaturalLoops();
+        Multimap<BasicBlock, NaturalLoop> naturalLoops = graph.getNaturalLoops();
         printNaturalLoops(graph);
 
         assertTrue(Collections3.sameContent(naturalLoops.keySet(), Arrays.asList(b2, b5)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b2, b3, b5, b6, b7), naturalLoops.get(b2).getBody()));
-        assertTrue(Collections3.sameContent(Arrays.asList(b5, b6), naturalLoops.get(b5).getBody()));
+        assertTrue(Collections3.sameContent(Arrays.asList(b2, b3, b5, b6, b7), naturalLoops.get(b2).iterator().next().getBody()));
+        assertTrue(Collections3.sameContent(Arrays.asList(b5, b6), naturalLoops.get(b5).iterator().next().getBody()));
     }
 
 //    @Test

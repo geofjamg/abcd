@@ -385,7 +385,7 @@ public class IntermediateRepresentationBuilder {
         }
     }
 
-    public void addFakeEdges() {
+    private void addFakeEdges() {
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             if (bb.equals(cfg.getEntryBlock()) || bb.equals(cfg.getExitBlock())) {
                 continue;
@@ -420,12 +420,19 @@ public class IntermediateRepresentationBuilder {
 
         writer.writeRawCFG(cfg, cfgBuilder.getGraphizRenderer());
 
+        // merge natural loops
+        if (cfg.mergeNaturalLoops()) {
+            cfg.updateDominatorInfo();
+            cfg.updateLoopInfo();
+        }
+
         // build basic blocks instructions
         buildInst();
 
-        cfg.removeUnnecessaryBlock();
-        cfg.updateDominatorInfo();
-        cfg.updateLoopInfo();
+        if (cfg.removeUnnecessaryBlock()) {
+            cfg.updateDominatorInfo();
+            cfg.updateLoopInfo();
+        }
 
         // add fake edges to be able to compute post dominance in case of infinite
         // loops et throw instructions
@@ -434,30 +441,34 @@ public class IntermediateRepresentationBuilder {
         cfg.updatePostDominatorInfo();
 
         // collapse shortcut operators (&&, ||)
-        new ShortcutOperatorsCollapser(cfg, tmpVarFactory, instFactory).collapse();
-
-        cfg.updateDominatorInfo();
-        cfg.updatePostDominatorInfo();
-        cfg.updateLoopInfo();
+        ShortcutOperatorsCollapser collapser
+                = new ShortcutOperatorsCollapser(cfg, tmpVarFactory, instFactory);
+        if (collapser.collapse()) {
+            cfg.updateDominatorInfo();
+            cfg.updatePostDominatorInfo();
+            cfg.updateLoopInfo();
+        }
 
         // must be done after collapsing shortcut operators because of conditional
         // instruction with shortcut operators in the condition
         resolveChoiceInst();
 
         // need to remove critical edges to convert to SSA
-        cfg.removeCriticalEdges();
-        cfg.updateDominatorInfo();
-        cfg.updatePostDominatorInfo();
-        cfg.updateLoopInfo();
+        if (cfg.removeCriticalEdges()) {
+            cfg.updateDominatorInfo();
+            cfg.updatePostDominatorInfo();
+            cfg.updateLoopInfo();
+        }
 
         // convert to SSA form
         new SSAFormConverter(cfg, instFactory).convert();
 
         // to remove empty basic blocks added tu remove critical edges
-        cfg.removeUnnecessaryBlock();
-        cfg.updateDominatorInfo();
-        cfg.updatePostDominatorInfo();
-        cfg.updateLoopInfo();
+        if (cfg.removeUnnecessaryBlock()) {
+            cfg.updateDominatorInfo();
+            cfg.updatePostDominatorInfo();
+            cfg.updateLoopInfo();
+        }
 
         writer.writeCFG(cfg);
 

@@ -142,9 +142,11 @@ public class ShortcutOperatorsCollapser {
         return false;
     }
 
-    public void collapse() {
+    public boolean collapse() {
         ConsoleUtil.logTitledSeparator(logger, Level.FINE,
                 "Collapse shortcut operators of {0}", '=', cfg.getName());
+
+        boolean collapsed = false;
 
         boolean change = true;
         while (change) {
@@ -165,15 +167,19 @@ public class ShortcutOperatorsCollapser {
                     if (trueEdge1 != null && falseEdge1 != null) {
                         if(checkAnd(bb1, trueEdge1, falseEdge1)) {
                             change = true;
+                            collapsed = true;
                             break;
                         }
                         if (checkOr(bb1, trueEdge1, falseEdge1)) {
                             change = true;
+                            collapsed = true;
                             break;
                         }
                     }
                 }
             }
         }
+
+        return collapsed;
     }
 }
