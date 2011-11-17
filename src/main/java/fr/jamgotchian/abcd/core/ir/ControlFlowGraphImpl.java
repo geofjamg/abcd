@@ -549,15 +549,17 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         boolean merged = false;
         for (Map.Entry<BasicBlock, Collection<NaturalLoop>> entry : naturalLoops.asMap().entrySet()) {
             BasicBlock head = entry.getKey();
-            Collection<NaturalLoop> naturalLoops = entry.getValue();
-            if (naturalLoops.size() > 1) {
-                logger.log(Level.FINEST, "Merge natural loops {0}", naturalLoops);
+            Collection<NaturalLoop> naturalLoopsWithSameHeader = entry.getValue();
+            if (naturalLoopsWithSameHeader.size() > 1) {
+                logger.log(Level.FINEST, "Merge natural loops {0}", naturalLoopsWithSameHeader);
                 BasicBlock empty = new BasicBlockImpl(BasicBlockType.EMPTY);
                 addBasicBlock(empty);
                 addEdge(empty, head).addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
-                for (NaturalLoop nl : naturalLoops) {
-                    removeEdge(nl.getTail(), nl.getHead());
-                    addEdge(nl.getTail(), empty);
+                for (NaturalLoop nl : naturalLoopsWithSameHeader) {
+                    Edge oldBackEdge = getEdge(nl.getTail(), nl.getHead());
+                    oldBackEdge.removeAttribute(EdgeAttribute.LOOP_BACK_EDGE);
+                    removeEdge(oldBackEdge);
+                    addEdge(nl.getTail(), empty, oldBackEdge);
                 }
                 merged = true;
             }
