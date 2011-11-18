@@ -211,6 +211,11 @@ public class Region {
     private boolean deepEquals(Region other, VariableMapping mapping) {
         if (parentType == other.getParentType()
                 && childType == other.getChildType()) {
+            if (childType == ChildType.CATCH || childType == ChildType.FINALLY) {
+                ExceptionHandlerInfo info = (ExceptionHandlerInfo) entry.getData();
+                ExceptionHandlerInfo otherInfo = (ExceptionHandlerInfo) other.getEntry().getData();
+                mapping.defEqual(info.getVariable(), otherInfo.getVariable());
+            }
             if (isBasicBlock()) {
                 BasicBlock bb = entry;
                 BasicBlock otherBb = other.getEntry();

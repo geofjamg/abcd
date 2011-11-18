@@ -140,8 +140,8 @@ public class SSAFormConverter {
             if (inst instanceof DefInst) {
                 Variable def = ((DefInst) inst).getResult();
                 if (def.getIndex() == varIndex) {
-                    int nextVersion = versionCount.getCount();
                     versionCount.increment();
+                    int nextVersion = versionCount.getCount();
                     versionStack.push(nextVersion);
                     def.setVersion(nextVersion);
                     generatedVersion.add(nextVersion);

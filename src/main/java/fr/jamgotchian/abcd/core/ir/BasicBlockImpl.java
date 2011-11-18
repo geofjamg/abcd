@@ -140,6 +140,14 @@ public class BasicBlockImpl implements BasicBlock {
         return attributes.contains(attr);
     }
 
+    public Set<BasicBlockAttribute> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Set<BasicBlockAttribute> attributes) {
+        this.attributes = attributes;
+    }
+
     public Object getData() {
         return data;
     }

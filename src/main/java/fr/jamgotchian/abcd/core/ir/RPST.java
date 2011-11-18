@@ -66,6 +66,8 @@ public class RPST {
 
     private Region rootRegion;
 
+    private boolean typed;
+
     public RPST(ControlFlowGraph cfg) {
         this.cfg = cfg;
         domInfo = cfg.getDominatorInfo();
@@ -79,6 +81,14 @@ public class RPST {
 
     public Region getRootRegion() {
         return rootRegion;
+    }
+
+    public boolean isTyped() {
+        return typed;
+    }
+
+    public void setTyped(boolean typed) {
+        this.typed = typed;
     }
 
     private void visitRegionPostOrder(Region region, List<Region> regionsPostOrder) {

@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.ir;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,12 +44,15 @@ public class RegionAnalysis {
 
     private final ControlFlowGraph cfg0;
 
-    private int iSubgraph;
+    private final ABCDWriter writer;
+
+    private int level;
 
     private int breakLabelCount;
 
-    public RegionAnalysis(ControlFlowGraph cfg0) {
+    public RegionAnalysis(ControlFlowGraph cfg0, ABCDWriter writer) {
         this.cfg0 = cfg0;
+        this.writer = writer;
     }
 
     private ControlFlowGraph createSubCFG(ControlFlowGraph cfg, Region region) {
@@ -348,6 +352,9 @@ public class RegionAnalysis {
 
         // build rpst from control flow subgraph
         RPST subRpst = checkRegions(subCfg);
+        if (!subRpst.isTyped()) {
+            return false;
+        }
 
         region.setParentType(ParentType.TRY_CATCH_FINALLY);
         region.removeChildren();
@@ -490,7 +497,7 @@ public class RegionAnalysis {
                 ControlFlowGraph smoothedSubCfg
                         = createSmoothedSubCfg(subCfg, exitEdge, joinBlocks);
                 RPST rpst = checkRegions(smoothedSubCfg);
-                if (rpst != null) {
+                if (rpst.isTyped()) {
                     region.setParentType(ParentType.BREAK_LABEL);
                     region.setData(breakLabelCount++);
                     Region rootRegion = rpst.getRootRegion();
@@ -508,14 +515,11 @@ public class RegionAnalysis {
         logger.log(Level.FINER, "***** Start checking regions for CFG ({0}, {1}) *****",
                 new Object[] {cfg.getEntryBlock(), cfg.getExitBlock()});
 
-        // for debug
-        cfg.export("/tmp/currentCFG_" + iSubgraph + ".dot");
+        int currentLevel = level++;
 
         // build refined program structure tree
         RPST rpst = new RPST(cfg);
-
-        // for debug
-        rpst.export("/tmp/currentRPST_" + iSubgraph++ + ".dot");
+        rpst.setTyped(true);
 
         for (Region region : rpst.getRegionsPostOrder()) {
             if (region.getParentType() == ParentType.UNDEFINED) {
@@ -528,27 +532,27 @@ public class RegionAnalysis {
                         || checkTrivialRegion(region)
                         || checkTryCatchFinally(cfg, region)
                         || checkBreakLabelRegion(cfg, region))) {
-                    logger.log(Level.FINER, "***** Analysis failed for CFG ({0}, {1}) *****",
-                            new Object[] {cfg.getEntryBlock(), cfg.getExitBlock()});
-                    return null;
+                    rpst.setTyped(false);
+                    break;
                 } else {
                     logger.log(Level.FINER, "Found {0} region {1}",
                             new Object[] {region.getParentType(), region});
                 }
             }
         }
-        logger.log(Level.FINER, "***** Analysis succeed for CFG ({0}, {1}) *****",
-                new Object[] {cfg.getEntryBlock(), cfg.getExitBlock()});
+
+        logger.log(Level.FINER, "***** Analysis {0} for CFG ({1}, {2}) *****",
+                new Object[] {rpst.isTyped() ? "succeed" : "failed",
+                              cfg.getEntryBlock(), cfg.getExitBlock()});
+
+        writer.writeRPST(rpst, currentLevel);
+
         return rpst;
     }
 
     public RPST analyse() {
-        iSubgraph = 0;
+        level = 0;
         breakLabelCount = 0;
-        RPST rpst = checkRegions(cfg0);
-        if (rpst == null) {
-            throw new ABCDException("Region analysis failed");
-        }
-        return rpst;
+        return checkRegions(cfg0);
     }
 }

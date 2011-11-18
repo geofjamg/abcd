@@ -35,6 +35,7 @@ import fr.jamgotchian.abcd.core.bytecode.ClassFactory;
 import fr.jamgotchian.abcd.core.bytecode.dalvik.DexFileDataSource;
 import fr.jamgotchian.abcd.core.bytecode.java.ClassFileDataSource;
 import fr.jamgotchian.abcd.core.bytecode.java.JarFileDataSource;
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
@@ -220,9 +221,11 @@ public class ABCDContext {
                 ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Analyse regions of {0}",
                         '=', methodSignature);
 
-                RPST rpst = new RegionAnalysis(cfg).analyse();
+                RPST rpst = new RegionAnalysis(cfg, writer).analyse();
 
-                writer.writeRPST(rpst);
+                if (!rpst.isTyped()) {
+                    throw new ABCDException("Region analysis failed");
+                }
 
                 StringBuilder builder = new StringBuilder();
                 rpst.print(builder);

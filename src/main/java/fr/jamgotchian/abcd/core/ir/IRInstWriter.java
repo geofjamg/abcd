@@ -30,6 +30,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,11 +64,14 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return toString(inst, new HTMLCodeWriterFactory());
     }
 
-    public static String toString(Range range,
-                                  IRInstSeq seq,
-                                  VariableStack inputStack,
-                                  VariableStack outputStack,
+    public static String toString(BasicBlock bb,
                                   CodeWriterFactory factory) {
+        Range range = bb.getRange();
+        IRInstSeq seq = bb.getInstructions();
+        VariableStack inputStack = bb.getInputStack();
+        VariableStack outputStack = bb.getOutputStack();
+        Set<BasicBlockAttribute> attributes = bb.getAttributes();
+        Object data = bb.getData();
         Writer writer = new StringWriter();
         try {
             CodeWriter codeWriter = factory.create(writer);
@@ -76,6 +80,13 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
             if (inputStack != null && inputStack.size() > 0) {
                 infosBefore.add(new ColoredString("Input stack : " + inputStack,
                                                   Color.ORANGE));
+            }
+            if (attributes.size() > 0) {
+                infosBefore.add(new ColoredString("Attributes : " + attributes,
+                                                  Color.PINK));
+            }
+            if (data != null) {
+                infosBefore.add(new ColoredString("Data : " + data, Color.CYAN));
             }
             codeWriter.before(infosBefore);
             seq.accept(new IRInstWriter(codeWriter), null);
@@ -95,11 +106,8 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return writer.toString();
     }
 
-    public static String toDOTHTMLLike(Range range,
-                                       IRInstSeq seq,
-                                       VariableStack inputStack,
-                                       VariableStack outputStack) {
-        return toString(range, seq, inputStack, outputStack, new DOTHTMLLikeCodeWriterFactory());
+    public static String toDOTHTMLLike(BasicBlock bb) {
+        return toString(bb, new DOTHTMLLikeCodeWriterFactory());
     }
 
     private final CodeWriter writer;

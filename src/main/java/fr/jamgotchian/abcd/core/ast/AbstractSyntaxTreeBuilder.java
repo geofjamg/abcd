@@ -684,7 +684,7 @@ public class AbstractSyntaxTreeBuilder {
                         caseStmts.add(stmt);
                     }
                     caseCompoundStmt.clear();
-                    if (!(caseStmts.get(caseStmts.size()-1) instanceof ReturnStatement)) {
+                    if (caseStmts.isEmpty() || !(caseStmts.get(caseStmts.size()-1) instanceof ReturnStatement)) {
                         caseStmts.add(new BreakStatement());
                     }
 

@@ -64,7 +64,7 @@ public class DefaultABCDWriter implements ABCDWriter {
     public void writeCFG(ControlFlowGraph cfg) {
     }
 
-    public void writeRPST(RPST rpst) {
+    public void writeRPST(RPST rpst, int level) {
     }
 
     public void writeAST(CompilationUnit compilUnit) {
@@ -82,7 +82,7 @@ public class DefaultABCDWriter implements ABCDWriter {
             } finally {
                 writer.close();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.log(Level.SEVERE, e.toString(), e);
         }
     }

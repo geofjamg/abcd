@@ -44,6 +44,6 @@ public class ExceptionHandlerInfo {
 
     @Override
     public String toString() {
-        return "[" + className + ", " + variable + "]";
+        return getClass().getSimpleName() + "[" + className + ", " + variable + "]";
     }
 }

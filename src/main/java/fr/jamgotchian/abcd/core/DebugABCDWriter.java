@@ -145,13 +145,13 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     }
 
     @Override
-    public void writeRPST(RPST rpst) {
+    public void writeRPST(RPST rpst, int level) {
         assert rpst != null;
 
         String baseName = debugDir.getPath() + File.separator + rpst.getCFG().getName();
 
         try {
-            Writer writer = new FileWriter(baseName + "_RPST.dot");
+            Writer writer = new FileWriter(baseName + "_RPST_" + level + ".dot");
             try {
                 rpst.export(writer);
             } finally {

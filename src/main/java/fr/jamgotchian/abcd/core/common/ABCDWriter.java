@@ -32,7 +32,7 @@ public interface ABCDWriter {
 
     void writeCFG(ControlFlowGraph cfg);
 
-    void writeRPST(RPST rpst);
+    void writeRPST(RPST rpst, int level);
 
     void writeAST(CompilationUnit compilUnit);
 }

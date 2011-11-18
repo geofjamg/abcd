@@ -32,14 +32,10 @@ public class IRGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
         attrs.put("color", "black");
         StringBuilder builder = new StringBuilder();
         builder.append("< ");
-        if (bb.getType() == BasicBlockType.ENTRY
-                || bb.getType() == BasicBlockType.EXIT) {
+        if (bb.getType() == BasicBlockType.ENTRY || bb.getType() == BasicBlockType.EXIT) {
             builder.append("<font color=\"black\">").append(bb.getType()).append("</font>");
         } else {
-            builder.append(IRInstWriter.toDOTHTMLLike(bb.getRange(),
-                    bb.getInstructions(),
-                    bb.getInputStack(),
-                    bb.getOutputStack()));
+            builder.append(IRInstWriter.toDOTHTMLLike(bb));
         }
         builder.append(" >");
         attrs.put("label", builder.toString());
