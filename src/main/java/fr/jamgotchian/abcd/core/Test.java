@@ -1,6 +1,8 @@
 package fr.jamgotchian.abcd.core;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.stream.XMLStreamException;
@@ -162,6 +164,8 @@ public class Test {
     }
 
     public void testIfEtOu(int a, int b) {
+        a = 494949;
+        a = 666;
         if (a > 1 || (a <= 3 && b != 67)) {
             System.out.println("a");
         }
@@ -472,13 +476,24 @@ public class Test {
         }
     }
 
-//    public void testDoWhile() {
+    public void testDoWhile() {
+        int a = 2;
+        do {
+            a();
+        } while(a > 3);
+    }
+
+//    public void testDoWhile2(int x) {
 //        int a = 2;
 //        do {
-//            a();
+//            if (x == 1) {
+//                a();
+//            } else {
+//                b();
+//            }
 //        } while(a > 3);
 //    }
-//
+
 //    public void testDoWhileBreak() {
 //        int a = 2;
 //        do {
@@ -524,6 +539,16 @@ public class Test {
             }
         }
         c();
+    }
+
+    public void testInfiniteLoop4(int a) {
+        while(true) {
+            if (a == 1) {
+                a();
+            } else {
+                b();
+            }
+        }
     }
 
     public void testFor() {
@@ -1432,6 +1457,15 @@ public class Test {
 
     void testCallStaticMethod(int rrr) {
         TOTO.aaa(rrr * 4);
+    }
+
+    int testRethrow() throws Exception {
+        try {
+            Writer w = new FileWriter("sss");
+            return 1;
+        } catch (IOException e) {
+            throw new Exception(e);
+        }
     }
 
 //    public static void main(String[] args) {
