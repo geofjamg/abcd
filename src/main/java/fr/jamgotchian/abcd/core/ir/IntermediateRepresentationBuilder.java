@@ -58,6 +58,16 @@ public class IntermediateRepresentationBuilder {
 
     private final IRInstFactory instFactory;
 
+    private final VariableNameProviderFactory nameProviderFactory;
+
+    private final JavaType thisType;
+
+    private final boolean staticMethod;
+
+    private final JavaType methodReturnType;
+
+    private final List<Variable> methodArgs;
+
     private ControlFlowGraph cfg;
 
     private final Set<Variable> finallyTmpVars;
@@ -68,12 +78,22 @@ public class IntermediateRepresentationBuilder {
                                              InstructionBuilder instBuilder,
                                              ClassNameFactory classNameFactory,
                                              TemporaryVariableFactory tmpVarFactory,
-                                             IRInstFactory instFactory) {
+                                             IRInstFactory instFactory,
+                                             VariableNameProviderFactory nameProviderFactory,
+                                             JavaType thisType,
+                                             boolean staticMethod,
+                                             JavaType methodReturnType,
+                                             List<Variable> methodArgs) {
         this.cfgBuilder = cfgBuilder;
         this.instBuilder = instBuilder;
         this.classNameFactory = classNameFactory;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
+        this.nameProviderFactory = nameProviderFactory;
+        this.thisType = thisType;
+        this.staticMethod = staticMethod;
+        this.methodReturnType = methodReturnType;
+        this.methodArgs = methodArgs;
         finallyTmpVars = new HashSet<Variable>();
         catchTmpVars = new HashSet<Variable>();
         magicString = new StringConst("MAGIC", classNameFactory);
@@ -410,6 +430,47 @@ public class IntermediateRepresentationBuilder {
         }
     }
 
+    private void assignNameToVariables() {
+        VariableNameProvider nameProvider = nameProviderFactory.create(cfg);
+
+        Set<Variable> variables = new HashSet<Variable>();
+
+        for (Variable arg : methodArgs) {
+            arg.setName(nameProvider.getName(arg, staticMethod));
+        }
+        for (BasicBlock block : cfg.getBasicBlocks()) {
+            for (IRInst inst : block.getInstructions()) {
+                if (inst instanceof DefInst) {
+                    Variable def = ((DefInst) inst).getResult();
+                    if (!def.isTemporary()) {
+                        variables.add(def);
+                        def.setName(nameProvider.getName(def, staticMethod));
+                    }
+                }
+                for (Variable use : inst.getUses()) {
+                    if (!use.isTemporary()) {
+                        variables.add(use);
+                        use.setName(nameProvider.getName(use, staticMethod));
+                    }
+                }
+            }
+        }
+
+        List<String> variableColumn = new ArrayList<String>(1);
+        List<String> positionColumn = new ArrayList<String>(1);
+        List<String> nameColumn = new ArrayList<String>(1);
+        variableColumn.add("Variable");
+        positionColumn.add("Position");
+        nameColumn.add("Name");
+        for (Variable v : variables) {
+            variableColumn.add(v.getID().toString());
+            positionColumn.add(Integer.toString(v.getPosition()));
+            nameColumn.add(v.getName() != null ? v.getName() : "<undefined>");
+        }
+        logger.log(Level.FINEST, "Variable names :\n{0}",
+                ConsoleUtil.printTable(variableColumn, positionColumn, nameColumn));
+    }
+
     public ControlFlowGraph build(ABCDWriter writer) {
         // build control flow graph from bytecode
         cfg = cfgBuilder.build();
@@ -471,6 +532,14 @@ public class IntermediateRepresentationBuilder {
         }
 
         writer.writeCFG(cfg);
+
+        // analyse local variables types
+//        new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
+//                                      methodArgs, classNameFactory)
+//                .analyse();
+
+        // assign a name to each variable
+        assignNameToVariables();
 
         return cfg;
     }

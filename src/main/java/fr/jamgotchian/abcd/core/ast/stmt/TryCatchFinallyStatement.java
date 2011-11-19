@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
+import fr.jamgotchian.abcd.core.ast.expr.VariableExpression;
 import java.util.Collection;
 
 /**
@@ -31,25 +32,25 @@ public class TryCatchFinallyStatement extends AbstractStatement {
 
         private final BlockStatement blockStmt;
 
-        private final LocalVariableDeclaration exceptionVarDecl;
+        private final VariableExpression exceptionVar;
 
-        public CatchClause(BlockStatement blockStmt, LocalVariableDeclaration exceptionVarDecl) {
+        public CatchClause(BlockStatement blockStmt, VariableExpression exceptionVar) {
             if (blockStmt == null) {
                 throw new IllegalArgumentException("blockStmt == null");
             }
-            if (exceptionVarDecl == null) {
-                throw new IllegalArgumentException("exceptionVarDecl == null");
+            if (exceptionVar == null) {
+                throw new IllegalArgumentException("exceptionVar == null");
             }
             this.blockStmt = blockStmt;
-            this.exceptionVarDecl = exceptionVarDecl;
+            this.exceptionVar = exceptionVar;
         }
 
         public BlockStatement getBlockStmt() {
             return blockStmt;
         }
 
-        public LocalVariableDeclaration getExceptionVarDecl() {
-            return exceptionVarDecl;
+        public VariableExpression getExceptionVar() {
+            return exceptionVar;
         }
     }
 

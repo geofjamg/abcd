@@ -27,7 +27,7 @@ public class ExpressionVisitorAdapter<R, A> implements ExpressionVisitor<R, A> {
     }
 
     public R visit(LongLiteralExpression expr, A arg) {
-        return null;        
+        return null;
     }
 
     public R visit(ByteLiteralExpression expr, A arg) {
@@ -62,13 +62,13 @@ public class ExpressionVisitorAdapter<R, A> implements ExpressionVisitor<R, A> {
         return null;
     }
 
-    public R visit(LocalVariable expr, A arg) {
+    public R visit(VariableExpression expr, A arg) {
         return null;
     }
 
     public R visit(UnaryExpression expr, A arg) {
         expr.getExpr().accept(this, arg);
-        return null;        
+        return null;
     }
 
     public R visit(BinaryExpression expr, A arg) {
@@ -146,5 +146,5 @@ public class ExpressionVisitorAdapter<R, A> implements ExpressionVisitor<R, A> {
         }
         return null;
     }
-    
+
 }

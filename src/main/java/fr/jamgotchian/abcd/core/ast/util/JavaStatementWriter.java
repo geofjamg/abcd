@@ -25,7 +25,6 @@ import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ForStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.MonitorEnterStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
@@ -41,6 +40,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.ir.CaseValues;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.Iterator;
 
 public class JavaStatementWriter implements StatementVisitor<Void, Void> {
@@ -67,7 +67,7 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
         Iterator<Statement> it = blockStmt.iterator();
         while (it.hasNext()) {
             Statement stmt = it.next();
-            stmt.accept(this, null);
+            stmt.accept(this, arg);
             if (it.hasNext()) {
                 writer.newLine();
             }
@@ -89,25 +89,25 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
         writer.writeKeyword("return");
         if (stmt.getExpression() != null) {
             writer.writeSpace();
-            stmt.getExpression().accept(exprVisitor, stmt.getBlock());
+            stmt.getExpression().accept(exprVisitor, arg);
         }
         writer.write(";");
         return null;
     }
 
     public Void visit(LocalVariableDeclarationStatement stmt, Void arg) {
-        LocalVariableDeclaration decl = stmt.getLocalVarDecl();
-        writer.write(decl.getType()).write(" ").write(decl.getVariable().getName());
+        writer.write(stmt.getVarExpr().getVariable().getType()).writeSpace();
+        stmt.getVarExpr().accept(exprVisitor, arg);
         if (stmt.getInitExpr() != null) {
             writer.writeSpace().write("=").writeSpace();
-            stmt.getInitExpr().accept(exprVisitor, stmt.getBlock());
+            stmt.getInitExpr().accept(exprVisitor, arg);
         }
         writer.write(";");
         return null;
     }
 
     public Void visit(ExpressionStatement stmt, Void arg) {
-        stmt.getExpression().accept(exprVisitor, stmt.getBlock());
+        stmt.getExpression().accept(exprVisitor, arg);
         writer.write(";");
         return null;
     }
@@ -119,25 +119,27 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
 
     public Void visit(IfStatement stmt, Void arg) {
         writer.writeKeyword("if").writeSpace().write("(");
-        stmt.getCondition().accept(exprVisitor, stmt.getBlock());
+        stmt.getCondition().accept(exprVisitor, arg);
         writer.write(")").writeSpace();
-        stmt.getThen().accept(this, null);
+        stmt.getThen().accept(this, arg);
         if (stmt.getElse() != null) {
             writer.writeSpace().writeKeyword("else").writeSpace();
-            stmt.getElse().accept(this, null);
+            stmt.getElse().accept(this, arg);
         }
         return null;
     }
 
     public Void visit(TryCatchFinallyStatement stmt, Void arg) {
         writer.writeKeyword("try").writeSpace();
-        stmt.getTry().accept(this, null);
+        stmt.getTry().accept(this, arg);
         for (CatchClause _catch : stmt.getCatchs()) {
+            JavaType excType = _catch.getExceptionVar().getVariable().getType();
             writer.writeSpace().writeKeyword("catch").writeSpace().write("(")
-                  .write(_catch.getExceptionVarDecl().getType())
-                  .writeSpace().write(_catch.getExceptionVarDecl().getVariable().getName())
-                  .write(")").writeSpace();
-            _catch.getBlockStmt().accept(this, null);
+                  .write(excType == null ? "???" : excType)
+                  .writeSpace();
+            _catch.getExceptionVar().accept(exprVisitor, arg);
+            writer.write(")").writeSpace();
+            _catch.getBlockStmt().accept(this, arg);
         }
         if (stmt.getFinally() != null) {
             writer.writeSpace().writeKeyword("finally").writeSpace();
@@ -157,43 +159,43 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
 
     public Void visit(DoWhileStatement stmt, Void arg) {
         writer.writeKeyword("do").writeSpace();
-        stmt.getBody().accept(this, null);
+        stmt.getBody().accept(this, arg);
         writer.write(" ").writeKeyword("while").writeSpace().write("(");
-        stmt.getCondition().accept(exprVisitor, stmt.getBlock());
+        stmt.getCondition().accept(exprVisitor, arg);
         writer.write(");");
         return null;
     }
 
     public Void visit(WhileStatement stmt, Void arg) {
         writer.writeKeyword("while").writeSpace().write("(");
-        stmt.getCondition().accept(exprVisitor, stmt.getBlock());
+        stmt.getCondition().accept(exprVisitor, arg);
         writer.write(")").writeSpace();
-        stmt.getBody().accept(this, null);
+        stmt.getBody().accept(this, arg);
         return null;
     }
 
     public Void visit(ForStatement stmt, Void arg) {
         writer.writeKeyword("for").writeSpace().write("(");
-        stmt.getInit().accept(exprVisitor, stmt.getBlock());
+        stmt.getInit().accept(exprVisitor, arg);
         writer.write(";").writeSpace();
-        stmt.getCondition().accept(exprVisitor, stmt.getBlock());
+        stmt.getCondition().accept(exprVisitor, arg);
         writer.write(";").writeSpace();
-        stmt.getUpdate().accept(exprVisitor, stmt.getBlock());
+        stmt.getUpdate().accept(exprVisitor, arg);
         writer.write(")").writeSpace();
-        stmt.getBody().accept(this, null);
+        stmt.getBody().accept(this, arg);
         return null;
     }
 
     public Void visit(ThrowStatement stmt, Void arg) {
         writer.writeKeyword("throw").writeSpace();
-        stmt.getObjectRef().accept(exprVisitor, stmt.getBlock());
+        stmt.getObjectRef().accept(exprVisitor, arg);
         writer.write(";");
         return null;
     }
 
     public Void visit(SwitchCaseStatement stmt, Void arg) {
         writer.writeKeyword("switch").writeSpace().write("(");
-        stmt.getIndex().accept(exprVisitor, stmt.getBlock());
+        stmt.getIndex().accept(exprVisitor, arg);
         writer.write(")").writeSpace().write("{").newLine();
         writer.incrIndent();
         for (CaseStatement _case : stmt.getCases()) {
@@ -226,23 +228,23 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
 
     public Void visit(MonitorEnterStatement stmt, Void arg) {
         writer.writeKeyword("monitorenter").writeSpace();
-        stmt.getObjectRef().accept(exprVisitor, stmt.getBlock());
+        stmt.getObjectRef().accept(exprVisitor, arg);
         writer.write(";");
         return null;
     }
 
     public Void visit(MonitorExitStatement stmt, Void arg) {
         writer.writeKeyword("monitorexit").writeSpace();
-        stmt.getObjectRef().accept(exprVisitor, stmt.getBlock());
+        stmt.getObjectRef().accept(exprVisitor, arg);
         writer.write(";");
         return null;
     }
 
     public Void visit(SynchronizedStatement stmt, Void arg) {
         writer.writeKeyword("synchronized").writeSpace().write("(");
-        stmt.getExpression().accept(exprVisitor, stmt.getBlock());
+        stmt.getExpression().accept(exprVisitor, arg);
         writer.write(")");
-        stmt.getBody().accept(this, null);
+        stmt.getBody().accept(this, arg);
         return null;
     }
 }

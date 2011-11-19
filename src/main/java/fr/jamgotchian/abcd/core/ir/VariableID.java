@@ -78,7 +78,7 @@ public class VariableID {
             builder.append("v").append(index);
         }
         if (version != VariableID.UNDEFINED_VERSION) {
-            builder.append(".").append(version);
+            builder.append("_").append(version);
         }
         return builder.toString();
     }

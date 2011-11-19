@@ -18,7 +18,7 @@
 package fr.jamgotchian.abcd.core.ast;
 
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
+import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.Iterator;
@@ -40,7 +40,7 @@ public class Method {
 
     private final JavaType returnType;
 
-    private final List<LocalVariableDeclaration> arguments;
+    private final List<Variable> arguments;
 
     private final List<ClassName> exceptions;
 
@@ -49,7 +49,7 @@ public class Method {
     private final boolean constructor;
 
     public Method(String name, Set<Modifier> modifiers, JavaType returnType,
-                  List<LocalVariableDeclaration> arguments, List<ClassName> exceptions,
+                  List<Variable> arguments, List<ClassName> exceptions,
                   boolean constructor) {
         this.name = name;
         this.modifiers = modifiers;
@@ -75,8 +75,8 @@ public class Method {
     public String getSignature() {
         StringBuilder builder = new StringBuilder();
         builder.append(name).append("(");
-        for (Iterator<LocalVariableDeclaration> it = arguments.iterator(); it.hasNext();) {
-            LocalVariableDeclaration arg = it.next();
+        for (Iterator<Variable> it = arguments.iterator(); it.hasNext();) {
+            Variable arg = it.next();
             builder.append(arg.getType().toString());
             if (it.hasNext()) {
                 builder.append(",");
@@ -94,7 +94,7 @@ public class Method {
         return returnType;
     }
 
-    public List<LocalVariableDeclaration> getArguments() {
+    public List<Variable> getArguments() {
         return arguments;
     }
 

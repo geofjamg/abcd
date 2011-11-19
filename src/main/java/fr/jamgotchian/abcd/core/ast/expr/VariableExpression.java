@@ -17,36 +17,22 @@
 
 package fr.jamgotchian.abcd.core.ast.expr;
 
-import fr.jamgotchian.abcd.core.ir.VariableID;
+import fr.jamgotchian.abcd.core.ir.Variable;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LocalVariable extends AbstractExpression {
+public class VariableExpression extends AbstractExpression {
 
-    private VariableID id;
+    private final Variable variable;
 
-    private String name;
-
-    LocalVariable(VariableID id, String name) {
-        this.id = id;
-        this.name = name;
+    public VariableExpression(Variable variable) {
+        this.variable = variable;
     }
 
-    public VariableID getID() {
-        return id;
-    }
-
-    public String getName() {
-        if (name != null) {
-            return name;
-        }
-        return id.toString();
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public Variable getVariable() {
+        return variable;
     }
 
     public <R, A> R accept(ExpressionVisitor<R, A> visitor, A arg) {

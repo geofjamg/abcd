@@ -31,7 +31,7 @@ import fr.jamgotchian.abcd.core.ast.expr.ChoiceExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ClassLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.DoubleLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.FieldAccess;
-import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
+import fr.jamgotchian.abcd.core.ast.expr.VariableExpression;
 import fr.jamgotchian.abcd.core.ast.expr.MethodCall;
 import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
@@ -148,9 +148,9 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
-    public Boolean visit(LocalVariable expr1, Expression expr2) {
-        if (expr2 instanceof LocalVariable) {
-            return ((LocalVariable) expr2).getID().equals(expr1.getID());
+    public Boolean visit(VariableExpression expr1, Expression expr2) {
+        if (expr2 instanceof VariableExpression) {
+            return ((VariableExpression) expr2).getVariable().equals(expr1.getVariable());
         } else {
             return Boolean.FALSE;
         }

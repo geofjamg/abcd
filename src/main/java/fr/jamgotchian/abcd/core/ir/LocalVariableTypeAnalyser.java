@@ -14,49 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core;
+package fr.jamgotchian.abcd.core.ir;
 
 import com.google.common.collect.Sets;
-import fr.jamgotchian.abcd.core.ast.Method;
-import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
-import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.ir.BasicBlock;
-import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.ir.LocalVariableTable;
-import fr.jamgotchian.abcd.core.ir.ArrayLengthInst;
-import fr.jamgotchian.abcd.core.ir.AssignConstInst;
-import fr.jamgotchian.abcd.core.ir.AssignVarInst;
-import fr.jamgotchian.abcd.core.ir.BinaryInst;
-import fr.jamgotchian.abcd.core.ir.CallMethodInst;
-import fr.jamgotchian.abcd.core.ir.CallStaticMethodInst;
-import fr.jamgotchian.abcd.core.ir.CastInst;
-import fr.jamgotchian.abcd.core.ir.ChoiceInst;
-import fr.jamgotchian.abcd.core.ir.ConditionalInst;
-import fr.jamgotchian.abcd.core.ir.DefInst;
-import fr.jamgotchian.abcd.core.ir.GetArrayInst;
-import fr.jamgotchian.abcd.core.ir.GetFieldInst;
-import fr.jamgotchian.abcd.core.ir.GetStaticFieldInst;
-import fr.jamgotchian.abcd.core.ir.InstanceOfInst;
-import fr.jamgotchian.abcd.core.ir.JumpIfInst;
-import fr.jamgotchian.abcd.core.ir.MethodSignature;
-import fr.jamgotchian.abcd.core.ir.MonitorEnterInst;
-import fr.jamgotchian.abcd.core.ir.MonitorExitInst;
-import fr.jamgotchian.abcd.core.ir.NewArrayInst;
-import fr.jamgotchian.abcd.core.ir.NewObjectInst;
-import fr.jamgotchian.abcd.core.ir.ReturnInst;
-import fr.jamgotchian.abcd.core.ir.SetArrayInst;
-import fr.jamgotchian.abcd.core.ir.SetFieldInst;
-import fr.jamgotchian.abcd.core.ir.SetStaticFieldInst;
-import fr.jamgotchian.abcd.core.ir.SwitchInst;
-import fr.jamgotchian.abcd.core.ir.IRInst;
-import fr.jamgotchian.abcd.core.ir.IRInstFactory;
-import fr.jamgotchian.abcd.core.ir.IRInstSeq;
-import fr.jamgotchian.abcd.core.ir.UnaryInst;
-import fr.jamgotchian.abcd.core.ir.Variable;
-import fr.jamgotchian.abcd.core.ir.VariableID;
-import fr.jamgotchian.abcd.core.ir.EmptyIRInstVisitor;
-import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.Collections3;
@@ -82,11 +43,13 @@ public class LocalVariableTypeAnalyser {
 
     private final ControlFlowGraph graph;
 
-    private final Method method;
+    private final JavaType thisType;
+
+    private final JavaType methodReturnType;
+
+    private final List<Variable> methodArgs;
 
     private final ClassNameFactory classNameFactory;
-
-    private final IRInstFactory instFactory;
 
     private final Map<VariableID, Set<JavaType>> possibleTypes
             = new HashMap<VariableID, Set<JavaType>>();
@@ -411,9 +374,9 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Boolean visit(ReturnInst inst, Void arg) {
-            if (inst.getVar() != null && method.getReturnType() != null) {
+            if (inst.getVar() != null && methodReturnType != null) {
                 return infereTypes(getPossibleTypes(inst.getVar().getID()),
-                                   method.getReturnType());
+                                   methodReturnType);
             } else {
                 return Boolean.FALSE;
             }
@@ -422,13 +385,14 @@ public class LocalVariableTypeAnalyser {
 
     private final Visitor visitor = new Visitor();
 
-    public LocalVariableTypeAnalyser(ControlFlowGraph graph, Method method,
-                                     ClassNameFactory classNameFactory,
-                                     IRInstFactory instFactory) {
+    public LocalVariableTypeAnalyser(ControlFlowGraph graph, JavaType thisType,
+                                     JavaType methodReturnType, List<Variable> methodArgs,
+                                     ClassNameFactory classNameFactory) {
         this.graph = graph;
-        this.method = method;
+        this.thisType = thisType;
+        this.methodReturnType = methodReturnType;
+        this.methodArgs = methodArgs;
         this.classNameFactory = classNameFactory;
-        this.instFactory = instFactory;
     }
 
     private Set<JavaType> getPossibleTypes(VariableID ID) {
@@ -465,32 +429,13 @@ public class LocalVariableTypeAnalyser {
                 ConsoleUtil.printTable(indexColumn, typeColumn));
     }
 
-    private void printVariableName(Set<Variable> variables) {
-        List<String> indexColumn = new ArrayList<String>(1);
-        List<String> positionColumn = new ArrayList<String>(1);
-        List<String> nameColumn = new ArrayList<String>(1);
-        indexColumn.add("Index");
-        positionColumn.add("Position");
-        nameColumn.add("Name");
-        for (Variable v : variables) {
-            indexColumn.add(v.getID().toString());
-            positionColumn.add(Integer.toString(v.getPosition()));
-            nameColumn.add(v.getName() != null ? v.getName() : "<undefined>");
-        }
-        logger.log(Level.FINEST, "Variable names :\n{0}",
-                ConsoleUtil.printTable(indexColumn, positionColumn, nameColumn));
-    }
-
-
     public void analyse() {
-        // find type of this
-        ClassName thisClassName = classNameFactory.newClassName(method.getClazz().getQualifiedName());
-        getPossibleTypes(new VariableID(0)).add(JavaType.newRefType(thisClassName));
+        // type of this
+        getPossibleTypes(new VariableID(0)).add(thisType);
 
         // and types of method parameters
-        for (LocalVariableDeclaration decl : method.getArguments()) {
-            LocalVariable var = decl.getVariable();
-            getPossibleTypes(var.getID()).add(decl.getType());
+        for (Variable varArg : methodArgs) {
+            getPossibleTypes(varArg.getID()).add(varArg.getType());
         }
 
         boolean change = true;
@@ -526,28 +471,5 @@ public class LocalVariableTypeAnalyser {
         }
 
         printTypeTable();
-
-        // assign a name to each variable
-        LocalVariableTable table = graph.getLocalVariableTable();
-        Set<Variable> variables = new HashSet<Variable>();
-        for (BasicBlock block : graph.getBasicBlocks()) {
-            for (IRInst inst : block.getInstructions()) {
-                if (inst instanceof DefInst) {
-                    Variable def = ((DefInst) inst).getResult();
-                    if (!def.isTemporary()) {
-                        variables.add(def);
-                        def.setName(table.getName(def.getIndex(), def.getPosition()));
-                    }
-                }
-                for (Variable use : inst.getUses()) {
-                    if (!use.isTemporary()) {
-                        variables.add(use);
-                        use.setName(table.getName(use.getIndex(), use.getPosition()));
-                    }
-                }
-            }
-        }
-
-        printVariableName(variables);
     }
 }

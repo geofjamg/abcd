@@ -16,9 +16,9 @@
  */
 package fr.jamgotchian.abcd.core.ast.expr;
 
+import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.ir.VariableID;
 import java.util.List;
 import java.util.Set;
 
@@ -129,8 +129,8 @@ public class Expressions {
         return new ConditionalExpression(condition, then, _else);
     }
 
-    public static LocalVariable newVarExpr(VariableID id, String name) {
-        return new LocalVariable(id, name);
+    public static VariableExpression newVarExpr(Variable var) {
+        return new VariableExpression(var);
     }
 
     public static MethodCall newMethodExpr(Expression scope, String methodName,

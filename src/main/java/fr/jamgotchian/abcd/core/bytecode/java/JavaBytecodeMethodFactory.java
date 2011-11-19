@@ -19,14 +19,11 @@ package fr.jamgotchian.abcd.core.bytecode.java;
 import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.Method;
-import fr.jamgotchian.abcd.core.ast.expr.Expressions;
-import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
-import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
-import fr.jamgotchian.abcd.core.ir.VariableID;
+import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
@@ -93,23 +90,17 @@ public class JavaBytecodeMethodFactory implements MethodFactory {
         // parameters
         boolean isMethodStatic = methodModifiers.contains(Modifier.STATIC);
         Type[] argTypes = Type.getArgumentTypes(mn.desc);
-        List<LocalVariableDeclaration> arguments = new ArrayList<LocalVariableDeclaration>(argTypes.length);
+        List<Variable> arguments = new ArrayList<Variable>(argTypes.length);
         for(int index = 0; index < argTypes.length; index++) {
             Type argType = argTypes[index];
-            int localVarIndex = index;
             // index 0 of local variable table contains this for non static method
-            if (!isMethodStatic) {
-                localVarIndex++;
-            }
-            JavaType javaArgType = JavaBytecodeUtil.newType(argType, importManager);
-            LocalVariable var = Expressions.newVarExpr(new VariableID(localVarIndex), "");
-            arguments.add(new LocalVariableDeclaration(var, javaArgType));
+            Variable arg = new Variable(isMethodStatic ? index : index + 1);
+            arg.setType(JavaBytecodeUtil.newType(argType, importManager));
+            arguments.add(arg);
         }
 
-        Method method = new Method(methodName, methodModifiers,
-                                   javaReturnType, arguments, exceptions,
-                                   constructor);
-        return method;
+        return new Method(methodName, methodModifiers, javaReturnType, arguments,
+                          exceptions, constructor);
     }
 
     public ControlFlowGraphBuilder createCFGBuilder(String methodSignature) {

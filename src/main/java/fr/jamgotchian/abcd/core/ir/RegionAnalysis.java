@@ -16,11 +16,10 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import com.google.common.base.Objects;
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
+import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

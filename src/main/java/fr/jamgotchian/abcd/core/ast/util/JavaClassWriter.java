@@ -21,9 +21,8 @@ import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.ClassVisitor;
 import fr.jamgotchian.abcd.core.ast.Field;
 import fr.jamgotchian.abcd.core.ast.Method;
-import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
-import fr.jamgotchian.abcd.core.ast.stmt.StatementVisitor;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
+import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import java.util.List;
 import javax.lang.model.element.Modifier;
@@ -38,7 +37,7 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
 
     private final boolean debug;
 
-    private final StatementVisitor<Void, Void> stmtVisitor;
+    private final JavaStatementWriter stmtVisitor;
 
     public JavaClassWriter(CodeWriter writer, boolean debug) {
         this.writer = writer;
@@ -111,10 +110,10 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
                 writer.write(method.getReturnType()).writeSpace();
             }
             writer.write(method.getName()).write("(");
-            List<LocalVariableDeclaration> arguments = method.getArguments();
+            List<Variable> arguments = method.getArguments();
             for (int i = 0; i < arguments.size(); i++) {
-                LocalVariableDeclaration argument = arguments.get(i);
-                writer.write(argument.getType()).writeSpace().write(argument.getVariable().getName());
+                Variable argument = arguments.get(i);
+                writer.write(argument.getType()).writeSpace().write(argument.getName());
                 if (i < arguments.size()-1) {
                     writer.write(",").writeSpace();
                 }

@@ -17,9 +17,9 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
+import org.junit.Test;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
@@ -28,34 +28,34 @@ import static org.junit.Assert.*;
  */
 public class SimpleNameGeneratorTest {
 
-    private SimpleNameGenerator generator;
+    private SimpleVariableNameProvider provider;
 
     public SimpleNameGeneratorTest() {
     }
 
     @Before
     public void setUp() {
-        generator = new SimpleNameGenerator();
+        provider = new SimpleVariableNameProvider();
     }
 
     @After
     public void tearDown() {
-        generator = null;
+        provider = null;
     }
 
-    private void generate(int n) {
-        for (int i = 0; i < n; i++) {
-            generator.generate();
+    private void generate(int n, int offset) {
+        for (int i = offset; i < offset + n; i++) {
+            provider.getName(new Variable(i), true);
         }
     }
 
     @Test
     public void testGenerate() {
-        assertTrue(generator.generate().equals("a"));
-        assertTrue(generator.generate().equals("b"));
-        generate(24);
-        assertTrue(generator.generate().equals("ba"));
-        assertTrue(generator.generate().equals("bb"));
+        assertTrue(provider.getName(new Variable(0), true).equals("a"));
+        assertTrue(provider.getName(new Variable(1), true).equals("b"));
+        generate(24,  2);
+        assertTrue(provider.getName(new Variable(26), true).equals("ba"));
+        assertTrue(provider.getName(new Variable(27), true).equals("bb"));
     }
 
 }

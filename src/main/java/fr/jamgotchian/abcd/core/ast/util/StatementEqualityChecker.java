@@ -108,10 +108,8 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
     public Boolean visit(LocalVariableDeclarationStatement stmt, Statement arg) {
         if (arg instanceof LocalVariableDeclarationStatement) {
             LocalVariableDeclarationStatement stmt2 = (LocalVariableDeclarationStatement) arg;
-            if (!stmt.getLocalVarDecl().equals(stmt2.getLocalVarDecl())) {
-                return Boolean.FALSE;
-            }
-            return ExpressionEqualityChecker.equal(stmt.getInitExpr(), stmt2.getInitExpr());
+            return ExpressionEqualityChecker.equal(stmt.getVarExpr(), stmt2.getVarExpr())
+                    && ExpressionEqualityChecker.equal(stmt.getInitExpr(), stmt2.getInitExpr());
         }
         return Boolean.FALSE;
     }
@@ -158,7 +156,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
             while (it1.hasNext() && it2.hasNext()) {
                 CatchClause catch1 = it1.next();
                 CatchClause catch2 = it2.next();
-                if (!catch1.getExceptionVarDecl().equals(catch2.getExceptionVarDecl())) {
+                if (!catch1.getExceptionVar().equals(catch2.getExceptionVar())) {
                     return Boolean.FALSE;
                 }
                 if (Boolean.FALSE.equals(catch1.getBlockStmt().accept(this, catch2.getBlockStmt()))) {

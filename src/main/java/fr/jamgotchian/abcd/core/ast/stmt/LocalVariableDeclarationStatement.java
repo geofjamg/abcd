@@ -18,7 +18,7 @@
 package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
-import fr.jamgotchian.abcd.core.type.JavaType;
+import fr.jamgotchian.abcd.core.ast.expr.VariableExpression;
 
 /**
  *
@@ -26,24 +26,24 @@ import fr.jamgotchian.abcd.core.type.JavaType;
  */
 public class LocalVariableDeclarationStatement extends AbstractStatement {
 
-    private final LocalVariableDeclaration localVarDecl;
+    private final VariableExpression varExpr;
 
     private final Expression initExpr;
 
-    public LocalVariableDeclarationStatement(LocalVariableDeclaration localVarDecl) {
-        this(localVarDecl, null);
+    public LocalVariableDeclarationStatement(VariableExpression varExpr) {
+        this(varExpr, null);
     }
 
-    public LocalVariableDeclarationStatement(LocalVariableDeclaration localVarDecl, Expression initExpr) {
-        if (localVarDecl == null) {
-            throw new IllegalArgumentException("localVarDecl == null");
+    public LocalVariableDeclarationStatement(VariableExpression varExpr, Expression initExpr) {
+        if (varExpr == null) {
+            throw new IllegalArgumentException("varExpr == null");
         }
-        this.localVarDecl = localVarDecl;
+        this.varExpr = varExpr;
         this.initExpr = initExpr;
     }
 
-    public LocalVariableDeclaration getLocalVarDecl() {
-        return localVarDecl;
+    public VariableExpression getVarExpr() {
+        return varExpr;
     }
 
     public Expression getInitExpr() {

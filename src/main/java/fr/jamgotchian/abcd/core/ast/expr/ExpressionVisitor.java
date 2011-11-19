@@ -30,7 +30,7 @@ public interface ExpressionVisitor<R, A> {
     R visit(ByteLiteralExpression expr, A arg);
 
     R visit(ShortLiteralExpression expr, A arg);
-    
+
     R visit(BooleanLiteralExpression expr, A arg);
 
     R visit(FloatLiteralExpression expr, A arg);
@@ -43,7 +43,7 @@ public interface ExpressionVisitor<R, A> {
 
     R visit(ClassLiteralExpression expr, A arg);
 
-    R visit(LocalVariable expr, A arg);
+    R visit(VariableExpression expr, A arg);
 
     R visit(UnaryExpression expr, A arg);
 

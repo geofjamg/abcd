@@ -36,7 +36,7 @@ public class Variable {
 
     private ComputationalType computationalType;
 
-    private String name;
+    private String name = "???";
 
     Variable(VariableID ID, BasicBlock block, int position) {
         this.ID = ID;
@@ -48,13 +48,16 @@ public class Variable {
         this(new VariableID(index), block, position);
     }
 
+    public Variable(int index) {
+        this(new VariableID(index), null, -1);
+    }
+
     private Variable(Variable other) {
         ID = other.ID.clone();
         block = other.block;
         position = other.position;
         type = other.type;
         computationalType = other.computationalType;
-        name = other.name;
     }
 
     public VariableID getID() {

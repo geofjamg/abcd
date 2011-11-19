@@ -24,9 +24,7 @@ import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.stmt.CommentStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.Statements;
-import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
 import fr.jamgotchian.abcd.core.ast.util.Refactorer;
 import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
@@ -41,12 +39,15 @@ import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.ir.LocalVariableTable;
+import fr.jamgotchian.abcd.core.ir.DefaultVariableNameProviderFactory;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.ir.Region;
 import fr.jamgotchian.abcd.core.ir.RegionAnalysis;
+import fr.jamgotchian.abcd.core.ir.VariableNameProviderFactory;
+import fr.jamgotchian.abcd.core.type.ClassName;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
 import java.io.File;
@@ -126,11 +127,13 @@ public class ABCDContext {
     public ABCDContext() {
     }
 
-    private void decompile(DataSource dataSrc, ABCDWriter writer) throws IOException {
+    private void decompile(DataSource dataSrc, VariableNameProviderFactory nameProviderFactory,
+                           ABCDWriter writer) throws IOException {
         Summary summary = new Summary();
         for (ClassFactory classFactory : dataSrc.createClassFactories()) {
             ImportManager importManager = new ImportManager();
-            Class _class = decompileClass(classFactory, importManager, writer, summary);
+            Class _class = decompileClass(classFactory, importManager,
+                                          nameProviderFactory, writer, summary);
 
             CompilationUnit compilUnit = new CompilationUnit(_class.getPackage(), importManager);
             compilUnit.getClasses().add(_class);
@@ -163,8 +166,12 @@ public class ABCDContext {
     }
 
     private Class decompileClass(ClassFactory classFactory, ImportManager importManager,
+                                 VariableNameProviderFactory nameProviderFactory,
                                  ABCDWriter writer, Summary summary) throws IOException {
         Class _class = classFactory.createClass(importManager);
+
+        ClassName thisClassName = importManager.newClassName(_class.getQualifiedName());
+        JavaType thisType = JavaType.newRefType(thisClassName);
 
         ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Decompile class {0}",
                 '#', _class.getQualifiedName());
@@ -206,17 +213,13 @@ public class ABCDContext {
                                                                 instBuilder,
                                                                 importManager,
                                                                 tmpVarFactory,
-                                                                instFactory).build(writer);
-
-                // analyse local variables types
-//                new LocalVariableTypeAnalyser(cfg, method, importManager,
-//                                              instFactory).analyse();
-
-                LocalVariableTable table = cfg.getLocalVariableTable();
-                for (LocalVariableDeclaration decl : method.getArguments()) {
-                    LocalVariable var = decl.getVariable();
-                    var.setName(table.getName(var.getID().getIndex(), 0));
-                }
+                                                                instFactory,
+                                                                nameProviderFactory,
+                                                                thisType,
+                                                                method.getModifiers().contains(Modifier.STATIC),
+                                                                method.getReturnType(),
+                                                                method.getArguments())
+                        .build(writer);
 
                 ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Analyse regions of {0}",
                         '=', methodSignature);
@@ -341,7 +344,10 @@ public class ABCDContext {
                     dataSrc = new DexFileDataSource(dexFile);
                 }
 
-                new ABCDContext().decompile(dataSrc, writer);
+                VariableNameProviderFactory nameProviderFactory
+                        = new DefaultVariableNameProviderFactory();
+
+                new ABCDContext().decompile(dataSrc, nameProviderFactory, writer);
             }
             catch(ParseException e) {
                 printError(e.getMessage());

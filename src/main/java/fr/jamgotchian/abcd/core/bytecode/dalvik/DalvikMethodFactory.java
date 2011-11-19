@@ -18,12 +18,12 @@ package fr.jamgotchian.abcd.core.bytecode.dalvik;
 
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.Method;
-import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
+import org.jf.dexlib.MethodIdItem;
+import org.jf.dexlib.ProtoIdItem;
 import org.jf.dexlib.Util.AccessFlags;
 
 /**
@@ -46,11 +48,13 @@ public class DalvikMethodFactory implements MethodFactory {
     }
 
     public Method createMethod(ImportManager importManager) {
-        String name = encodedMethod.method.getMethodName().getStringValue();
+        MethodIdItem methodItem = encodedMethod.method;
+        String name = methodItem.getMethodName().getStringValue();
         AccessFlags[] accessFlags = AccessFlags.getAccessFlagsForClass(encodedMethod.accessFlags);
         Set<Modifier> modifiers = DalvikBytecodeUtil.getModifiers(accessFlags);
-        JavaType returnType = DalvikBytecodeUtil.newType(encodedMethod.method.getPrototype().getReturnType(), importManager);
-        List<LocalVariableDeclaration> arguments = new ArrayList<LocalVariableDeclaration>();
+        ProtoIdItem prototype = methodItem.getPrototype();
+        JavaType returnType = DalvikBytecodeUtil.newType(prototype.getReturnType(), importManager);
+        List<Variable> arguments = new ArrayList<Variable>();
         List<ClassName> exceptions = new ArrayList<ClassName>();
         return new Method(name, modifiers, returnType, arguments, exceptions, false);
     }

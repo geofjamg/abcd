@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
+ * Copyright (C) 2011 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,35 +20,25 @@ package fr.jamgotchian.abcd.core.ir;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SimpleNameGenerator implements NameGenerator {
+public class DebugInfoVariableNameProvider implements VariableNameProvider {
 
-    private static final String DIGITS = "abcdefghijklmnopqrstuvwxyz";
+    private final LocalVariableTable table;
 
-    private int counter;
-
-    public SimpleNameGenerator(int counter) {
-        this.counter = counter;
+    public DebugInfoVariableNameProvider(LocalVariableTable table) {
+        this.table = table;
     }
 
-    public SimpleNameGenerator() {
-        this(0);
-    }
-
-    public String generate() {
+    public String getName(Variable var, boolean isStaticMethod) {
         StringBuilder builder = new StringBuilder();
-        final int base = DIGITS.length();
-        // special case
-        if (counter == 0) {
-            builder.append(DIGITS.charAt(0));
-        } else {
-            int n = counter;
-            while (n > 0) {
-                int d = n % base;
-                builder.insert(0, DIGITS.charAt(d));
-                n = n / base;
-            }
+        String name = table.getName(var.getIndex(), var.getPosition());
+        if (name == null) {
+            name = "???";
         }
-        counter++;
+        builder.append(name);
+        if (var.getVersion() != VariableID.UNDEFINED_VERSION) {
+            builder.append('_').append(var.getVersion());
+        }
         return builder.toString();
     }
+
 }

@@ -68,7 +68,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         return null;
     }
 
-    public Expression visit(LocalVariable var, Void arg) {
+    public Expression visit(VariableExpression var, Void arg) {
         return null;
     }
 

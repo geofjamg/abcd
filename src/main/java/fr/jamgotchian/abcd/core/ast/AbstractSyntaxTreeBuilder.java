@@ -24,13 +24,13 @@ import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.TypeExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ASTUnaryOperator;
+import fr.jamgotchian.abcd.core.ast.expr.VariableExpression;
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.BreakStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.DoWhileStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
-import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclaration;
 import fr.jamgotchian.abcd.core.ast.stmt.MonitorEnterStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
@@ -153,8 +153,7 @@ public class AbstractSyntaxTreeBuilder {
                 }
                 return expr;
             } else {
-                return Expressions.newVarExpr(var.getID(),
-                                              var.getName());
+                return Expressions.newVarExpr(var);
             }
         }
 
@@ -164,8 +163,7 @@ public class AbstractSyntaxTreeBuilder {
                 expressions.put(leftVar.getID(), rightExpr);
             } else {
                 Expression varExpr
-                        = Expressions.newVarExpr(leftVar.getID(),
-                                                 leftVar.getName());
+                        = Expressions.newVarExpr(leftVar);
                 Expression assignExpr
                         = Expressions.newAssignExpr(varExpr, rightExpr,
                                                     AssignOperator.ASSIGN);
@@ -713,10 +711,8 @@ public class AbstractSyntaxTreeBuilder {
                     ExceptionHandlerInfo info
                             = (ExceptionHandlerInfo) catchRegion.getEntry().getData();
                     Variable excVar = info.getVariable();
-                    LocalVariableDeclaration varDecl
-                            = new LocalVariableDeclaration(Expressions.newVarExpr(excVar.getID(), excVar.getName()),
-                                                           excVar.getType());
-                    catchClauses.add(new CatchClause(catchBlockStmt, varDecl));
+                    VariableExpression excVarExpr = Expressions.newVarExpr(excVar);
+                    catchClauses.add(new CatchClause(catchBlockStmt, excVarExpr));
                 }
                 Region finallyRegion = region.getFirstChild(ChildType.FINALLY);
                 if (finallyRegion != null) {

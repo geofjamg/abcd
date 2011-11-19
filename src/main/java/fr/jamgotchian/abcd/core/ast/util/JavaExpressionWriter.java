@@ -35,7 +35,7 @@ import fr.jamgotchian.abcd.core.ast.expr.ExpressionVisitor;
 import fr.jamgotchian.abcd.core.ast.expr.FieldAccess;
 import fr.jamgotchian.abcd.core.ast.expr.FloatLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.IntegerLiteralExpression;
-import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
+import fr.jamgotchian.abcd.core.ast.expr.VariableExpression;
 import fr.jamgotchian.abcd.core.ast.expr.LongLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.MethodCall;
 import fr.jamgotchian.abcd.core.ast.expr.NullLiteralExpression;
@@ -43,7 +43,6 @@ import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ShortLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.StringLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
-import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
 import java.util.Iterator;
 
@@ -51,7 +50,7 @@ import java.util.Iterator;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatement> {
+public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
 
     private final CodeWriter writer;
 
@@ -66,8 +65,8 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
         this.debug = debug;
     }
 
-    public Void visit(AssignExpression expr, BlockStatement blockStmt) {
-        expr.getTarget().accept(this, blockStmt);
+    public Void visit(AssignExpression expr, Void arg) {
+        expr.getTarget().accept(this, arg);
         writer.writeSpace();
         switch (expr.getOperator()) {
             case ASSIGN:
@@ -94,44 +93,44 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
                 throw new AssertionError();
         }
         writer.writeSpace();
-        expr.getValue().accept(this, blockStmt);
+        expr.getValue().accept(this, arg);
         return null;
     }
 
-    public Void visit(UnaryExpression expr, BlockStatement blockStmt) {
+    public Void visit(UnaryExpression expr, Void arg) {
         switch (expr.getOperator()) {
             case MINUS:
                 writer.write("-");
-                expr.getExpr().accept(this, blockStmt);
+                expr.getExpr().accept(this, arg);
                 break;
 
             case POST_DECREMENT:
-                expr.getExpr().accept(this, blockStmt);
+                expr.getExpr().accept(this, arg);
                 writer.write("--");
                 break;
 
             case POST_INCREMENT:
-                expr.getExpr().accept(this, blockStmt);
+                expr.getExpr().accept(this, arg);
                 writer.write("++");
                 break;
 
             case PRE_DECREMENT:
                 writer.write("--");
-                expr.getExpr().accept(this, blockStmt);
+                expr.getExpr().accept(this, arg);
                 break;
 
             case PRE_INCREMENT:
                 writer.write("++");
-                expr.getExpr().accept(this, blockStmt);
+                expr.getExpr().accept(this, arg);
                 break;
 
             case NOT:
                 writer.write("!");
-                expr.getExpr().accept(this, blockStmt);
+                expr.getExpr().accept(this, arg);
                 break;
 
             case NONE:
-                expr.getExpr().accept(this, blockStmt);
+                expr.getExpr().accept(this, arg);
                 break;
 
             default:
@@ -140,12 +139,12 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
         return null;
     }
 
-    public Void visit(BinaryExpression expr, BlockStatement blockStmt) {
+    public Void visit(BinaryExpression expr, Void arg) {
         int depth = expr.getDepth();
         if (depth > 0) {
             writer.write("(");
         }
-        expr.getLeft().accept(this, blockStmt);
+        expr.getLeft().accept(this, arg);
         writer.writeSpace();
         switch (expr.getOperator()) {
             case PLUS:
@@ -230,38 +229,38 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
                 throw new AssertionError();
         }
         writer.writeSpace();
-        expr.getRight().accept(this, blockStmt);
+        expr.getRight().accept(this, arg);
         if (depth > 0) {
             writer.write(")");
         }
         return null;
     }
 
-    public Void visit(LocalVariable expr, BlockStatement blockStmt) {
-        writer.write(expr.getName());
+    public Void visit(VariableExpression expr, Void arg) {
+        writer.write(expr.getVariable().getName());
         return null;
     }
 
-    public Void visit(TypeExpression expr, BlockStatement blockStmt) {
+    public Void visit(TypeExpression expr, Void arg) {
         writer.write(expr.getType());
         return null;
     }
 
-    public Void visit(FieldAccess expr, BlockStatement blockStmt) {
-        expr.getScope().accept(this, blockStmt);
+    public Void visit(FieldAccess expr, Void arg) {
+        expr.getScope().accept(this, arg);
         writer.write(".").write(expr.getFieldName());
         return null;
     }
 
-    public Void visit(MethodCall expr, BlockStatement blockStmt) {
+    public Void visit(MethodCall expr, Void arg) {
         if (expr.getScope() != null) {
-            expr.getScope().accept(this, blockStmt);
+            expr.getScope().accept(this, arg);
             writer.write(".");
         }
         writer.write(expr.getMethodName()).write("(");
         for (Iterator<Expression> it = expr.getArguments().iterator(); it.hasNext();) {
             Expression argument = it.next();
-            argument.accept(this, blockStmt);
+            argument.accept(this, arg);
             if (it.hasNext()) {
                 writer.write(",").writeSpace();
             }
@@ -270,23 +269,23 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
         return null;
     }
 
-    public Void visit(ConditionalExpression expr, BlockStatement blockStmt) {
+    public Void visit(ConditionalExpression expr, Void arg) {
         writer.write("(");
-        expr.getCondition().accept(this, blockStmt);
+        expr.getCondition().accept(this, arg);
         writer.writeSpace().write("?").writeSpace();
-        expr.getThen().accept(this, blockStmt);
+        expr.getThen().accept(this, arg);
         writer.writeSpace().write(":").writeSpace();
-        expr.getElse().accept(this, blockStmt);
+        expr.getElse().accept(this, arg);
         writer.write(")");
         return null;
     }
 
-    public Void visit(ObjectCreationExpression expr, BlockStatement blockStmt) {
+    public Void visit(ObjectCreationExpression expr, Void arg) {
         writer.writeKeyword("new").writeSpace().write(expr.getType()).write("(");
         if (expr.getArguments() != null) {
             for (Iterator<Expression> it = expr.getArguments().iterator(); it.hasNext();) {
                 Expression argument = it.next();
-                argument.accept(this, blockStmt);
+                argument.accept(this, arg);
                 if (it.hasNext()) {
                     writer.write(",").writeSpace();
                 }
@@ -296,11 +295,11 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
         return null;
     }
 
-    public Void visit(ArrayCreationExpression expr, BlockStatement blockStmt) {
+    public Void visit(ArrayCreationExpression expr, Void arg) {
         if (expr.getInitValues() != null) {
             writer.write("{");
             for (Iterator<Expression> it = expr.getInitValues().iterator(); it.hasNext();) {
-                it.next().accept(this, blockStmt);
+                it.next().accept(this, arg);
                 if (it.hasNext()) {
                     writer.write(",").writeSpace();
                 }
@@ -310,42 +309,42 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
             writer.writeKeyword("new").writeSpace().write(expr.getType());
             for (Expression arrayLengthExpr : expr.getArrayLengthExprs()) {
                 writer.write("[");
-                arrayLengthExpr.accept(this, blockStmt);
+                arrayLengthExpr.accept(this, arg);
                 writer.write("]");
             }
         }
         return null;
     }
 
-    public Void visit(ArrayLength expr, BlockStatement blockStmt) {
-        expr.getArrayRef().accept(this, blockStmt);
+    public Void visit(ArrayLength expr, Void arg) {
+        expr.getArrayRef().accept(this, arg);
         writer.write(".length");
         return null;
     }
 
-    public Void visit(CastExpression expr, BlockStatement blockStmt) {
+    public Void visit(CastExpression expr, Void arg) {
         writer.write("((").write(expr.getType()).write(")").writeSpace();
-        expr.getExpr().accept(this, blockStmt);
+        expr.getExpr().accept(this, arg);
         writer.write(")");
         return null;
     }
 
-    public Void visit(ArrayAccess expr, BlockStatement blockStmt) {
-        expr.getArrayRef().accept(this, blockStmt);
+    public Void visit(ArrayAccess expr, Void arg) {
+        expr.getArrayRef().accept(this, arg);
         writer.write("[");
-        expr.getArrayIndexExpr().accept(this, blockStmt);
+        expr.getArrayIndexExpr().accept(this, arg);
         writer.write("]");
         return null;
     }
 
-    public Void visit(ChoiceExpression choiceExpr, BlockStatement blockStmt) {
+    public Void visit(ChoiceExpression choiceExpr, Void arg) {
         if (choiceExpr.getChoices().size() == 1) {
-            choiceExpr.getChoices().iterator().next().accept(this, blockStmt);
+            choiceExpr.getChoices().iterator().next().accept(this, arg);
         } else {
             writer.write("?(");
             for (Iterator<Expression> it = choiceExpr.getChoices().iterator(); it.hasNext();) {
                 Expression expr = it.next();
-                expr.accept(this, blockStmt);
+                expr.accept(this, arg);
                 if (it.hasNext()) {
                     writer.write(", ");
                 }
@@ -355,52 +354,52 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, BlockStatem
         return null;
     }
 
-    public Void visit(IntegerLiteralExpression expr, BlockStatement arg) {
+    public Void visit(IntegerLiteralExpression expr, Void arg) {
         writer.write(expr.getValue());
         return null;
     }
 
-    public Void visit(LongLiteralExpression expr, BlockStatement arg) {
+    public Void visit(LongLiteralExpression expr, Void arg) {
         writer.write(expr.getValue());
         return null;
     }
 
-    public Void visit(ByteLiteralExpression expr, BlockStatement arg) {
+    public Void visit(ByteLiteralExpression expr, Void arg) {
         writer.write(expr.getValue());
         return null;
     }
 
-    public Void visit(ShortLiteralExpression expr, BlockStatement arg) {
+    public Void visit(ShortLiteralExpression expr, Void arg) {
         writer.write(expr.getValue());
         return null;
     }
 
-    public Void visit(BooleanLiteralExpression expr, BlockStatement arg) {
+    public Void visit(BooleanLiteralExpression expr, Void arg) {
         writer.write(expr.getValue());
         return null;
     }
 
-    public Void visit(FloatLiteralExpression expr, BlockStatement arg) {
+    public Void visit(FloatLiteralExpression expr, Void arg) {
         writer.write(expr.getValue());
         return null;
     }
 
-    public Void visit(DoubleLiteralExpression expr, BlockStatement arg) {
+    public Void visit(DoubleLiteralExpression expr, Void arg) {
         writer.write(expr.getValue());
         return null;
     }
 
-    public Void visit(StringLiteralExpression expr, BlockStatement arg) {
+    public Void visit(StringLiteralExpression expr, Void arg) {
         writer.writeQuotedString(expr.getValue().toString());
         return null;
     }
 
-    public Void visit(NullLiteralExpression expr, BlockStatement arg) {
+    public Void visit(NullLiteralExpression expr, Void arg) {
         writer.write("null");
         return null;
     }
 
-    public Void visit(ClassLiteralExpression expr, BlockStatement arg) {
+    public Void visit(ClassLiteralExpression expr, Void arg) {
         writer.write(expr.getClassName()).write(".class");
         return null;
     }

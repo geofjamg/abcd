@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
+import fr.jamgotchian.abcd.core.code.CodeWriter;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.RPST;
@@ -28,7 +29,6 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.logging.Level;
@@ -78,7 +78,8 @@ public class DefaultABCDWriter implements ABCDWriter {
             FileOutputStream os = new FileOutputStream(srcDir);
             Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
             try {
-                compilUnit.accept(new JavaCompilationUnitWriter(new TextCodeWriter(writer, 4), debug), null);
+                CodeWriter codeWriter = new TextCodeWriter(writer, 4);
+                compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, debug), null);
             } finally {
                 writer.close();
             }

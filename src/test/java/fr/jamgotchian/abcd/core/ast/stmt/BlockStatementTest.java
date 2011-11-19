@@ -18,9 +18,8 @@
 package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
-import fr.jamgotchian.abcd.core.ast.expr.LocalVariable;
-import fr.jamgotchian.abcd.core.ir.VariableID;
-import fr.jamgotchian.abcd.core.type.JavaType;
+import fr.jamgotchian.abcd.core.ast.expr.VariableExpression;
+import fr.jamgotchian.abcd.core.ir.Variable;
 import java.util.Collections;
 import java.util.Iterator;
 import org.junit.Assert;
@@ -40,9 +39,9 @@ public class BlockStatementTest {
          block = new BlockStatement();
     }
 
-    private static Statement newStmt(int index, JavaType type) {
-        LocalVariable var = Expressions.newVarExpr(new VariableID(index), "v" + index);
-        return new LocalVariableDeclarationStatement(new LocalVariableDeclaration(var, type));
+    private static Statement newStmt(int index) {
+        VariableExpression varExpr = Expressions.newVarExpr(new Variable(index));
+        return new LocalVariableDeclarationStatement(varExpr);
     }
 
     @Test
@@ -58,7 +57,7 @@ public class BlockStatementTest {
 
     @Test
     public void addOneStatementToEmptyBlockTest() {
-        Statement stmt = newStmt(0, JavaType.INT);
+        Statement stmt = newStmt(0);
         block.add(stmt);
         Assert.assertFalse(block.isEmpty());
         Assert.assertTrue(block.getFirst() == stmt);
@@ -74,8 +73,8 @@ public class BlockStatementTest {
 
     @Test
     public void addTwoStatementToEmptyBlockTest() {
-        Statement stmt0 = newStmt(0, JavaType.INT);
-        Statement stmt1 = newStmt(1, JavaType.INT);
+        Statement stmt0 = newStmt(0);
+        Statement stmt1 = newStmt(1);
         block.add(stmt0);
         block.add(stmt1);
         Assert.assertFalse(block.isEmpty());
@@ -95,7 +94,7 @@ public class BlockStatementTest {
 
     @Test
     public void insertOneStatementToEmptyBlockTest() {
-        Statement stmt = newStmt(0, JavaType.INT);
+        Statement stmt = newStmt(0);
         block.insertAfter(null, stmt);
         Assert.assertFalse(block.isEmpty());
         Assert.assertTrue(block.getFirst() == stmt);
@@ -111,12 +110,12 @@ public class BlockStatementTest {
 
     @Test
     public void insertAtFirstStatementTest() {
-        Statement stmt0 = newStmt(0, JavaType.INT);
-        Statement stmt1 = newStmt(1, JavaType.INT);
+        Statement stmt0 = newStmt(0);
+        Statement stmt1 = newStmt(1);
         block.add(stmt0);
         block.add(stmt1);
 
-        Statement stmt2 = newStmt(2, JavaType.INT);
+        Statement stmt2 = newStmt(2);
         block.insertAfter(null, stmt2);
 
         Assert.assertFalse(block.isEmpty());
@@ -140,12 +139,12 @@ public class BlockStatementTest {
 
     @Test
     public void insertAtMiddleStatementTest() {
-        Statement stmt0 = newStmt(0, JavaType.INT);
-        Statement stmt1 = newStmt(1, JavaType.INT);
+        Statement stmt0 = newStmt(0);
+        Statement stmt1 = newStmt(1);
         block.add(stmt0);
         block.add(stmt1);
 
-        Statement stmt2 = newStmt(2, JavaType.INT);
+        Statement stmt2 = newStmt(2);
         block.insertAfter(stmt0, stmt2);
 
         Assert.assertFalse(block.isEmpty());
@@ -169,12 +168,12 @@ public class BlockStatementTest {
 
     @Test
     public void insertAtLastStatementTest() {
-        Statement stmt0 = newStmt(0, JavaType.INT);
-        Statement stmt1 = newStmt(1, JavaType.INT);
+        Statement stmt0 = newStmt(0);
+        Statement stmt1 = newStmt(1);
         block.add(stmt0);
         block.add(stmt1);
 
-        Statement stmt2 = newStmt(2, JavaType.INT);
+        Statement stmt2 = newStmt(2);
         block.insertAfter(stmt1, stmt2);
 
         Assert.assertFalse(block.isEmpty());
@@ -198,7 +197,7 @@ public class BlockStatementTest {
 
     @Test
     public void removeFreeStatementTest() {
-        Statement stmt = newStmt(0, JavaType.INT);
+        Statement stmt = newStmt(0);
         try {
             stmt.remove();
             Assert.assertFalse(true);
@@ -209,9 +208,9 @@ public class BlockStatementTest {
 
     @Test
     public void removeMiddleStatementTest() {
-        Statement stmt0 = newStmt(0, JavaType.INT);
-        Statement stmt1 = newStmt(1, JavaType.INT);
-        Statement stmt2 = newStmt(2, JavaType.INT);
+        Statement stmt0 = newStmt(0);
+        Statement stmt1 = newStmt(1);
+        Statement stmt2 = newStmt(2);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
@@ -235,9 +234,9 @@ public class BlockStatementTest {
 
     @Test
     public void removeFirstStatementTest() {
-        Statement stmt0 = newStmt(0, JavaType.INT);
-        Statement stmt1 = newStmt(1, JavaType.INT);
-        Statement stmt2 = newStmt(2, JavaType.INT);
+        Statement stmt0 = newStmt(0);
+        Statement stmt1 = newStmt(1);
+        Statement stmt2 = newStmt(2);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
@@ -264,9 +263,9 @@ public class BlockStatementTest {
 
     @Test
     public void removeLastStatementTest() {
-        Statement stmt0 = newStmt(0, JavaType.INT);
-        Statement stmt1 = newStmt(1, JavaType.INT);
-        Statement stmt2 = newStmt(2, JavaType.INT);
+        Statement stmt0 = newStmt(0);
+        Statement stmt1 = newStmt(1);
+        Statement stmt2 = newStmt(2);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
@@ -294,7 +293,7 @@ public class BlockStatementTest {
     @Test
     public void addAlreadyUsedStatementTest() {
         BlockStatement otherBlock = new BlockStatement();
-        Statement stmt = newStmt(0, JavaType.INT);
+        Statement stmt = newStmt(0);
         otherBlock.add(stmt);
         block.add(stmt);
         Assert.assertTrue(otherBlock.isEmpty());
@@ -305,14 +304,14 @@ public class BlockStatementTest {
 
     @Test
     public void replaceMiddleStatementTest() {
-        Statement stmt0 = newStmt(0, JavaType.INT);
-        Statement stmt1 = newStmt(1, JavaType.INT);
-        Statement stmt2 = newStmt(2, JavaType.INT);
+        Statement stmt0 = newStmt(0);
+        Statement stmt1 = newStmt(1);
+        Statement stmt2 = newStmt(2);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
 
-        Statement stmt3 = newStmt(3, JavaType.INT);
+        Statement stmt3 = newStmt(3);
         block.replace(stmt1, Collections.singletonList(stmt3));
 
         Assert.assertTrue(stmt3.getBlock() == block);
@@ -326,14 +325,14 @@ public class BlockStatementTest {
 
     @Test
     public void replaceFirstStatementTest() {
-        Statement stmt0 = newStmt(0, JavaType.INT);
-        Statement stmt1 = newStmt(1, JavaType.INT);
-        Statement stmt2 = newStmt(2, JavaType.INT);
+        Statement stmt0 = newStmt(0);
+        Statement stmt1 = newStmt(1);
+        Statement stmt2 = newStmt(2);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
 
-        Statement stmt3 = newStmt(3, JavaType.INT);
+        Statement stmt3 = newStmt(3);
         block.replace(stmt0, Collections.singletonList(stmt3));
 
         Assert.assertTrue(stmt3.getBlock() == block);
@@ -350,14 +349,14 @@ public class BlockStatementTest {
 
     @Test
     public void replaceLastStatementTest() {
-        Statement stmt0 = newStmt(0, JavaType.INT);
-        Statement stmt1 = newStmt(1, JavaType.INT);
-        Statement stmt2 = newStmt(2, JavaType.INT);
+        Statement stmt0 = newStmt(0);
+        Statement stmt1 = newStmt(1);
+        Statement stmt2 = newStmt(2);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
 
-        Statement stmt3 = newStmt(3, JavaType.INT);
+        Statement stmt3 = newStmt(3);
         block.replace(stmt2, Collections.singletonList(stmt3));
 
         Assert.assertTrue(stmt3.getBlock() == block);
@@ -373,9 +372,9 @@ public class BlockStatementTest {
 
     @Test
     public void testClear() {
-        Statement stmt0 = newStmt(0, JavaType.INT);
-        Statement stmt1 = newStmt(1, JavaType.INT);
-        Statement stmt2 = newStmt(2, JavaType.INT);
+        Statement stmt0 = newStmt(0);
+        Statement stmt1 = newStmt(1);
+        Statement stmt2 = newStmt(2);
         block.add(stmt0);
         block.add(stmt1);
         block.add(stmt2);
