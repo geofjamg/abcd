@@ -61,7 +61,7 @@ public interface BasicBlock extends Orderable {
 
     Set<BasicBlockAttribute> getAttributes();
 
-    void setAttributes(Set<BasicBlockAttribute> attributes) ;
+    void addAttributes(Set<BasicBlockAttribute> attributes);
 
     Object getData();
 

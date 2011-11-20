@@ -144,8 +144,8 @@ public class BasicBlockImpl implements BasicBlock {
         return attributes;
     }
 
-    public void setAttributes(Set<BasicBlockAttribute> attributes) {
-        this.attributes = attributes;
+    public void addAttributes(Set<BasicBlockAttribute> attributes) {
+        this.attributes.addAll(attributes);
     }
 
     public Object getData() {
