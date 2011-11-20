@@ -265,6 +265,14 @@ public class Test {
         return (a > 1 ? 2 : 3) + (b == 4 ? 67 : 334);
     }
 
+    void testConditionWithTernaryOperator(boolean a, boolean b, boolean c, boolean d) {
+        if (a || (b ? c : d)) {
+            System.out.println("a");
+        } else {
+            System.out.println("b");
+        }
+    }
+
     public void testIfElseWithTryCatch(int z) {
         if (z == 1) {
             System.out.println("a");

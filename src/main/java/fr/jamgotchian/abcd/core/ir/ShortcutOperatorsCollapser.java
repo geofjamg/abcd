@@ -43,23 +43,27 @@ public class ShortcutOperatorsCollapser {
         this.instFactory = instFactory;
     }
 
-    private void collapseOperator(BasicBlock bb1, BasicBlock bb2,
-                                  BasicBlock trueBB2, BasicBlock falseBB2,
-                                  IRBinaryOperator operator, boolean invert2) {
+    private void changeBB(IRInstSeq seq, BasicBlock newBB) {
+        for (IRInst inst : seq) {
+            if (inst instanceof DefInst) {
+                ((DefInst) inst).getResult().setBasicBlock(newBB);
+            }
+            for (Variable v : inst.getUses()) {
+                v.setBasicBlock(newBB);
+            }
+        }
+    }
+
+    private void collapseAndOr(BasicBlock bb1, BasicBlock bb2,
+                               BasicBlock trueBB2, BasicBlock falseBB2,
+                               IRBinaryOperator operator, boolean invert2) {
         IRInstSeq seq1 = bb1.getInstructions();
         IRInstSeq seq2 = bb2.getInstructions();
         JumpIfInst jumpInst1 = (JumpIfInst) seq1.getLast();
         JumpIfInst jumpInst2 = (JumpIfInst) seq2.getLast();
         // all instructions of block 2 will be moved to block 1, so change
-        // basic block link of block 1 variables
-        for (IRInst inst : seq2) {
-            if (inst instanceof DefInst) {
-                ((DefInst) inst).getResult().setBasicBlock(bb1);
-            }
-            for (Variable v : inst.getUses()) {
-                v.setBasicBlock(bb1);
-            }
-        }
+        // basic block link of block 2 variables
+        changeBB(seq2, bb1);
         seq1.removeLast();
         seq2.removeLast();
         seq1.addAll(seq2);
@@ -71,19 +75,37 @@ public class ShortcutOperatorsCollapser {
         } else {
             cond2 = jumpInst2.getCond();
         }
-        Variable agregatedCond = tmpVarFactory.create(bb1);
-        seq1.add(instFactory.newBinary(agregatedCond,
+        Variable newCond = tmpVarFactory.create(bb1);
+        seq1.add(instFactory.newBinary(newCond,
                                        operator,
                                        jumpInst1.getCond(),
                                        cond2));
-        seq1.add(instFactory.newJumpIf(agregatedCond));
+        seq1.add(instFactory.newJumpIf(newCond));
         cfg.removeBasicBlock(bb2);
         cfg.addEdge(bb1, trueBB2).setValue(invert2 ? Boolean.FALSE : Boolean.TRUE);
         cfg.addEdge(bb1, falseBB2).setValue(invert2 ? Boolean.TRUE : Boolean.FALSE);
     }
 
+    /**
+     * case 1 :
+     *
+     *         C1
+     *       t/  f\
+     *       C2    |    <=> C1 && C2
+     *    t/   f\  |
+     *
+     * case 2 :
+     *
+     *         C1
+     *       t/  f\
+     *       C2    |    <=> C1 && !C2
+     *    f/   t\  |
+     */
     private boolean checkAnd(BasicBlock bb1, Edge trueEdge1, Edge falseEdge1) {
         BasicBlock bb2 = cfg.getEdgeTarget(trueEdge1);
+        if (cfg.getPredecessorCountOf(bb2) != 1) {
+            return false;
+        }
         if (bb2.getInstructions().getLast() instanceof JumpIfInst) {
             Edge trueEdge2 = null;
             Edge falseEdge2 = null;
@@ -101,10 +123,10 @@ public class ShortcutOperatorsCollapser {
                 BasicBlock trueBB2 = cfg.getEdgeTarget(trueEdge2);
                 BasicBlock falseBB2 = cfg.getEdgeTarget(falseEdge2);
                 if (falseBB2.equals(falseBB1)) {
-                    collapseOperator(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.AND, false);
+                    collapseAndOr(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.AND, false);
                     return true;
                 } else if (trueBB2.equals(falseBB1)) {
-                    collapseOperator(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.AND, true);
+                    collapseAndOr(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.AND, true);
                     return true;
                 }
             }
@@ -112,8 +134,26 @@ public class ShortcutOperatorsCollapser {
         return false;
     }
 
+    /**
+     * case 1 :
+     *
+     *         C1
+     *       f/  t\
+     *       C2    |    <=> C1 || C2
+     *    f/   t\  |
+     *
+     * case 2 :
+     *
+     *         C1
+     *       f/  t\
+     *       C2    |    <=> C1 || !C2
+     *    t/   f\  |
+     */
     private boolean checkOr(BasicBlock bb1, Edge trueEdge1, Edge falseEdge1) {
         BasicBlock bb2 = cfg.getEdgeTarget(falseEdge1);
+        if (cfg.getPredecessorCountOf(bb2) != 1) {
+            return false;
+        }
         if (bb2.getInstructions().getLast() instanceof JumpIfInst) {
             Edge trueEdge2 = null;
             Edge falseEdge2 = null;
@@ -131,15 +171,127 @@ public class ShortcutOperatorsCollapser {
                 BasicBlock trueBB2 = cfg.getEdgeTarget(trueEdge2);
                 BasicBlock falseBB2 = cfg.getEdgeTarget(falseEdge2);
                 if (trueBB2.equals(trueBB1)) {
-                    collapseOperator(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.OR, false);
+                    collapseAndOr(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.OR, false);
                     return true;
                 } else if (falseBB2.equals(trueBB1)) {
-                    collapseOperator(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.OR, true);
+                    collapseAndOr(bb1, bb2, trueBB2, falseBB2, IRBinaryOperator.OR, true);
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private void collapseTernary(BasicBlock bb1, BasicBlock bb2, BasicBlock bb3,
+                                 BasicBlock trueBB2, BasicBlock falseBB2,
+                                 BasicBlock trueBB3, BasicBlock falseBB3,
+                                 boolean invert2) {
+        IRInstSeq seq1 = bb1.getInstructions();
+        IRInstSeq seq2 = bb2.getInstructions();
+        IRInstSeq seq3 = bb3.getInstructions();
+        JumpIfInst jumpInst1 = (JumpIfInst) seq1.getLast();
+        JumpIfInst jumpInst2 = (JumpIfInst) seq2.getLast();
+        JumpIfInst jumpInst3 = (JumpIfInst) seq3.getLast();
+        // all instructions of block 2 and 3 will be moved to block 1, so change
+        // basic block link of block 2 and 3 variables
+        changeBB(seq2, bb1);
+        changeBB(seq3, bb1);
+        seq1.removeLast();
+        seq2.removeLast();
+        seq3.removeLast();
+        seq1.addAll(seq2);
+        seq1.addAll(seq3);
+        seq2.clear();
+        seq3.clear();
+        Variable cond2;
+        if (invert2) {
+            cond2 = tmpVarFactory.create(bb1);
+            seq1.add(instFactory.newUnary(cond2, IRUnaryOperator.NOT, jumpInst2.getCond()));
+        } else {
+            cond2 = jumpInst2.getCond();
+        }
+        Variable newCond = tmpVarFactory.create(bb1);
+        seq1.add(instFactory.newConditional(newCond,
+                                            jumpInst1.getCond(),
+                                            cond2,
+                                            jumpInst3.getCond()));
+        seq1.add(instFactory.newJumpIf(newCond));
+        cfg.removeBasicBlock(bb2);
+        cfg.removeBasicBlock(bb3);
+        cfg.addEdge(bb1, trueBB2).setValue(invert2 ? Boolean.FALSE : Boolean.TRUE);
+        cfg.addEdge(bb1, falseBB2).setValue(invert2 ? Boolean.TRUE : Boolean.FALSE);
+    }
+
+    /**
+     * case 1 :
+     *
+     *           C1
+     *       t/     f\
+     *       C2      C3       <=> C1 ? C2 : C3
+     *    t/   f\ t/   f\
+     *     |     +      |
+     *     |   /   \    |
+     *
+     * case 2 :
+     *           C1
+     *       t/     f\
+     *       C2      C3       <=> C1 ? !C2 : C3
+     *    f/   t\ t/   f\
+     *     |     +      |
+     *     |   /   \    |
+     *
+     */
+    private boolean checkTernary(BasicBlock bb1, Edge trueEdge1, Edge falseEdge1) {
+        BasicBlock bb2 = cfg.getEdgeTarget(trueEdge1);
+        BasicBlock bb3 = cfg.getEdgeTarget(falseEdge1);
+        if (cfg.getPredecessorCountOf(bb2) != 1
+                || cfg.getPredecessorCountOf(bb3) != 1) {
+            return false;
+        }
+        if (!(bb2.getInstructions().getLast() instanceof JumpIfInst)
+                || !(bb3.getInstructions().getLast() instanceof JumpIfInst)) {
+            return false;
+        }
+        Edge trueEdge2 = null;
+        Edge falseEdge2 = null;
+        for (Edge e : cfg.getOutgoingEdgesOf(bb2)) {
+            if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+                break;
+            } else if (Boolean.TRUE.equals(e.getValue())) {
+                trueEdge2 = e;
+            } else if (Boolean.FALSE.equals(e.getValue())) {
+                falseEdge2 = e;
+            }
+        }
+        if (trueEdge2 == null || falseEdge2 == null) {
+            return false;
+        }
+        Edge trueEdge3 = null;
+        Edge falseEdge3 = null;
+        for (Edge e : cfg.getOutgoingEdgesOf(bb3)) {
+            if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+                break;
+            } else if (Boolean.TRUE.equals(e.getValue())) {
+                trueEdge3 = e;
+            } else if (Boolean.FALSE.equals(e.getValue())) {
+                falseEdge3 = e;
+            }
+        }
+        if (trueEdge3 == null || falseEdge3 == null) {
+            return false;
+        }
+        BasicBlock trueBB2 = cfg.getEdgeTarget(trueEdge2);
+        BasicBlock falseBB2 = cfg.getEdgeTarget(falseEdge2);
+        BasicBlock trueBB3 = cfg.getEdgeTarget(trueEdge3);
+        BasicBlock falseBB3 = cfg.getEdgeTarget(falseEdge3);
+        if (trueBB2.equals(trueBB3) && falseBB2.equals(falseBB3)) {
+            collapseTernary(bb1, bb2, bb3, trueBB2, falseBB2, trueBB3, falseBB3, false);
+        } else if (falseBB2.equals(trueBB3) && trueBB2.equals(falseBB3)) {
+            collapseTernary(bb1, bb2, bb3, trueBB2, falseBB2, trueBB3, falseBB3, true);
+        } else {
+            return false;
+        }
+        return true;
     }
 
     public boolean collapse() {
@@ -171,6 +323,11 @@ public class ShortcutOperatorsCollapser {
                             break;
                         }
                         if (checkOr(bb1, trueEdge1, falseEdge1)) {
+                            change = true;
+                            collapsed = true;
+                            break;
+                        }
+                        if (checkTernary(bb1, trueEdge1, falseEdge1)) {
                             change = true;
                             collapsed = true;
                             break;
