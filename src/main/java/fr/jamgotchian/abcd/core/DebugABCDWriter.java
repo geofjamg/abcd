@@ -93,7 +93,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     }
 
     @Override
-    public void writeCFG(ControlFlowGraph cfg) {
+    public void writeCFG(ControlFlowGraph cfg, boolean failure) {
         assert cfg != null;
 
         String baseName = debugDir.getPath() + File.separator + cfg.getName();

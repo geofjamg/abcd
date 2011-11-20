@@ -30,7 +30,7 @@ public interface ABCDWriter {
 
     void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bytecodeRenderer);
 
-    void writeCFG(ControlFlowGraph cfg);
+    void writeCFG(ControlFlowGraph cfg, boolean failure);
 
     void writeRPST(RPST rpst, int level);
 
