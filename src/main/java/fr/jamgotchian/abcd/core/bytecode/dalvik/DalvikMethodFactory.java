@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
+import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.MethodIdItem;
 import org.jf.dexlib.ProtoIdItem;
 import org.jf.dexlib.Util.AccessFlags;
@@ -70,7 +71,8 @@ public class DalvikMethodFactory implements MethodFactory {
     }
 
     public String getBytecodeAsText() {
-        return "TODO";
+        CodeItem codeItem = encodedMethod.codeItem;
+        return DalvikBytecodeWriter.toText(codeItem.getInstructions());
     }
 
 }

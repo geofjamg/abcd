@@ -93,14 +93,14 @@ public class JavaBytecodeWriter extends JavaBytecodeVisitor {
         }
     }
 
-    private void writeEol(BasicBlock bb, int index) {
-        if (index < bb.getRange().getLast()) {
+    private void writeEol(BasicBlock bb, int position) {
+        if (position < bb.getRange().getLast()) {
             writer.newLine();
         }
     }
 
-    public void writeFieldOrMethodInstn(BasicBlock bb, int index, int opcode, String scope, String fieldOrMethodName) {
-        writer.writeIndex(index);
+    public void writeFieldOrMethodInstn(BasicBlock bb, int position, int opcode, String scope, String fieldOrMethodName) {
+        writer.writeIndex(position);
         writer.writeKeyword(OPCODES[opcode].toLowerCase());
         writer.writeSpace();
         writer.writeLt();
@@ -108,61 +108,61 @@ public class JavaBytecodeWriter extends JavaBytecodeVisitor {
         writer.write(".");
         writer.write(writer.removeSpecialCharacters(fieldOrMethodName));
         writer.writeGt();
-        writeEol(bb, index);
+        writeEol(bb, position);
     }
 
-    public void visitFieldInsn(BasicBlock bb, int index, FieldInsnNode node) {
-        writeFieldOrMethodInstn(bb, index, node.getOpcode(), node.owner, node.name);
+    public void visitFieldInsn(BasicBlock bb, int position, FieldInsnNode node) {
+        writeFieldOrMethodInstn(bb, position, node.getOpcode(), node.owner, node.name);
     }
 
-    public void visitIincInsn(BasicBlock bb, int index, IincInsnNode node) {
-        writer.writeIndex(index);
+    public void visitIincInsn(BasicBlock bb, int position, IincInsnNode node) {
+        writer.writeIndex(position);
         writer.writeKeyword(OPCODES[node.getOpcode()].toLowerCase());
         writer.writeSpace();
         writer.write(Integer.toString(node.var));
         writer.writeSpace();
         writer.write(Integer.toString(node.incr));
-        writeEol(bb, index);
+        writeEol(bb, position);
     }
 
-    public void visitInsn(BasicBlock bb, int index, InsnNode node) {
-        writer.writeIndex(index);
+    public void visitInsn(BasicBlock bb, int position, InsnNode node) {
+        writer.writeIndex(position);
         writer.writeKeyword(OPCODES[node.getOpcode()].toLowerCase());
-        writeEol(bb, index);
+        writeEol(bb, position);
     }
 
-    public void visitIntInsn(BasicBlock bb, int index, IntInsnNode node) {
-        writer.writeIndex(index);
+    public void visitIntInsn(BasicBlock bb, int position, IntInsnNode node) {
+        writer.writeIndex(position);
         writer.writeKeyword(OPCODES[node.getOpcode()].toLowerCase());
         writer.writeSpace();
         writer.write(Integer.toString(node.operand));
-        writeEol(bb, index);
+        writeEol(bb, position);
     }
 
-    public void visitJumpInsn(BasicBlock bb, int index, JumpInsnNode node, LabelManager labelManager) {
-        writer.writeIndex(index);
+    public void visitJumpInsn(BasicBlock bb, int position, JumpInsnNode node, LabelManager labelManager) {
+        writer.writeIndex(position);
         writer.writeKeyword(OPCODES[node.getOpcode()].toLowerCase());
         writer.writeSpace();
         writer.writeLabel(labelManager.getLabel(node.label));
-        writeEol(bb, index);
+        writeEol(bb, position);
     }
 
-    public void visitLabel(BasicBlock bb, int index, LabelNode node, LabelManager labelManager) {
-        writer.writeIndex(index);
+    public void visitLabel(BasicBlock bb, int position, LabelNode node, LabelManager labelManager) {
+        writer.writeIndex(position);
         writer.writeLabel(labelManager.getLabel(node));
-        writeEol(bb, index);
+        writeEol(bb, position);
     }
 
-    public void visitLdcInsn(BasicBlock bb, int index, LdcInsnNode node) {
-        writer.writeIndex(index);
+    public void visitLdcInsn(BasicBlock bb, int position, LdcInsnNode node) {
+        writer.writeIndex(position);
         writer.writeKeyword(OPCODES[node.getOpcode()].toLowerCase());
         writer.writeSpace();
         writer.write(node.cst.toString());
-        writeEol(bb, index);
+        writeEol(bb, position);
     }
 
-    public void visitLookupSwitchInsn(BasicBlock bb, int index, LookupSwitchInsnNode node, LabelManager labelManager) {
-        writer.writeIndex(index);
+    public void visitLookupSwitchInsn(BasicBlock bb, int position, LookupSwitchInsnNode node, LabelManager labelManager) {
+        writer.writeIndex(position);
         writer.writeKeyword(OPCODES[node.getOpcode()].toLowerCase());
         writer.writeSpace();
         writer.write(Integer.toString(node.keys.size()));
@@ -183,25 +183,25 @@ public class JavaBytecodeWriter extends JavaBytecodeVisitor {
         writer.writeSpace();
         writer.writeLabel(labelManager.getLabel(node.dflt));
         writer.decrIndent();
-        writeEol(bb, index);
+        writeEol(bb, position);
     }
 
-    public void visitMethodInsn(BasicBlock bb, int index, MethodInsnNode node) {
-        writeFieldOrMethodInstn(bb, index, node.getOpcode(), node.owner, node.name);
+    public void visitMethodInsn(BasicBlock bb, int position, MethodInsnNode node) {
+        writeFieldOrMethodInstn(bb, position, node.getOpcode(), node.owner, node.name);
     }
 
-    public void visitMultiANewArrayInsn(BasicBlock bb, int index, MultiANewArrayInsnNode node) {
-        writer.writeIndex(index);
+    public void visitMultiANewArrayInsn(BasicBlock bb, int position, MultiANewArrayInsnNode node) {
+        writer.writeIndex(position);
         writer.writeKeyword(OPCODES[node.getOpcode()].toLowerCase());
         writer.writeSpace();
         writer.write(node.desc);
         writer.writeSpace();
         writer.write(Integer.toString(node.dims));
-        writeEol(bb, index);
+        writeEol(bb, position);
     }
 
-    public void visitTableSwitchInsn(BasicBlock bb, int index, TableSwitchInsnNode node, LabelManager labelManager) {
-        writer.writeIndex(index);
+    public void visitTableSwitchInsn(BasicBlock bb, int position, TableSwitchInsnNode node, LabelManager labelManager) {
+        writer.writeIndex(position);
         writer.writeKeyword(OPCODES[node.getOpcode()].toLowerCase());
         writer.writeSpace();
         writer.write(Integer.toString(node.min));
@@ -224,25 +224,25 @@ public class JavaBytecodeWriter extends JavaBytecodeVisitor {
         writer.writeSpace();
         writer.writeLabel(labelManager.getLabel(node.dflt));
         writer.decrIndent();
-        writeEol(bb, index);
+        writeEol(bb, position);
     }
 
-    public void visitTypeInsnInsn(BasicBlock bb, int index, TypeInsnNode node) {
-        writer.writeIndex(index);
+    public void visitTypeInsnInsn(BasicBlock bb, int position, TypeInsnNode node) {
+        writer.writeIndex(position);
         writer.writeKeyword(OPCODES[node.getOpcode()].toLowerCase());
         writer.writeSpace();
         writer.writeLt();
         writer.write(node.desc);
         writer.writeGt();
-        writeEol(bb, index);
+        writeEol(bb, position);
     }
 
-    public void visitVarInsn(BasicBlock bb, int index, VarInsnNode node) {
-        writer.writeIndex(index);
+    public void visitVarInsn(BasicBlock bb, int position, VarInsnNode node) {
+        writer.writeIndex(position);
         writer.writeKeyword(OPCODES[node.getOpcode()].toLowerCase());
         writer.writeSpace();
         writer.write(Integer.toString(node.var));
-        writeEol(bb, index);
+        writeEol(bb, position);
     }
 
     public void after(BasicBlock bb) {
