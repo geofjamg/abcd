@@ -255,7 +255,9 @@ public class AbstractSyntaxTreeBuilder {
                 case REMAINDER: op = ASTBinaryOperator.REMAINDER; break;
                 case SHIFT_LEFT: op = ASTBinaryOperator.SHIFT_LEFT; break;
                 case SHIFT_RIGHT: op = ASTBinaryOperator.SHIFT_RIGHT; break;
-                case XOR: op = ASTBinaryOperator.XOR; break;
+                case BITWISE_AND: op = ASTBinaryOperator.BITWISE_AND; break;
+                case BITWISE_OR: op = ASTBinaryOperator.BITWISE_OR; break;
+                case BITWISE_XOR: op = ASTBinaryOperator.BITWISE_XOR; break;
                 default: throw new InternalError();
             }
             Expression binExpr = Expressions.newBinExpr(leftExpr, rightExpr, op);

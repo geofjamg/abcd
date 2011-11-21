@@ -1280,7 +1280,15 @@ public class Test {
         return i % 3;
     }
 
-    boolean testXor(boolean a, boolean b) {
+    int testBitwiseAnd(int a, int b) {
+        return a & b;
+    }
+
+    int testBitwiseOr(int a, int b) {
+        return a | b;
+    }
+
+    boolean testBitwiseXor(boolean a, boolean b) {
         return a ^ b;
     }
 

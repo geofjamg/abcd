@@ -40,7 +40,9 @@ public enum ASTBinaryOperator {
     LOGICAL_SHIFT_RIGHT,
     AND,
     OR,
-    XOR,
+    BITWISE_AND,
+    BITWISE_OR,
+    BITWISE_XOR,
     INSTANCE_OF;
 
     public static ASTBinaryOperator getInverse(ASTBinaryOperator op) {
@@ -52,6 +54,10 @@ public enum ASTBinaryOperator {
             case REMAINDER:
             case SHIFT_LEFT:
             case SHIFT_RIGHT:
+            case LOGICAL_SHIFT_RIGHT:
+            case BITWISE_AND:
+            case BITWISE_OR:
+            case BITWISE_XOR:
             case INSTANCE_OF:
                 return op;
             case LE:

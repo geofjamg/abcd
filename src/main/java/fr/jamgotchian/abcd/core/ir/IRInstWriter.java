@@ -214,7 +214,15 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
                 writer.write("||");
                 break;
 
-            case XOR:
+            case BITWISE_AND:
+                writer.writeAmpersand();
+                break;
+
+            case BITWISE_OR:
+                writer.write("|");
+                break;
+
+            case BITWISE_XOR:
                 writer.write("^");
                 break;
 

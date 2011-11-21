@@ -37,9 +37,11 @@ public enum IRBinaryOperator {
     SHIFT_LEFT,
     SHIFT_RIGHT,
     LOGICAL_SHIFT_RIGHT,
+    BITWISE_AND,
+    BITWISE_OR,
+    BITWISE_XOR,
     AND,
-    OR,
-    XOR;
+    OR;
 
     public static IRBinaryOperator invert(IRBinaryOperator op) {
         switch (op) {
@@ -50,6 +52,9 @@ public enum IRBinaryOperator {
             case REMAINDER:
             case SHIFT_LEFT:
             case SHIFT_RIGHT:
+            case BITWISE_AND:
+            case BITWISE_OR:
+            case BITWISE_XOR:
                 return op;
             case LE:
                 return GT;

@@ -598,27 +598,27 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     break;
 
                 case IAND:
-                    pushBinOp(bb, IRBinaryOperator.AND, ComputationalType.INT);
+                    pushBinOp(bb, IRBinaryOperator.BITWISE_AND, ComputationalType.INT);
                     break;
 
                 case LAND:
-                    pushBinOp(bb, IRBinaryOperator.AND, ComputationalType.LONG);
+                    pushBinOp(bb, IRBinaryOperator.BITWISE_AND, ComputationalType.LONG);
                     break;
 
                 case IOR:
-                    pushBinOp(bb, IRBinaryOperator.OR, ComputationalType.INT);
+                    pushBinOp(bb, IRBinaryOperator.BITWISE_OR, ComputationalType.INT);
                     break;
 
                 case LOR:
-                    pushBinOp(bb, IRBinaryOperator.OR, ComputationalType.LONG);
+                    pushBinOp(bb, IRBinaryOperator.BITWISE_OR, ComputationalType.LONG);
                     break;
 
                 case IXOR:
-                    pushBinOp(bb, IRBinaryOperator.XOR, ComputationalType.INT);
+                    pushBinOp(bb, IRBinaryOperator.BITWISE_XOR, ComputationalType.INT);
                     break;
 
                 case LXOR:
-                    pushBinOp(bb, IRBinaryOperator.XOR, ComputationalType.LONG);
+                    pushBinOp(bb, IRBinaryOperator.BITWISE_XOR, ComputationalType.LONG);
                     break;
 
                 case I2L:
