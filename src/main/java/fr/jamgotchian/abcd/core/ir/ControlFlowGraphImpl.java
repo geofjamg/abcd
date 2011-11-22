@@ -688,12 +688,20 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public void export(String fileName) {
+        Writer writer = null;
         try {
-            Writer writer = new FileWriter(fileName);
+            writer = new FileWriter(fileName);
             export(writer);
-            writer.close();
         } catch (IOException e) {
             logger.log(Level.SEVERE, e.toString(), e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, e.toString(), e);
+                }
+            }
         }
     }
 

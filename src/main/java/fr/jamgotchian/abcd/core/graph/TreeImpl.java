@@ -310,22 +310,38 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     public void export(String fileName, String name,
                        GraphvizRenderer<N> nodeRenderer,
                        GraphvizRenderer<E> edgeRenderer) {
+        Writer writer = null;
         try {
-            Writer writer = new FileWriter(fileName);
+            writer = new FileWriter(fileName);
             export(writer, name, nodeRenderer, edgeRenderer);
-            writer.close();
         } catch (IOException e) {
             logger.log(Level.SEVERE, e.toString(), e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, e.toString(), e);
+                }
+            }
         }
     }
 
     public void export(String fileName, String name) {
+        Writer writer = null;
         try {
-            Writer writer = new FileWriter(fileName);
+            writer = new FileWriter(fileName);
             export(writer, name);
-            writer.close();
         } catch (IOException e) {
             logger.log(Level.SEVERE, e.toString(), e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, e.toString(), e);
+                }
+            }
         }
     }
 

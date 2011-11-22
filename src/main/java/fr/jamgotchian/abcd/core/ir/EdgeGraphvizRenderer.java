@@ -53,9 +53,7 @@ public class EdgeGraphvizRenderer implements GraphvizRenderer<Edge> {
         if (edge.getValue() != null) {
             attrs.put("label", "\"" + edge.getValue() + "\"");
         }
-        if (useConstraints &&
-                edge != null &&
-                edge.getCategory() != EdgeCategory.ADVANCING) {
+        if (useConstraints && edge.getCategory() != EdgeCategory.ADVANCING) {
             attrs.put("constraint", "false");
         }
         return attrs;

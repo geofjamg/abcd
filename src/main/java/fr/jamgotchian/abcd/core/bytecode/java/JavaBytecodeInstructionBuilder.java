@@ -67,7 +67,7 @@ import org.objectweb.asm.tree.VarInsnNode;
  */
 public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
-    public static final JavaType[] ATYPES = {
+    private static final JavaType[] ATYPES = {
         null,
         null,
         null,
