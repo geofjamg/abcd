@@ -52,18 +52,18 @@ public class DalvikBytecodeControlFlowGraphBuilder extends ControlFlowGraphBuild
             switch (instruction.getFormat()) {
                 case Format22t: {
                     Instruction22t jumpInst = (Instruction22t) instruction;
-                    int address = addressManager.getAddress(position);
-                    int targetAddress = address + jumpInst.getTargetAddressOffset();
-                    int targetPosition = addressManager.getPosition(targetAddress);
+                    int targetPosition
+                            = addressManager.getTargetPosition(position,
+                                                               jumpInst.getTargetAddressOffset());
                     analyseJumpInst(position, targetPosition);
                     break;
                 }
 
                 case Format10t: {
                     Instruction10t jumpInst = (Instruction10t) instruction;
-                    int address = addressManager.getAddress(position);
-                    int targetAddress = address + jumpInst.getTargetAddressOffset();
-                    int targetPosition = addressManager.getPosition(targetAddress);
+                    int targetPosition
+                            = addressManager.getTargetPosition(position,
+                                                               jumpInst.getTargetAddressOffset());
                     analyseGotoInst(position, targetPosition);
                     break;
                 }

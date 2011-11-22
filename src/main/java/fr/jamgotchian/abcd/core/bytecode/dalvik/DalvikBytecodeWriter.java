@@ -73,9 +73,9 @@ public class DalvikBytecodeWriter extends DalvikBytecodeVisitor {
     @Override
     public void visit(BasicBlock bb, int position, Instruction10t inst,
                       CodeAddressManager addressManager) {
-        int address = addressManager.getAddress(position);
-        int targetAddress = address + inst.getTargetAddressOffset();
-        int targetPosition = addressManager.getPosition(targetAddress);
+        int targetPosition
+                = addressManager.getTargetPosition(position,
+                                                   inst.getTargetAddressOffset());
         writer.writeIndex(position)
                 .writeKeyword(inst.opcode.toString().toLowerCase())
                 .writeSpace().write(targetPosition)
@@ -110,9 +110,9 @@ public class DalvikBytecodeWriter extends DalvikBytecodeVisitor {
     @Override
     public void visit(BasicBlock bb, int position, Instruction21t inst,
                       CodeAddressManager addressManager) {
-        int address = addressManager.getAddress(position);
-        int targetAddress = address + inst.getTargetAddressOffset();
-        int targetPosition = addressManager.getPosition(targetAddress);
+        int targetPosition
+                = addressManager.getTargetPosition(position,
+                                                   inst.getTargetAddressOffset());
         writer.writeIndex(position)
                 .writeKeyword(inst.opcode.toString().toLowerCase())
                 .writeSpace().write("r").write(inst.getRegisterA())
@@ -123,9 +123,9 @@ public class DalvikBytecodeWriter extends DalvikBytecodeVisitor {
     @Override
     public void visit(BasicBlock bb, int position, Instruction22t inst,
                       CodeAddressManager addressManager) {
-        int address = addressManager.getAddress(position);
-        int targetAddress = address + inst.getTargetAddressOffset();
-        int targetPosition = addressManager.getPosition(targetAddress);
+        int targetPosition
+                = addressManager.getTargetPosition(position,
+                                                   inst.getTargetAddressOffset());
         writer.writeIndex(position)
                 .writeKeyword(inst.opcode.toString().toLowerCase())
                 .writeSpace().write("r").write(inst.getRegisterA())

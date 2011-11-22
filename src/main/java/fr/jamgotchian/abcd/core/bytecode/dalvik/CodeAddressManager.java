@@ -56,4 +56,11 @@ public class CodeAddressManager {
     public int getPosition(int address) {
         return positions[address];
     }
+
+    public int getTargetPosition(int position, int targetAddressOffset) {
+        int address = addresses[position];
+        int targetAddress = address + targetAddressOffset;
+        int targetPosition = positions[targetAddress];
+        return targetPosition;
+    }
 }
