@@ -44,8 +44,11 @@ public class DalvikMethodFactory implements MethodFactory {
 
     private final EncodedMethod encodedMethod;
 
+    private final CodeAddressManager addressManager;
+
     public DalvikMethodFactory(EncodedMethod encodedMethod) {
         this.encodedMethod = encodedMethod;
+        addressManager = new CodeAddressManager(encodedMethod.codeItem.getInstructions());
     }
 
     public Method createMethod(ImportManager importManager) {
@@ -61,7 +64,9 @@ public class DalvikMethodFactory implements MethodFactory {
     }
 
     public ControlFlowGraphBuilder createCFGBuilder(String methodSignature) {
-        return new DalvikBytecodeControlFlowGraphBuilder(methodSignature);
+        return new DalvikBytecodeControlFlowGraphBuilder(methodSignature,
+                                                         encodedMethod.codeItem,
+                                                         addressManager);
     }
 
     public InstructionBuilder createInstBuilder(ImportManager importManager,
@@ -71,8 +76,8 @@ public class DalvikMethodFactory implements MethodFactory {
     }
 
     public String getBytecodeAsText() {
-        CodeItem codeItem = encodedMethod.codeItem;
-        return DalvikBytecodeWriter.toText(codeItem.getInstructions());
+        return DalvikBytecodeWriter.toText(encodedMethod.codeItem.getInstructions(),
+                                           addressManager);
     }
 
 }

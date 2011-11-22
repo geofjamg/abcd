@@ -17,18 +17,23 @@
 package fr.jamgotchian.abcd.core.bytecode.dalvik;
 
 import fr.jamgotchian.abcd.core.code.CodeWriter;
+import fr.jamgotchian.abcd.core.code.DOTHTMLLikeCodeWriter;
 import fr.jamgotchian.abcd.core.code.TextCodeWriter;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.BasicBlockImpl;
 import fr.jamgotchian.abcd.core.ir.BasicBlockType;
 import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.List;
 import org.jf.dexlib.Code.Format.Instruction10t;
 import org.jf.dexlib.Code.Format.Instruction10x;
 import org.jf.dexlib.Code.Format.Instruction11n;
 import org.jf.dexlib.Code.Format.Instruction21c;
+import org.jf.dexlib.Code.Format.Instruction21t;
 import org.jf.dexlib.Code.Format.Instruction22t;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.MethodIdItem;
 
 /**
  *
@@ -36,14 +41,21 @@ import org.jf.dexlib.Code.Instruction;
  */
 public class DalvikBytecodeWriter extends DalvikBytecodeVisitor {
 
-    public static String toText(Instruction[] instructions) {
+    public static String toText(Instruction[] instructions, CodeAddressManager addressManager) {
         StringWriter writer = new StringWriter();
         BasicBlock bb = new BasicBlockImpl(0, instructions.length-1, null);
-        new DalvikBytecodeWriter(new TextCodeWriter(writer)).visit(instructions, bb);
+        new DalvikBytecodeWriter(new TextCodeWriter(writer))
+                .visit(instructions, bb, addressManager);
         return writer.toString();
     }
 
-    protected final CodeWriter writer;
+    public static String toDOTHTMLLike(Instruction[] instructions, BasicBlock bb, CodeAddressManager addressManager) {
+        StringWriter writer = new StringWriter();
+        new DalvikBytecodeWriter(new DOTHTMLLikeCodeWriter(writer)).visit(instructions, bb, addressManager);
+        return writer.toString();
+    }
+
+    private final CodeWriter writer;
 
     public DalvikBytecodeWriter(CodeWriter writer) {
         this.writer = writer;
@@ -59,10 +71,14 @@ public class DalvikBytecodeWriter extends DalvikBytecodeVisitor {
     }
 
     @Override
-    public void visit(BasicBlock bb, int position, Instruction10t inst) {
+    public void visit(BasicBlock bb, int position, Instruction10t inst,
+                      CodeAddressManager addressManager) {
+        int address = addressManager.getAddress(position);
+        int targetAddress = address + inst.getTargetAddressOffset();
+        int targetPosition = addressManager.getPosition(targetAddress);
         writer.writeIndex(position)
                 .writeKeyword(inst.opcode.toString().toLowerCase())
-                .writeSpace().write(inst.getTargetAddressOffset())
+                .writeSpace().write(targetPosition)
                 .newLine();
     }
 
@@ -77,7 +93,7 @@ public class DalvikBytecodeWriter extends DalvikBytecodeVisitor {
     public void visit(BasicBlock bb, int position, Instruction11n inst) {
         writer.writeIndex(position)
                 .writeKeyword(inst.opcode.toString().toLowerCase())
-                .writeSpace().write("v").write(inst.getRegisterA())
+                .writeSpace().write("r").write(inst.getRegisterA())
                 .writeSpace().write(inst.getLiteral())
                 .newLine();
     }
@@ -86,32 +102,49 @@ public class DalvikBytecodeWriter extends DalvikBytecodeVisitor {
     public void visit(BasicBlock bb, int position, Instruction21c inst) {
         writer.writeIndex(position)
                 .writeKeyword(inst.opcode.toString().toLowerCase())
-                .writeSpace().write("v").write(inst.getRegisterA())
+                .writeSpace().write("r").write(inst.getRegisterA())
                 .writeSpace().write(inst.getReferencedItem())
                 .newLine();
     }
 
     @Override
-    public void visit(BasicBlock bb, int position, Instruction22t inst) {
+    public void visit(BasicBlock bb, int position, Instruction21t inst,
+                      CodeAddressManager addressManager) {
+        int address = addressManager.getAddress(position);
+        int targetAddress = address + inst.getTargetAddressOffset();
+        int targetPosition = addressManager.getPosition(targetAddress);
         writer.writeIndex(position)
                 .writeKeyword(inst.opcode.toString().toLowerCase())
-                .writeSpace().write("v").write(inst.getRegisterA())
-                .writeSpace().write("v").write(inst.getRegisterB())
-                .writeSpace().write(inst.getTargetAddressOffset())
+                .writeSpace().write("r").write(inst.getRegisterA())
+                .writeSpace().write(targetPosition)
+                .newLine();
+    }
+
+    @Override
+    public void visit(BasicBlock bb, int position, Instruction22t inst,
+                      CodeAddressManager addressManager) {
+        int address = addressManager.getAddress(position);
+        int targetAddress = address + inst.getTargetAddressOffset();
+        int targetPosition = addressManager.getPosition(targetAddress);
+        writer.writeIndex(position)
+                .writeKeyword(inst.opcode.toString().toLowerCase())
+                .writeSpace().write("r").write(inst.getRegisterA())
+                .writeSpace().write("r").write(inst.getRegisterB())
+                .writeSpace().write(targetPosition)
                 .newLine();
     }
 
     @Override
     public void visit(BasicBlock bb, int position, Instruction35c inst) {
         writer.writeIndex(position)
-                .writeKeyword(inst.opcode.toString().toLowerCase())
-                .writeSpace().write(inst.getReferencedItem())
-                .writeSpace().write(inst.getRegCount())
-                .writeSpace().write("v").write(inst.getRegisterA())
-                .writeSpace().write("v").write(inst.getRegisterD())
-                .writeSpace().write("v").write(inst.getRegisterE())
-                .writeSpace().write("v").write(inst.getRegisterF())
-                .writeSpace().write("v").write(inst.getRegisterG())
+                .writeKeyword(inst.opcode.toString().toLowerCase());
+        MethodIdItem methodId = (MethodIdItem) inst.getReferencedItem();
+        writer.writeSpace().write(writer.removeSpecialCharacters(methodId.getMethodString().toString()));
+        List<String> registers
+                = Arrays.asList("r" + inst.getRegisterA(), "r" + inst.getRegisterD(),
+                                "r" + inst.getRegisterE(), "r" + inst.getRegisterF(),
+                                "r" + inst.getRegisterG());
+        writer.writeSpace().write(registers.subList(0, inst.getRegCount()))
                 .newLine();
     }
 

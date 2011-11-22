@@ -22,6 +22,7 @@ import org.jf.dexlib.Code.Format.Instruction10t;
 import org.jf.dexlib.Code.Format.Instruction10x;
 import org.jf.dexlib.Code.Format.Instruction11n;
 import org.jf.dexlib.Code.Format.Instruction21c;
+import org.jf.dexlib.Code.Format.Instruction21t;
 import org.jf.dexlib.Code.Format.Instruction22t;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Instruction;
@@ -34,13 +35,15 @@ public abstract class DalvikBytecodeVisitor {
 
     public abstract void before(BasicBlock bb);
 
-    public abstract void visit(BasicBlock bb, int position, Instruction10t inst);
+    public abstract void visit(BasicBlock bb, int position, Instruction10t inst, CodeAddressManager addressManager);
 
     public abstract void visit(BasicBlock bb, int position, Instruction11n inst);
 
     public abstract void visit(BasicBlock bb, int position, Instruction21c inst);
 
-    public abstract void visit(BasicBlock bb, int position, Instruction22t inst);
+    public abstract void visit(BasicBlock bb, int position, Instruction21t inst, CodeAddressManager addressManager);
+
+    public abstract void visit(BasicBlock bb, int position, Instruction22t inst, CodeAddressManager addressManager);
 
     public abstract void visit(BasicBlock bb, int position, Instruction35c inst);
 
@@ -50,7 +53,7 @@ public abstract class DalvikBytecodeVisitor {
 
     public abstract void after(BasicBlock bb);
 
-    public void visit(Instruction[] instructions, BasicBlock bb) {
+    public void visit(Instruction[] instructions, BasicBlock bb, CodeAddressManager addressManager) {
 
         before(bb);
 
@@ -60,7 +63,7 @@ public abstract class DalvikBytecodeVisitor {
                 Instruction inst = instructions[position];
                 switch(inst.getFormat()) {
                     case Format10t:
-                        visit(bb, position, (Instruction10t) inst);
+                        visit(bb, position, (Instruction10t) inst, addressManager);
                         break;
 
                     case Format10x:
@@ -75,8 +78,12 @@ public abstract class DalvikBytecodeVisitor {
                         visit(bb, position, (Instruction21c) inst);
                         break;
 
+                    case Format21t:
+                        visit(bb, position, (Instruction21t) inst, addressManager);
+                        break;
+
                     case Format22t:
-                        visit(bb, position, (Instruction22t) inst);
+                        visit(bb, position, (Instruction22t) inst, addressManager);
                         break;
 
                     case Format35c:

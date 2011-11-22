@@ -51,7 +51,7 @@ public class JavaBytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder
     private final Map<LabelNode, Integer> labelNodeIndex;
 
     public JavaBytecodeControlFlowGraphBuilder(String methodName, MethodNode mn,
-                                           LabelManager labelManager) {
+                                               LabelManager labelManager) {
         super(methodName);
         this.mn = mn;
         this.labelManager = labelManager;

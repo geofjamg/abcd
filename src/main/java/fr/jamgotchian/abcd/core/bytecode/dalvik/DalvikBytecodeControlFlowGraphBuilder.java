@@ -21,6 +21,10 @@ import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.ExceptionTable;
 import fr.jamgotchian.abcd.core.ir.LocalVariableTable;
+import org.jf.dexlib.Code.Format.Instruction10t;
+import org.jf.dexlib.Code.Format.Instruction22t;
+import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.CodeItem;
 
 /**
  *
@@ -28,25 +32,54 @@ import fr.jamgotchian.abcd.core.ir.LocalVariableTable;
  */
 public class DalvikBytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder {
 
-    public DalvikBytecodeControlFlowGraphBuilder(String methodName) {
+    private final CodeItem codeItem;
+
+    private final CodeAddressManager addressManager;
+
+    public DalvikBytecodeControlFlowGraphBuilder(String methodName,
+                                                 CodeItem codeItem,
+                                                 CodeAddressManager addressManager) {
         super(methodName);
+        this.codeItem = codeItem;
+        this.addressManager = addressManager;
     }
 
     @Override
     protected void analyseInstructions() {
-        // TODO
+        Instruction[] instructions = codeItem.getInstructions();
+        for (int position = 0; position < instructions.length; position++) {
+            Instruction instruction = instructions[position];
+            switch (instruction.getFormat()) {
+                case Format22t: {
+                    Instruction22t jumpInst = (Instruction22t) instruction;
+                    int address = addressManager.getAddress(position);
+                    int targetAddress = address + jumpInst.getTargetAddressOffset();
+                    int targetPosition = addressManager.getPosition(targetAddress);
+                    analyseJumpInst(position, targetPosition);
+                    break;
+                }
+
+                case Format10t: {
+                    Instruction10t jumpInst = (Instruction10t) instruction;
+                    int address = addressManager.getAddress(position);
+                    int targetAddress = address + jumpInst.getTargetAddressOffset();
+                    int targetPosition = addressManager.getPosition(targetAddress);
+                    analyseGotoInst(position, targetPosition);
+                    break;
+                }
+            }
+        }
     }
 
     @Override
     protected int getInstructionCount() {
-        // TODO
-        return 0;
+        return codeItem.getInstructions().length;
     }
 
     @Override
     protected GraphvizRenderer<BasicBlock> getGraphizRenderer() {
-        // TODO
-        return null;
+        return new DalvikBytecodeGraphvizRenderer(codeItem.getInstructions(),
+                                                  addressManager);
     }
 
     @Override
