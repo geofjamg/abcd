@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core;
+package fr.jamgotchian.abcd.core.common;
 
 import java.io.IOException;
 import java.net.URL;
@@ -41,12 +41,14 @@ public class ABCDUtil {
         URL url = ClassLoader.getSystemResource("abcd.properties");
         String version = UNDEFINED;
         String homePage = UNDEFINED;
-        try {
-            props.load(url.openStream());
-            version = props.getProperty("abcd.version", UNDEFINED);
-            homePage = props.getProperty("abcd.homePage", UNDEFINED);
-        } catch(IOException e) {
-            logger.log(Level.SEVERE, e.toString(), e);
+        if (url != null) {
+            try {
+                props.load(url.openStream());
+                version = props.getProperty("abcd.version", UNDEFINED);
+                homePage = props.getProperty("abcd.homePage", UNDEFINED);
+            } catch(IOException e) {
+                logger.log(Level.SEVERE, e.toString(), e);
+            }
         }
         VERSION = version;
         HOME_PAGE = homePage;

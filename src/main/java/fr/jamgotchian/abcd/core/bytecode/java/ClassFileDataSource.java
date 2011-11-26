@@ -89,6 +89,7 @@ public class ClassFileDataSource implements DataSource {
         this.className = className;
     }
 
+    @Override
     public Collection<ClassFactory> createClassFactories() throws IOException {
         // check that the class exists
         File classFile = new File(classDir.getCanonicalPath() + File.separator
@@ -101,6 +102,7 @@ public class ClassFileDataSource implements DataSource {
         // list inner classes
         File[] innerClassFiles = packageDir.listFiles(new FileFilter() {
 
+            @Override
             public boolean accept(File pathname) {
                 if (pathname.getName().endsWith(".class")) {
                     try {

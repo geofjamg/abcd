@@ -58,15 +58,19 @@ public class DefaultABCDWriter implements ABCDWriter {
         }
     }
 
+    @Override
     public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bytecodeRenderer) {
     }
 
+    @Override
     public void writeCFG(ControlFlowGraph cfg, boolean failure) {
     }
 
+    @Override
     public void writeRPST(RPST rpst, int level) {
     }
 
+    @Override
     public void writeAST(CompilationUnit compilUnit) {
         assert compilUnit != null;
         try {
@@ -79,15 +83,6 @@ public class DefaultABCDWriter implements ABCDWriter {
             Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
             try {
                 CodeWriter codeWriter = new TextCodeWriter(writer, 4);
-
-                // write ABCD banner
-                codeWriter.write("/**").newLine()
-                        .writeSpace().write("*").writeSpace().write("Decompiled by ABCD v")
-                        .write(ABCDUtil.VERSION).newLine()
-                        .writeSpace().write("*").writeSpace().write("ABCD home page : ")
-                        .write(ABCDUtil.HOME_PAGE).newLine()
-                        .writeSpace().write("*/").newLine().newLine();
-
                 compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, debug), null);
             } finally {
                 writer.close();

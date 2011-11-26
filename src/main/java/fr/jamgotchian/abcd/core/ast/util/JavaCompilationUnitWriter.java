@@ -23,6 +23,7 @@ import fr.jamgotchian.abcd.core.ast.CompilationUnitVisitor;
 import fr.jamgotchian.abcd.core.ast.Package;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
+import fr.jamgotchian.abcd.core.common.ABCDUtil;
 
 /**
  *
@@ -43,6 +44,15 @@ public class JavaCompilationUnitWriter implements CompilationUnitVisitor<Void, V
     }
 
     public Void visit(CompilationUnit compilUnit, Void arg) {
+
+        // write ABCD banner
+        writer.write("/**").newLine()
+                .writeSpace().write("*").writeSpace().write("Decompiled by ABCD v")
+                .write(ABCDUtil.VERSION).newLine()
+                .writeSpace().write("*").writeSpace().write("ABCD home page : ")
+                .write(ABCDUtil.HOME_PAGE).newLine()
+                .writeSpace().write("*/").newLine().newLine();
+
         if (compilUnit.getPackage() != null) {
             compilUnit.getPackage().accept(this, null);
         }

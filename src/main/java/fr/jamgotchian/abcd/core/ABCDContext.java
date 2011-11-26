@@ -45,6 +45,7 @@ import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.ir.Region;
 import fr.jamgotchian.abcd.core.ir.RegionAnalysis;
+import fr.jamgotchian.abcd.core.ir.SimpleVariableNameProviderFactory;
 import fr.jamgotchian.abcd.core.ir.VariableNameProviderFactory;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -127,8 +128,12 @@ public class ABCDContext {
     public ABCDContext() {
     }
 
+    public void decompile(DataSource dataSrc, ABCDWriter writer) throws IOException {
+        decompile(dataSrc, new SimpleVariableNameProviderFactory(), writer);
+    }
+
     private void decompile(DataSource dataSrc, VariableNameProviderFactory nameProviderFactory,
-                           ABCDWriter writer) throws IOException {
+                          ABCDWriter writer) throws IOException {
         Summary summary = new Summary();
         for (ClassFactory classFactory : dataSrc.createClassFactories()) {
             ImportManager importManager = new ImportManager();
