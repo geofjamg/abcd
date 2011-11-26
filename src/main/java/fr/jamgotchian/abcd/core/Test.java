@@ -1484,6 +1484,11 @@ public class Test {
         }
     }
 
+    void testLiteral() {
+        double d = 1.2952385285323184823482d;
+        System.out.println(d);
+    }
+
 //    public static void main(String[] args) {
 //        new Test().testBreakLabel2();
 //    }
