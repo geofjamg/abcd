@@ -95,6 +95,7 @@ import fr.jamgotchian.abcd.core.ir.EmptyIRInstVisitor;
 import fr.jamgotchian.abcd.core.ir.LiveVariablesAnalysis;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -662,7 +663,8 @@ public class AbstractSyntaxTreeBuilder {
             }
 
             case SWITCH_CASE: {
-                buildAST(region.getFirstChild(ChildType.SWITCH), blockStmt);
+                Region switchRegion = region.getFirstChild(ChildType.SWITCH);
+                buildAST(switchRegion, blockStmt);
                 SwitchCaseStatement switchStmt
                         = (SwitchCaseStatement) blockStmt.getLast();
 
@@ -689,6 +691,12 @@ public class AbstractSyntaxTreeBuilder {
                     }
 
                     switchStmt.addCase(new CaseStatement(values, caseStmts));
+                }
+
+                // empty cases
+                if (switchRegion.getData() != null) {
+                    switchStmt.addCase(new CaseStatement((CaseValues) switchRegion.getData(),
+                                                         Collections.<Statement>singletonList(new BreakStatement())));
                 }
 
                 break;

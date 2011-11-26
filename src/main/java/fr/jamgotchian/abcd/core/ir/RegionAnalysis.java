@@ -254,7 +254,7 @@ public class RegionAnalysis {
 
     private boolean checkSwitchCaseRegion(ControlFlowGraph cfg, Region region) {
         logger.log(Level.FINEST, "Check switch case region {0}", region);
-        if (region.getChildCount() < 3) {
+        if (region.getChildCount() < 2) {
             return false;
         }
         Region switchRegion = null;
@@ -271,15 +271,24 @@ public class RegionAnalysis {
             return false;
         }
         for (Region caseRegion : caseRegions) {
-            if (!cfg.containsEdge(switchRegion.getExit(), caseRegion.getEntry())) {
+            Edge incomingEdge
+                    = cfg.getEdge(switchRegion.getExit(), caseRegion.getEntry());
+            if (incomingEdge == null
+                    || !(incomingEdge.getValue() instanceof CaseValues)) {
                 return false;
             }
-            Edge edge = cfg.getEdge(switchRegion.getExit(), caseRegion.getEntry());
-            if (!(edge.getValue() instanceof CaseValues)) {
+            if (!caseRegion.getExit().equals(region.getExit())) {
                 return false;
             }
-            caseRegion.setData(edge.getValue());
+            caseRegion.setData(incomingEdge.getValue());
         }
+        Edge emptyCaseEdge = cfg.getEdge(region.getEntry(), region.getExit());
+        if (emptyCaseEdge != null
+                && emptyCaseEdge.getValue() instanceof CaseValues) {
+            // store empty cases info in switch region
+            switchRegion.setData(emptyCaseEdge.getValue());
+        }
+
         region.setParentType(ParentType.SWITCH_CASE);
         switchRegion.setChildType(ChildType.SWITCH);
         for (Region caseRegion : caseRegions) {
