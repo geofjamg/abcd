@@ -368,7 +368,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
     }
 
     public Void visit(LongLiteralExpression expr, Void arg) {
-        writer.write(expr.getValue());
+        writer.write(expr.getValue()).write("L");
         return null;
     }
 
@@ -388,12 +388,12 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
     }
 
     public Void visit(FloatLiteralExpression expr, Void arg) {
-        writer.write(expr.getValue());
+        writer.write(expr.getValue()).write("f");
         return null;
     }
 
     public Void visit(DoubleLiteralExpression expr, Void arg) {
-        writer.write(expr.getValue());
+        writer.write(expr.getValue()).write("d");
         return null;
     }
 

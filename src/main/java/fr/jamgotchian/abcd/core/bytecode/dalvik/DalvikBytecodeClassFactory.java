@@ -53,9 +53,10 @@ public class DalvikBytecodeClassFactory implements ClassFactory {
         Set<Modifier> fieldModifiers = DalvikBytecodeUtil.getModifiers(fieldAccessFlags);
         String fieldName = encodedField.field.getFieldName().getStringValue();
         JavaType fieldType = DalvikBytecodeUtil.newType(encodedField.field.getFieldType(), importManager);
-        return new Field(fieldModifiers, fieldName, fieldType);
+        return new Field(fieldModifiers, fieldName, fieldType, null);
     }
 
+    @Override
     public Class createClass(ImportManager importManager) {
         String className = Type.getType(item.getClassType().getTypeDescriptor())
                 .getClassName();

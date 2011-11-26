@@ -22,6 +22,8 @@ import fr.jamgotchian.abcd.core.ast.Field;
 import fr.jamgotchian.abcd.core.ast.Package;
 import fr.jamgotchian.abcd.core.ast.Class;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
+import fr.jamgotchian.abcd.core.ast.expr.Expression;
+import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.io.IOException;
@@ -51,6 +53,7 @@ public class JavaBytecodeClassFactory implements ClassFactory {
         cr.accept(cn, 0);
     }
 
+    @Override
     public Class createClass(ImportManager importManager) {
         // package
         String packageName = "";
@@ -93,14 +96,30 @@ public class JavaBytecodeClassFactory implements ClassFactory {
         for (FieldNode fn : (List<FieldNode>) cn.fields) {
             Type fieldType = Type.getType(fn.desc);
             JavaType javaFieldType = JavaBytecodeUtil.newType(fieldType, importManager);
+            Expression valueExpr = null;
+            if (fn.value != null) {
+                if (fn.value instanceof Integer) {
+                    valueExpr = Expressions.newIntExpr((Integer) fn.value);
+                } else if (fn.value instanceof Long) {
+                    valueExpr = Expressions.newLongExpr((Long) fn.value);
+                } else if (fn.value instanceof Float) {
+                    valueExpr = Expressions.newFloatExpr((Float) fn.value);
+                } else if (fn.value instanceof Double) {
+                    valueExpr = Expressions.newDoubleExpr((Double) fn.value);
+                } else if (fn.value instanceof String) {
+                    valueExpr = Expressions.newStringExpr((String) fn.value);
+                } else {
+                    throw new InternalError();
+                }
+            }
 
             _class.addField(new Field(JavaBytecodeUtil.getModifiers(fn.access),
-                                      fn.name,
-                                      javaFieldType));
+                                      fn.name, javaFieldType, valueExpr));
         }
         return _class;
     }
 
+    @Override
     public Collection<MethodFactory> createMethodFactories() {
         List<MethodFactory> factories = new ArrayList<MethodFactory>();
         for (MethodNode mn : (List<MethodNode>) cn.methods) {

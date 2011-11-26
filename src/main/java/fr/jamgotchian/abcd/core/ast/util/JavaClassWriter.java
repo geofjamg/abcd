@@ -37,11 +37,14 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
 
     private final boolean debug;
 
+    private final JavaExpressionWriter exprVisitor;
+
     private final JavaStatementWriter stmtVisitor;
 
     public JavaClassWriter(CodeWriter writer, boolean debug) {
         this.writer = writer;
         this.debug = debug;
+        this.exprVisitor = new JavaExpressionWriter(writer, debug);
         this.stmtVisitor = new JavaStatementWriter(writer, debug);
     }
 
@@ -97,7 +100,12 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
         for (Modifier mod : field.getModifiers()) {
             writer.write(mod).writeSpace();
         }
-        writer.write(field.getType()).writeSpace().write(field.getName()).write(";").newLine();
+        writer.write(field.getType()).writeSpace().write(field.getName());
+        if (field.getValueExpr() != null) {
+            writer.writeSpace().write("=").writeSpace();
+            field.getValueExpr().accept(exprVisitor, null);
+        }
+        writer.write(";").newLine();
         return null;
     }
 
