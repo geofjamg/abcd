@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.common;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -32,22 +33,39 @@ public class ABCDUtil {
 
     private static final String UNDEFINED = "UNDEFINED";
 
+    private static final String PROPERTIES_FILE_NAME = "abcd.properties";
+
     public static final String VERSION;
 
     public static final String HOME_PAGE;
 
     static {
         Properties props = new Properties();
-        URL url = ClassLoader.getSystemResource("abcd.properties");
+        URL url = ClassLoader.getSystemResource(PROPERTIES_FILE_NAME);
+        if (url == null) {
+            // to work when loaded from netbeans module
+            url = Thread.currentThread().getContextClassLoader()
+                    .getResource(PROPERTIES_FILE_NAME);
+        }
         String version = UNDEFINED;
         String homePage = UNDEFINED;
         if (url != null) {
+            InputStream is = null;
             try {
-                props.load(url.openStream());
+                is = url.openStream();
+                props.load(is);
                 version = props.getProperty("abcd.version", UNDEFINED);
                 homePage = props.getProperty("abcd.homePage", UNDEFINED);
             } catch(IOException e) {
                 LOGGER.log(Level.SEVERE, e.toString(), e);
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch(IOException e) {
+                        LOGGER.log(Level.SEVERE, e.toString(), e);
+                    }
+                }
             }
         }
         VERSION = version;
