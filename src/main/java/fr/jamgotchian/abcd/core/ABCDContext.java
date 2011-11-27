@@ -41,6 +41,7 @@ import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.DefaultVariableNameProviderFactory;
+import fr.jamgotchian.abcd.core.ir.ExceptionTable;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
 import fr.jamgotchian.abcd.core.ir.RPST;
@@ -196,6 +197,8 @@ public class ABCDContext {
 
             String methodSignature = method.getSignature();
 
+            ControlFlowGraph cfg = null;
+
             try {
                 logger.log(Level.FINE, "");
                 ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Decompile method {0}",
@@ -214,17 +217,16 @@ public class ABCDContext {
                 InstructionBuilder instBuilder
                     = methodFactory.createInstBuilder(importManager, tmpVarFactory, instFactory);
 
-                ControlFlowGraph cfg
-                        = new IntermediateRepresentationBuilder(cfgBuilder,
-                                                                instBuilder,
-                                                                importManager,
-                                                                tmpVarFactory,
-                                                                instFactory,
-                                                                nameProviderFactory,
-                                                                thisType,
-                                                                method.getModifiers().contains(Modifier.STATIC),
-                                                                method.getReturnType(),
-                                                                method.getArguments())
+                cfg = new IntermediateRepresentationBuilder(cfgBuilder,
+                                                            instBuilder,
+                                                            importManager,
+                                                            tmpVarFactory,
+                                                            instFactory,
+                                                            nameProviderFactory,
+                                                            thisType,
+                                                            method.getModifiers().contains(Modifier.STATIC),
+                                                            method.getReturnType(),
+                                                            method.getArguments())
                         .build(writer);
 
                 ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Analyse regions of {0}",
@@ -259,8 +261,17 @@ public class ABCDContext {
                 method.getBody().clear();
                 StringBuilder msg = new StringBuilder();
                 msg.append(Exceptions.printStackTrace(exc))
-                   .append("\n")
-                   .append(methodFactory.getBytecodeAsText());
+                        .append("\n")
+                        .append(methodFactory.getBytecodeAsText())
+                        .append("\n");
+                if (cfg != null) {
+                    ExceptionTable table = cfg.getExceptionTable();
+                    if (table != null && table.getEntries().size() > 0) {
+                        msg.append("\n");
+                        table.print(msg);
+                        msg.append("\n");
+                    }
+                }
 
                 method.getBody().add(new CommentStatement("\n" + msg.toString()));
                 method.getBody().add(Statements.createThrowErrorStmt(InternalError.class,
