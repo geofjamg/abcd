@@ -36,17 +36,14 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
 
     private final CodeWriter writer;
 
-    private final boolean debug;
-
     private final JavaExpressionWriter exprVisitor;
 
     private final JavaStatementWriter stmtVisitor;
 
-    public JavaClassWriter(CodeWriter writer, boolean debug) {
+    public JavaClassWriter(CodeWriter writer) {
         this.writer = writer;
-        this.debug = debug;
-        this.exprVisitor = new JavaExpressionWriter(writer, debug);
-        this.stmtVisitor = new JavaStatementWriter(writer, debug);
+        this.exprVisitor = new JavaExpressionWriter(writer);
+        this.stmtVisitor = new JavaStatementWriter(writer);
     }
 
     public Void visit(Class _class, Void arg) {

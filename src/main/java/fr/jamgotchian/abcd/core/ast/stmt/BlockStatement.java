@@ -17,10 +17,8 @@
 
 package fr.jamgotchian.abcd.core.ast.stmt;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  *
@@ -196,17 +194,5 @@ public class BlockStatement extends AbstractStatement
 
     public <R, A> R accept(StatementVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
-    }
-
-    public List<String> getDebugInfos() {
-        List<Integer> parentIds = new ArrayList<Integer>();
-        for (BlockStatement b = getBlock(); b != null; b = b.getBlock()) {
-            parentIds.add(b.id);
-        }
-        List<String> infos = new ArrayList<String>(3);
-        infos.add("block id    : " + id);
-        infos.add("block depth : " + getDepth());
-        infos.add("parents id  : " + parentIds);
-        return infos;
     }
 }

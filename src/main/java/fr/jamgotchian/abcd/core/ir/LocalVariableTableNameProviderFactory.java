@@ -20,10 +20,10 @@ package fr.jamgotchian.abcd.core.ir;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DefaultVariableNameProviderFactory implements VariableNameProviderFactory {
+public class LocalVariableTableNameProviderFactory implements VariableNameProviderFactory {
 
     public VariableNameProvider create(ControlFlowGraph cfg) {
-        return new DefaultVariableNameProvider();
+        return new DebugInfoVariableNameProvider(cfg.getLocalVariableTable());
     }
 
 }

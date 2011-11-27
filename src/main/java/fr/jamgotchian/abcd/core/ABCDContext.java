@@ -29,7 +29,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.Statements;
 import fr.jamgotchian.abcd.core.ast.util.Refactorer;
 import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
-import fr.jamgotchian.abcd.core.bytecode.DataSource;
+import fr.jamgotchian.abcd.core.bytecode.ABCDDataSource;
 import fr.jamgotchian.abcd.core.bytecode.ClassFactory;
 import fr.jamgotchian.abcd.core.bytecode.dalvik.DexFileDataSource;
 import fr.jamgotchian.abcd.core.bytecode.java.ClassFileDataSource;
@@ -40,7 +40,7 @@ import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.ir.DefaultVariableNameProviderFactory;
+import fr.jamgotchian.abcd.core.ir.LocalVariableTableNameProviderFactory;
 import fr.jamgotchian.abcd.core.ir.ExceptionTable;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
@@ -80,8 +80,6 @@ import org.apache.commons.cli.ParseException;
  */
 public class ABCDContext {
 
-    public static final boolean DEBUG = false;
-
     private static final Logger LOGGER = Logger.getLogger(ABCDContext.class.getName());
 
     private static List<Refactorer> REFACTORERS = Collections.unmodifiableList(
@@ -120,22 +118,28 @@ public class ABCDContext {
                             .hasArg()
                             .withDescription("directory where to write analysis data")
                             .create("debug");
+        Option useLvtDir = OptionBuilder.hasArg(false)
+                            .isRequired(false)
+                            .withDescription("use local variable table")
+                            .create("uselvt");
         OPTIONS = new Options();
         OPTIONS.addOptionGroup(file)
                 .addOption(outputDir)
                 .addOption(classDir)
-                .addOption(debugDir);
+                .addOption(debugDir)
+                .addOption(useLvtDir);
     }
 
     public ABCDContext() {
     }
 
-    public void decompile(DataSource dataSrc, ABCDWriter writer) throws IOException {
-        decompile(dataSrc, new SimpleVariableNameProviderFactory(), writer);
-    }
-
-    private void decompile(DataSource dataSrc, VariableNameProviderFactory nameProviderFactory,
-                          ABCDWriter writer) throws IOException {
+    public void decompile(ABCDDataSource dataSrc, ABCDWriter writer, ABCDConfig config) throws IOException {
+        VariableNameProviderFactory nameProviderFactory = null;
+        if (config.isUseLocalVariableTable()) {
+            nameProviderFactory = new LocalVariableTableNameProviderFactory();
+        } else {
+            nameProviderFactory = new SimpleVariableNameProviderFactory();
+        }
         Summary summary = new Summary();
         for (ClassFactory classFactory : dataSrc.createClassFactories()) {
             ImportManager importManager = new ImportManager();
@@ -336,12 +340,12 @@ public class ABCDContext {
                 if (line.hasOption("debug")) {
                     File debugDir = new File(line.getOptionValue("debug"));
                     checkDir(debugDir);
-                    writer = new DebugABCDWriter(DEBUG, outDir, debugDir);
+                    writer = new DebugABCDWriter(outDir, debugDir);
                 } else {
-                    writer = new DefaultABCDWriter(DEBUG, outDir);
+                    writer = new DefaultABCDWriter(outDir);
                 }
 
-                DataSource dataSrc = null;
+                ABCDDataSource dataSrc = null;
                 if (line.hasOption("class")) {
                     String className = line.getOptionValue("class");
                     if (line.hasOption("classdir")) {
@@ -361,10 +365,12 @@ public class ABCDContext {
                     dataSrc = new DexFileDataSource(dexFile);
                 }
 
-                VariableNameProviderFactory nameProviderFactory
-                        = new DefaultVariableNameProviderFactory();
-
-                new ABCDContext().decompile(dataSrc, nameProviderFactory, writer);
+                ABCDConfig config = new ABCDConfig();
+                if (line.hasOption("uselvt")) {
+                    config.setUseLocalVariableTable(true);
+                }
+                
+                new ABCDContext().decompile(dataSrc, writer, config);
             }
             catch(ParseException e) {
                 printError(e.getMessage());

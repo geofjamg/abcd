@@ -17,7 +17,7 @@
 package fr.jamgotchian.abcd.core.bytecode.dalvik;
 
 import fr.jamgotchian.abcd.core.bytecode.ClassFactory;
-import fr.jamgotchian.abcd.core.bytecode.DataSource;
+import fr.jamgotchian.abcd.core.bytecode.ABCDDataSource;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ import org.jf.dexlib.Section;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DexFileDataSource implements DataSource {
+public class DexFileDataSource implements ABCDDataSource {
 
     private final File file;
 

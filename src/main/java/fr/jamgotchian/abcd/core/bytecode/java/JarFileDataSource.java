@@ -17,7 +17,7 @@
 package fr.jamgotchian.abcd.core.bytecode.java;
 
 import fr.jamgotchian.abcd.core.bytecode.ClassFactory;
-import fr.jamgotchian.abcd.core.bytecode.DataSource;
+import fr.jamgotchian.abcd.core.bytecode.ABCDDataSource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +30,7 @@ import java.util.jar.JarFile;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class JarFileDataSource implements DataSource {
+public class JarFileDataSource implements ABCDDataSource {
 
     private final JarFile jarFile;
 

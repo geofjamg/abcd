@@ -43,12 +43,9 @@ public class DefaultABCDWriter implements ABCDWriter {
     protected final static Logger LOGGER
             = Logger.getLogger(DefaultABCDWriter.class.getName());
 
-    private final boolean debug;
-
     private final File outDir;
 
-    public DefaultABCDWriter(boolean debug, File outDir) {
-        this.debug = debug;
+    public DefaultABCDWriter(File outDir) {
         this.outDir = outDir;
         if (!outDir.exists()) {
             throw new ABCDException(outDir + " does not exist");
@@ -83,7 +80,7 @@ public class DefaultABCDWriter implements ABCDWriter {
             Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
             try {
                 CodeWriter codeWriter = new TextCodeWriter(writer, 4);
-                compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, debug), null);
+                compilUnit.accept(new JavaCompilationUnitWriter(codeWriter), null);
             } finally {
                 writer.close();
             }

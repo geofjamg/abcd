@@ -33,14 +33,11 @@ public class JavaCompilationUnitWriter implements CompilationUnitVisitor<Void, V
 
     private final CodeWriter writer;
 
-    private final boolean debug;
-
     private final JavaClassWriter classVisitor;
 
-    public JavaCompilationUnitWriter(CodeWriter writer, boolean debug) {
+    public JavaCompilationUnitWriter(CodeWriter writer) {
         this.writer = writer;
-        this.debug = debug;
-        classVisitor = new JavaClassWriter(writer, debug);
+        classVisitor = new JavaClassWriter(writer);
     }
 
     public Void visit(CompilationUnit compilUnit, Void arg) {

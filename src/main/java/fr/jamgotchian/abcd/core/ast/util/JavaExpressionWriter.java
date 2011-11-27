@@ -54,15 +54,8 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
 
     private final CodeWriter writer;
 
-    private final boolean debug;
-
     public JavaExpressionWriter(CodeWriter writer) {
-        this(writer, false);
-    }
-
-    public JavaExpressionWriter(CodeWriter writer, boolean debug) {
         this.writer = writer;
-        this.debug = debug;
     }
 
     public Void visit(AssignExpression expr, Void arg) {

@@ -23,7 +23,7 @@ import java.util.Collection;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface DataSource {
+public interface ABCDDataSource {
 
     Collection<ClassFactory> createClassFactories() throws IOException;
 }

@@ -17,7 +17,7 @@
 package fr.jamgotchian.abcd.core.bytecode.java;
 
 import fr.jamgotchian.abcd.core.bytecode.ClassFactory;
-import fr.jamgotchian.abcd.core.bytecode.DataSource;
+import fr.jamgotchian.abcd.core.bytecode.ABCDDataSource;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import java.io.File;
 import java.io.FileFilter;
@@ -38,7 +38,7 @@ import org.objectweb.asm.commons.EmptyVisitor;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ClassFileDataSource implements DataSource {
+public class ClassFileDataSource implements ABCDDataSource {
 
     private static final Logger LOGGER
             = Logger.getLogger(ClassFileDataSource.class.getName());

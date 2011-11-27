@@ -49,16 +49,9 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
 
     private final JavaExpressionWriter exprVisitor;
 
-    private final boolean debug;
-
     public JavaStatementWriter(CodeWriter writer) {
-        this(writer, false);
-    }
-
-    public JavaStatementWriter(CodeWriter writer, boolean debug) {
         this.writer = writer;
-        this.debug = debug;
-        this.exprVisitor = new JavaExpressionWriter(writer, debug);
+        this.exprVisitor = new JavaExpressionWriter(writer);
     }
 
     public Void visit(BlockStatement blockStmt, Void arg) {
@@ -74,13 +67,6 @@ public class JavaStatementWriter implements StatementVisitor<Void, Void> {
         }
         writer.newLine();
         writer.decrIndent();
-        if (debug) {
-            writer.write("/*").newLine();
-            for (String info : blockStmt.getDebugInfos()) {
-                writer.write("  ").write(info).newLine();
-            }
-            writer.write("*/").newLine();
-        }
         writer.write("}");
         return null;
     }

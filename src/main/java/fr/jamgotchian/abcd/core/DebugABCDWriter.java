@@ -47,8 +47,8 @@ public class DebugABCDWriter extends DefaultABCDWriter {
 
     private final File debugDir;
 
-    public DebugABCDWriter(boolean debug, File outDir, File debugDir) {
-        super(debug, outDir);
+    public DebugABCDWriter(File outDir, File debugDir) {
+        super(outDir);
         if (!debugDir.exists()) {
             throw new ABCDException(debugDir + " does not exist");
         }

@@ -14,16 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.ir;
+package fr.jamgotchian.abcd.core;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DefaultVariableNameProvider implements VariableNameProvider {
+public class ABCDConfig {
 
-    public String getName(Variable var, boolean isStaticMethod) {
-        return var.toString();
+    private boolean useLocalVariableTable = false;
+
+    public boolean isUseLocalVariableTable() {
+        return useLocalVariableTable;
     }
 
+    public void setUseLocalVariableTable(boolean useLocalVariableTable) {
+        this.useLocalVariableTable = useLocalVariableTable;
+    }
 }
