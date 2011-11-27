@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.bytecode.java;
 
 import com.google.common.collect.Multimap;
+import fr.jamgotchian.abcd.core.ast.ClassKind;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -39,6 +40,18 @@ import org.objectweb.asm.Type;
 public class JavaBytecodeUtil implements Opcodes {
 
     private JavaBytecodeUtil() {
+    }
+
+    public static ClassKind getKind(int access) {
+        if ((access & ACC_INTERFACE) != 0) {
+            return ClassKind.INTERFACE;
+        } else if ((access & ACC_ANNOTATION) != 0) {
+            return ClassKind.ANNOTATION;
+        } else if ((access & ACC_ENUM) != 0) {
+            return ClassKind.ENUM;
+        } else {
+            return ClassKind.CLASS;
+        }
     }
 
     public static Set<Modifier> getModifiers(int access) {

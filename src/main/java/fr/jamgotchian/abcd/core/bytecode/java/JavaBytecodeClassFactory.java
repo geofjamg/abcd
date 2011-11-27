@@ -21,6 +21,7 @@ import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
 import fr.jamgotchian.abcd.core.ast.Field;
 import fr.jamgotchian.abcd.core.ast.Package;
 import fr.jamgotchian.abcd.core.ast.Class;
+import fr.jamgotchian.abcd.core.ast.ClassKind;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.expr.Expression;
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
@@ -79,9 +80,12 @@ public class JavaBytecodeClassFactory implements ClassFactory {
             superClassName = importManager.newClassName(cn.superName.replace('/', '.'));
         }
 
+        // class kind
+        ClassKind kind = JavaBytecodeUtil.getKind(cn.access);
+
         // class modifiers
-        Set<Modifier> classModifiers = JavaBytecodeUtil.getModifiers(cn.access);
-        classModifiers.remove(Modifier.SYNCHRONIZED); // ???
+        Set<Modifier> modifiers = JavaBytecodeUtil.getModifiers(cn.access);
+        modifiers.remove(Modifier.SYNCHRONIZED); // ???
 
         // implemented interfaces
         List<ClassName> interfaceNames = new ArrayList<ClassName>();
@@ -90,7 +94,7 @@ public class JavaBytecodeClassFactory implements ClassFactory {
         }
 
         Class _class = new Class(_package, simpleClassName, superClassName,
-                                 interfaceNames, classModifiers);
+                                 interfaceNames, kind, modifiers);
 
         // fields
         for (FieldNode fn : (List<FieldNode>) cn.fields) {

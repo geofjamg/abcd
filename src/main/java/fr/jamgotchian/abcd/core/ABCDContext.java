@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core;
 import fr.jamgotchian.abcd.core.Summary.ErrorInfo;
 import fr.jamgotchian.abcd.core.ast.AbstractSyntaxTreeBuilder;
 import fr.jamgotchian.abcd.core.ast.Class;
+import fr.jamgotchian.abcd.core.ast.ClassKind;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
@@ -188,8 +189,8 @@ public class ABCDContext {
             Method method = methodFactory.createMethod(importManager);
             _class.addMethod(method);
 
-            // TODO : interfaces and abstract methods
-            if (method.getModifiers().contains(Modifier.ABSTRACT)) {
+            if (_class.getKind() == ClassKind.INTERFACE
+                    || method.getModifiers().contains(Modifier.ABSTRACT)) {
                 continue;
             }
 

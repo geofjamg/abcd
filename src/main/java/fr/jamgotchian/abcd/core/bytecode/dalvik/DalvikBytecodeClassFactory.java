@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.bytecode.dalvik;
 
 import fr.jamgotchian.abcd.core.ast.Class;
+import fr.jamgotchian.abcd.core.ast.ClassKind;
 import fr.jamgotchian.abcd.core.ast.Field;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.ast.Package;
@@ -77,7 +78,8 @@ public class DalvikBytecodeClassFactory implements ClassFactory {
                     = importManager.newClassName(Type.getType(item.getSuperclass().getTypeDescriptor()).getClassName());
         }
         AccessFlags[] accessFlags = AccessFlags.getAccessFlagsForClass(item.getAccessFlags());
-        Set<Modifier> classModifiers = DalvikBytecodeUtil.getModifiers(accessFlags);
+        ClassKind kind = DalvikBytecodeUtil.getKind(accessFlags);
+        Set<Modifier> modifiers = DalvikBytecodeUtil.getModifiers(accessFlags);
         List<ClassName> interfaceNames = new ArrayList<ClassName>();
         if (item.getInterfaces() != null) {
             for (TypeIdItem interfaceType : item.getInterfaces().getTypes()) {
@@ -88,7 +90,7 @@ public class DalvikBytecodeClassFactory implements ClassFactory {
         }
 
         Class _class = new Class(_package, simpleClassName, superClassName,
-                                 interfaceNames, classModifiers);
+                                 interfaceNames, kind, modifiers);
 
         for (EncodedField encodedField : item.getClassData().getInstanceFields()) {
             _class.addField(createField(encodedField, importManager));

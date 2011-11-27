@@ -35,6 +35,8 @@ public class Class {
 
     private final ClassName superName;
 
+    private final ClassKind kind;
+
     private final Set<Modifier> modifiers;
 
     private final List<ClassName> interfaces;
@@ -46,12 +48,14 @@ public class Class {
     private final List<Method> methods;
 
     public Class(Package _package, String name, ClassName superName,
-                 List<ClassName> interfaces, Set<Modifier> modifiers) {
+                 List<ClassName> interfaces, ClassKind kind,
+                 Set<Modifier> modifiers) {
         this._package = _package;
         this.name = name;
         this.superName = superName;
-        this.modifiers = modifiers;
         this.interfaces = interfaces;
+        this.kind = kind;
+        this.modifiers = modifiers;
         fields = new ArrayList<Field>();
         innerClasses = new ArrayList<Class>();
         methods = new ArrayList<Method>();
@@ -71,6 +75,10 @@ public class Class {
 
     public ClassName getSuperName() {
         return superName;
+    }
+
+    public ClassKind getKind() {
+        return kind;
     }
 
     public Set<Modifier> getModifiers() {

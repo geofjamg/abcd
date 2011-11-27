@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.ast.util;
 
 import fr.jamgotchian.abcd.core.ast.Class;
+import fr.jamgotchian.abcd.core.ast.ClassKind;
 import fr.jamgotchian.abcd.core.ast.ClassVisitor;
 import fr.jamgotchian.abcd.core.ast.Field;
 import fr.jamgotchian.abcd.core.ast.Method;
@@ -52,7 +53,27 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
         for (Modifier mod : _class.getModifiers()) {
             writer.write(mod).writeSpace();
         }
-        writer.writeKeyword("class").writeSpace().write(_class.getName());
+        switch (_class.getKind()) {
+            case ANNOTATION:
+                writer.writeKeyword("@interface");
+                break;
+
+            case INTERFACE:
+                writer.writeKeyword("interface");
+                break;
+
+            case ENUM:
+                writer.writeKeyword("enum");
+                break;
+
+            case CLASS:
+                writer.writeKeyword("class");
+                break;
+
+            default:
+                throw new InternalError();
+        }
+        writer.writeSpace().write(_class.getName());
         if (_class.getSuperName() != null
                 && !Object.class.getName().equals(_class.getSuperName().getQualifiedName())) {
             writer.incrIndent();
@@ -138,10 +159,15 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
                     }
                 }
             }
-            writer.writeSpace();
             writer.decrIndent();
         }
-        method.getBody().accept(stmtVisitor, null);
+        if (method.getClazz().getKind() == ClassKind.INTERFACE
+                || method.getModifiers().contains(Modifier.ABSTRACT)) {
+            writer.write(";");
+        } else {
+            writer.writeSpace();
+            method.getBody().accept(stmtVisitor, null);
+        }
         return null;
     }
 }

@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.bytecode.dalvik;
 
+import fr.jamgotchian.abcd.core.ast.ClassKind;
 import fr.jamgotchian.abcd.core.bytecode.java.JavaBytecodeUtil;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -33,6 +34,20 @@ import org.objectweb.asm.Type;
 public class DalvikBytecodeUtil {
 
     private DalvikBytecodeUtil() {
+    }
+
+    public static ClassKind getKind(AccessFlags[] accessFlags) {
+        for (AccessFlags f : accessFlags) {
+            switch (f) {
+                case ANNOTATION:
+                    return ClassKind.ANNOTATION;
+                case INTERFACE:
+                    return ClassKind.INTERFACE;
+                case ENUM:
+                    return ClassKind.ENUM;
+            }
+        }
+        return ClassKind.CLASS;
     }
 
     public static Set<Modifier> getModifiers(AccessFlags[] accessFlags) {
@@ -94,7 +109,7 @@ public class DalvikBytecodeUtil {
                     // TODO
                     break;
                 case VOLATILE:
-                    // TODO
+                    modifiers.add(Modifier.VOLATILE);
                     break;
                 default:
                     throw new InternalError();
