@@ -37,7 +37,7 @@ import org.junit.Test;
  */
 public class RPSTTest {
 
-    private static final Logger logger = Logger.getLogger(RPSTTest.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RPSTTest.class.getName());
 
     public RPSTTest() {
     }

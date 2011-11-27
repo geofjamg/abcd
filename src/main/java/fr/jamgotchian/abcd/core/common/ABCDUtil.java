@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  */
 public class ABCDUtil {
 
-    private static final Logger logger = Logger.getLogger(ABCDUtil.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ABCDUtil.class.getName());
 
     private static final String UNDEFINED = "UNDEFINED";
 
@@ -47,7 +47,7 @@ public class ABCDUtil {
                 version = props.getProperty("abcd.version", UNDEFINED);
                 homePage = props.getProperty("abcd.homePage", UNDEFINED);
             } catch(IOException e) {
-                logger.log(Level.SEVERE, e.toString(), e);
+                LOGGER.log(Level.SEVERE, e.toString(), e);
             }
         }
         VERSION = version;

@@ -38,7 +38,7 @@ import org.junit.Test;
  */
 public class SSAFormConverterTest {
 
-    private static final Logger logger = Logger.getLogger(SSAFormConverterTest.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SSAFormConverterTest.class.getName());
 
     private IRInstFactory instFactory;
 

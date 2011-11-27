@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  */
 public class RPST {
 
-    private static final Logger logger = Logger.getLogger(RPST.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RPST.class.getName());
 
     private static final EdgeGraphvizRenderer EDGE_GRAPHVIZ_RENDERER
             = new EdgeGraphvizRenderer(true);
@@ -165,7 +165,7 @@ public class RPST {
         if (!bb2region.containsKey(entry)) {
             bb2region.put(entry, newRegion);
         }
-        logger.log(Level.FINER, "New Region {0}", newRegion);
+        LOGGER.log(Level.FINER, "New Region {0}", newRegion);
         return newRegion;
     }
 
@@ -179,11 +179,11 @@ public class RPST {
                 Region newRegion = createRegion(entry, exit);
                 if (lastRegion != null) {
                     lastRegion.setParent(newRegion);
-                     logger.log(Level.FINEST, "Parent of region {0} is {1}",
+                     LOGGER.log(Level.FINEST, "Parent of region {0} is {1}",
                             new Object[] {lastRegion, newRegion});
                 } else {
                     entry.setParent(newRegion);
-                    logger.log(Level.FINEST, "Parent of BB {0} is {1}",
+                    LOGGER.log(Level.FINEST, "Parent of BB {0} is {1}",
                             new Object[] {entry, newRegion});
                 }
                 lastRegion = newRegion;
@@ -219,12 +219,12 @@ public class RPST {
         Region newRegion = bb2region.get(bb);
         if (newRegion != null) {
             Region topMostParent = getTopMostParent(newRegion);
-            logger.log(Level.FINEST, "Parent of region {0} is {1}",
+            LOGGER.log(Level.FINEST, "Parent of region {0} is {1}",
                     new Object[] {topMostParent, region});
             topMostParent.setParent(region);
             region = newRegion;
         } else {
-            logger.log(Level.FINEST, "Parent of BB {0} is {1}",
+            LOGGER.log(Level.FINEST, "Parent of BB {0} is {1}",
                     new Object[] {bb, newRegion});
             bb.setParent(region);
             bb2region.put(bb, region);
@@ -280,7 +280,7 @@ public class RPST {
                                 Region newRegion = new Region(child1.getEntry(),
                                                               child2.getExit(),
                                                               ParentType.UNDEFINED);
-                                logger.log(Level.FINER, "New non canonical region {0}", newRegion);
+                                LOGGER.log(Level.FINER, "New non canonical region {0}", newRegion);
                                 child1.setParent(newRegion);
                                 child2.setParent(newRegion);
                                 newRegion.setParent(region);
@@ -330,7 +330,7 @@ public class RPST {
         try {
             print(out, rootRegion, 0);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, e.toString(), e);
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         }
     }
 
@@ -411,13 +411,13 @@ public class RPST {
             writer = new FileWriter(fileName);
             export(writer);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, e.toString(), e);
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE, e.toString(), e);
+                    LOGGER.log(Level.SEVERE, e.toString(), e);
                 }
             }
         }

@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  */
 public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBlock, Edge, Set<Integer>> {
 
-    private static final Logger logger
+    private static final Logger LOGGER
             = Logger.getLogger(ReachingDefinitionsAnalysis.class.getName());
 
     private final Map<Integer, VariableID> defs = new HashMap<Integer, VariableID>();
@@ -53,9 +53,9 @@ public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBl
     @Override
     public Map<BasicBlock, Set<Integer>> analyse() {
         Map<BasicBlock, Set<Integer>> reachingDefs  = super.analyse();
-        logger.log(Level.FINER, "Reaching defintions analysis :");
+        LOGGER.log(Level.FINER, "Reaching defintions analysis :");
         for (Map.Entry<BasicBlock, Set<Integer>> entry : reachingDefs.entrySet()) {
-            logger.log(Level.FINER, "  {0} : {1}",
+            LOGGER.log(Level.FINER, "  {0} : {1}",
                     new Object[] {entry.getKey(), entry.getValue()});
         }
         return reachingDefs;

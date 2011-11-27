@@ -54,7 +54,7 @@ public class TextCodeWriter extends CodeWriter {
         try {
             writer.write(" ");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }
@@ -63,7 +63,7 @@ public class TextCodeWriter extends CodeWriter {
         try {
             writer.append("<");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }
@@ -72,7 +72,7 @@ public class TextCodeWriter extends CodeWriter {
         try {
             writer.append(">");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }
@@ -81,7 +81,7 @@ public class TextCodeWriter extends CodeWriter {
         try {
             writer.append("&");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }

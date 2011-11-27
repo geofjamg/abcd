@@ -48,7 +48,7 @@ public class DOTHTMLLikeCodeWriter extends HTMLCodeWriter {
             }
             writer.write("<tr><td align=\"left\" balign=\"left\">");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
     }
 
@@ -67,7 +67,7 @@ public class DOTHTMLLikeCodeWriter extends HTMLCodeWriter {
             }
             writer.write("</table>");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
     }
 
@@ -81,7 +81,7 @@ public class DOTHTMLLikeCodeWriter extends HTMLCodeWriter {
         try {
             writer.write(" ");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }
@@ -93,13 +93,13 @@ public class DOTHTMLLikeCodeWriter extends HTMLCodeWriter {
             writer.write(getColorStr(Color.BLUE));
             writer.write("\">");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         write(keyword);
         try {
             writer.write("</font>");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }

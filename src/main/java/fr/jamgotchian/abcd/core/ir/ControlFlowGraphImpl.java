@@ -52,7 +52,7 @@ import java.util.logging.Logger;
  */
 public class ControlFlowGraphImpl implements ControlFlowGraph {
 
-    private static final Logger logger = Logger.getLogger(ControlFlowGraphImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ControlFlowGraphImpl.class.getName());
 
     private static final IRGraphvizRenderer IR_GRAPHVIZ_RENDERER
             = new IRGraphvizRenderer();
@@ -334,7 +334,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             }
 
             if (index <= blockBefore.getRange().getLast()) {
-                logger.log(Level.FINEST, "  Split {0} at {1}", new Object[]{blockBefore, index});
+                LOGGER.log(Level.FINEST, "  Split {0} at {1}", new Object[]{blockBefore, index});
 
                 int last = blockBefore.getRange().getLast();
 
@@ -376,7 +376,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     public Edge addEdge(BasicBlock source, BasicBlock target, boolean exceptional) {
         Edge edge = graph.getEdge(source, target);
         if (edge == null) {
-            logger.log(Level.FINEST, "  Create edge between {0} and {1}",
+            LOGGER.log(Level.FINEST, "  Create edge between {0} and {1}",
                     new Object[] {source, target});
             edge = EDGE_FACTORY.createEdge();
             if (exceptional) {
@@ -392,7 +392,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public boolean removeEdge(BasicBlock source, BasicBlock target) {
-        logger.log(Level.FINEST, "  Remove edge between {0} and {1}", new Object[]{source, target});
+        LOGGER.log(Level.FINEST, "  Remove edge between {0} and {1}", new Object[]{source, target});
 
         return graph.removeEdge(source, target);
     }
@@ -418,7 +418,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     public void updateLoopInfo() {
-        logger.log(Level.FINER, "Update loop info");
+        LOGGER.log(Level.FINER, "Update loop info");
         performDepthFirstSearch();
         for (Edge e : getEdges()) {
             e.resetState();
@@ -439,8 +439,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             block.setOrder(order++);
         }
 
-        logger.log(Level.FINEST, "Perform reverse post order DFS");
-        logger.log(Level.FINEST, "DFST : \n{0}", Trees.toString(dfst));
+        LOGGER.log(Level.FINEST, "Perform reverse post order DFS");
+        LOGGER.log(Level.FINEST, "DFST : \n{0}", Trees.toString(dfst));
     }
 
     /**
@@ -456,7 +456,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 graph.removeVertex(block);
                 removed = true;
 
-                logger.log(Level.FINER, "Remove unreachable block {0}", block);
+                LOGGER.log(Level.FINER, "Remove unreachable block {0}", block);
             }
         }
         return removed;
@@ -504,7 +504,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             // move attributes and data to the successor
             successor.putProperties(bb.getProperties());
 
-            logger.log(Level.FINER, "Remove unnecessary BB {0}", bb);
+            LOGGER.log(Level.FINER, "Remove unnecessary BB {0}", bb);
         }
 
         return toRemove.size() > 0;
@@ -533,7 +533,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
         // remove critical edges
         for (Edge criticalEdge : criticalEdges) {
-            logger.log(Level.FINER, "Remove critical edge {0}",
+            LOGGER.log(Level.FINER, "Remove critical edge {0}",
                     graph.toString(criticalEdge));
             BasicBlock source = graph.getEdgeSource(criticalEdge);
             BasicBlock target = graph.getEdgeTarget(criticalEdge);
@@ -554,7 +554,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             BasicBlock head = entry.getKey();
             Collection<NaturalLoop> naturalLoopsWithSameHeader = entry.getValue();
             if (naturalLoopsWithSameHeader.size() > 1) {
-                logger.log(Level.FINEST, "Merge natural loops {0}", naturalLoopsWithSameHeader);
+                LOGGER.log(Level.FINEST, "Merge natural loops {0}", naturalLoopsWithSameHeader);
                 BasicBlock empty = new BasicBlockImpl(BasicBlockType.EMPTY);
                 addBasicBlock(empty);
                 addEdge(empty, head).addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
@@ -597,7 +597,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 e.addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
             }
 
-            logger.log(Level.FINEST, "Edge Category of {0} : {1}",
+            LOGGER.log(Level.FINEST, "Edge Category of {0} : {1}",
                     new Object[] {graph.toString(e), e.getCategory()});
         }
     }
@@ -618,12 +618,12 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                     NaturalLoop nl = new NaturalLoop(head, tail, new HashSet<BasicBlock>(body));
                     naturalLoops.put(head, nl);
                     e.addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
-                    logger.log(Level.FINER, " Found natural loop : {0}", nl);
+                    LOGGER.log(Level.FINER, " Found natural loop : {0}", nl);
                     break;
                 }
 
                 case RETREATING: {
-                    logger.warning("Irreducible control flow detected");
+                    LOGGER.warning("Irreducible control flow detected");
                 }
             }
         }
@@ -647,14 +647,14 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
                 NaturalLoop nl = new NaturalLoop(block, block, Collections.singleton(block));
                 naturalLoops.put(nl.getHead(), nl);
-                logger.log(Level.FINER, " Found self loop : {0}", nl);
+                LOGGER.log(Level.FINER, " Found self loop : {0}", nl);
 
                 block.setLoopLevel(block.getLoopLevel()+1);
             }
         }
 
         for (BasicBlock block : dfst.getNodes()) {
-            logger.log(Level.FINEST, "Loop level of {0} : {1}",
+            LOGGER.log(Level.FINEST, "Loop level of {0} : {1}",
                     new Object[] {block, block.getLoopLevel()});
         }
 
@@ -663,7 +663,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 for (Edge e : graph.getOutgoingEdgesOf(bb)) {
                     BasicBlock t = graph.getEdgeTarget(e);
                     if (!nl.getBody().contains(t)) {
-                        logger.log(Level.FINEST, "Loop exit edge {0}", graph.toString(e));
+                        LOGGER.log(Level.FINEST, "Loop exit edge {0}", graph.toString(e));
                         e.addAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
                         nl.getExits().add(e);
                     }
@@ -689,13 +689,13 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             writer = new FileWriter(fileName);
             export(writer);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, e.toString(), e);
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE, e.toString(), e);
+                    LOGGER.log(Level.SEVERE, e.toString(), e);
                 }
             }
         }

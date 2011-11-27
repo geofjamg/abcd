@@ -43,7 +43,7 @@ import java.util.logging.Logger;
  */
 public class IntermediateRepresentationBuilder {
 
-    private static final Logger logger
+    private static final Logger LOGGER
             = Logger.getLogger(IntermediateRepresentationBuilder.class.getName());
 
     private final StringConst magicString;
@@ -101,7 +101,7 @@ public class IntermediateRepresentationBuilder {
 
     private void processBB(BasicBlock bb, List<VariableStack> inputStacks) {
 
-        logger.log(Level.FINER, "Process {0}", bb);
+        LOGGER.log(Level.FINER, "Process {0}", bb);
 
         VariableStack inputStack = null;
 
@@ -136,7 +136,7 @@ public class IntermediateRepresentationBuilder {
         bb.setInputStack(inputStack.clone());
 
         if (bb.getInputStack().size() > 0) {
-            logger.log(Level.FINEST, ">>> Input stack : {0}", bb.getInputStack());
+            LOGGER.log(Level.FINEST, ">>> Input stack : {0}", bb.getInputStack());
         }
 
         VariableStack outputStack = inputStack.clone();
@@ -145,7 +145,7 @@ public class IntermediateRepresentationBuilder {
         bb.setOutputStack(outputStack);
 
         if (bb.getOutputStack().size() > 0) {
-            logger.log(Level.FINEST, "<<< Output stack : {0}", bb.getOutputStack());
+            LOGGER.log(Level.FINEST, "<<< Output stack : {0}", bb.getOutputStack());
         }
     }
 
@@ -231,10 +231,10 @@ public class IntermediateRepresentationBuilder {
 
                 if (remove) {
                     ((ExceptionHandlerInfo) bb.getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY)).setVariable(excVar);
-                    logger.log(Level.FINEST, "Cleanup exception handler (bb={0}, excVar={1}) :",
+                    LOGGER.log(Level.FINEST, "Cleanup exception handler (bb={0}, excVar={1}) :",
                             new Object[] {bb, excVar});
-                    logger.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst));
-                    logger.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst2));
+                    LOGGER.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst));
+                    LOGGER.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst2));
                     inst.setIgnored(true);
                     inst2.setIgnored(true);
                 }
@@ -262,9 +262,9 @@ public class IntermediateRepresentationBuilder {
                 }
 
                 if (remove) {
-                    logger.log(Level.FINEST, "Cleanup finally rethrow (excVar={0}) :", excVar);
-                    logger.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst));
-                    logger.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst2));
+                    LOGGER.log(Level.FINEST, "Cleanup finally rethrow (excVar={0}) :", excVar);
+                    LOGGER.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst));
+                    LOGGER.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst2));
                     inst.setIgnored(true);
                     inst2.setIgnored(true);
                 }
@@ -273,7 +273,7 @@ public class IntermediateRepresentationBuilder {
     }
 
     private void buildInst() {
-        ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Build instructions of {0}",
+        ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Build instructions of {0}",
                 '=', cfg.getName());
 
         for (BasicBlock bb : cfg.getBasicBlocks()) {
@@ -307,7 +307,7 @@ public class IntermediateRepresentationBuilder {
      * Replace choice instructions by conditional instructions (ternary operator)
      */
     public void resolveChoiceInst() {
-        ConsoleUtil.logTitledSeparator(logger, Level.FINE,
+        ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE,
                 "Resolve choice instructions of {0}", '=', cfg.getName());
 
         for (BasicBlock joinBlock : cfg.getDFST()) {
@@ -370,14 +370,14 @@ public class IntermediateRepresentationBuilder {
                                     Variable resultVar = choiceInst.getResult();
                                     ConditionalInst condInst
                                             = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
-                                    logger.log(Level.FINER, "Replace inst at {0} of {1} : {2}",
+                                    LOGGER.log(Level.FINER, "Replace inst at {0} of {1} : {2}",
                                             new Object[]{i, joinBlock, IRInstWriter.toText(condInst)});
                                     condInsts.add(condInst);
                                 } else {
                                     Variable resultVar = tmpVarFactory.create(forkBlock);
                                     ConditionalInst condInst
                                             = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
-                                    logger.log(Level.FINER, "Insert inst at {0} of {1} : {2}",
+                                    LOGGER.log(Level.FINER, "Insert inst at {0} of {1} : {2}",
                                             new Object[]{i, joinBlock, IRInstWriter.toText(condInst)});
                                     condInsts.add(condInst);
                                     choiceInst.getChoices().add(resultVar);
@@ -419,14 +419,14 @@ public class IntermediateRepresentationBuilder {
                     && insts.getLast() instanceof ThrowInst) {
                 Edge fakeEdge = cfg.addEdge(bb, cfg.getExitBlock());
                 fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                logger.log(Level.FINEST, "Add fake edge {0}", cfg.toString(fakeEdge));
+                LOGGER.log(Level.FINEST, "Add fake edge {0}", cfg.toString(fakeEdge));
             }
         }
         for (NaturalLoop loop : cfg.getNaturalLoops().values()) {
             if (loop.getExits().isEmpty()) { // infinite loop
                 Edge fakeEdge = cfg.addEdge(loop.getHead(), cfg.getExitBlock());
                 fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                logger.log(Level.FINEST, "Add fake edge {0}", cfg.toString(fakeEdge));
+                LOGGER.log(Level.FINEST, "Add fake edge {0}", cfg.toString(fakeEdge));
             }
         }
     }
@@ -468,7 +468,7 @@ public class IntermediateRepresentationBuilder {
             positionColumn.add(Integer.toString(v.getPosition()));
             nameColumn.add(v.getName() != null ? v.getName() : "<undefined>");
         }
-        logger.log(Level.FINEST, "Variable names :\n{0}",
+        LOGGER.log(Level.FINEST, "Variable names :\n{0}",
                 ConsoleUtil.printTable(variableColumn, positionColumn, nameColumn));
     }
 

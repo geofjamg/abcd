@@ -40,7 +40,7 @@ import java.util.logging.Logger;
  */
 public class IRInstWriter implements IRInstVisitor<Void, Void> {
 
-    private static final Logger logger = Logger.getLogger(IRInstWriter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(IRInstWriter.class.getName());
 
     public static String toString(IRInst inst, CodeWriterFactory factory) {
         Writer writer = new StringWriter();
@@ -50,7 +50,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
             try {
                 writer.close();
             } catch (IOException e) {
-                logger.log(Level.SEVERE, e.toString(), e);
+                LOGGER.log(Level.SEVERE, e.toString(), e);
             }
         }
         return writer.toString();
@@ -96,7 +96,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
             try {
                 writer.close();
             } catch (IOException e) {
-                logger.log(Level.SEVERE, e.toString(), e);
+                LOGGER.log(Level.SEVERE, e.toString(), e);
             }
         }
         return writer.toString();

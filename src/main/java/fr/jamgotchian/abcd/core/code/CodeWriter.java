@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  */
 public abstract class CodeWriter {
 
-    protected static final Logger logger = Logger.getLogger(CodeWriter.class.getName());
+    protected static final Logger LOGGER = Logger.getLogger(CodeWriter.class.getName());
 
     private static final int INDEX_PADDING = 4;
 
@@ -86,7 +86,7 @@ public abstract class CodeWriter {
         try {
             writeEol();
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         indentNeeded = true;
         return this;
@@ -144,7 +144,7 @@ public abstract class CodeWriter {
         try {
             writer.write(str);
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }

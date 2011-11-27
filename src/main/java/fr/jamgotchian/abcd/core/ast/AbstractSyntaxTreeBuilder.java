@@ -110,7 +110,7 @@ import java.util.logging.Logger;
  */
 public class AbstractSyntaxTreeBuilder {
 
-    private static final Logger logger = Logger.getLogger(AbstractSyntaxTreeBuilder.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AbstractSyntaxTreeBuilder.class.getName());
 
     private final ControlFlowGraph cfg;
 
@@ -562,7 +562,7 @@ public class AbstractSyntaxTreeBuilder {
     }
 
     private void buildAST(Region region, BlockStatement blockStmt) {
-        logger.log(Level.FINEST, "Build AST from region {0} {1}",
+        LOGGER.log(Level.FINEST, "Build AST from region {0} {1}",
                 new Object[] {region, region.getParentType()});
 
         switch (region.getParentType()) {

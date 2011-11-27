@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  */
 public class LocalVariableTypeAnalyser {
 
-    private static final Logger logger
+    private static final Logger LOGGER
             = Logger.getLogger(LocalVariableTypeAnalyser.class.getName());
 
     private final ControlFlowGraph graph;
@@ -425,7 +425,7 @@ public class LocalVariableTypeAnalyser {
             typeColumn.add(builder.toString());
         }
 
-        logger.log(Level.FINEST, "Variable types :\n{0}",
+        LOGGER.log(Level.FINEST, "Variable types :\n{0}",
                 ConsoleUtil.printTable(indexColumn, typeColumn));
     }
 
@@ -459,10 +459,10 @@ public class LocalVariableTypeAnalyser {
                         v.setType(types.iterator().next());
                     } else {
                         if (types.isEmpty()) {
-                            logger.log(Level.WARNING, "Unable to find type of variable {0}",
+                            LOGGER.log(Level.WARNING, "Unable to find type of variable {0}",
                                     v.getID());
                         } else {
-                            logger.log(Level.WARNING, "Multiple type found for variable {0} : {1}",
+                            LOGGER.log(Level.WARNING, "Multiple type found for variable {0} : {1}",
                                 new Object[] {v.getID(), types});
                         }
                     }

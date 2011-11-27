@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  */
 public class PostDominatorInfo<N, E> {
 
-    private static final Logger logger = Logger.getLogger(PostDominatorInfo.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PostDominatorInfo.class.getName());
 
     private final DirectedGraph<N, E> graph;
 
@@ -117,11 +117,11 @@ public class PostDominatorInfo<N, E> {
                     }
                 }
                 if (!found) {
-                    logger.log(Level.WARNING, "Cannot find immediate post dominator of {0}",  n);
+                    LOGGER.log(Level.WARNING, "Cannot find immediate post dominator of {0}",  n);
                 }
             }
         }
-        logger.log(Level.FINEST, "Immediate post dominators {0}", immediatePostDominator);
+        LOGGER.log(Level.FINEST, "Immediate post dominators {0}", immediatePostDominator);
     }
 
     private void computePostDominanceFrontier() {
@@ -140,18 +140,18 @@ public class PostDominatorInfo<N, E> {
                 }
             }
 
-            logger.log(Level.FINEST, "Post dominance frontier of {0} : {1}",
+            LOGGER.log(Level.FINEST, "Post dominance frontier of {0} : {1}",
                     new Object[] {x, graph.toString(postDominanceFrontierOf.get(x))});
        }
     }
 
     public void update() {
-        logger.log(Level.FINER, "Update post dominator info");
+        LOGGER.log(Level.FINER, "Update post dominator info");
 
         // find post-dominators
         postDominatorsOf = new PostDominatorsFinder<N, E>(graph, exitNode).analyse();
         for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
-            logger.log(Level.FINEST, "Post-dominators of {0} : {1}",
+            LOGGER.log(Level.FINEST, "Post-dominators of {0} : {1}",
                     new Object[] {entry.getKey(), entry.getValue()});
         }
 
@@ -163,7 +163,7 @@ public class PostDominatorInfo<N, E> {
             }
         }
         if (notPostDominatedByExit.size() > 0) {
-            logger.log(Level.WARNING, "Exit node do not post-dominate every other nodes : {0}"
+            LOGGER.log(Level.WARNING, "Exit node do not post-dominate every other nodes : {0}"
                     , notPostDominatedByExit);
         }
 
@@ -174,7 +174,7 @@ public class PostDominatorInfo<N, E> {
             for (N node2 : entry.getValue()) {
                 if (!node.equals(node2)) {
                     if (postDominatorsOf.get(node2).contains(node)) {
-                        logger.log(Level.WARNING,
+                        LOGGER.log(Level.WARNING,
                                 "Detect post dominance cycle : {0} <-> {1}"
                                 , new Object[] {node, node2});
 
@@ -192,7 +192,7 @@ public class PostDominatorInfo<N, E> {
             children.put(entry.getValue(), entry.getKey());
         }
         DominatorInfo.buildTree(exitNode, postDominatorsTree, children, factory);
-        logger.log(Level.FINEST, "Post dominators tree :\n{0}", Trees.toString(postDominatorsTree));
+        LOGGER.log(Level.FINEST, "Post dominators tree :\n{0}", Trees.toString(postDominatorsTree));
 
         // compute post dominance frontier
         computePostDominanceFrontier();

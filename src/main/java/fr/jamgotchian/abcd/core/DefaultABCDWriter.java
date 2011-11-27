@@ -40,7 +40,7 @@ import java.util.logging.Logger;
  */
 public class DefaultABCDWriter implements ABCDWriter {
 
-    protected final static Logger logger
+    protected final static Logger LOGGER
             = Logger.getLogger(DefaultABCDWriter.class.getName());
 
     private final boolean debug;
@@ -88,7 +88,7 @@ public class DefaultABCDWriter implements ABCDWriter {
                 writer.close();
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, e.toString(), e);
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         }
     }
 }

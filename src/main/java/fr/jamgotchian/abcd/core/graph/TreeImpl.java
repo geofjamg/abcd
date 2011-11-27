@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  */
 class TreeImpl<N, E> implements MutableTree<N, E> {
 
-    private static final Logger logger = Logger.getLogger(TreeImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TreeImpl.class.getName());
 
     private final GraphvizRenderer<N> NODE_GRAPHVIZ_RENDERER
             = new DefaultGraphvizRenderer<N>();
@@ -315,13 +315,13 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             writer = new FileWriter(fileName);
             export(writer, name, nodeRenderer, edgeRenderer);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, e.toString(), e);
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE, e.toString(), e);
+                    LOGGER.log(Level.SEVERE, e.toString(), e);
                 }
             }
         }
@@ -333,13 +333,13 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             writer = new FileWriter(fileName);
             export(writer, name);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, e.toString(), e);
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE, e.toString(), e);
+                    LOGGER.log(Level.SEVERE, e.toString(), e);
                 }
             }
         }

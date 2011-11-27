@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  */
 public abstract class ControlFlowGraphBuilder {
 
-    private static final Logger logger
+    private static final Logger LOGGER
             = Logger.getLogger(ControlFlowGraphBuilder.class.getName());
 
     private final String methodName;
@@ -43,7 +43,7 @@ public abstract class ControlFlowGraphBuilder {
     }
 
     public ControlFlowGraph build() {
-        ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Build CFG of {0}",
+        ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Build CFG of {0}",
                 '=', methodName);
 
         cfg = new ControlFlowGraphImpl(methodName, getInstructionCount());
@@ -100,13 +100,13 @@ public abstract class ControlFlowGraphBuilder {
     private void printExceptionTable(ExceptionTable table) {
         StringBuilder builder = new StringBuilder();
         table.print(builder);
-        logger.log(Level.FINER, "Exception table :\n{0}", builder.toString());
+        LOGGER.log(Level.FINER, "Exception table :\n{0}", builder.toString());
     }
 
     private void printLocalVariableTable(LocalVariableTable table) {
         StringBuilder builder = new StringBuilder();
         table.print(builder);
-        logger.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
+        LOGGER.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
     }
 
     protected void analyseJumpInst(int currentInstIdx, int labelInstIdx) {
@@ -129,7 +129,7 @@ public abstract class ControlFlowGraphBuilder {
 
             currentBlock.setType(BasicBlockType.JUMP_IF);
 
-            logger.log(Level.FINER, "  JumpIf : current={0}, true={1}, false={2}",
+            LOGGER.log(Level.FINER, "  JumpIf : current={0}, true={1}, false={2}",
                                      new Object[]{currentBlock, thenBlock, elseBlock});
         } else if (labelInstIdx == currentInstIdx + 1) {
             // remove unnecessary jump
@@ -158,7 +158,7 @@ public abstract class ControlFlowGraphBuilder {
 
             currentBlock.setType(BasicBlockType.JUMP_IF);
 
-            logger.log(Level.FINER, "  JumpIf : current={0}, true={1}, false={2}",
+            LOGGER.log(Level.FINER, "  JumpIf : current={0}, true={1}, false={2}",
                                      new Object[]{currentBlock, labelBlock, exitBlock});
         }
     }
@@ -182,7 +182,7 @@ public abstract class ControlFlowGraphBuilder {
 
             currentBlock.setType(BasicBlockType.GOTO);
 
-            logger.log(Level.FINER, "  Goto : current={0}, label={1}",
+            LOGGER.log(Level.FINER, "  Goto : current={0}, label={1}",
                                      new Object[]{currentBlock, labelBlock});
         }
     }
@@ -198,7 +198,7 @@ public abstract class ControlFlowGraphBuilder {
 
         returnBlock.setType(BasicBlockType.RETURN);
 
-        logger.log(Level.FINER, "  Return : current={0}", returnBlock);
+        LOGGER.log(Level.FINER, "  Return : current={0}", returnBlock);
     }
 
     protected void analyseSwitchInst(int currentInstIdx, List<Integer> caseInstnIdxs, List<CaseValues> values) {
@@ -234,7 +234,7 @@ public abstract class ControlFlowGraphBuilder {
         // necessary to tag the switch block after all case have been splitted
         switchBlock.setType(BasicBlockType.SWITCH);
 
-        logger.log(Level.FINER, "  Switch : switch={0}, cases={1}",
+        LOGGER.log(Level.FINER, "  Switch : switch={0}, cases={1}",
                 new Object[]{switchBlock, caseBlocks});
     }
 }

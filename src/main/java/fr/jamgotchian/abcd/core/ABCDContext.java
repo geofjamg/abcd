@@ -82,7 +82,7 @@ public class ABCDContext {
 
     public static final boolean DEBUG = false;
 
-    private static final Logger logger = Logger.getLogger(ABCDContext.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ABCDContext.class.getName());
 
     private static List<Refactorer> REFACTORERS = Collections.unmodifiableList(
             Arrays.<Refactorer>asList(new ForLoopRefactorer()));
@@ -148,15 +148,15 @@ public class ABCDContext {
             writer.writeAST(compilUnit);
         }
 
-        ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Summary", '#');
+        ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Summary", '#');
 
-        logger.log(Level.FINE, "Number of successes : {0}",
+        LOGGER.log(Level.FINE, "Number of successes : {0}",
                 Integer.toString(summary.getNumberOfSuccesses()));
-        logger.log(Level.FINE, "Number of failures : {0}",
+        LOGGER.log(Level.FINE, "Number of failures : {0}",
                 Integer.toString(summary.getNumberOfFailures()));
-        logger.log(Level.FINE, "Number of class perfectly decompiled : {0}",
+        LOGGER.log(Level.FINE, "Number of class perfectly decompiled : {0}",
                 Integer.toString(summary.getNumberOfClassesPerfectlyDecompiled()));
-        logger.log(Level.FINE, "Number of class partially decompiled : {0}",
+        LOGGER.log(Level.FINE, "Number of class partially decompiled : {0}",
                 Integer.toString(summary.getNumberOfClassesPartiallyDecompiled()));
         List<String> errorColumn = new ArrayList<String>(summary.getErrors().size()+1);
         List<String> classColumn = new ArrayList<String>(summary.getErrors().size()+1);
@@ -169,7 +169,7 @@ public class ABCDContext {
             classColumn.add(error.getClassName());
             methodColumn.add(error.getMethodSignature());
         }
-        logger.log(Level.FINE, "\n{0}", ConsoleUtil.printTable(errorColumn, classColumn, methodColumn));
+        LOGGER.log(Level.FINE, "\n{0}", ConsoleUtil.printTable(errorColumn, classColumn, methodColumn));
     }
 
     private Class decompileClass(ClassFactory classFactory, ImportManager importManager,
@@ -180,7 +180,7 @@ public class ABCDContext {
         ClassName thisClassName = importManager.newClassName(_class.getQualifiedName());
         JavaType thisType = JavaType.newRefType(thisClassName);
 
-        ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Decompile class {0}",
+        ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Decompile class {0}",
                 '#', _class.getQualifiedName());
 
         boolean error = false;
@@ -200,12 +200,12 @@ public class ABCDContext {
             ControlFlowGraph cfg = null;
 
             try {
-                logger.log(Level.FINE, "");
-                ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Decompile method {0}",
+                LOGGER.log(Level.FINE, "");
+                ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Decompile method {0}",
                         '%', methodSignature);
-                logger.log(Level.FINE, "");
+                LOGGER.log(Level.FINE, "");
 
-                logger.log(Level.FINER, "Bytecode :\n{0}", methodFactory.getBytecodeAsText());
+                LOGGER.log(Level.FINER, "Bytecode :\n{0}", methodFactory.getBytecodeAsText());
 
                 ControlFlowGraphBuilder cfgBuilder
                         = methodFactory.createCFGBuilder(methodSignature);
@@ -229,7 +229,7 @@ public class ABCDContext {
                                                             method.getArguments())
                         .build(writer);
 
-                ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Analyse regions of {0}",
+                ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Analyse regions of {0}",
                         '=', methodSignature);
 
                 RPST rpst = new RegionAnalysis(cfg, writer).analyse();
@@ -240,9 +240,9 @@ public class ABCDContext {
 
                 StringBuilder builder = new StringBuilder();
                 rpst.print(builder);
-                logger.log(Level.FINER, "RPST :\n{0}", builder.toString());
+                LOGGER.log(Level.FINER, "RPST :\n{0}", builder.toString());
 
-                ConsoleUtil.logTitledSeparator(logger, Level.FINE, "Build AST of {0}",
+                ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Build AST of {0}",
                         '=', methodSignature);
 
                 Region rootRegion = rpst.getRootRegion();
@@ -256,7 +256,7 @@ public class ABCDContext {
 
                 summary.incrNumberOfSuccesses();
             } catch (Throwable exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
+                LOGGER.log(Level.SEVERE, exc.toString(), exc);
 
                 method.getBody().clear();
                 StringBuilder msg = new StringBuilder();
@@ -370,7 +370,7 @@ public class ABCDContext {
                 printError(e.getMessage());
             }
         } catch (Throwable exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
     }
 }

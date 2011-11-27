@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  */
 public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, Edge, Set<Variable>> {
 
-    private static final Logger logger
+    private static final Logger LOGGER
             = Logger.getLogger(LiveVariablesAnalysis.class.getName());
 
     public LiveVariablesAnalysis(ControlFlowGraph cfg) {
@@ -58,10 +58,10 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
 
     @Override
     public Map<BasicBlock, Set<Variable>> analyse() {
-        logger.log(Level.FINER, "Live variables analysis :");
+        LOGGER.log(Level.FINER, "Live variables analysis :");
         Map<BasicBlock, Set<Variable>> liveVariables = super.analyse();
         for (Map.Entry<BasicBlock, Set<Variable>> entry : liveVariables.entrySet()) {
-            logger.log(Level.FINER, "  {0} : {1}",
+            LOGGER.log(Level.FINER, "  {0} : {1}",
                     new Object[] {entry.getKey(), entry.getValue()});
         }
         return liveVariables;

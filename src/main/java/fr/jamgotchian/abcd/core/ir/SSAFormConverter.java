@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  */
 public class SSAFormConverter {
 
-    private static final Logger logger = Logger.getLogger(SSAFormConverter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SSAFormConverter.class.getName());
 
     private final ControlFlowGraph graph;
 
@@ -91,7 +91,7 @@ public class SSAFormConverter {
                             if (liveVariables.get(y).contains(defIndex)) {
                                 y.getInstructions()
                                  .insertAt(0, instFactory.newPhi(new Variable(defIndex, y, -1), args));
-                                logger.log(Level.FINEST, "  Add Phi function to {0} for var {1}",
+                                LOGGER.log(Level.FINEST, "  Add Phi function to {0} for var {1}",
                                         new Object[] {y, defIndex});
                             }
                             phi.put(defIndex, y);
@@ -118,7 +118,7 @@ public class SSAFormConverter {
 
     private void renameVariables(int varIndex, BasicBlock n, Deque<Integer> versionStack,
                                  Counter versionCount) {
-        logger.log(Level.FINEST, "  Rename variables {0} of {1}",
+        LOGGER.log(Level.FINEST, "  Rename variables {0} of {1}",
                 new Object[] {varIndex, n});
 
         // generated version in current block
@@ -225,7 +225,7 @@ public class SSAFormConverter {
             }
         }
 
-        logger.log(Level.FINER, "Convert to SSA form");
+        LOGGER.log(Level.FINER, "Convert to SSA form");
 
         // fill map containing all definitions and its basic block
         defBlocks = HashMultimap.create();
@@ -258,7 +258,7 @@ public class SSAFormConverter {
                 }
             }
         }
-        logger.log(Level.FINEST, "Local liveness {0}", globals);
+        LOGGER.log(Level.FINEST, "Local liveness {0}", globals);
 
         insertPhiFunctions();
 

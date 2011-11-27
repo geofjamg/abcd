@@ -40,7 +40,7 @@ import org.objectweb.asm.commons.EmptyVisitor;
  */
 public class ClassFileDataSource implements DataSource {
 
-    private static final Logger logger
+    private static final Logger LOGGER
             = Logger.getLogger(ClassFileDataSource.class.getName());
 
     private final File classDir;
@@ -111,7 +111,7 @@ public class ClassFileDataSource implements DataSource {
                         cr.accept(checker, 0);
                         return checker.isInnerClass();
                     } catch (IOException e) {
-                        logger.log(Level.SEVERE, e.toString(), e);
+                        LOGGER.log(Level.SEVERE, e.toString(), e);
                     }
                 }
                 return false;

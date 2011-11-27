@@ -220,8 +220,8 @@ public class Region {
                 BasicBlock bb = entry;
                 BasicBlock otherBb = other.getEntry();
                 return IRInstComparator.equal(bb.getInstructions(),
-                                               otherBb.getInstructions(),
-                                               mapping);
+                                              otherBb.getInstructions(),
+                                              mapping);
             } else {
                 if (getChildCount() == other.getChildCount()) {
                     for (Region child : children) {

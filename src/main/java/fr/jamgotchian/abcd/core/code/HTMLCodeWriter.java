@@ -56,7 +56,7 @@ public class HTMLCodeWriter extends CodeWriter {
         try {
             writer.write("&nbsp ");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }
@@ -75,13 +75,13 @@ public class HTMLCodeWriter extends CodeWriter {
                 writer.write(Colors.toString(Color.LIGHT_GRAY));
                 writer.write("\">");
             } catch(IOException exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
+                LOGGER.log(Level.SEVERE, exc.toString(), exc);
             }
             super.write(str);
             try {
                 writer.write("</font>");
             } catch(IOException exc) {
-                logger.log(Level.SEVERE, exc.toString(), exc);
+                LOGGER.log(Level.SEVERE, exc.toString(), exc);
             }
         }
         return this;
@@ -92,13 +92,13 @@ public class HTMLCodeWriter extends CodeWriter {
         try {
             writer.write("<font color=\"gray\">");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         super.writeIndex(index);
         try {
             writer.write("</font>");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }
@@ -110,13 +110,13 @@ public class HTMLCodeWriter extends CodeWriter {
             writer.write(getColorStr(Color.GREEN));
             writer.write("\">");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         super.writeLabel(label);
         try {
             writer.write("</font>");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }
@@ -126,13 +126,13 @@ public class HTMLCodeWriter extends CodeWriter {
         try {
             writer.write("<b>");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         super.writeKeyword(keyword);
         try {
             writer.write("</b>");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }
@@ -144,13 +144,13 @@ public class HTMLCodeWriter extends CodeWriter {
             writer.write(getColorStr(Color.MAGENTA));
             writer.write("\">");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         super.writeQuotedString(str);
         try {
             writer.write("</font>");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }
@@ -159,7 +159,7 @@ public class HTMLCodeWriter extends CodeWriter {
         try {
             writer.append("&lt;");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }
@@ -168,7 +168,7 @@ public class HTMLCodeWriter extends CodeWriter {
         try {
             writer.append("&gt;");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }
@@ -177,7 +177,7 @@ public class HTMLCodeWriter extends CodeWriter {
         try {
             writer.append("&amp;");
         } catch(IOException exc) {
-            logger.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.log(Level.SEVERE, exc.toString(), exc);
         }
         return this;
     }

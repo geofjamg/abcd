@@ -88,7 +88,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
                 writer.close();
             }
         } catch (IOException e) {
-            logger.log(Level.SEVERE, e.toString(), e);
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         }
     }
 
@@ -140,7 +140,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
                 writer.close();
             }
         } catch (IOException e) {
-            logger.log(Level.SEVERE, e.toString(), e);
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         }
     }
 
@@ -158,7 +158,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
                 writer.close();
             }
         } catch (IOException e) {
-            logger.log(Level.SEVERE, e.toString(), e);
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         }
     }
 }

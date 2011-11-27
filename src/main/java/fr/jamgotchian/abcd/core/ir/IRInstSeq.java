@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  */
 public class IRInstSeq implements Iterable<IRInst> {
 
-    private static final Logger logger = Logger.getLogger(IRInstSeq.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(IRInstSeq.class.getName());
 
     private final List<IRInst> insts;
 
@@ -47,7 +47,7 @@ public class IRInstSeq implements Iterable<IRInst> {
     }
 
     public void add(IRInst inst) {
-        logger.log(Level.FINER, "Add inst : {0}", IRInstWriter.toText(inst));
+        LOGGER.log(Level.FINER, "Add inst : {0}", IRInstWriter.toText(inst));
         insts.add(inst);
     }
 

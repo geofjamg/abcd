@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  */
 public class ShortcutOperatorsCollapser {
 
-    private static final Logger logger
+    private static final Logger LOGGER
             = Logger.getLogger(ShortcutOperatorsCollapser.class.getName());
 
     private final ControlFlowGraph cfg;
@@ -295,7 +295,7 @@ public class ShortcutOperatorsCollapser {
     }
 
     public boolean collapse() {
-        ConsoleUtil.logTitledSeparator(logger, Level.FINE,
+        ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE,
                 "Collapse shortcut operators of {0}", '=', cfg.getName());
 
         boolean collapsed = false;

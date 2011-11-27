@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  */
 public class RegionAnalysis {
 
-    private static final Logger logger = Logger.getLogger(RegionAnalysis.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RegionAnalysis.class.getName());
 
     private final ControlFlowGraph cfg0;
 
@@ -83,7 +83,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkTrivialRegion(Region region) {
-        logger.log(Level.FINEST, "Check trivial region {0}", region);
+        LOGGER.log(Level.FINEST, "Check trivial region {0}", region);
         if (region.getChildCount() == 1) {
             region.setParentType(ParentType.TRIVIAL);
             return true;
@@ -92,7 +92,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkSequenceRegion(Region region) {
-        logger.log(Level.FINEST, "Check sequence region {0}", region);
+        LOGGER.log(Level.FINEST, "Check sequence region {0}", region);
         if (region.getChildCount() != 2) {
             return false;
         }
@@ -116,7 +116,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkWhileLoopRegion(ControlFlowGraph cfg, Region region) {
-        logger.log(Level.FINEST, "Check while loop region {0}", region);
+        LOGGER.log(Level.FINEST, "Check while loop region {0}", region);
         if (region.getChildCount() == 2) {
             Region headRegion = null;
             Region tailRegion = null;
@@ -154,7 +154,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkDoWhileLoopRegion(ControlFlowGraph cfg, Region region) {
-        logger.log(Level.FINEST, "Check do while loop region {0}", region);
+        LOGGER.log(Level.FINEST, "Check do while loop region {0}", region);
         if (region.getChildCount() == 1) {
             if (region.getEntry().getType() == BasicBlockType.JUMP_IF) {
                 region.setParentType(ParentType.DO_WHILE_LOOP);
@@ -165,7 +165,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkIfThenRegion(ControlFlowGraph cfg, Region region) {
-        logger.log(Level.FINEST, "Check if then region {0}", region);
+        LOGGER.log(Level.FINEST, "Check if then region {0}", region);
         if (region.getChildCount() == 2) {
             Region ifRegion = null;
             Region thenRegion = null;
@@ -202,7 +202,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkIfThenElseRegion(ControlFlowGraph cfg, Region region) {
-        logger.log(Level.FINEST, "Check if then else region {0}", region);
+        LOGGER.log(Level.FINEST, "Check if then else region {0}", region);
         if (region.getChildCount() == 3) {
             Region ifRegion = null;
             Region thenOrElseRegion1 = null;
@@ -253,7 +253,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkSwitchCaseRegion(ControlFlowGraph cfg, Region region) {
-        logger.log(Level.FINEST, "Check switch case region {0}", region);
+        LOGGER.log(Level.FINEST, "Check switch case region {0}", region);
         if (region.getChildCount() < 2) {
             return false;
         }
@@ -298,7 +298,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkTryCatchFinally(ControlFlowGraph cfg, Region region) {
-        logger.log(Level.FINEST, "Check try catch finally region {0}", region);
+        LOGGER.log(Level.FINEST, "Check try catch finally region {0}", region);
         Set<Region> handlerRegions = new HashSet<Region>();
         Region finallyRegion = null;
         Set<BasicBlock> handlerEntries = new HashSet<BasicBlock>();
@@ -444,11 +444,11 @@ public class RegionAnalysis {
                                                   Edge exitEdge,
                                                   Map<Edge, BasicBlock> joinBlocks) {
         ControlFlowGraph cloneSubCfg = subCfg.clone();
-        logger.log(Level.FINER, "Exit edge is {0}", cloneSubCfg.toString(exitEdge));
+        LOGGER.log(Level.FINER, "Exit edge is {0}", cloneSubCfg.toString(exitEdge));
         for (Map.Entry<Edge, BasicBlock> entry : joinBlocks.entrySet()) {
             Edge abruptEdge = entry.getKey();
             BasicBlock joinBlock = entry.getValue();
-            logger.log(Level.FINER, "Remove abrupt edge {0} (join block is {1})",
+            LOGGER.log(Level.FINER, "Remove abrupt edge {0} (join block is {1})",
                     new Object[] {cloneSubCfg.toString(abruptEdge), joinBlock});
             BasicBlock source = cloneSubCfg.getEdgeSource(abruptEdge);
             cloneSubCfg.removeEdge(abruptEdge);
@@ -464,7 +464,7 @@ public class RegionAnalysis {
                 abruptEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
                 source.putProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_SOURCE, breakLabelCount);
             }
-            logger.log(Level.FINER, "Add smooth edge {0}", cloneSubCfg.toString(abruptEdge));
+            LOGGER.log(Level.FINER, "Add smooth edge {0}", cloneSubCfg.toString(abruptEdge));
         }
         cloneSubCfg.updateDominatorInfo();
         cloneSubCfg.updatePostDominatorInfo();
@@ -473,7 +473,7 @@ public class RegionAnalysis {
     }
 
     private boolean checkBreakLabelRegion(ControlFlowGraph cfg, Region region) {
-        logger.log(Level.FINEST, "Check break label region {0}", region);
+        LOGGER.log(Level.FINEST, "Check break label region {0}", region);
         final ControlFlowGraph subCfg = createSubCFG(cfg, region);
         if (subCfg == null) {
             return false;
@@ -518,7 +518,7 @@ public class RegionAnalysis {
     }
 
     private RPST checkRegions(ControlFlowGraph cfg) {
-        logger.log(Level.FINER, "***** Start checking regions for CFG ({0}, {1}) *****",
+        LOGGER.log(Level.FINER, "***** Start checking regions for CFG ({0}, {1}) *****",
                 new Object[] {cfg.getEntryBlock(), cfg.getExitBlock()});
 
         int currentLevel = level++;
@@ -541,13 +541,13 @@ public class RegionAnalysis {
                     rpst.setTyped(false);
                     break;
                 } else {
-                    logger.log(Level.FINER, "Found {0} region {1}",
+                    LOGGER.log(Level.FINER, "Found {0} region {1}",
                             new Object[] {region.getParentType(), region});
                 }
             }
         }
 
-        logger.log(Level.FINER, "***** Analysis {0} for CFG ({1}, {2}) *****",
+        LOGGER.log(Level.FINER, "***** Analysis {0} for CFG ({1}, {2}) *****",
                 new Object[] {rpst.isTyped() ? "succeed" : "failed",
                               cfg.getEntryBlock(), cfg.getExitBlock()});
 
