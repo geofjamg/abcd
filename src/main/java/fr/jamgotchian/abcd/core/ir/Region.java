@@ -212,8 +212,8 @@ public class Region {
         if (parentType == other.getParentType()
                 && childType == other.getChildType()) {
             if (childType == ChildType.CATCH || childType == ChildType.FINALLY) {
-                ExceptionHandlerInfo info = (ExceptionHandlerInfo) entry.getData();
-                ExceptionHandlerInfo otherInfo = (ExceptionHandlerInfo) other.getEntry().getData();
+                ExceptionHandlerInfo info = (ExceptionHandlerInfo) entry.getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY);
+                ExceptionHandlerInfo otherInfo = (ExceptionHandlerInfo) other.getEntry().getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY);
                 mapping.defEqual(info.getVariable(), otherInfo.getVariable());
             }
             if (isBasicBlock()) {

@@ -48,7 +48,7 @@ import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.ArrayLengthInst;
 import fr.jamgotchian.abcd.core.ir.AssignConstInst;
 import fr.jamgotchian.abcd.core.ir.AssignVarInst;
-import fr.jamgotchian.abcd.core.ir.BasicBlockAttribute;
+import fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName;
 import fr.jamgotchian.abcd.core.ir.BasicBlockType;
 import fr.jamgotchian.abcd.core.ir.BinaryInst;
 import fr.jamgotchian.abcd.core.ir.ByteConst;
@@ -580,8 +580,8 @@ public class AbstractSyntaxTreeBuilder {
                     RegionIRInstVisitor visitor = new RegionIRInstVisitor();
                     bb.getInstructions().accept(visitor, blockStmt);
                 }
-                if (bb.hasAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_SOURCE)) {
-                    blockStmt.add(new BreakStatement("L" + bb.getData()));
+                if (bb.hasProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_SOURCE)) {
+                    blockStmt.add(new BreakStatement("L" + bb.getProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_TARGET)));
                 }
                 break;
             }
@@ -719,7 +719,7 @@ public class AbstractSyntaxTreeBuilder {
                     buildAST(catchRegion, catchBlockStmt);
 
                     ExceptionHandlerInfo info
-                            = (ExceptionHandlerInfo) catchRegion.getEntry().getData();
+                            = (ExceptionHandlerInfo) catchRegion.getEntry().getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY);
                     Variable excVar = info.getVariable();
                     VariableExpression excVarExpr = Expressions.newVarExpr(excVar);
                     catchClauses.add(new CatchClause(catchBlockStmt, excVarExpr));

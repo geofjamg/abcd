@@ -17,10 +17,10 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
-import java.util.Set;
-import java.util.EnumSet;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  *
@@ -44,16 +44,14 @@ public class BasicBlockImpl implements BasicBlock {
 
     private Region parent;
 
-    private Set<BasicBlockAttribute> attributes;
-
-    private Object data;
+    private Map<BasicBlockPropertyName, Object> properties;
 
     public BasicBlockImpl(Range range, BasicBlockType type) {
         this.range = range;
         this.type = type;
         order = -1;
         loopLevel = 0;
-        attributes = EnumSet.noneOf(BasicBlockAttribute.class);
+        properties = new EnumMap<BasicBlockPropertyName, Object>(BasicBlockPropertyName.class);
     }
 
     public BasicBlockImpl(int firstInstn, int lastInstn, BasicBlockType type) {
@@ -132,28 +130,25 @@ public class BasicBlockImpl implements BasicBlock {
         this.parent = parent;
     }
 
-    public void addAttribute(BasicBlockAttribute attr) {
-        attributes.add(attr);
+    public void putProperty(BasicBlockPropertyName name, Object value) {
+        properties.put(name, value);
     }
 
-    public boolean hasAttribute(BasicBlockAttribute attr) {
-        return attributes.contains(attr);
+    @Override
+    public Object getProperty(BasicBlockPropertyName name) {
+        return properties.get(name);
     }
 
-    public Set<BasicBlockAttribute> getAttributes() {
-        return attributes;
+    public boolean hasProperty(BasicBlockPropertyName name) {
+        return properties.containsKey(name);
     }
 
-    public void addAttributes(Set<BasicBlockAttribute> attributes) {
-        this.attributes.addAll(attributes);
+    public Map<BasicBlockPropertyName, Object> getProperties() {
+        return properties;
     }
 
-    public Object getData() {
-        return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
+    public void putProperties(Map<BasicBlockPropertyName, Object> properties) {
+        this.properties.putAll(properties);
     }
 
     @Override

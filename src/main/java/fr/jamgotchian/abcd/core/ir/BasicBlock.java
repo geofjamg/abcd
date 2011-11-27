@@ -19,7 +19,7 @@ package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.graph.Orderable;
 import fr.jamgotchian.abcd.core.util.Range;
-import java.util.Set;
+import java.util.Map;
 
 /**
  *
@@ -55,15 +55,13 @@ public interface BasicBlock extends Orderable {
 
     void setParent(Region region);
 
-    void addAttribute(BasicBlockAttribute attr);
+    void putProperty(BasicBlockPropertyName name, Object value);
 
-    boolean hasAttribute(BasicBlockAttribute attr);
+    Object getProperty(BasicBlockPropertyName name);
 
-    Set<BasicBlockAttribute> getAttributes();
+    boolean hasProperty(BasicBlockPropertyName name);
 
-    void addAttributes(Set<BasicBlockAttribute> attributes);
+    Map<BasicBlockPropertyName, Object> getProperties();
 
-    Object getData();
-
-    void setData(Object data);
+    void putProperties(Map<BasicBlockPropertyName, Object> properties);
 }

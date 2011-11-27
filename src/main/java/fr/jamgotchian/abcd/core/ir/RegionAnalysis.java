@@ -307,10 +307,10 @@ public class RegionAnalysis {
             // to parent region exit and its entry basic block has attribute
             // EXCEPTION_HANDLER_ENTRY
             if (child.getExit().equals(region.getExit())
-                    && child.getEntry().hasAttribute(BasicBlockAttribute.EXCEPTION_HANDLER_ENTRY)) {
+                    && child.getEntry().hasProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY)) {
                 handlerRegions.add(child);
                 handlerEntries.add(child.getEntry());
-                if (child.getEntry().hasAttribute(BasicBlockAttribute.FINALLY_ENTRY)) {
+                if (child.getEntry().hasProperty(BasicBlockPropertyName.FINALLY_ENTRY)) {
                     finallyRegion = child;
                 }
             }
@@ -324,7 +324,7 @@ public class RegionAnalysis {
             for (Region child : region.getChildren()) {
                 if (!child.equals(finallyRegion)
                         && (child.getExit().equals(region.getExit())
-                        || child.getExit().hasAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_TARGET))) {
+                        || child.getExit().hasProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_TARGET))) {
                     if (child.deepEquals(finallyRegion)) {
                         inlinedFinallyRegions.add(child);
                     }
@@ -452,19 +452,17 @@ public class RegionAnalysis {
                     new Object[] {cloneSubCfg.toString(abruptEdge), joinBlock});
             BasicBlock source = cloneSubCfg.getEdgeSource(abruptEdge);
             cloneSubCfg.removeEdge(abruptEdge);
-            joinBlock.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_TARGET);
+            joinBlock.putProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_TARGET, null);
             if (source.getType() == BasicBlockType.JUMP_IF) {
                 BasicBlock empty = new BasicBlockImpl(BasicBlockType.EMPTY);
                 cloneSubCfg.addBasicBlock(empty);
                 cloneSubCfg.addEdge(source, empty, abruptEdge);
                 cloneSubCfg.addEdge(empty, joinBlock).addAttribute(EdgeAttribute.FAKE_EDGE);
-                empty.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_SOURCE);
-                empty.setData(breakLabelCount);
+                empty.putProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_SOURCE, breakLabelCount);
             } else {
                 cloneSubCfg.addEdge(source, joinBlock, abruptEdge);
                 abruptEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                source.addAttribute(BasicBlockAttribute.BREAK_LABEL_EXIT_SOURCE);
-                source.setData(breakLabelCount);
+                source.putProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_SOURCE, breakLabelCount);
             }
             logger.log(Level.FINER, "Add smooth edge {0}", cloneSubCfg.toString(abruptEdge));
         }

@@ -502,11 +502,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
             graph.removeVertex(bb);
 
             // move attributes and data to the successor
-            successor.addAttributes(bb.getAttributes());
-            if (bb.getData() != null) {
-                assert successor.getData() == null;
-                successor.setData(bb.getData());
-            }
+            successor.putProperties(bb.getProperties());
 
             logger.log(Level.FINER, "Remove unnecessary BB {0}", bb);
         }

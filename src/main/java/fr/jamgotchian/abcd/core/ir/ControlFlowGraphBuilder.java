@@ -82,11 +82,11 @@ public abstract class ControlFlowGraphBuilder {
             // split at catchStart
             BasicBlockSplit catchStartSplit = cfg.splitBasicBlockAt(entry.getCatchStart());
             BasicBlock catchEntryBlock = catchStartSplit.getBlockAfter();
-            catchEntryBlock.addAttribute(BasicBlockAttribute.EXCEPTION_HANDLER_ENTRY);
+            ExceptionHandlerInfo info = new ExceptionHandlerInfo(entry.getExceptionClassName());
+            catchEntryBlock.putProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY, info);
             if (entry.getExceptionClassName() == null) {
-                catchEntryBlock.addAttribute(BasicBlockAttribute.FINALLY_ENTRY);
+                catchEntryBlock.putProperty(BasicBlockPropertyName.FINALLY_ENTRY, null);
             }
-            catchEntryBlock.setData(new ExceptionHandlerInfo(entry.getExceptionClassName()));
 
             cfg.removeEdge(catchStartSplit.getBlockBefore(), catchEntryBlock);
 

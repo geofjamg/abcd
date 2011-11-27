@@ -20,7 +20,7 @@ package fr.jamgotchian.abcd.core.ir;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public enum BasicBlockAttribute {
+public enum BasicBlockPropertyName {
     BREAK_LABEL_EXIT_SOURCE,
     BREAK_LABEL_EXIT_TARGET,
     EXCEPTION_HANDLER_ENTRY,

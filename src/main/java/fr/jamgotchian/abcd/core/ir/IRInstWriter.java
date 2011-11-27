@@ -30,7 +30,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,8 +70,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         IRInstSeq seq = bb.getInstructions();
         VariableStack inputStack = bb.getInputStack();
         VariableStack outputStack = bb.getOutputStack();
-        Set<BasicBlockAttribute> attributes = bb.getAttributes();
-        Object data = bb.getData();
+        Map<BasicBlockPropertyName, Object> attributes = bb.getProperties();
         Writer writer = new StringWriter();
         try {
             CodeWriter codeWriter = factory.create(writer);
@@ -82,11 +81,8 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
                                                   Color.ORANGE));
             }
             if (attributes.size() > 0) {
-                infosBefore.add(new ColoredString("Attributes : " + attributes,
+                infosBefore.add(new ColoredString("Properties : " + attributes,
                                                   Color.PINK));
-            }
-            if (data != null) {
-                infosBefore.add(new ColoredString("Data : " + data, Color.CYAN));
             }
             codeWriter.before(infosBefore);
             seq.accept(new IRInstWriter(codeWriter), null);

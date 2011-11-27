@@ -105,17 +105,18 @@ public class IntermediateRepresentationBuilder {
 
         VariableStack inputStack = null;
 
-        if (bb.hasAttribute(BasicBlockAttribute.EXCEPTION_HANDLER_ENTRY)) {
+        if (bb.hasProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY)) {
             // at the entry block of an exception handler the stack only contains
             // the exception variable
             inputStack = new VariableStack();
             Variable exceptionVar = tmpVarFactory.create(bb);
             IRInst tmpInst;
-            if (bb.hasAttribute(BasicBlockAttribute.FINALLY_ENTRY)) {
+            if (bb.hasProperty(BasicBlockPropertyName.FINALLY_ENTRY)) {
                 finallyTmpVars.add(exceptionVar);
                 tmpInst = instFactory.newAssignConst(exceptionVar, magicString);
             } else { // catch
-                ExceptionHandlerInfo info = (ExceptionHandlerInfo) bb.getData();
+                ExceptionHandlerInfo info
+                        = (ExceptionHandlerInfo) bb.getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY);
                 catchTmpVars.add(exceptionVar);
                 ClassName className = classNameFactory.newClassName(info.getClassName());
                 tmpInst = instFactory.newNewObject(exceptionVar, JavaType.newRefType(className));
@@ -191,7 +192,7 @@ public class IntermediateRepresentationBuilder {
         Set<Variable> finallyVars = new HashSet<Variable>();
 
         for (BasicBlock bb : cfg.getBasicBlocks()) {
-            if (!bb.hasAttribute(BasicBlockAttribute.EXCEPTION_HANDLER_ENTRY)) {
+            if (!bb.hasProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY)) {
                 continue;
             }
 
@@ -229,7 +230,7 @@ public class IntermediateRepresentationBuilder {
                 }
 
                 if (remove) {
-                    ((ExceptionHandlerInfo) bb.getData()).setVariable(excVar);
+                    ((ExceptionHandlerInfo) bb.getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY)).setVariable(excVar);
                     logger.log(Level.FINEST, "Cleanup exception handler (bb={0}, excVar={1}) :",
                             new Object[] {bb, excVar});
                     logger.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst));
