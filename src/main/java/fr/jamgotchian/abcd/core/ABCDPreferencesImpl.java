@@ -20,7 +20,7 @@ package fr.jamgotchian.abcd.core;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ABCDConfig {
+class ABCDPreferencesImpl implements ABCDPreferences {
 
     private boolean useLocalVariableTable = false;
 

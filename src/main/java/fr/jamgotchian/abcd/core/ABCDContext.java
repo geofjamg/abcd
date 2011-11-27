@@ -133,9 +133,9 @@ public class ABCDContext {
     public ABCDContext() {
     }
 
-    public void decompile(ABCDDataSource dataSrc, ABCDWriter writer, ABCDConfig config) throws IOException {
+    public void decompile(ABCDDataSource dataSrc, ABCDWriter writer, ABCDPreferences prefs) throws IOException {
         VariableNameProviderFactory nameProviderFactory = null;
-        if (config.isUseLocalVariableTable()) {
+        if (prefs.isUseLocalVariableTable()) {
             nameProviderFactory = new LocalVariableTableNameProviderFactory();
         } else {
             nameProviderFactory = new SimpleVariableNameProviderFactory();
@@ -365,12 +365,12 @@ public class ABCDContext {
                     dataSrc = new DexFileDataSource(dexFile);
                 }
 
-                ABCDConfig config = new ABCDConfig();
+                ABCDPreferences prefs = new ABCDPreferencesImpl();
                 if (line.hasOption("uselvt")) {
-                    config.setUseLocalVariableTable(true);
+                    prefs.setUseLocalVariableTable(true);
                 }
-                
-                new ABCDContext().decompile(dataSrc, writer, config);
+
+                new ABCDContext().decompile(dataSrc, writer, prefs);
             }
             catch(ParseException e) {
                 printError(e.getMessage());
