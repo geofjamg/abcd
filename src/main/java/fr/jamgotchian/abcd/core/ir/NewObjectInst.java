@@ -18,6 +18,7 @@ package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.type.JavaType;
+import fr.jamgotchian.abcd.core.type.TypeKind;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -35,8 +36,8 @@ public class NewObjectInst extends DefInst {
 
     NewObjectInst(int defID, Variable result, JavaType type) {
         super(defID, result);
-        if (type.isPrimitive()) {
-            throw new ABCDException("type.isPrimitive()");
+        if (type.getKind() == TypeKind.PRIMITIVE) {
+            throw new ABCDException("type.getKind() == TypeKind.PRIMITIVE");
         }
         this.type = type;
         this.arguments = Collections.emptyList();

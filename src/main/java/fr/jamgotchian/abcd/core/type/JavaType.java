@@ -130,18 +130,16 @@ public class JavaType {
 
     private JavaType(PrimitiveType primitiveType, ClassName className,
                      JavaType arrayElementType, int arrayDimension) {
+        assert (primitiveType != null && className == null && arrayElementType == null)
+                || (primitiveType == null && (className != null || arrayElementType != null));
         this.primitiveType = primitiveType;
         this.className = className;
         this.arrayElementType = arrayElementType;
         this.arrayDimension = arrayDimension;
     }
 
-    public boolean isPrimitive() {
-        return primitiveType != null;
-    }
-
-    public boolean isReference() {
-        return className != null || arrayElementType != null;
+    public TypeKind getKind() {
+        return primitiveType != null ? TypeKind.PRIMITIVE : TypeKind.REFERENCE;
     }
 
     public boolean isArray() {
@@ -165,7 +163,7 @@ public class JavaType {
     }
 
     public ComputationalType getComputationalType() {
-        if (isReference()) {
+        if (getKind() == TypeKind.REFERENCE) {
             return ComputationalType.REFERENCE;
         } else {
             switch (primitiveType) {
@@ -217,7 +215,7 @@ public class JavaType {
             }
             return builder.toString();
         } else {
-            if (isPrimitive()) {
+            if (getKind() == TypeKind.PRIMITIVE) {
                 return primitiveType.toString();
             } else { // reference
                 if (qualifiedName) {
@@ -267,9 +265,9 @@ public class JavaType {
         if (otherType.equals(this)) {
             return this;
         }
-        if (isPrimitive()) {
+        if (getKind() == TypeKind.PRIMITIVE) {
             // cannot widen primitive to reference type
-            if (otherType.isReference()) {
+            if (otherType.getKind() == TypeKind.REFERENCE) {
                 return null;
             }
             // try to find a common widening conversion type
@@ -286,8 +284,8 @@ public class JavaType {
                 return newType;
             }
         }
-        if (isReference()) {
-            if (otherType.isPrimitive()) {
+        if (getKind() == TypeKind.REFERENCE) {
+            if (otherType.getKind() == TypeKind.PRIMITIVE) {
                 // cannot widen reference to primitive type
                 return null;
             }
@@ -309,8 +307,8 @@ public class JavaType {
                 if (getArrayDimension() != otherType.getArrayDimension()) {
                     return null;
                 } else {
-                    if (getArrayElementType().isPrimitive()
-                            || otherType.getArrayElementType().isPrimitive()) {
+                    if (getArrayElementType().getKind() == TypeKind.PRIMITIVE
+                            || otherType.getArrayElementType().getKind() == TypeKind.PRIMITIVE) {
                         // equality test have already be done
                         return null;
                     }
