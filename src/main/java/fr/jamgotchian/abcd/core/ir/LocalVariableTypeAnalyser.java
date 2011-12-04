@@ -42,16 +42,6 @@ public class LocalVariableTypeAnalyser {
     private static final Logger LOGGER
             = Logger.getLogger(LocalVariableTypeAnalyser.class.getName());
 
-    private final ControlFlowGraph graph;
-
-    private final JavaType thisType;
-
-    private final JavaType methodReturnType;
-
-    private final List<Variable> methodArgs;
-
-    private final ClassNameFactory classNameFactory;
-
     private static interface TypeVariableOrConstant {
     }
 
@@ -524,9 +514,22 @@ public class LocalVariableTypeAnalyser {
 
     }
 
+    private final ControlFlowGraph graph;
+
+    private final JavaType thisType;
+
+    private final JavaType methodReturnType;
+
+    private final List<Variable> methodArgs;
+
+    private final ClassNameFactory classNameFactory;
+
     private final Visitor visitor = new Visitor();
+
     private final ClassName javaLangObjectClassName;
+
     private final ClassName javaLangStringClassName;
+
     private final ClassName javaLangClassClassName;
 
     public LocalVariableTypeAnalyser(ControlFlowGraph graph, JavaType thisType,
