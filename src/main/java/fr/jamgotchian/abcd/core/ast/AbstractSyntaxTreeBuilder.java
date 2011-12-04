@@ -581,7 +581,7 @@ public class AbstractSyntaxTreeBuilder {
                     bb.getInstructions().accept(visitor, blockStmt);
                 }
                 if (bb.hasProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_SOURCE)) {
-                    blockStmt.add(new BreakStatement("L" + bb.getProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_TARGET)));
+                    blockStmt.add(new BreakStatement("L" + bb.getProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_SOURCE)));
                 }
                 break;
             }
