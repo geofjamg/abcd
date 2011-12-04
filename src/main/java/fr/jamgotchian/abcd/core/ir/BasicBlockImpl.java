@@ -42,6 +42,10 @@ public class BasicBlockImpl implements BasicBlock {
 
     private VariableStack outputStack;
 
+    private VariableRegisters inputRegisters;
+
+    private VariableRegisters outputRegisters;
+
     private Region parent;
 
     private Map<BasicBlockPropertyName, Object> properties;
@@ -66,70 +70,107 @@ public class BasicBlockImpl implements BasicBlock {
         this(null, null);
     }
 
+    @Override
     public Range getRange() {
         return range;
     }
 
+    @Override
     public BasicBlockType getType() {
         return type;
     }
 
+    @Override
     public void setType(BasicBlockType type) {
         this.type = type;
     }
 
+    @Override
     public void setOrder(int order) {
         this.order = order;
     }
 
+    @Override
     public int getOrder() {
         return order;
     }
 
+    @Override
     public int getLoopLevel() {
         return loopLevel;
     }
 
+    @Override
     public void setLoopLevel(int loopLevel) {
         this.loopLevel = loopLevel;
     }
 
+    @Override
     public IRInstSeq getInstructions() {
         return instructions;
     }
 
+    @Override
     public void setInstructions(IRInstSeq instructions) {
         this.instructions = instructions;
     }
 
+    @Override
     public VariableStack getInputStack() {
         return inputStack;
     }
 
+    @Override
     public void setInputStack(VariableStack inputStack) {
         this.inputStack = inputStack;
     }
 
+    @Override
     public VariableStack getOutputStack() {
         return outputStack;
     }
 
+    @Override
     public void setOutputStack(VariableStack outputStack) {
         this.outputStack = outputStack;
     }
 
+    @Override
+    public VariableRegisters getInputRegisters() {
+        return inputRegisters;
+    }
+
+    @Override
+    public void setInputRegisters(VariableRegisters inputRegisters) {
+        this.inputRegisters = inputRegisters;
+    }
+
+    @Override
+    public VariableRegisters getOutputRegisters() {
+        return outputRegisters;
+    }
+
+    @Override
+    public void setOutputRegisters(VariableRegisters outputRegisters) {
+        this.outputRegisters = outputRegisters;
+    }
+
+    @Override
     public void resetState() {
         loopLevel = 0;
     }
 
+    @Override
     public Region getParent() {
         return parent;
     }
 
+    @Override
     public void setParent(Region parent) {
         this.parent = parent;
     }
 
+    @Override
     public void putProperty(BasicBlockPropertyName name, Object value) {
         properties.put(name, value);
     }
@@ -139,14 +180,17 @@ public class BasicBlockImpl implements BasicBlock {
         return properties.get(name);
     }
 
+    @Override
     public boolean hasProperty(BasicBlockPropertyName name) {
         return properties.containsKey(name);
     }
 
+    @Override
     public Map<BasicBlockPropertyName, Object> getProperties() {
         return properties;
     }
 
+    @Override
     public void putProperties(Map<BasicBlockPropertyName, Object> properties) {
         this.properties.putAll(properties);
     }

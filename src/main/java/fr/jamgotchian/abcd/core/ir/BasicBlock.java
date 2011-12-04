@@ -49,6 +49,14 @@ public interface BasicBlock extends Orderable {
 
     void setOutputStack(VariableStack outputStack);
 
+    VariableRegisters getInputRegisters();
+
+    void setInputRegisters(VariableRegisters inputRegisters);
+
+    VariableRegisters getOutputRegisters();
+
+    void setOutputRegisters(VariableRegisters outputRegisters);
+
     void resetState();
 
     Region getParent();
