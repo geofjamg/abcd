@@ -412,12 +412,28 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(GetFieldInst inst, Void arg) {
-            return super.visit(inst, arg);
+            JavaType fieldType = inst.getFieldType();
+            if (fieldType.getKind() == TypeKind.PRIMITIVE) {
+                constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                  new PrimitiveTypeConstant(fieldType.getPrimitiveType())));
+            } else {
+                constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                  new ReferenceTypeConstant(fieldType.getClassName(), null)));
+            }
+            return null;
         }
 
         @Override
         public Void visit(SetFieldInst inst, Void arg) {
-            return super.visit(inst, arg);
+            JavaType fieldType = inst.getFieldType();
+            if (inst.getFieldType().getKind() == TypeKind.PRIMITIVE) {
+                constaints.add(new TypeConstraint(new TypeVariable(inst.getValue().getID()),
+                                                  new PrimitiveTypeConstant(fieldType.getPrimitiveType())));
+            } else {
+                constaints.add(new TypeConstraint(new TypeVariable(inst.getValue().getID()),
+                                                  new ReferenceTypeConstant(fieldType.getClassName(), null)));
+            }
+            return null;
         }
 
         @Override
@@ -457,7 +473,6 @@ public class LocalVariableTypeAnalyser {
             ClassName subclass = inst.getType().getClassName();
             constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
                                               new ReferenceTypeConstant(superclass, subclass)));
-
             return null;
         }
 
@@ -471,7 +486,7 @@ public class LocalVariableTypeAnalyser {
                     }
                 } else {
                     constaints.add(new TypeConstraint(new TypeVariable(inst.getVar().getID()),
-                                                      new ReferenceTypeConstant(null, methodReturnType.getClassName())));
+                                                      new ReferenceTypeConstant(methodReturnType.getClassName(), null)));
                 }
             }
             return null;
@@ -479,7 +494,9 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(SwitchInst inst, Void arg) {
-            return super.visit(inst, arg);
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getIndex().getID()),
+                                              new PrimitiveTypeConstant(PrimitiveType.INTEGER)));
+            return null;
         }
 
         @Override
@@ -504,12 +521,28 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(GetStaticFieldInst inst, Void arg) {
-            return super.visit(inst, arg);
+            JavaType fieldType = inst.getFieldType();
+            if (inst.getFieldType().getKind() == TypeKind.PRIMITIVE) {
+                constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                  new PrimitiveTypeConstant(fieldType.getPrimitiveType())));
+            } else {
+                constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                  new ReferenceTypeConstant(fieldType.getClassName(), null)));
+            }
+            return null;
         }
 
         @Override
         public Void visit(SetStaticFieldInst inst, Void arg) {
-            return super.visit(inst, arg);
+            JavaType fieldType = inst.getFieldType();
+            if (inst.getFieldType().getKind() == TypeKind.PRIMITIVE) {
+                constaints.add(new TypeConstraint(new TypeVariable(inst.getValue().getID()),
+                                                  new PrimitiveTypeConstant(fieldType.getPrimitiveType())));
+            } else {
+                constaints.add(new TypeConstraint(new TypeVariable(inst.getValue().getID()),
+                                                  new ReferenceTypeConstant(fieldType.getClassName(), null)));
+            }
+            return null;
         }
 
     }
