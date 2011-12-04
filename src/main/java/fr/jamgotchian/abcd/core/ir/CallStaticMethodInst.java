@@ -25,7 +25,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class CallStaticMethodInst extends DefInst {
+public class CallStaticMethodInst extends CallableInst {
 
     private final ClassName scope;
 

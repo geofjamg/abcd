@@ -196,7 +196,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
                 case ACONST_NULL: {
                     Variable tmpVar = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new NullConst(classNameFactory)));
+                    bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new NullConst()));
                     stack.push(tmpVar, ComputationalType.REFERENCE);
                     break;
                 }
@@ -880,7 +880,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
                 case IFNULL: {
                     Variable tmpNull = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newAssignConst(tmpNull, new NullConst(classNameFactory)));
+                    bb.getInstructions().add(instFactory.newAssignConst(tmpNull, new NullConst()));
                     tmpResult = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.EQ, stack.pop(), tmpNull));
                     break;
@@ -888,7 +888,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
                 case IFNONNULL: {
                     Variable tmpNull = tmpVarFactory.create(bb);
-                    bb.getInstructions().add(instFactory.newAssignConst(tmpNull, new NullConst(classNameFactory)));
+                    bb.getInstructions().add(instFactory.newAssignConst(tmpNull, new NullConst()));
                     tmpResult = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.NE, stack.pop(), tmpNull));
                     break;
@@ -910,7 +910,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             Variable tmpVar = tmpVarFactory.create(bb);
             if (node.cst instanceof Type) {
                 ClassName className = classNameFactory.newClassName(((Type)node.cst).getClassName());
-                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new ClassConst(className, classNameFactory)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new ClassConst(className)));
                 stack.push(tmpVar, ComputationalType.REFERENCE);
             } else if (node.cst instanceof Integer) {
                 bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new IntConst((Integer) node.cst)));
@@ -925,7 +925,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new DoubleConst((Double) node.cst)));
                 stack.push(tmpVar, ComputationalType.DOUBLE);
             } else if (node.cst instanceof String) {
-                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new StringConst(node.cst.toString(), classNameFactory)));
+                bb.getInstructions().add(instFactory.newAssignConst(tmpVar, new StringConst(node.cst.toString())));
                 stack.push(tmpVar, ComputationalType.REFERENCE);
             } else {
                 throw new InternalError();

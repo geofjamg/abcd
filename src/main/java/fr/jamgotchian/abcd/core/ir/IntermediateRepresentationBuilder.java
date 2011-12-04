@@ -96,7 +96,7 @@ public class IntermediateRepresentationBuilder {
         this.methodArgs = methodArgs;
         finallyTmpVars = new HashSet<Variable>();
         catchTmpVars = new HashSet<Variable>();
-        magicString = new StringConst("MAGIC", classNameFactory);
+        magicString = new StringConst("MAGIC");
     }
 
     private void processBB(BasicBlock bb, List<VariableStack> inputStacks) {
@@ -539,9 +539,9 @@ public class IntermediateRepresentationBuilder {
         }
 
         // analyse local variables types
-//        new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
-//                                      methodArgs, classNameFactory)
-//                .analyse();
+        new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
+                                      methodArgs, classNameFactory)
+                .analyse();
 
         // assign a name to each variable
         assignNameToVariables();

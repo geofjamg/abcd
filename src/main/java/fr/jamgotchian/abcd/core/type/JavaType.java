@@ -17,12 +17,12 @@
 package fr.jamgotchian.abcd.core.type;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -69,11 +69,9 @@ public class JavaType {
     public static final JavaType FLOAT = new JavaType(PrimitiveType.FLOAT, null, null, 0);
     public static final JavaType DOUBLE = new JavaType(PrimitiveType.DOUBLE, null, null, 0);
 
-    public static final Set<JavaType> PRIMITIVE_TYPES
-            = Sets.newHashSet(VOID, INT, LONG, CHAR, BYTE, SHORT, BOOLEAN, FLOAT, DOUBLE);
-
-    public static final Set<JavaType> ARITHMETIC_TYPES
-            = Sets.newHashSet(INT, LONG, BYTE, SHORT, FLOAT, DOUBLE);
+    public static final Set<PrimitiveType> ARITHMETIC_TYPES
+            = EnumSet.of(PrimitiveType.INTEGER, PrimitiveType.LONG, PrimitiveType.BYTE,
+                         PrimitiveType.SHORT, PrimitiveType.FLOAT, PrimitiveType.DOUBLE);
 
     private static final Map<JavaType, List<JavaType>> WIDENING_PRIMITIVE_CONVERSION;
 

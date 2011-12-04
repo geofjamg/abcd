@@ -16,10 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.type.JavaType;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import fr.jamgotchian.abcd.core.type.TypeKind;
 
 /**
  *
@@ -37,13 +34,9 @@ public class IntConst implements Const {
         return value;
     }
 
-    public Set<JavaType> getPossibleTypes() {
-        Set<JavaType> types = new HashSet<JavaType>(2);
-        types.add(JavaType.INT);
-        if (value == 0 || value == 1) {
-            types.add(JavaType.BOOLEAN);
-        }
-        return Collections.unmodifiableSet(types);
+    @Override
+    public TypeKind getTypeKind() {
+        return TypeKind.PRIMITIVE;
     }
 
     @Override

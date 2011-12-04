@@ -16,18 +16,19 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import com.google.common.collect.Sets;
+import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.util.Collections3;
-import fr.jamgotchian.abcd.core.util.ConsoleUtil;
+import fr.jamgotchian.abcd.core.type.JavaType.PrimitiveType;
+import fr.jamgotchian.abcd.core.type.TypeKind;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Deque;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,339 +52,482 @@ public class LocalVariableTypeAnalyser {
 
     private final ClassNameFactory classNameFactory;
 
-    private final Map<VariableID, Set<JavaType>> possibleTypes
-            = new HashMap<VariableID, Set<JavaType>>();
+    private static interface TypeVariableOrConstant {
+    }
 
-    private class Visitor extends EmptyIRInstVisitor<Boolean, Void> {
+    private static interface TypeConstant extends TypeVariableOrConstant {
+    }
+
+    private static class TypeVariable implements TypeVariableOrConstant {
+
+        private final VariableID ID;
+
+        private TypeVariable(VariableID ID) {
+            this.ID = ID;
+        }
+
+        public VariableID getID() {
+            return ID;
+        }
 
         @Override
-        public Boolean visit(IRInstSeq seq, Void arg) {
-            Boolean change = Boolean.FALSE;
-            for (IRInst inst : seq) {
-            if (Boolean.TRUE.equals(inst.accept(this, arg))) {
-                    change = Boolean.TRUE;
-                }
-            }
-            return change;
-        }
-
-        private Boolean infereTypes(Set<JavaType> possibleLeftTypes,
-                                    JavaType... possibleRightTypes) {
-            return infereTypes(possibleLeftTypes, Sets.newHashSet(possibleRightTypes));
-        }
-
-        private Boolean infereTypes(Set<JavaType> possibleLeftTypes,
-                                    Set<JavaType> possibleRightTypes) {
-            if (possibleLeftTypes.isEmpty()) {
-                if (possibleRightTypes.isEmpty()) {
-                    return Boolean.FALSE;
-                } else {
-                    possibleLeftTypes.addAll(possibleRightTypes);
-                    return Boolean.TRUE;
-                }
+        public boolean equals(Object obj) {
+            if (obj instanceof TypeVariable) {
+                return ID.equals(((TypeVariable) obj).ID);
             } else {
-                Set<JavaType> newPossibleLeftTypes
-                        = fr.jamgotchian.abcd.core.util.Sets.intersection(possibleLeftTypes, possibleRightTypes);
-                if (newPossibleLeftTypes.isEmpty()) {
-                    newPossibleLeftTypes
-                            = JavaType.widen(possibleLeftTypes, possibleRightTypes, classNameFactory);
-                }
-                if (Collections3.sameContent(possibleLeftTypes, newPossibleLeftTypes)) {
-                    return Boolean.FALSE;
-                } else {
-                    possibleLeftTypes.clear();
-                    possibleLeftTypes.addAll(newPossibleLeftTypes);
-                    return Boolean.TRUE;
-                }
+                return false;
             }
         }
 
         @Override
-        public Boolean visit(AssignConstInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getResult().getID()),
-                               inst.getConst().getPossibleTypes());
+        public int hashCode() {
+            return ID.hashCode();
         }
 
         @Override
-        public Boolean visit(AssignVarInst inst, Void arg) {
-            boolean change
-                    = infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                  getPossibleTypes(inst.getValue().getID()));
-
-            change |= infereTypes(getPossibleTypes(inst.getValue().getID()),
-                                  getPossibleTypes(inst.getResult().getID()));
-
-            return change;
-        }
-
-        @Override
-        public Boolean visit(UnaryInst inst, Void arg) {
-            switch (inst.getOperator()) {
-                case MINUS: {
-                    boolean change
-                            = infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                          JavaType.ARITHMETIC_TYPES);
-
-                    change |= infereTypes(getPossibleTypes(inst.getVar().getID()),
-                                          JavaType.ARITHMETIC_TYPES);
-
-                    change |= infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                          getPossibleTypes(inst.getVar().getID()));
-
-                    change |= infereTypes(getPossibleTypes(inst.getVar().getID()),
-                                          getPossibleTypes(inst.getResult().getID()));
-
-                    return change;
-                }
-
-                default:
-                    return Boolean.FALSE;
-            }
-        }
-
-        @Override
-        public Boolean visit(BinaryInst inst, Void arg) {
-            switch (inst.getOperator()) {
-                case AND:
-                case OR: {
-                    boolean change
-                            = infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                          JavaType.BOOLEAN);
-
-                    change |= infereTypes(getPossibleTypes(inst.getLeft().getID()),
-                                          JavaType.BOOLEAN);
-
-                    change |= infereTypes(getPossibleTypes(inst.getRight().getID()),
-                                          JavaType.BOOLEAN);
-
-                    return change;
-                }
-
-                case EQ:
-                case NE:
-                case GE:
-                case GT:
-                case LE:
-                case LT: {
-                    boolean change
-                            = infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                          JavaType.BOOLEAN);
-
-                    change |= infereTypes(getPossibleTypes(inst.getLeft().getID()),
-                                          getPossibleTypes(inst.getRight().getID()));
-
-                    change |= infereTypes(getPossibleTypes(inst.getRight().getID()),
-                                          getPossibleTypes(inst.getLeft().getID()));
-
-                    return change;
-                }
-
-                case PLUS:
-                case MINUS:
-                case MUL: {
-                    // the result type is an arithmetic type
-                    boolean change
-                            = infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                          JavaType.ARITHMETIC_TYPES);
-
-                    change |= infereTypes(getPossibleTypes(inst.getLeft().getID()),
-                                          JavaType.ARITHMETIC_TYPES);
-
-                    change |= infereTypes(getPossibleTypes(inst.getRight().getID()),
-                                          JavaType.ARITHMETIC_TYPES);
-
-                    change |= infereTypes(getPossibleTypes(inst.getLeft().getID()),
-                                          getPossibleTypes(inst.getRight().getID()));
-
-                    change |= infereTypes(getPossibleTypes(inst.getRight().getID()),
-                                          getPossibleTypes(inst.getLeft().getID()));
-
-                    change |= infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                          getPossibleTypes(inst.getLeft().getID()));
-
-                    return change;
-                }
-
-                default:
-                    return Boolean.FALSE;
-            }
-        }
-
-        @Override
-        public Boolean visit(ConditionalInst inst, Void arg) {
-            boolean change
-                    = infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                  getPossibleTypes(inst.getThen().getID()));
-            change |= infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                  getPossibleTypes(inst.getElse().getID()));
-            change |= infereTypes(getPossibleTypes(inst.getThen().getID()),
-                                  getPossibleTypes(inst.getResult().getID()));
-            change |= infereTypes(getPossibleTypes(inst.getElse().getID()),
-                                  getPossibleTypes(inst.getResult().getID()));
-            change |= infereTypes(getPossibleTypes(inst.getCond().getID()),
-                                  JavaType.BOOLEAN);
-
-            return change;
-        }
-
-        @Override
-        public Boolean visit(GetFieldInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getResult().getID()),
-                               inst.getFieldType());
-        }
-
-        @Override
-        public Boolean visit(SetFieldInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getValue().getID()),
-                               inst.getFieldType());
-        }
-
-        @Override
-        public Boolean visit(GetStaticFieldInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getResult().getID()),
-                               inst.getFieldType());
-        }
-
-        @Override
-        public Boolean visit(SetStaticFieldInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getValue().getID()),
-                               inst.getFieldType());
-        }
-
-        @Override
-        public Boolean visit(NewObjectInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getResult().getID()),
-                               inst.getType());
-        }
-
-        @Override
-        public Boolean visit(ArrayLengthInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getResult().getID()),
-                               JavaType.INT);
-        }
-
-        @Override
-        public Boolean visit(CastInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getResult().getID()),
-                               inst.getCastType());
-        }
-
-        @Override
-        public Boolean visit(InstanceOfInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getResult().getID()),
-                               JavaType.BOOLEAN);
-        }
-
-        @Override
-        public Boolean visit(CallMethodInst inst, Void arg) {
-            MethodSignature signature = inst.getSignature();
-
-            boolean change = infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                         signature.getReturnType());
-
-            for (int i = 0; i < signature.getArgumentTypes().size(); i++) {
-                JavaType argType = signature.getArgumentTypes().get(i);
-                Variable argVar = inst.getArguments().get(i);
-                change |= infereTypes(getPossibleTypes(argVar.getID()), argType);
-            }
-
-            return change;
-        }
-
-        @Override
-        public Boolean visit(CallStaticMethodInst inst, Void arg) {
-            MethodSignature signature = inst.getSignature();
-
-            boolean change = infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                         signature.getReturnType());
-
-            for (int i = 0; i < signature.getArgumentTypes().size(); i++) {
-                JavaType argType = signature.getArgumentTypes().get(i);
-                Variable argVar = inst.getArguments().get(i);
-                change |= infereTypes(getPossibleTypes(argVar.getID()), argType);
-            }
-
-            return change;
-        }
-
-        @Override
-        public Boolean visit(JumpIfInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getCond().getID()),
-                               JavaType.BOOLEAN);
-        }
-
-        @Override
-        public Boolean visit(SwitchInst inst, Void arg) {
-            return infereTypes(getPossibleTypes(inst.getIndex().getID()),
-                               JavaType.INT);
-        }
-
-        @Override
-        public Boolean visit(MonitorEnterInst inst, Void arg) {
-            return Boolean.FALSE;
-        }
-
-        @Override
-        public Boolean visit(MonitorExitInst inst, Void arg) {
-            return Boolean.FALSE;
-        }
-
-        @Override
-        public Boolean visit(ChoiceInst inst, Void arg) {
-            throw new ABCDException("Should not have choice instruction during type analysis");
-        }
-
-        @Override
-        public Boolean visit(NewArrayInst inst, Void arg) {
-            boolean change
-                    = infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                  JavaType.newArrayType(inst.getType(), inst.getDimensions().size()));
-            for (Variable dimVar : inst.getDimensions()) {
-                change |= infereTypes(getPossibleTypes(dimVar.getID()), JavaType.INT);
-            }
-            return change;
-        }
-
-        @Override
-        public Boolean visit(GetArrayInst inst, Void arg) {
-            boolean change
-                    = infereTypes(getPossibleTypes(inst.getIndex().getID()),
-                                  JavaType.INT);
-            Set<JavaType> possibleEltTypes = new HashSet<JavaType>();
-            for (JavaType type : getPossibleTypes(inst.getArray().getID())) {
-                possibleEltTypes.add(type.getArrayElementType());
-            }
-            change |= infereTypes(getPossibleTypes(inst.getResult().getID()),
-                                  possibleEltTypes);
-            return change;
-        }
-
-        @Override
-        public Boolean visit(SetArrayInst inst, Void arg) {
-            boolean change
-                    = infereTypes(getPossibleTypes(inst.getIndex().getID()),
-                                  JavaType.INT);
-            Set<JavaType> possibleEltTypes = new HashSet<JavaType>();
-            for (JavaType type : getPossibleTypes(inst.getArray().getID())) {
-                possibleEltTypes.add(type.getArrayElementType());
-            }
-            change |= infereTypes(getPossibleTypes(inst.getValue().getID()),
-                                  possibleEltTypes);
-            return change;
-        }
-
-        @Override
-        public Boolean visit(ReturnInst inst, Void arg) {
-            if (inst.getVar() != null && methodReturnType != null) {
-                return infereTypes(getPossibleTypes(inst.getVar().getID()),
-                                   methodReturnType);
-            } else {
-                return Boolean.FALSE;
-            }
+        public String toString() {
+            return "type(" + ID.toString() + ")";
         }
     }
 
+    private static class ReferenceTypeConstant implements TypeConstant  {
+
+        private final ClassName superclass;
+
+        private final ClassName subclass;
+
+        private ReferenceTypeConstant(ClassName superclass, ClassName subclass) {
+            this.superclass = superclass;
+            this.subclass = subclass;
+        }
+
+        public ClassName getSuperclass() {
+            return superclass;
+        }
+
+        public ClassName getSubclass() {
+            return subclass;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof ReferenceTypeConstant) {
+                ReferenceTypeConstant other = (ReferenceTypeConstant) obj;
+                return Objects.equal(superclass, other.superclass)
+                        && Objects.equal(subclass, other.subclass);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(superclass, subclass);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            if (superclass != null) {
+                builder.append("[").append(superclass.getQualifiedName());
+            } else {
+                builder.append("]-\u221E");
+            }
+            builder.append("; ");
+            if (subclass != null) {
+                builder.append(subclass.getQualifiedName()).append("]");
+            } else {
+                builder.append("+\u221E[");
+            }
+            return builder.toString();
+        }
+    }
+
+    private static class PrimitiveTypeConstant implements TypeConstant {
+
+        private final Set<PrimitiveType> types;
+
+        private PrimitiveTypeConstant(Set<PrimitiveType> types) {
+            this.types = types;
+        }
+
+        private PrimitiveTypeConstant(PrimitiveType first, PrimitiveType... rest) {
+            this.types = EnumSet.of(first, rest);
+        }
+
+        public Set<PrimitiveType> getTypes() {
+            return types;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof PrimitiveTypeConstant) {
+                PrimitiveTypeConstant other = (PrimitiveTypeConstant) obj;
+                return types.equals(other.types);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return types.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append("{");
+            for (Iterator<PrimitiveType> it = types.iterator(); it.hasNext(); ) {
+                builder.append(it.next());
+                if (it.hasNext()) {
+                    builder.append(", ");
+                }
+            }
+            builder.append("}");
+            return builder.toString();
+        }
+    }
+
+    private static class TypeConstraint {
+
+        private final TypeVariable left;
+
+        private TypeVariableOrConstant right;
+
+        private TypeConstraint(TypeVariable left, TypeVariableOrConstant right) {
+            this.left = left;
+            this.right = right;
+        }
+
+        public TypeVariable getLeft() {
+            return left;
+        }
+
+        public TypeVariableOrConstant getRight() {
+            return right;
+        }
+
+        public void setRight(TypeVariableOrConstant right) {
+            this.right = right;
+        }
+
+        @Override
+        public String toString() {
+            return left + " = " + right;
+        }
+    }
+
+    private final List<TypeConstraint> constaints = new ArrayList<TypeConstraint>();
+
+    private class Visitor extends EmptyIRInstVisitor<Void, Void> {
+
+        @Override
+        public Void visit(IRInstSeq seq, Void arg) {
+            return super.visit(seq, arg);
+        }
+
+        @Override
+        public Void visit(ArrayLengthInst inst, Void arg) {
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                              new PrimitiveTypeConstant(PrimitiveType.INTEGER)));
+            return null;
+        }
+
+        @Override
+        public Void visit(AssignConstInst inst, Void arg) {
+            TypeConstant typeCst = null;
+            if (inst.getConst() instanceof ByteConst) {
+                byte value = ((ByteConst) inst.getConst()).getValue();
+                if (value == 0 || value == 1) {
+                    typeCst = new PrimitiveTypeConstant(PrimitiveType.BYTE,
+                                                        PrimitiveType.CHAR,
+                                                        PrimitiveType.BOOLEAN);
+                } else {
+                    typeCst = new PrimitiveTypeConstant(PrimitiveType.BYTE,
+                                                        PrimitiveType.CHAR);
+                }
+            } else if (inst.getConst() instanceof ClassConst) {
+                ClassName subclass = classNameFactory.newClassName(Class.class.getName());
+                typeCst = new ReferenceTypeConstant(javaLangClassClassName, subclass);
+            } else if (inst.getConst() instanceof DoubleConst) {
+                typeCst = new PrimitiveTypeConstant(PrimitiveType.DOUBLE);
+            } else if (inst.getConst() instanceof FloatConst) {
+                typeCst = new PrimitiveTypeConstant(PrimitiveType.FLOAT);
+            } else if (inst.getConst() instanceof IntConst) {
+                int value = ((IntConst) inst.getConst()).getValue();
+                if (value == 0 || value == 1) {
+                    typeCst = new PrimitiveTypeConstant(PrimitiveType.INTEGER,
+                                                        PrimitiveType.BOOLEAN);
+                } else {
+                    typeCst = new PrimitiveTypeConstant(PrimitiveType.INTEGER);
+                }
+            } else if (inst.getConst() instanceof LongConst) {
+                long value = ((LongConst) inst.getConst()).getValue();
+                if (value == 0 || value == 1) {
+                    typeCst = new PrimitiveTypeConstant(PrimitiveType.LONG,
+                                                        PrimitiveType.BOOLEAN);
+                } else {
+                    typeCst = new PrimitiveTypeConstant(PrimitiveType.LONG);
+                }
+            } else if (inst.getConst() instanceof NullConst) {
+                typeCst = new ReferenceTypeConstant(javaLangObjectClassName, null);
+            } else if (inst.getConst() instanceof ShortConst) {
+                short value = ((ShortConst) inst.getConst()).getValue();
+                if (value == 0 || value == 1) {
+                    typeCst = new PrimitiveTypeConstant(PrimitiveType.SHORT,
+                                                        PrimitiveType.BOOLEAN);
+                } else {
+                    typeCst = new PrimitiveTypeConstant(PrimitiveType.SHORT);
+                }
+            } else if (inst.getConst() instanceof StringConst) {
+                typeCst = new ReferenceTypeConstant(javaLangObjectClassName, javaLangStringClassName);
+            } else {
+                throw new InternalError();
+            }
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                              typeCst));
+            return null;
+        }
+
+        @Override
+        public Void visit(AssignVarInst inst, Void arg) {
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                              new TypeVariable(inst.getValue().getID())));
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getValue().getID()),
+                                              new TypeVariable(inst.getResult().getID())));
+            return null;
+        }
+
+        @Override
+        public Void visit(BinaryInst inst, Void arg) {
+            switch (inst.getOperator()) {
+                case PLUS:
+                case MINUS:
+                case MUL:
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                      new PrimitiveTypeConstant(JavaType.ARITHMETIC_TYPES)));
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getLeft().getID()),
+                                                      new TypeVariable(inst.getRight().getID())));
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getRight().getID()),
+                                                      new TypeVariable(inst.getLeft().getID())));
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                      new TypeVariable(inst.getLeft().getID())));
+                    break;
+
+                case LT:
+                case LE:
+                case GT:
+                case GE:
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                      new PrimitiveTypeConstant(PrimitiveType.BOOLEAN)));
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getLeft().getID()),
+                                                      new PrimitiveTypeConstant(JavaType.ARITHMETIC_TYPES)));
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getRight().getID()),
+                                                      new PrimitiveTypeConstant(JavaType.ARITHMETIC_TYPES)));
+                    break;
+
+                case EQ:
+                case NE:
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                      new PrimitiveTypeConstant(PrimitiveType.BOOLEAN)));
+
+                case OR:
+                case AND:
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                      new PrimitiveTypeConstant(PrimitiveType.BOOLEAN)));
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getLeft().getID()),
+                                                      new PrimitiveTypeConstant(PrimitiveType.BOOLEAN)));
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getRight().getID()),
+                                                      new PrimitiveTypeConstant(PrimitiveType.BOOLEAN)));
+                    break;
+            }
+            return null;
+        }
+
+        private void visitCallableInst(CallableInst inst) {
+            MethodSignature signature = inst.getSignature();
+            JavaType returnType = signature.getReturnType();
+            if (returnType.getKind() == TypeKind.PRIMITIVE) {
+                if (returnType.getPrimitiveType() != PrimitiveType.VOID) {
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                      new PrimitiveTypeConstant(returnType.getPrimitiveType())));
+                }
+            } else {
+                constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                  new ReferenceTypeConstant(returnType.getClassName(), null)));
+            }
+            for (int i = 0; i < signature.getArgumentTypes().size(); i++) {
+                JavaType argType = signature.getArgumentTypes().get(i);
+                Variable argVar = inst.getArguments().get(i);
+                if (argType.getKind() == TypeKind.PRIMITIVE) {
+                    constaints.add(new TypeConstraint(new TypeVariable(argVar.getID()),
+                                                      new PrimitiveTypeConstant(argType.getPrimitiveType())));
+                } else {
+                    constaints.add(new TypeConstraint(new TypeVariable(argVar.getID()),
+                                                      new ReferenceTypeConstant(argType.getClassName(), null)));
+                }
+            }
+        }
+
+        @Override
+        public Void visit(CallMethodInst inst, Void arg) {
+            visitCallableInst(inst);
+            return null;
+        }
+
+        @Override
+        public Void visit(CallStaticMethodInst inst, Void arg) {
+            visitCallableInst(inst);
+            return null;
+        }
+
+        @Override
+        public Void visit(CastInst inst, Void arg) {
+            JavaType castType = inst.getCastType();
+            if (castType.getKind() == TypeKind.PRIMITIVE) {
+                constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                  new PrimitiveTypeConstant(castType.getPrimitiveType())));
+            } else {
+                constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                                  new ReferenceTypeConstant(castType.getClassName(), null)));
+            }
+            return null;
+        }
+
+        @Override
+        public Void visit(ConditionalInst inst, Void arg) {
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getCond().getID()),
+                                              new PrimitiveTypeConstant(PrimitiveType.BOOLEAN)));
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getThen().getID()),
+                                              new TypeVariable(inst.getElse().getID())));
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getThen().getID()),
+                                              new TypeVariable(inst.getElse().getID())));
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                              new TypeVariable(inst.getThen().getID())));
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getThen().getID()),
+                                              new TypeVariable(inst.getResult().getID())));
+            return null;
+        }
+
+        @Override
+        public Void visit(GetArrayInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(SetArrayInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(GetFieldInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(SetFieldInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(JumpIfInst inst, Void arg) {
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getCond().getID()),
+                                              new PrimitiveTypeConstant(PrimitiveType.BOOLEAN)));
+            return null;
+        }
+
+        @Override
+        public Void visit(InstanceOfInst inst, Void arg) {
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                              new PrimitiveTypeConstant(PrimitiveType.BOOLEAN)));
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getVar().getID()),
+                                              new ReferenceTypeConstant(javaLangObjectClassName, null)));
+            return null;
+        }
+
+        @Override
+        public Void visit(MonitorEnterInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(MonitorExitInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(NewArrayInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(NewObjectInst inst, Void arg) {
+            ClassName superclass = classNameFactory.newClassName(Object.class.getName());
+            ClassName subclass = inst.getType().getClassName();
+            constaints.add(new TypeConstraint(new TypeVariable(inst.getResult().getID()),
+                                              new ReferenceTypeConstant(superclass, subclass)));
+
+            return null;
+        }
+
+        @Override
+        public Void visit(ReturnInst inst, Void arg) {
+            if (methodReturnType != null) {
+                if (methodReturnType.getKind() == TypeKind.PRIMITIVE) {
+                    if (methodReturnType.getPrimitiveType() != PrimitiveType.VOID) {
+                        constaints.add(new TypeConstraint(new TypeVariable(inst.getVar().getID()),
+                                                          new PrimitiveTypeConstant(methodReturnType.getPrimitiveType())));
+                    }
+                } else {
+                    constaints.add(new TypeConstraint(new TypeVariable(inst.getVar().getID()),
+                                                      new ReferenceTypeConstant(null, methodReturnType.getClassName())));
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public Void visit(SwitchInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(ThrowInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(UnaryInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(ChoiceInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(PhiInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(GetStaticFieldInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+        @Override
+        public Void visit(SetStaticFieldInst inst, Void arg) {
+            return super.visit(inst, arg);
+        }
+
+    }
+
     private final Visitor visitor = new Visitor();
+    private final ClassName javaLangObjectClassName;
+    private final ClassName javaLangStringClassName;
+    private final ClassName javaLangClassClassName;
 
     public LocalVariableTypeAnalyser(ControlFlowGraph graph, JavaType thisType,
                                      JavaType methodReturnType, List<Variable> methodArgs,
@@ -393,83 +537,71 @@ public class LocalVariableTypeAnalyser {
         this.methodReturnType = methodReturnType;
         this.methodArgs = methodArgs;
         this.classNameFactory = classNameFactory;
+        javaLangObjectClassName = classNameFactory.newClassName(Object.class.getName());
+        javaLangStringClassName = classNameFactory.newClassName(String.class.getName());
+        javaLangClassClassName = classNameFactory.newClassName(Class.class.getName());
     }
 
-    private Set<JavaType> getPossibleTypes(VariableID ID) {
-        Set<JavaType> types = possibleTypes.get(ID);
-        if (types == null) {
-            types = new HashSet<JavaType>();
-            possibleTypes.put(ID, types);
+    private void printConstraints() {
+        LOGGER.log(Level.FINEST, "Type constraints :");
+        for (TypeConstraint constaint : constaints) {
+            LOGGER.log(Level.FINEST, constaint.toString());
         }
-        return types;
-    }
-
-    private void printTypeTable() {
-        List<String> indexColumn = new ArrayList<String>(1);
-        List<String> typeColumn = new ArrayList<String>(1);
-        indexColumn.add("Index");
-        typeColumn.add("Type");
-        for (Map.Entry<VariableID, Set<JavaType>> entry : possibleTypes.entrySet()) {
-            VariableID ID = entry.getKey();
-            Set<JavaType> types = entry.getValue();
-            indexColumn.add(ID.toString());
-            StringBuilder builder = new StringBuilder();
-            builder.append("[");
-            for (Iterator<JavaType> it = types.iterator(); it.hasNext();) {
-                builder.append(it.next().getQualifiedName());
-                if (it.hasNext()) {
-                    builder.append(", ");
-                }
-            }
-            builder.append("]");
-            typeColumn.add(builder.toString());
-        }
-
-        LOGGER.log(Level.FINEST, "Variable types :\n{0}",
-                ConsoleUtil.printTable(indexColumn, typeColumn));
     }
 
     public void analyse() {
-        // type of this
-        getPossibleTypes(new VariableID(0)).add(thisType);
-
-        // and types of method parameters
+        // this type constraint
+        if (thisType != null) {
+            constaints.add(new TypeConstraint(new TypeVariable(new VariableID(0)),
+                                              new ReferenceTypeConstant(thisType.getClassName(),
+                                                                        thisType.getClassName())));
+        }
+        // method arguments constraints
         for (Variable varArg : methodArgs) {
-            getPossibleTypes(varArg.getID()).add(varArg.getType());
-        }
-
-        boolean change = true;
-        while (change) {
-            change = false;
-            for (BasicBlock block : graph.getBasicBlocks()) {
-                if (Boolean.TRUE.equals(block.getInstructions().accept(visitor, null))) {
-                    change = true;
-                }
+            JavaType varType = varArg.getType();
+            TypeConstant typeCst = null;
+            if (varType.getKind() == TypeKind.PRIMITIVE) {
+                typeCst = new PrimitiveTypeConstant(varType.getPrimitiveType());
+            } else {
+                typeCst = new ReferenceTypeConstant(null, varType.getClassName());
             }
+            constaints.add(new TypeConstraint(new TypeVariable(varArg.getID()), typeCst));
         }
-
-        // check that all variable have been types correctly
+        // local variables constraints
         for (BasicBlock bb : graph.getBasicBlocks()) {
-            for (IRInst inst : bb.getInstructions()) {
-                if (inst instanceof DefInst) {
-                    Variable v = ((DefInst) inst).getResult();
-                    assert v.getType() == null;
-                    Set<JavaType> types = getPossibleTypes(v.getID());
-                    if (types.size() == 1) {
-                        v.setType(types.iterator().next());
-                    } else {
-                        if (types.isEmpty()) {
-                            LOGGER.log(Level.WARNING, "Unable to find type of variable {0}",
-                                    v.getID());
-                        } else {
-                            LOGGER.log(Level.WARNING, "Multiple type found for variable {0} : {1}",
-                                new Object[] {v.getID(), types});
-                        }
-                    }
+            bb.getInstructions().accept(visitor, null);
+        }
+
+        printConstraints();
+
+        // unify constraints
+        Deque<TypeConstraint> constraintStack = new ArrayDeque<TypeConstraint>();
+        Deque<TypeConstraint> substitutionStack = new ArrayDeque<TypeConstraint>();
+        for (TypeConstraint constraint : constaints) {
+            if (constraint.getRight() instanceof TypeConstant) {
+                substitutionStack.push(constraint);
+            } else {
+                constraintStack.push(constraint);
+            }
+        }
+        while (substitutionStack.size() > 0) {
+            TypeConstraint substitution = substitutionStack.pop();
+            TypeVariable typeVar = substitution.getLeft();
+            TypeConstant typeCst = (TypeConstant) substitution.getRight();
+            for (Iterator<TypeConstraint> it = constraintStack.iterator(); it.hasNext();) {
+                TypeConstraint constraint = it.next();
+                if (constraint.getRight().equals(typeVar)) {
+                    constraint.setRight(typeCst);
+                    it.remove();
+                    substitutionStack.push(constraint);
                 }
             }
         }
 
-        printTypeTable();
+        printConstraints();
+
+        if (constraintStack.size() > 0) {
+            throw new ABCDException("Type analysis failed");
+        }
     }
 }

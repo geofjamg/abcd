@@ -16,15 +16,19 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.type.TypeKind;
-import java.util.Set;
+import java.util.List;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Const {
+public abstract class CallableInst extends DefInst {
 
-    TypeKind getTypeKind();
+    public CallableInst(int defID, Variable result) {
+        super(defID, result);
+    }
+
+    public abstract MethodSignature getSignature();
+
+    public abstract List<Variable> getArguments();
 }

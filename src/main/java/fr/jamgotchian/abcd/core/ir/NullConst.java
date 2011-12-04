@@ -16,10 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.type.ClassNameFactory;
-import fr.jamgotchian.abcd.core.type.JavaType;
-import java.util.Collections;
-import java.util.Set;
+import fr.jamgotchian.abcd.core.type.TypeKind;
 
 /**
  *
@@ -27,14 +24,12 @@ import java.util.Set;
  */
 public class NullConst implements Const {
 
-    private final ClassNameFactory factory;
-
-    public NullConst(ClassNameFactory factory) {
-        this.factory = factory;
+    public NullConst() {
     }
 
-    public Set<JavaType> getPossibleTypes() {
-        return Collections.singleton(JavaType.newRefType(factory.newClassName(Object.class.getName())));
+    @Override
+    public TypeKind getTypeKind() {
+        return TypeKind.REFERENCE;
     }
 
     @Override

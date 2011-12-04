@@ -16,9 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.type.JavaType;
-import java.util.Collections;
-import java.util.Set;
+import fr.jamgotchian.abcd.core.type.TypeKind;
 
 /**
  *
@@ -36,8 +34,9 @@ public class DoubleConst implements Const {
         return value;
     }
 
-    public Set<JavaType> getPossibleTypes() {
-        return Collections.singleton(JavaType.DOUBLE);
+    @Override
+    public TypeKind getTypeKind() {
+        return TypeKind.PRIMITIVE;
     }
 
     @Override

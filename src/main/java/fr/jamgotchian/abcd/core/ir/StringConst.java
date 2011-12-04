@@ -16,10 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.type.ClassNameFactory;
-import fr.jamgotchian.abcd.core.type.JavaType;
-import java.util.Collections;
-import java.util.Set;
+import fr.jamgotchian.abcd.core.type.TypeKind;
 
 /**
  *
@@ -29,19 +26,17 @@ public class StringConst implements Const {
 
     private final String value;
 
-    private final JavaType type;
-
-    public StringConst(String value, ClassNameFactory factory) {
+    public StringConst(String value) {
         this.value = value;
-        this.type = JavaType.newRefType(factory.newClassName(String.class.getName()));
     }
 
     public String getValue() {
         return value;
     }
 
-    public Set<JavaType> getPossibleTypes() {
-        return Collections.singleton(type);
+    @Override
+    public TypeKind getTypeKind() {
+        return TypeKind.PRIMITIVE;
     }
 
     @Override
