@@ -21,9 +21,8 @@ import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.ExceptionTable;
 import fr.jamgotchian.abcd.core.ir.LocalVariableTable;
-import org.jf.dexlib.Code.Format.Instruction10t;
-import org.jf.dexlib.Code.Format.Instruction22t;
 import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.OffsetInstruction;
 import org.jf.dexlib.CodeItem;
 
 /**
@@ -50,8 +49,9 @@ public class DalvikBytecodeControlFlowGraphBuilder extends ControlFlowGraphBuild
         for (int position = 0; position < instructions.length; position++) {
             Instruction instruction = instructions[position];
             switch (instruction.getFormat()) {
+                case Format21t:
                 case Format22t: {
-                    Instruction22t jumpInst = (Instruction22t) instruction;
+                    OffsetInstruction jumpInst = (OffsetInstruction) instruction;
                     int targetPosition
                             = addressManager.getTargetPosition(position,
                                                                jumpInst.getTargetAddressOffset());
@@ -59,13 +59,20 @@ public class DalvikBytecodeControlFlowGraphBuilder extends ControlFlowGraphBuild
                     break;
                 }
 
-                case Format10t: {
-                    Instruction10t jumpInst = (Instruction10t) instruction;
+                case Format10t:
+                case Format20t:
+                case Format30t: {
+                    OffsetInstruction gotoInst = (OffsetInstruction) instruction;
                     int targetPosition
                             = addressManager.getTargetPosition(position,
-                                                               jumpInst.getTargetAddressOffset());
+                                                               gotoInst.getTargetAddressOffset());
                     analyseGotoInst(position, targetPosition);
                     break;
+                }
+
+                case Format10x:
+                case Format11x: {
+                    analyseReturnInst(position);
                 }
             }
         }
