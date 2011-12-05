@@ -22,9 +22,7 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
-import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
-import fr.jamgotchian.abcd.core.type.ComputationalType;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.ArrayList;
@@ -45,8 +43,6 @@ public class IntermediateRepresentationBuilder {
 
     private static final Logger LOGGER
             = Logger.getLogger(IntermediateRepresentationBuilder.class.getName());
-
-    private final StringConst magicString;
 
     private final ControlFlowGraphBuilder cfgBuilder;
 
@@ -70,10 +66,6 @@ public class IntermediateRepresentationBuilder {
 
     private ControlFlowGraph cfg;
 
-    private final Set<Variable> finallyTmpVars;
-
-    private final Set<Variable> catchTmpVars;
-
     public IntermediateRepresentationBuilder(ControlFlowGraphBuilder cfgBuilder,
                                              InstructionBuilder instBuilder,
                                              ClassNameFactory classNameFactory,
@@ -94,213 +86,6 @@ public class IntermediateRepresentationBuilder {
         this.staticMethod = staticMethod;
         this.methodReturnType = methodReturnType;
         this.methodArgs = methodArgs;
-        finallyTmpVars = new HashSet<Variable>();
-        catchTmpVars = new HashSet<Variable>();
-        magicString = new StringConst("MAGIC");
-    }
-
-    private void processBB(BasicBlock bb, List<VariableStack> inputStacks) {
-
-        LOGGER.log(Level.FINER, "Process {0}", bb);
-
-        VariableStack inputStack = null;
-
-        if (bb.hasProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY)) {
-            // at the entry block of an exception handler the stack only contains
-            // the exception variable
-            inputStack = new VariableStack();
-            Variable exceptionVar = tmpVarFactory.create(bb);
-            IRInst tmpInst;
-            if (bb.hasProperty(BasicBlockPropertyName.FINALLY_ENTRY)) {
-                finallyTmpVars.add(exceptionVar);
-                tmpInst = instFactory.newAssignConst(exceptionVar, magicString);
-            } else { // catch
-                ExceptionHandlerInfo info
-                        = (ExceptionHandlerInfo) bb.getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY);
-                catchTmpVars.add(exceptionVar);
-                ClassName className = classNameFactory.newClassName(info.getClassName());
-                tmpInst = instFactory.newNewObject(exceptionVar, JavaType.newRefType(className));
-            }
-            bb.getInstructions().add(tmpInst);
-            inputStack.push(exceptionVar, ComputationalType.REFERENCE);
-        } else {
-            if (inputStacks.isEmpty()) {
-                inputStack = new VariableStack();
-            } else if (inputStacks.size() == 1) {
-                inputStack = inputStacks.get(0).clone();
-            } else {
-                inputStack = mergeStacks(inputStacks, bb);
-            }
-        }
-
-        bb.setInputStack(inputStack.clone());
-
-        if (bb.getInputStack().size() > 0) {
-            LOGGER.log(Level.FINEST, ">>> Input stack : {0}", bb.getInputStack());
-        }
-
-        VariableStack outputStack = inputStack.clone();
-
-        instBuilder.build(bb, outputStack);
-        bb.setOutputStack(outputStack);
-
-        if (bb.getOutputStack().size() > 0) {
-            LOGGER.log(Level.FINEST, "<<< Output stack : {0}", bb.getOutputStack());
-        }
-    }
-
-    private VariableStack mergeStacks(List<VariableStack> stacks, BasicBlock bb) {
-        if (stacks.size() <= 1) {
-            throw new ABCDException("stacks.size() <= 1");
-        }
-        List<Integer> sizes = new ArrayList<Integer>(stacks.size());
-        for (int i = 0; i < stacks.size(); i++) {
-            sizes.add(stacks.get(i).size());
-        }
-        for (int i = 0; i < sizes.size() - 1; i++) {
-            if (sizes.get(i) != sizes.get(i + 1)) {
-                throw new ABCDException("Cannot merge stacks with differents sizes : "
-                        + sizes);
-            }
-        }
-
-        VariableStack stacksMerge = new VariableStack();
-
-        List<List<Variable>> toList = new ArrayList<List<Variable>>(stacks.size());
-        for (int i = 0; i < stacks.size(); i++) {
-            toList.add(stacks.get(i).toList());
-        }
-        for (int i = stacks.get(0).size()-1; i >= 0 ; i--) {
-            Set<Variable> vars = new HashSet<Variable>(stacks.size());
-            for (int j = 0; j < stacks.size(); j++) {
-                vars.add(toList.get(j).get(i));
-            }
-            if (vars.size() == 1) {
-                Variable var1 = vars.iterator().next();
-                stacksMerge.push(var1, var1.getComputationalType());
-            } else {
-                Variable result = tmpVarFactory.create(bb);
-                bb.getInstructions().add(instFactory.newChoice(result, vars));
-                stacksMerge.push(result, vars.iterator().next().getComputationalType());
-            }
-        }
-
-        return stacksMerge;
-    }
-
-    private void cleanupExceptionHandlers() {
-        Set<Variable> finallyVars = new HashSet<Variable>();
-
-        for (BasicBlock bb : cfg.getBasicBlocks()) {
-            if (!bb.hasProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY)) {
-                continue;
-            }
-
-            IRInstSeq seq = bb.getInstructions();
-            for (int i = 0; i < seq.size()-1; i++) {
-                IRInst inst = seq.get(i);
-                IRInst inst2 = seq.get(i+1);
-
-                boolean remove = false;
-                Variable excVar = null;
-
-                if (inst instanceof AssignConstInst
-                        && inst2 instanceof AssignVarInst) {
-                    AssignConstInst assignCstInst = (AssignConstInst) inst;
-                    AssignVarInst assignVarInst = (AssignVarInst) inst2;
-                    if (finallyTmpVars.contains(assignCstInst.getResult())
-                            && assignCstInst.getConst() == magicString
-                            && !assignVarInst.getResult().isTemporary()
-                            && assignCstInst.getResult().equals(assignVarInst.getValue())) {
-                        excVar = assignVarInst.getResult();
-                        finallyVars.add(assignVarInst.getResult());
-                        remove = true;
-                    }
-                }
-                if (inst instanceof NewObjectInst
-                        && inst2 instanceof AssignVarInst) {
-                    NewObjectInst newObjInst = (NewObjectInst) inst;
-                    AssignVarInst assignVarInst = (AssignVarInst) inst2;
-                    if (catchTmpVars.contains(newObjInst.getResult())
-                            && !assignVarInst.getResult().isTemporary()
-                            && newObjInst.getResult().equals(assignVarInst.getValue())) {
-                        excVar = assignVarInst.getResult();
-                        remove = true;
-                    }
-                }
-
-                if (remove) {
-                    ((ExceptionHandlerInfo) bb.getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY)).setVariable(excVar);
-                    LOGGER.log(Level.FINEST, "Cleanup exception handler (bb={0}, excVar={1}) :",
-                            new Object[] {bb, excVar});
-                    LOGGER.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst));
-                    LOGGER.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst2));
-                    inst.setIgnored(true);
-                    inst2.setIgnored(true);
-                }
-            }
-        }
-
-        for (BasicBlock bb : cfg.getBasicBlocks()) {
-            IRInstSeq seq = bb.getInstructions();
-            for (int i = 0; i < seq.size()-1; i++) {
-                IRInst inst = seq.get(i);
-                IRInst inst2 = seq.get(i+1);
-
-                boolean remove = false;
-
-                Variable excVar = null;
-                if (inst instanceof AssignVarInst
-                        && inst2 instanceof ThrowInst) {
-                    AssignVarInst assignVarInst = (AssignVarInst) inst;
-                    ThrowInst throwInst = (ThrowInst) inst2;
-                    if (finallyVars.contains(assignVarInst.getValue())
-                            && assignVarInst.getResult().equals(throwInst.getVar())) {
-                        excVar = assignVarInst.getValue();
-                        remove = true;
-                    }
-                }
-
-                if (remove) {
-                    LOGGER.log(Level.FINEST, "Cleanup finally rethrow (excVar={0}) :", excVar);
-                    LOGGER.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst));
-                    LOGGER.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst2));
-                    inst.setIgnored(true);
-                    inst2.setIgnored(true);
-                }
-            }
-        }
-    }
-
-    private void buildInst() {
-        ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Build instructions of {0}",
-                '=', cfg.getName());
-
-        for (BasicBlock bb : cfg.getBasicBlocks()) {
-            bb.setInstructions(new IRInstSeq());
-        }
-
-        List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(cfg.getDFST().getNodes());
-        while (blocksToProcess.size() > 0) {
-            for (Iterator<BasicBlock> it = blocksToProcess.iterator(); it.hasNext();) {
-                BasicBlock bb = it.next();
-
-                List<VariableStack> inputStacks = new ArrayList<VariableStack>();
-                for (Edge incomingEdge : cfg.getIncomingEdgesOf(bb)) {
-                    if (incomingEdge.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
-                        continue;
-                    }
-                    BasicBlock pred = cfg.getEdgeSource(incomingEdge);
-                    inputStacks.add(pred.getOutputStack().clone());
-                }
-
-                processBB(bb, inputStacks);
-                it.remove();
-            }
-        }
-
-        // cleanup exception handler by removing fake instructions
-        cleanupExceptionHandlers();
     }
 
     /**
@@ -490,7 +275,7 @@ public class IntermediateRepresentationBuilder {
             }
 
             // build basic blocks instructions
-            buildInst();
+            instBuilder.build(cfg);
 
             if (cfg.removeUnnecessaryBlock()) {
                 cfg.updateDominatorInfo();

@@ -22,6 +22,6 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public interface InstructionBuilder {
 
-    void build(BasicBlock bb, VariableStack stack);
+    void build(ControlFlowGraph cfg);
 
 }

@@ -16,9 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.bytecode.dalvik;
 
-import fr.jamgotchian.abcd.core.ir.BasicBlock;
+import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
-import fr.jamgotchian.abcd.core.ir.VariableStack;
 
 /**
  *
@@ -26,7 +25,8 @@ import fr.jamgotchian.abcd.core.ir.VariableStack;
  */
 public class DalvikBytecodeInstructionBuilder implements InstructionBuilder {
 
-    public void build(BasicBlock bb, VariableStack stack) {
+    @Override
+    public void build(ControlFlowGraph cfg) {
         // TODO
     }
 
