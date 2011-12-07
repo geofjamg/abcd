@@ -18,10 +18,13 @@ package fr.jamgotchian.abcd.core.ir;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
+import fr.jamgotchian.abcd.core.graph.Tree;
+import static fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName.*;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
@@ -257,6 +260,33 @@ public class IntermediateRepresentationBuilder {
                 ConsoleUtil.printTable(variableColumn, positionColumn, nameColumn));
     }
 
+    private void addVariableDeclarations() {
+        Multimap<VariableID, BasicBlock> defBlocks = HashMultimap.create();
+        for (BasicBlock block : cfg.getBasicBlocks()) {
+            for (IRInst inst : block.getInstructions()) {
+                if (!inst.isIgnored() && inst instanceof DefInst) {
+                    Variable def = ((DefInst) inst).getResult();
+                    if (!def.isTemporary()) {
+                        defBlocks.put(def.getID(), block);
+                    }
+                }
+            }
+        }
+        Tree<BasicBlock, Edge> domTree = cfg.getDominatorInfo().getDominatorsTree();
+        for (Map.Entry<VariableID, Collection<BasicBlock>> entry : defBlocks.asMap().entrySet()) {
+            VariableID ID = entry.getKey();
+            BasicBlock commonAncestor = domTree.getFirstCommonAncestor(entry.getValue());
+            assert commonAncestor != null;
+            if (commonAncestor.hasProperty(VARIABLE_DECLARATION)) {
+                ((Set<VariableID>) commonAncestor.getProperty(VARIABLE_DECLARATION)).add(ID);
+            } else {
+                commonAncestor.putProperty(VARIABLE_DECLARATION, Sets.newHashSet(ID));
+            }
+            LOGGER.log(Level.FINER, "Declar variable {0} at {1} ",
+                    new Object[] {ID, commonAncestor});
+        }
+    }
+
     public ControlFlowGraph build(ABCDWriter writer) {
         // build control flow graph from bytecode
         cfg = cfgBuilder.build();
@@ -318,18 +348,21 @@ public class IntermediateRepresentationBuilder {
                 cfg.updateLoopInfo();
             }
 
+            // add variable declarations
+            addVariableDeclarations();
+
+            // analyse local variables types
+            new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
+                                          methodArgs, classNameFactory)
+                    .analyse();
+
+            // assign a name to each variable
+            assignNameToVariables();
+
             writer.writeCFG(cfg, false);
         } finally {
             writer.writeCFG(cfg, true);
         }
-
-        // analyse local variables types
-        new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
-                                      methodArgs, classNameFactory)
-                .analyse();
-
-        // assign a name to each variable
-        assignNameToVariables();
 
         return cfg;
     }

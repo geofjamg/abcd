@@ -250,8 +250,9 @@ public class ABCDContext {
                         '=', methodSignature);
 
                 Region rootRegion = rpst.getRootRegion();
-                new AbstractSyntaxTreeBuilder(cfg, importManager,
-                                              rootRegion, method.getBody()).build();
+                new AbstractSyntaxTreeBuilder(cfg, rootRegion, method.getBody(),
+                                              method.getArguments())
+                        .build();
 
                 // refactor AST
 //                for (Refactorer refactorer : REFACTORERS) {

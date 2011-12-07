@@ -31,6 +31,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.DoWhileStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ExpressionStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.IfStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.LabeledStatement;
+import fr.jamgotchian.abcd.core.ast.stmt.LocalVariableDeclarationStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.MonitorEnterStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.MonitorExitStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.ReturnStatement;
@@ -48,7 +49,7 @@ import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.ArrayLengthInst;
 import fr.jamgotchian.abcd.core.ir.AssignConstInst;
 import fr.jamgotchian.abcd.core.ir.AssignVarInst;
-import fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName;
+import static fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName.*;
 import fr.jamgotchian.abcd.core.ir.BasicBlockType;
 import fr.jamgotchian.abcd.core.ir.BinaryInst;
 import fr.jamgotchian.abcd.core.ir.ByteConst;
@@ -97,6 +98,7 @@ import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -114,8 +116,6 @@ public class AbstractSyntaxTreeBuilder {
 
     private final ControlFlowGraph cfg;
 
-    private final ImportManager importManager;
-
     private final Region rootRegion;
 
     private final BlockStatement methodBody;
@@ -123,6 +123,8 @@ public class AbstractSyntaxTreeBuilder {
     private Map<BasicBlock, Set<Variable>> liveVariables;
 
     private final Map<VariableID, Expression> expressions;
+
+    private final Set<VariableID> declared = new HashSet<VariableID>();
 
     private class RegionIRInstVisitor extends EmptyIRInstVisitor<Void, BlockStatement> {
 
@@ -163,12 +165,22 @@ public class AbstractSyntaxTreeBuilder {
             if (leftVar.isTemporary()) {
                 expressions.put(leftVar.getID(), rightExpr);
             } else {
-                Expression varExpr
-                        = Expressions.newVarExpr(leftVar);
-                Expression assignExpr
-                        = Expressions.newAssignExpr(varExpr, rightExpr,
-                                                    AssignOperator.ASSIGN);
-                blockStmt.add(new ExpressionStatement(assignExpr));
+                VariableExpression varExpr = Expressions.newVarExpr(leftVar);
+                Statement stmt = null;
+                BasicBlock bb = leftVar.getBasicBlock();
+                Set<VariableID> toDeclarInBB
+                        = (Set<VariableID>) bb.getProperty(VARIABLE_DECLARATION);
+                if (toDeclarInBB != null && toDeclarInBB.contains(leftVar.getID())
+                        && !declared.contains(leftVar.getID())) {
+                    declared.add(leftVar.getID());
+                    stmt = new LocalVariableDeclarationStatement(varExpr, rightExpr);
+                } else {
+                    Expression assignExpr
+                            = Expressions.newAssignExpr(varExpr, rightExpr,
+                                                        AssignOperator.ASSIGN);
+                    stmt = new ExpressionStatement(assignExpr);
+                }
+                blockStmt.add(stmt);
             }
         }
 
@@ -547,13 +559,15 @@ public class AbstractSyntaxTreeBuilder {
         }
     }
 
-    public AbstractSyntaxTreeBuilder(ControlFlowGraph cfg, ImportManager importManager,
-                                     Region rootRegion, BlockStatement methodBody) {
+    public AbstractSyntaxTreeBuilder(ControlFlowGraph cfg, Region rootRegion,
+                                     BlockStatement methodBody, List<Variable> argVars) {
         this.cfg = cfg;
-        this.importManager = importManager;
         this.rootRegion = rootRegion;
         this.methodBody = methodBody;
         expressions = new HashMap<VariableID, Expression>();
+        for (Variable argVar : argVars) {
+            declared.add(argVar.getID());
+        }
     }
 
     public void build() {
@@ -580,8 +594,8 @@ public class AbstractSyntaxTreeBuilder {
                     RegionIRInstVisitor visitor = new RegionIRInstVisitor();
                     bb.getInstructions().accept(visitor, blockStmt);
                 }
-                if (bb.hasProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_SOURCE)) {
-                    blockStmt.add(new BreakStatement("L" + bb.getProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_SOURCE)));
+                if (bb.hasProperty(BREAK_LABEL_EXIT_SOURCE)) {
+                    blockStmt.add(new BreakStatement("L" + bb.getProperty(BREAK_LABEL_EXIT_SOURCE)));
                 }
                 break;
             }
@@ -715,12 +729,14 @@ public class AbstractSyntaxTreeBuilder {
                 BlockStatement finallyBlockStmt = null;
 
                 for (Region catchRegion : region.getChildren(ChildType.CATCH)) {
+                    ExceptionHandlerInfo info
+                            = (ExceptionHandlerInfo) catchRegion.getEntry().getProperty(EXCEPTION_HANDLER_ENTRY);
+                    Variable excVar = info.getVariable();
+
+                    declared.add(excVar.getID());
                     BlockStatement catchBlockStmt = new BlockStatement();
                     buildAST(catchRegion, catchBlockStmt);
 
-                    ExceptionHandlerInfo info
-                            = (ExceptionHandlerInfo) catchRegion.getEntry().getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY);
-                    Variable excVar = info.getVariable();
                     VariableExpression excVarExpr = Expressions.newVarExpr(excVar);
                     catchClauses.add(new CatchClause(catchBlockStmt, excVarExpr));
                 }
