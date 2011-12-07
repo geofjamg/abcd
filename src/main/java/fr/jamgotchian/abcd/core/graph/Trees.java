@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.graph;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -40,102 +41,131 @@ public class Trees {
             this.delegate = delegate;
         }
 
+        @Override
         public Tree<N, E> getSubTree(N node) {
             return delegate.getSubTree(node);
         }
 
+        @Override
         public N getRoot() {
             return delegate.getRoot();
         }
 
+        @Override
         public N getParent(N node) {
             return delegate.getParent(node);
         }
 
-        public Set<N> getAncestors(N node) {
+        @Override
+        public Collection<N> getAncestors(N node) {
             return delegate.getAncestors(node);
         }
 
+        @Override
         public Set<N> getNodes() {
             return delegate.getNodes();
         }
 
+        @Override
         public int getNodeCount() {
             return delegate.getNodeCount();
         }
 
+        @Override
         public E getIncomingEdge(N node) {
             return delegate.getIncomingEdge(node);
         }
 
+        @Override
         public Set<E> getEdges() {
             return delegate.getEdges();
         }
 
+        @Override
         public N getEdgeTarget(E edge) {
             return delegate.getEdgeTarget(edge);
         }
 
+        @Override
         public N getEdgeSource(E edge) {
             return delegate.getEdgeSource(edge);
         }
 
+        @Override
         public int getDepthFromRoot(N node) {
             return delegate.getDepthFromRoot(node);
         }
 
+        @Override
         public Set<N> getChildren(N node) {
             return delegate.getChildren(node);
         }
 
+        @Override
         public int getChildrenCount(N node) {
             return delegate.getChildrenCount(node);
         }
 
+        @Override
         public Set<N> getLeaves() {
             return delegate.getLeaves();
         }
 
+        @Override
         public boolean containsNode(N node) {
             return delegate.containsNode(node);
         }
 
+        @Override
         public Iterator<N> iterator(N node) {
             return delegate.iterator(node);
         }
 
+        @Override
         public Iterator<N> iterator() {
             return delegate.iterator();
         }
 
+        @Override
         public List<N> getNodesPostOrder() {
             return delegate.getNodesPostOrder();
         }
 
+        @Override
+        public N getFirstCommonAncestor(Collection<N> nodes) {
+            return delegate.getFirstCommonAncestor(nodes);
+        }
+
+        @Override
         public String getClusterID() {
             return delegate.getClusterID();
         }
 
+        @Override
         public void export(String fileName, String name,
                            GraphvizRenderer<N> nodeRenderer,
                            GraphvizRenderer<E> edgeRenderer) {
             delegate.export(fileName, name, nodeRenderer, edgeRenderer);
         }
 
+        @Override
         public void export(String fileName, String name) {
             delegate.export(fileName, name);
         }
 
+        @Override
         public void export(Writer writer, String name) throws IOException {
             delegate.export(writer, name);
         }
 
+        @Override
         public void export(Writer writer, String name,
                            GraphvizRenderer<N> nodeRenderer,
                            GraphvizRenderer<E> edgeRenderer) throws IOException {
             delegate.export(writer, name, nodeRenderer, edgeRenderer);
         }
 
+        @Override
         public void export(Writer writer, String name,
                            GraphvizRenderer<N> nodeRenderer,
                            GraphvizRenderer<E> edgeRenderer,

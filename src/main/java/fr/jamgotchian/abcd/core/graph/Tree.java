@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.graph;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +54,7 @@ public interface Tree<N, E> extends Iterable<N>, GraphvizDigraph<N, E> {
 
     N getParent(N node);
 
-    Set<N> getAncestors(N node);
+    Collection<N> getAncestors(N node);
 
     N getRoot();
 
@@ -62,6 +63,8 @@ public interface Tree<N, E> extends Iterable<N>, GraphvizDigraph<N, E> {
     Iterator<N> iterator(N node);
 
     List<N> getNodesPostOrder();
+
+    N getFirstCommonAncestor(Collection<N> nodes);
 
     void export(Writer writer, String name,
                 GraphvizRenderer<N> nodeRenderer,

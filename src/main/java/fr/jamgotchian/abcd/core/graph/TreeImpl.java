@@ -22,10 +22,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,22 +120,27 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         nodes.put(root, new Neighbors<N, E>());
     }
 
+    @Override
     public N getRoot() {
         return root;
     }
 
+    @Override
     public Set<N> getNodes() {
         return nodes.keySet();
     }
 
+    @Override
     public int getNodeCount() {
         return nodes.size();
     }
 
+    @Override
     public Set<E> getEdges() {
         return edges.keySet();
     }
 
+    @Override
     public void addNode(N parent, N node, E edge) {
         if (nodes.containsKey(node)) {
             throw new ABCDException("Node " + node + " already present");
@@ -152,10 +157,12 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         edges.put(edge, new Connection<N>(parent, node));
     }
 
+    @Override
     public boolean containsNode(N node) {
         return nodes.containsKey(node);
     }
 
+    @Override
     public N getParent(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
@@ -164,7 +171,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         return neighbors.getParentNode();
     }
 
-    private void getAncestors(N node, Set<N> ancestors) {
+    private void getAncestors(N node, List<N> ancestors) {
         N parent = getParent(node);
         if (parent != null) {
             ancestors.add(parent);
@@ -172,12 +179,14 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         }
     }
 
-    public Set<N> getAncestors(N node) {
-        Set<N> ancestors = new LinkedHashSet<N>();
+    @Override
+    public Collection<N> getAncestors(N node) {
+        List<N> ancestors = new ArrayList<N>();
         getAncestors(node, ancestors);
         return ancestors;
     }
 
+    @Override
     public E getIncomingEdge(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
@@ -186,6 +195,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         return neighbors.getIncomingEdge();
     }
 
+    @Override
     public void setParent(N node, N newParent) {
         if (node.equals(root)) {
             throw new ABCDException("Can't change parent of root node");
@@ -207,6 +217,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         edges.put(edge, new Connection<N>(newParent, node));
     }
 
+    @Override
     public Set<N> getChildren(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
@@ -215,6 +226,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         return neighbors.getChildren().keySet();
     }
 
+    @Override
     public int getChildrenCount(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
@@ -223,6 +235,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         return neighbors.getChildren().size();
     }
 
+    @Override
     public Set<N> getLeaves() {
         Set<N> leaves = new HashSet<N>(1);
         for (N node : getNodes()) {
@@ -233,6 +246,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         return leaves;
     }
 
+    @Override
     public N getEdgeSource(E edge) {
         if (edge == null) {
             throw new ABCDException("edge == null");
@@ -244,6 +258,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         return connection.getSource();
     }
 
+    @Override
     public N getEdgeTarget(E edge) {
         if (edge == null) {
             throw new ABCDException("edge == null");
@@ -255,6 +270,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         return connection.getTarget();
     }
 
+    @Override
     public int getDepthFromRoot(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
@@ -267,6 +283,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         return depth;
     }
 
+    @Override
     public Tree<N, E> getSubTree(N node) {
         MutableTree<N, E> subTree = new TreeImpl<N, E>(node);
         buildSubTree(node, subTree);
@@ -282,14 +299,17 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         }
     }
 
+    @Override
     public Iterator<N> iterator(N node) {
         return getSubTree(root).getNodes().iterator();
     }
 
+    @Override
     public Iterator<N> iterator() {
         return iterator(root);
     }
 
+    @Override
     public List<N> getNodesPostOrder() {
         List<N> nodesPostOrder = new ArrayList<N>(nodes.size());
         visitNodePostOrder(root, nodesPostOrder);
@@ -303,10 +323,45 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         nodesPostOrder.add(node);
     }
 
+    private Collection<N> getNodePlusAncestors(N node) {
+        List<N> ancestors = new ArrayList<N>(1);
+        ancestors.add(node);
+        getAncestors(node, ancestors);
+        return ancestors;
+    }
+
+    @Override
+    public N getFirstCommonAncestor(Collection<N> nodes) {
+        if (nodes == null) {
+            throw new ABCDException("nodes == null");
+        }
+        if (nodes.isEmpty()) {
+            throw new ABCDException("nodes.isEmpty()");
+        }
+        if (nodes.size() == 1) {
+            return nodes.iterator().next();
+        }
+        List<N> commonAncestors = null;
+        for (N node : nodes) {
+            Collection<N> ancestors = getNodePlusAncestors(node);
+            if (commonAncestors == null) {
+                commonAncestors = new ArrayList<N>(ancestors);
+            } else {
+                commonAncestors.retainAll(ancestors);
+            }
+        }
+        if (commonAncestors.isEmpty()) {
+            throw new ABCDException("Common ancestor not found");
+        }
+        return commonAncestors.get(0);
+    }
+
+    @Override
     public String getClusterID() {
         return Integer.toString(System.identityHashCode(this));
     }
 
+    @Override
     public void export(String fileName, String name,
                        GraphvizRenderer<N> nodeRenderer,
                        GraphvizRenderer<E> edgeRenderer) {
@@ -327,6 +382,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         }
     }
 
+    @Override
     public void export(String fileName, String name) {
         Writer writer = null;
         try {
@@ -345,16 +401,19 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         }
     }
 
+    @Override
     public void export(Writer writer, String name) throws IOException {
         export(writer, name, NODE_GRAPHVIZ_RENDERER, EDGE_GRAPHVIZ_RENDERER);
     }
 
+    @Override
     public void export(Writer writer, String name,
                        GraphvizRenderer<N> nodeRenderer,
                        GraphvizRenderer<E> edgeRenderer) throws IOException {
         export(writer, name, nodeRenderer, edgeRenderer, false);
     }
 
+    @Override
     public void export(Writer writer, String name,
                        GraphvizRenderer<N> nodeRenderer,
                        GraphvizRenderer<E> edgeRenderer,

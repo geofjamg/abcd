@@ -17,8 +17,10 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -30,14 +32,14 @@ public class TreeImplTest {
 
     public TreeImplTest() {
     }
-    
+
     @Test
     public void testInit() {
         Vertex n1 = new Vertex("n", 1);
         Tree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
         assertTrue(Collections3.sameContent(Arrays.asList(n1), tree.getNodes()));
     }
-    
+
     @Test
     public void testAddNode() {
         Vertex n1 = new Vertex("n", 1);
@@ -130,8 +132,7 @@ public class TreeImplTest {
         assertTrue(tree.getParent(n4).equals(n3));
         assertTrue(Collections3.sameContent(tree.getChildren(n4), Arrays.asList(n5, n6)));
     }
-    
-       
+
     @Test
     public void testDepthFromRoot() {
         Vertex n1 = new Vertex("n", 1);
@@ -153,5 +154,28 @@ public class TreeImplTest {
         assertTrue(tree.getDepthFromRoot(n3) == 2);
         assertTrue(tree.getDepthFromRoot(n4) == 2);
         assertTrue(tree.getDepthFromRoot(n5) == 3);
+    }
+
+    @Test
+    public void testFirstCommonAncestor() {
+        Vertex n1 = new Vertex("n", 1);
+        Vertex n2 = new Vertex("n", 2);
+        Vertex n3 = new Vertex("n", 3);
+        Vertex n4 = new Vertex("n", 4);
+        String e12 = "e12";
+        String e23 = "e23";
+        String e14 = "e14";
+        MutableTree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        tree.addNode(n1, n2, e12);
+        tree.addNode(n2, n3, e23);
+        tree.addNode(n1, n4, e14);
+        try {
+            tree.getFirstCommonAncestor(Collections.<Vertex>emptyList());
+            fail();
+        } catch (ABCDException e) {
+        }
+        assertTrue(tree.getFirstCommonAncestor(Arrays.asList(n2)).equals(n2));
+        assertTrue(tree.getFirstCommonAncestor(Arrays.asList(n2, n3)).equals(n2));
+        assertTrue(tree.getFirstCommonAncestor(Arrays.asList(n3, n4)).equals(n1));
     }
 }
