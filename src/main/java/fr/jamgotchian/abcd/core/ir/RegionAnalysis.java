@@ -322,9 +322,11 @@ public class RegionAnalysis {
         Set<Region> inlinedFinallyRegions = new HashSet<Region>();
         if (finallyRegion != null) {
             for (Region child : region.getChildren()) {
-                if (!child.equals(finallyRegion)
-                        && (child.getExit().equals(region.getExit())
-                        || child.getExit().hasProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_TARGET))) {
+                if (child.equals(finallyRegion)) {
+                    continue;
+                }
+                if (child.getExit().equals(region.getExit())
+                        || child.getExit().hasProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_TARGET)) {
                     if (child.deepEquals(finallyRegion)) {
                         inlinedFinallyRegions.add(child);
                     }
