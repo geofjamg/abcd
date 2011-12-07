@@ -1075,6 +1075,27 @@ public class Test {
 //        b();
 //    }
 
+    void testSynchronized2() {
+        System.out.println("a");
+        synchronized (this) {
+            System.out.println("b");
+        }
+    }
+
+    void testSynchronized3(boolean z, boolean y) {
+        System.out.println("a");
+        synchronized (this) {
+            if (z) {
+                System.out.println("b");
+                if (y) {
+                    return;
+                }
+            } else {
+                System.out.println("c");
+            }
+        }
+    }
+
     public void testAllocation() {
         java.lang.String s = new java.lang.String("sss");
     }
