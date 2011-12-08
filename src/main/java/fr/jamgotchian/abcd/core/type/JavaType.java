@@ -60,7 +60,7 @@ public class JavaType {
     }
 
     public static final String UNDEFINED_TYPE = "???";
-    
+
     public static final JavaType VOID = new JavaType(PrimitiveType.VOID, null, null, 0);
     public static final JavaType INT = new JavaType(PrimitiveType.INTEGER, null, null, 0);
     public static final JavaType LONG = new JavaType(PrimitiveType.LONG, null, null, 0);
@@ -110,6 +110,10 @@ public class JavaType {
                 Collections.unmodifiableList(Arrays.asList(JavaType.VOID)));
 
         WIDENING_PRIMITIVE_CONVERSION = Collections.unmodifiableMap(conversion);
+    }
+
+    public static JavaType newPrimitiveType(PrimitiveType primitiveType) {
+        return new JavaType(primitiveType, null, null, 0);
     }
 
     public static JavaType newRefType(ClassName className) {
