@@ -46,9 +46,6 @@ public class LocalVariableTypeAnalyser {
     private static interface TypeVariableOrConstant {
     }
 
-    private static interface TypeConstant extends TypeVariableOrConstant {
-    }
-
     private static class TypeVariable implements TypeVariableOrConstant {
 
         private final VariableID ID;
@@ -78,6 +75,55 @@ public class LocalVariableTypeAnalyser {
         @Override
         public String toString() {
             return "type(" + ID.toString() + ")";
+        }
+    }
+
+    private static interface TypeConstant extends TypeVariableOrConstant {
+    }
+
+    private static class PrimitiveTypeConstant implements TypeConstant {
+
+        private final Set<PrimitiveType> types;
+
+        private PrimitiveTypeConstant(Set<PrimitiveType> types) {
+            this.types = types;
+        }
+
+        private PrimitiveTypeConstant(PrimitiveType first, PrimitiveType... rest) {
+            this.types = EnumSet.of(first, rest);
+        }
+
+        public Set<PrimitiveType> getTypes() {
+            return types;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof PrimitiveTypeConstant) {
+                PrimitiveTypeConstant other = (PrimitiveTypeConstant) obj;
+                return types.equals(other.types);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return types.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append("{");
+            for (Iterator<PrimitiveType> it = types.iterator(); it.hasNext(); ) {
+                builder.append(it.next());
+                if (it.hasNext()) {
+                    builder.append(", ");
+                }
+            }
+            builder.append("}");
+            return builder.toString();
         }
     }
 
@@ -134,52 +180,6 @@ public class LocalVariableTypeAnalyser {
         }
     }
 
-    private static class PrimitiveTypeConstant implements TypeConstant {
-
-        private final Set<PrimitiveType> types;
-
-        private PrimitiveTypeConstant(Set<PrimitiveType> types) {
-            this.types = types;
-        }
-
-        private PrimitiveTypeConstant(PrimitiveType first, PrimitiveType... rest) {
-            this.types = EnumSet.of(first, rest);
-        }
-
-        public Set<PrimitiveType> getTypes() {
-            return types;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof PrimitiveTypeConstant) {
-                PrimitiveTypeConstant other = (PrimitiveTypeConstant) obj;
-                return types.equals(other.types);
-            } else {
-                return false;
-            }
-        }
-
-        @Override
-        public int hashCode() {
-            return types.hashCode();
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder builder = new StringBuilder();
-            builder.append("{");
-            for (Iterator<PrimitiveType> it = types.iterator(); it.hasNext(); ) {
-                builder.append(it.next());
-                if (it.hasNext()) {
-                    builder.append(", ");
-                }
-            }
-            builder.append("}");
-            return builder.toString();
-        }
-    }
-
     private static class TypeConstraint {
 
         private final TypeVariable left;
@@ -207,13 +207,6 @@ public class LocalVariableTypeAnalyser {
         public String toString() {
             return left + " = " + right;
         }
-    }
-
-    private final Multimap<TypeVariable, TypeConstraint> constaints = HashMultimap.create();
-
-    private void addConstraint(TypeVariable left, TypeVariableOrConstant right) {
-        TypeConstraint constraint = new TypeConstraint(left, right);
-        constaints.put(left, constraint);
     }
 
     private class Visitor extends EmptyIRInstVisitor<Void, Void> {
@@ -552,7 +545,7 @@ public class LocalVariableTypeAnalyser {
 
     }
 
-    private final ControlFlowGraph graph;
+    private final ControlFlowGraph cfg;
 
     private final JavaType thisType;
 
@@ -570,10 +563,12 @@ public class LocalVariableTypeAnalyser {
 
     private final ClassName javaLangClassClassName;
 
-    public LocalVariableTypeAnalyser(ControlFlowGraph graph, JavaType thisType,
+    private final Multimap<TypeVariable, TypeConstraint> constaints = HashMultimap.create();
+
+    public LocalVariableTypeAnalyser(ControlFlowGraph cfg, JavaType thisType,
                                      JavaType methodReturnType, List<Variable> methodArgs,
                                      ClassNameFactory classNameFactory) {
-        this.graph = graph;
+        this.cfg = cfg;
         this.thisType = thisType;
         this.methodReturnType = methodReturnType;
         this.methodArgs = methodArgs;
@@ -581,6 +576,11 @@ public class LocalVariableTypeAnalyser {
         javaLangObjectClassName = classNameFactory.newClassName(Object.class.getName());
         javaLangStringClassName = classNameFactory.newClassName(String.class.getName());
         javaLangClassClassName = classNameFactory.newClassName(Class.class.getName());
+    }
+
+    private void addConstraint(TypeVariable left, TypeVariableOrConstant right) {
+        TypeConstraint constraint = new TypeConstraint(left, right);
+        constaints.put(left, constraint);
     }
 
     private void printConstraints() {
@@ -609,7 +609,7 @@ public class LocalVariableTypeAnalyser {
             addConstraint(new TypeVariable(varArg.getID()), typeCst);
         }
         // local variables constraints
-        for (BasicBlock bb : graph.getBasicBlocks()) {
+        for (BasicBlock bb : cfg.getBasicBlocks()) {
             bb.getInstructions().accept(visitor, null);
         }
 
