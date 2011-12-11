@@ -23,7 +23,7 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.type.JavaType.PrimitiveType;
+import fr.jamgotchian.abcd.core.type.PrimitiveType;
 import fr.jamgotchian.abcd.core.type.TypeKind;
 import java.util.ArrayDeque;
 import java.util.Deque;

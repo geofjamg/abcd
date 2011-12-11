@@ -36,29 +36,6 @@ import java.util.Set;
  */
 public class JavaType {
 
-    public enum PrimitiveType {
-        VOID("void"),
-        BOOLEAN("boolean"),
-        CHAR("char"),
-        BYTE("byte"),
-        SHORT("short"),
-        INTEGER("int"),
-        LONG("long"),
-        FLOAT("float"),
-        DOUBLE("double");
-
-        private String str;
-
-        private PrimitiveType(String str) {
-            this.str = str;
-        }
-
-        @Override
-        public String toString() {
-            return str;
-        }
-    }
-
     public static final String UNDEFINED_TYPE = "???";
 
     public static final JavaType VOID = new JavaType(PrimitiveType.VOID, null, null, 0);
