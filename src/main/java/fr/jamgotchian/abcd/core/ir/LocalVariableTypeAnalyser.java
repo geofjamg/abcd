@@ -144,6 +144,12 @@ public class LocalVariableTypeAnalyser {
                     addConstraint(inst.getResult(), inst.getLeft());
                     break;
 
+                case DIV:
+                    addConstraint(inst.getResult(), PrimitiveType.FLOAT);
+                    addConstraint(inst.getLeft(), ARITHMETIC_TYPES);
+                    addConstraint(inst.getRight(), ARITHMETIC_TYPES);
+                    break;
+
                 case LT:
                 case LE:
                 case GT:
@@ -222,12 +228,14 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(GetArrayInst inst, Void arg) {
-            return super.visit(inst, arg);
+            addConstraint(inst.getIndex(), PrimitiveType.INTEGER);
+            return null;
         }
 
         @Override
         public Void visit(SetArrayInst inst, Void arg) {
-            return super.visit(inst, arg);
+            addConstraint(inst.getIndex(), PrimitiveType.INTEGER);
+            return null;
         }
 
         @Override
@@ -318,7 +326,18 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(UnaryInst inst, Void arg) {
-            return super.visit(inst, arg);
+            switch (inst.getOperator()) {
+                case MINUS:
+                    addConstraint(inst.getResult(), ARITHMETIC_TYPES);
+                    addConstraint(inst.getResult(), inst.getVar());
+                    break;
+
+                case NOT:
+                    addConstraint(inst.getResult(), PrimitiveType.BOOLEAN);
+                    addConstraint(inst.getVar(), PrimitiveType.BOOLEAN);
+                    break;
+            }
+            return null;
         }
 
         @Override
