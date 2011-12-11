@@ -38,12 +38,12 @@ public class JavaType {
 
     public enum PrimitiveType {
         VOID("void"),
-        INTEGER("int"),
-        LONG("long"),
+        BOOLEAN("boolean"),
         CHAR("char"),
         BYTE("byte"),
         SHORT("short"),
-        BOOLEAN("boolean"),
+        INTEGER("int"),
+        LONG("long"),
         FLOAT("float"),
         DOUBLE("double");
 
