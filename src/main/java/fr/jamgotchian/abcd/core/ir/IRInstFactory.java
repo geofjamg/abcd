@@ -29,6 +29,8 @@ public class IRInstFactory {
 
     private int defID = 0;
 
+    private int cstID = 0;
+
     public IRInstFactory() {
     }
 
@@ -36,8 +38,36 @@ public class IRInstFactory {
         return new ArrayLengthInst(defID++, result, array);
     }
 
-    public AssignConstInst newAssignConst(Variable result, Const value) {
-        return new AssignConstInst(defID++, result, value);
+    public AssignConstInst newAssignInt(Variable result, int value) {
+        return new AssignConstInst(defID++, result, new IntConst(cstID++, value));
+    }
+
+    public AssignConstInst newAssignShort(Variable result, short value) {
+        return new AssignConstInst(defID++, result, new ShortConst(cstID++, value));
+    }
+
+    public AssignConstInst newAssignLong(Variable result, long value) {
+        return new AssignConstInst(defID++, result, new LongConst(cstID++, value));
+    }
+
+    public AssignConstInst newAssignFloat(Variable result, float value) {
+        return new AssignConstInst(defID++, result, new FloatConst(cstID++, value));
+    }
+
+    public AssignConstInst newAssignDouble(Variable result, double value) {
+        return new AssignConstInst(defID++, result, new DoubleConst(cstID++, value));
+    }
+
+    public AssignConstInst newAssignString(Variable result, String value) {
+        return new AssignConstInst(defID++, result, new StringConst(cstID++, value));
+    }
+
+    public AssignConstInst newAssignClass(Variable result, ClassName value) {
+        return new AssignConstInst(defID++, result, new ClassConst(cstID++, value));
+    }
+
+    public AssignConstInst newAssignNull(Variable result) {
+        return new AssignConstInst(defID++, result, new NullConst(cstID++));
     }
 
     public AssignVarInst newAssignVar(Variable result, Variable value) {

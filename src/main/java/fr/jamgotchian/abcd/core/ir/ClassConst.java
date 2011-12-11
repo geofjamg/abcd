@@ -23,11 +23,12 @@ import fr.jamgotchian.abcd.core.type.TypeKind;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ClassConst implements Const {
+public class ClassConst extends ConstImpl {
 
     private final ClassName className;
 
-    public ClassConst(ClassName className) {
+    public ClassConst(int ID, ClassName className) {
+        super(ID);
         this.className = className;
     }
 

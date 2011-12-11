@@ -81,8 +81,7 @@ public class SSAFormConverterTest {
         BasicBlock bb = new BasicBlockTestImpl("BB" + id);
         for (int var : vars) {
             bb.setInstructions(new IRInstSeq());
-            bb.getInstructions().add(instFactory.newAssignConst(new Variable(var, bb, -1),
-                                                                new IntConst(0)));
+            bb.getInstructions().add(instFactory.newAssignInt(new Variable(var, bb, -1), 0));
         }
         return bb;
     }

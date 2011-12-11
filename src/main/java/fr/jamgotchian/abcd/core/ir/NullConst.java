@@ -22,9 +22,10 @@ import fr.jamgotchian.abcd.core.type.TypeKind;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class NullConst implements Const {
+public class NullConst extends ConstImpl {
 
-    public NullConst() {
+    public NullConst(int ID) {
+        super(ID);
     }
 
     @Override

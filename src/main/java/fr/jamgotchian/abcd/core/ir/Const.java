@@ -16,9 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.type.TypeKind;
-import java.util.Set;
 
 /**
  *
@@ -26,5 +24,7 @@ import java.util.Set;
  */
 public interface Const {
 
+    int getID();
+    
     TypeKind getTypeKind();
 }

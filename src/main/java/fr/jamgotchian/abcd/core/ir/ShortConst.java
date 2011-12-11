@@ -22,11 +22,12 @@ import fr.jamgotchian.abcd.core.type.TypeKind;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ShortConst implements Const {
+public class ShortConst extends ConstImpl {
 
     private final short value;
 
-    public ShortConst(short value) {
+    public ShortConst(int ID, short value) {
+        super(ID);
         this.value = value;
     }
 

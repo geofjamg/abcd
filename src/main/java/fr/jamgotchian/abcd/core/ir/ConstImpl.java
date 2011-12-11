@@ -16,32 +16,20 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.type.TypeKind;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class FloatConst extends ConstImpl {
+public abstract class ConstImpl implements Const {
 
-    private final float value;
+    private final int ID;
 
-    public FloatConst(int ID, float value) {
-        super(ID);
-        this.value = value;
-    }
-
-    public float getValue() {
-        return value;
+    protected ConstImpl(int ID) {
+        this.ID = ID;
     }
 
     @Override
-    public TypeKind getTypeKind() {
-        return TypeKind.PRIMITIVE;
-    }
-
-   @Override
-    public String toString() {
-        return Float.toString(value);
+    public int getID() {
+        return ID;
     }
 }

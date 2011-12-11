@@ -22,11 +22,12 @@ import fr.jamgotchian.abcd.core.type.TypeKind;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DoubleConst implements Const {
+public class DoubleConst extends ConstImpl {
 
     private final double value;
 
-    public DoubleConst(double value) {
+    public DoubleConst(int ID, double value) {
+        super(ID);
         this.value = value;
     }
 

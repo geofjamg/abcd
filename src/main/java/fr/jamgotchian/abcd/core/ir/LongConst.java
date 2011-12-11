@@ -22,11 +22,12 @@ import fr.jamgotchian.abcd.core.type.TypeKind;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class LongConst implements Const {
+public class LongConst extends ConstImpl {
 
     private final long value;
 
-    public LongConst(long value) {
+    public LongConst(int ID, long value) {
+        super(ID);
         this.value = value;
     }
 
