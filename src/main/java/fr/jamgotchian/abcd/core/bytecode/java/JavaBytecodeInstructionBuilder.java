@@ -761,7 +761,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             Variable tmpVar = tmpVarFactory.create(bb);
             switch (node.getOpcode()) {
                 case BIPUSH:
-                    bb.getInstructions().add(instFactory.newAssignShort(tmpVar, (byte) node.operand));
+                    bb.getInstructions().add(instFactory.newAssignByte(tmpVar, (byte) node.operand));
                     stack.push(tmpVar, ComputationalType.INT);
                     break;
 

@@ -42,6 +42,10 @@ public class IRInstFactory {
         return new AssignConstInst(defID++, result, new IntConst(cstID++, value));
     }
 
+    public AssignConstInst newAssignByte(Variable result, byte value) {
+        return new AssignConstInst(defID++, result, new ByteConst(cstID++, value));
+    }
+
     public AssignConstInst newAssignShort(Variable result, short value) {
         return new AssignConstInst(defID++, result, new ShortConst(cstID++, value));
     }

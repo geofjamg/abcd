@@ -16,20 +16,22 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import choco.Choco;
+import choco.cp.model.CPModel;
+import choco.cp.solver.CPSolver;
+import choco.kernel.model.Model;
+import choco.kernel.model.variables.set.SetVariable;
+import choco.kernel.solver.Solver;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameFactory;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.type.PrimitiveType;
 import fr.jamgotchian.abcd.core.type.TypeKind;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.EnumSet;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,171 +45,21 @@ public class LocalVariableTypeAnalyser {
     private static final Logger LOGGER
             = Logger.getLogger(LocalVariableTypeAnalyser.class.getName());
 
-    private static interface TypeVariableOrConstant {
-    }
+    private static PrimitiveType[] PRIMITIVE_TYPES = { PrimitiveType.BOOLEAN,
+                                                       PrimitiveType.CHAR,
+                                                       PrimitiveType.BYTE,
+                                                       PrimitiveType.SHORT,
+                                                       PrimitiveType.INTEGER,
+                                                       PrimitiveType.LONG,
+                                                       PrimitiveType.FLOAT,
+                                                       PrimitiveType.DOUBLE };
 
-    private static class TypeVariable implements TypeVariableOrConstant {
-
-        private final VariableID ID;
-
-        private TypeVariable(VariableID ID) {
-            this.ID = ID;
-        }
-
-        public VariableID getID() {
-            return ID;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof TypeVariable) {
-                return ID.equals(((TypeVariable) obj).ID);
-            } else {
-                return false;
-            }
-        }
-
-        @Override
-        public int hashCode() {
-            return ID.hashCode();
-        }
-
-        @Override
-        public String toString() {
-            return "type(" + ID.toString() + ")";
-        }
-    }
-
-    private static interface TypeConstant extends TypeVariableOrConstant {
-    }
-
-    private static class PrimitiveTypeConstant implements TypeConstant {
-
-        private final Set<PrimitiveType> types;
-
-        private PrimitiveTypeConstant(Set<PrimitiveType> types) {
-            this.types = types;
-        }
-
-        private PrimitiveTypeConstant(PrimitiveType first, PrimitiveType... rest) {
-            this.types = EnumSet.of(first, rest);
-        }
-
-        public Set<PrimitiveType> getTypes() {
-            return types;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof PrimitiveTypeConstant) {
-                PrimitiveTypeConstant other = (PrimitiveTypeConstant) obj;
-                return types.equals(other.types);
-            } else {
-                return false;
-            }
-        }
-
-        @Override
-        public int hashCode() {
-            return types.hashCode();
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder builder = new StringBuilder();
-            builder.append("{");
-            for (Iterator<PrimitiveType> it = types.iterator(); it.hasNext(); ) {
-                builder.append(it.next());
-                if (it.hasNext()) {
-                    builder.append(", ");
-                }
-            }
-            builder.append("}");
-            return builder.toString();
-        }
-    }
-
-    private static class ReferenceTypeConstant implements TypeConstant  {
-
-        private final ClassName superclass;
-
-        private final ClassName subclass;
-
-        private ReferenceTypeConstant(ClassName superclass, ClassName subclass) {
-            this.superclass = superclass;
-            this.subclass = subclass;
-        }
-
-        public ClassName getSuperclass() {
-            return superclass;
-        }
-
-        public ClassName getSubclass() {
-            return subclass;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof ReferenceTypeConstant) {
-                ReferenceTypeConstant other = (ReferenceTypeConstant) obj;
-                return Objects.equal(superclass, other.superclass)
-                        && Objects.equal(subclass, other.subclass);
-            } else {
-                return false;
-            }
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(superclass, subclass);
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder builder = new StringBuilder();
-            if (superclass != null) {
-                builder.append("[").append(superclass.getQualifiedName());
-            } else {
-                builder.append("]-\u221E");
-            }
-            builder.append("; ");
-            if (subclass != null) {
-                builder.append(subclass.getQualifiedName()).append("]");
-            } else {
-                builder.append("+\u221E[");
-            }
-            return builder.toString();
-        }
-    }
-
-    private static class TypeConstraint {
-
-        private final TypeVariable left;
-
-        private TypeVariableOrConstant right;
-
-        private TypeConstraint(TypeVariable left, TypeVariableOrConstant right) {
-            this.left = left;
-            this.right = right;
-        }
-
-        public TypeVariable getLeft() {
-            return left;
-        }
-
-        public TypeVariableOrConstant getRight() {
-            return right;
-        }
-
-        public void setRight(TypeVariableOrConstant right) {
-            this.right = right;
-        }
-
-        @Override
-        public String toString() {
-            return left + " = " + right;
-        }
-    }
+    public static final PrimitiveType[] ARITHMETIC_TYPES = { PrimitiveType.INTEGER,
+                                                             PrimitiveType.LONG,
+                                                             PrimitiveType.BYTE,
+                                                             PrimitiveType.SHORT,
+                                                             PrimitiveType.FLOAT,
+                                                             PrimitiveType.DOUBLE };
 
     private class Visitor extends EmptyIRInstVisitor<Void, Void> {
 
@@ -218,72 +70,66 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(ArrayLengthInst inst, Void arg) {
-            addConstraint(new TypeVariable(inst.getResult().getID()),
-                          new PrimitiveTypeConstant(PrimitiveType.INTEGER));
+            addConstraint(inst.getResult(), PrimitiveType.INTEGER);
             return null;
         }
 
         @Override
         public Void visit(AssignConstInst inst, Void arg) {
-            TypeConstant typeCst = null;
             if (inst.getConst() instanceof ByteConst) {
                 byte value = ((ByteConst) inst.getConst()).getValue();
                 if (value == 0 || value == 1) {
-                    typeCst = new PrimitiveTypeConstant(PrimitiveType.BYTE,
-                                                        PrimitiveType.CHAR,
-                                                        PrimitiveType.BOOLEAN);
+                    addConstraint(inst.getResult(), PrimitiveType.BYTE,
+                                                    PrimitiveType.CHAR,
+                                                    PrimitiveType.BOOLEAN);
                 } else {
-                    typeCst = new PrimitiveTypeConstant(PrimitiveType.BYTE,
-                                                        PrimitiveType.CHAR);
+                    addConstraint(inst.getResult(), PrimitiveType.BYTE,
+                                                    PrimitiveType.CHAR);
                 }
             } else if (inst.getConst() instanceof ClassConst) {
                 ClassName subclass = classNameFactory.newClassName(Class.class.getName());
-                typeCst = new ReferenceTypeConstant(javaLangClassClassName, subclass);
+                // TODO
             } else if (inst.getConst() instanceof DoubleConst) {
-                typeCst = new PrimitiveTypeConstant(PrimitiveType.DOUBLE);
+                addConstraint(inst.getResult(), PrimitiveType.DOUBLE);
             } else if (inst.getConst() instanceof FloatConst) {
-                typeCst = new PrimitiveTypeConstant(PrimitiveType.FLOAT);
+                addConstraint(inst.getResult(), PrimitiveType.FLOAT);
             } else if (inst.getConst() instanceof IntConst) {
                 int value = ((IntConst) inst.getConst()).getValue();
                 if (value == 0 || value == 1) {
-                    typeCst = new PrimitiveTypeConstant(PrimitiveType.INTEGER,
-                                                        PrimitiveType.BOOLEAN);
+                    addConstraint(inst.getResult(), PrimitiveType.INTEGER,
+                                                    PrimitiveType.BOOLEAN);
                 } else {
-                    typeCst = new PrimitiveTypeConstant(PrimitiveType.INTEGER);
+                    addConstraint(inst.getResult(), PrimitiveType.INTEGER);
                 }
             } else if (inst.getConst() instanceof LongConst) {
                 long value = ((LongConst) inst.getConst()).getValue();
                 if (value == 0 || value == 1) {
-                    typeCst = new PrimitiveTypeConstant(PrimitiveType.LONG,
-                                                        PrimitiveType.BOOLEAN);
+                    addConstraint(inst.getResult(), PrimitiveType.LONG,
+                                                    PrimitiveType.BOOLEAN);
                 } else {
-                    typeCst = new PrimitiveTypeConstant(PrimitiveType.LONG);
+                    addConstraint(inst.getResult(), PrimitiveType.LONG);
                 }
             } else if (inst.getConst() instanceof NullConst) {
-                typeCst = new ReferenceTypeConstant(javaLangObjectClassName, null);
+                // TODO
             } else if (inst.getConst() instanceof ShortConst) {
                 short value = ((ShortConst) inst.getConst()).getValue();
                 if (value == 0 || value == 1) {
-                    typeCst = new PrimitiveTypeConstant(PrimitiveType.SHORT,
-                                                        PrimitiveType.BOOLEAN);
+                    addConstraint(inst.getResult(), PrimitiveType.SHORT,
+                                                    PrimitiveType.BOOLEAN);
                 } else {
-                    typeCst = new PrimitiveTypeConstant(PrimitiveType.SHORT);
+                    addConstraint(inst.getResult(), PrimitiveType.SHORT);
                 }
             } else if (inst.getConst() instanceof StringConst) {
-                typeCst = new ReferenceTypeConstant(javaLangObjectClassName, javaLangStringClassName);
+                // TODO
             } else {
                 throw new InternalError();
             }
-            addConstraint(new TypeVariable(inst.getResult().getID()), typeCst);
             return null;
         }
 
         @Override
         public Void visit(AssignVarInst inst, Void arg) {
-            addConstraint(new TypeVariable(inst.getResult().getID()),
-                         new TypeVariable(inst.getValue().getID()));
-            addConstraint(new TypeVariable(inst.getValue().getID()),
-                          new TypeVariable(inst.getResult().getID()));
+            addConstraint(inst.getResult(), inst.getValue());
             return null;
         }
 
@@ -293,41 +139,30 @@ public class LocalVariableTypeAnalyser {
                 case PLUS:
                 case MINUS:
                 case MUL:
-                    addConstraint(new TypeVariable(inst.getResult().getID()),
-                                  new PrimitiveTypeConstant(JavaType.ARITHMETIC_TYPES));
-                    addConstraint(new TypeVariable(inst.getLeft().getID()),
-                                  new TypeVariable(inst.getRight().getID()));
-                    addConstraint(new TypeVariable(inst.getRight().getID()),
-                                  new TypeVariable(inst.getLeft().getID()));
-                    addConstraint(new TypeVariable(inst.getResult().getID()),
-                                  new TypeVariable(inst.getLeft().getID()));
+                    addConstraint(inst.getResult(), ARITHMETIC_TYPES);
+                    addConstraint(inst.getLeft(), inst.getRight());
+                    addConstraint(inst.getResult(), inst.getLeft());
                     break;
 
                 case LT:
                 case LE:
                 case GT:
                 case GE:
-                    addConstraint(new TypeVariable(inst.getResult().getID()),
-                                  new PrimitiveTypeConstant(PrimitiveType.BOOLEAN));
-                    addConstraint(new TypeVariable(inst.getLeft().getID()),
-                                  new PrimitiveTypeConstant(JavaType.ARITHMETIC_TYPES));
-                    addConstraint(new TypeVariable(inst.getRight().getID()),
-                                  new PrimitiveTypeConstant(JavaType.ARITHMETIC_TYPES));
+                    addConstraint(inst.getResult(), PrimitiveType.BOOLEAN);
+                    addConstraint(inst.getLeft(), ARITHMETIC_TYPES);
+                    addConstraint(inst.getLeft(), inst.getRight());
                     break;
 
                 case EQ:
                 case NE:
-                    addConstraint(new TypeVariable(inst.getResult().getID()),
-                                  new PrimitiveTypeConstant(PrimitiveType.BOOLEAN));
+                    addConstraint(inst.getResult(), PrimitiveType.BOOLEAN);
+                    addConstraint(inst.getResult(), PRIMITIVE_TYPES);
 
                 case OR:
                 case AND:
-                    addConstraint(new TypeVariable(inst.getResult().getID()),
-                                  new PrimitiveTypeConstant(PrimitiveType.BOOLEAN));
-                    addConstraint(new TypeVariable(inst.getLeft().getID()),
-                                  new PrimitiveTypeConstant(PrimitiveType.BOOLEAN));
-                    addConstraint(new TypeVariable(inst.getRight().getID()),
-                                  new PrimitiveTypeConstant(PrimitiveType.BOOLEAN));
+                    addConstraint(inst.getResult(), PrimitiveType.BOOLEAN);
+                    addConstraint(inst.getLeft(), PrimitiveType.BOOLEAN);
+                    addConstraint(inst.getRight(), PrimitiveType.BOOLEAN);
                     break;
             }
             return null;
@@ -338,22 +173,18 @@ public class LocalVariableTypeAnalyser {
             JavaType returnType = signature.getReturnType();
             if (returnType.getKind() == TypeKind.PRIMITIVE) {
                 if (returnType.getPrimitiveType() != PrimitiveType.VOID) {
-                    addConstraint(new TypeVariable(inst.getResult().getID()),
-                                  new PrimitiveTypeConstant(returnType.getPrimitiveType()));
+                    addConstraint(inst.getResult(), returnType.getPrimitiveType());
                 }
             } else {
-                addConstraint(new TypeVariable(inst.getResult().getID()),
-                              new ReferenceTypeConstant(returnType.getClassName(), null));
+                // TODO
             }
             for (int i = 0; i < signature.getArgumentTypes().size(); i++) {
                 JavaType argType = signature.getArgumentTypes().get(i);
                 Variable argVar = inst.getArguments().get(i);
                 if (argType.getKind() == TypeKind.PRIMITIVE) {
-                    addConstraint(new TypeVariable(argVar.getID()),
-                                  new PrimitiveTypeConstant(argType.getPrimitiveType()));
+                    addConstraint(argVar, argType.getPrimitiveType());
                 } else {
-                    addConstraint(new TypeVariable(argVar.getID()),
-                                  new ReferenceTypeConstant(argType.getClassName(), null));
+                    // TODO
                 }
             }
         }
@@ -374,27 +205,18 @@ public class LocalVariableTypeAnalyser {
         public Void visit(CastInst inst, Void arg) {
             JavaType castType = inst.getCastType();
             if (castType.getKind() == TypeKind.PRIMITIVE) {
-                addConstraint(new TypeVariable(inst.getResult().getID()),
-                              new PrimitiveTypeConstant(castType.getPrimitiveType()));
+                addConstraint(inst.getResult(), castType.getPrimitiveType());
             } else {
-                addConstraint(new TypeVariable(inst.getResult().getID()),
-                              new ReferenceTypeConstant(castType.getClassName(), null));
+                // TODO
             }
             return null;
         }
 
         @Override
         public Void visit(ConditionalInst inst, Void arg) {
-            addConstraint(new TypeVariable(inst.getCond().getID()),
-                          new PrimitiveTypeConstant(PrimitiveType.BOOLEAN));
-            addConstraint(new TypeVariable(inst.getThen().getID()),
-                          new TypeVariable(inst.getElse().getID()));
-            addConstraint(new TypeVariable(inst.getThen().getID()),
-                          new TypeVariable(inst.getElse().getID()));
-            addConstraint(new TypeVariable(inst.getResult().getID()),
-                          new TypeVariable(inst.getThen().getID()));
-            addConstraint(new TypeVariable(inst.getThen().getID()),
-                          new TypeVariable(inst.getResult().getID()));
+            addConstraint(inst.getCond(), PrimitiveType.BOOLEAN);
+            addConstraint(inst.getThen(), inst.getElse());
+            addConstraint(inst.getResult(), inst.getThen());
             return null;
         }
 
@@ -412,11 +234,9 @@ public class LocalVariableTypeAnalyser {
         public Void visit(GetFieldInst inst, Void arg) {
             JavaType fieldType = inst.getFieldType();
             if (fieldType.getKind() == TypeKind.PRIMITIVE) {
-                addConstraint(new TypeVariable(inst.getResult().getID()),
-                              new PrimitiveTypeConstant(fieldType.getPrimitiveType()));
+                addConstraint(inst.getResult(), fieldType.getPrimitiveType());
             } else {
-                addConstraint(new TypeVariable(inst.getResult().getID()),
-                              new ReferenceTypeConstant(fieldType.getClassName(), null));
+                // TODO
             }
             return null;
         }
@@ -425,28 +245,23 @@ public class LocalVariableTypeAnalyser {
         public Void visit(SetFieldInst inst, Void arg) {
             JavaType fieldType = inst.getFieldType();
             if (inst.getFieldType().getKind() == TypeKind.PRIMITIVE) {
-                addConstraint(new TypeVariable(inst.getValue().getID()),
-                              new PrimitiveTypeConstant(fieldType.getPrimitiveType()));
+                addConstraint(inst.getValue(), fieldType.getPrimitiveType());
             } else {
-                addConstraint(new TypeVariable(inst.getValue().getID()),
-                              new ReferenceTypeConstant(fieldType.getClassName(), null));
+                // TODO
             }
             return null;
         }
 
         @Override
         public Void visit(JumpIfInst inst, Void arg) {
-            addConstraint(new TypeVariable(inst.getCond().getID()),
-                          new PrimitiveTypeConstant(PrimitiveType.BOOLEAN));
+            addConstraint(inst.getCond(), PrimitiveType.BOOLEAN);
             return null;
         }
 
         @Override
         public Void visit(InstanceOfInst inst, Void arg) {
-            addConstraint(new TypeVariable(inst.getResult().getID()),
-                          new PrimitiveTypeConstant(PrimitiveType.BOOLEAN));
-            addConstraint(new TypeVariable(inst.getVar().getID()),
-                          new ReferenceTypeConstant(javaLangObjectClassName, null));
+            addConstraint(inst.getResult(), PrimitiveType.BOOLEAN);
+            // TODO
             return null;
         }
 
@@ -462,15 +277,17 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(NewArrayInst inst, Void arg) {
-            return super.visit(inst, arg);
+            for (Variable dimVar : inst.getDimensions()) {
+                addConstraint(dimVar, PrimitiveType.INTEGER);
+            }
+            return null;
         }
 
         @Override
         public Void visit(NewObjectInst inst, Void arg) {
             ClassName superclass = classNameFactory.newClassName(Object.class.getName());
             ClassName subclass = inst.getType().getClassName();
-            addConstraint(new TypeVariable(inst.getResult().getID()),
-                          new ReferenceTypeConstant(superclass, subclass));
+            // TODO
             return null;
         }
 
@@ -479,12 +296,10 @@ public class LocalVariableTypeAnalyser {
             if (methodReturnType != null) {
                 if (methodReturnType.getKind() == TypeKind.PRIMITIVE) {
                     if (methodReturnType.getPrimitiveType() != PrimitiveType.VOID) {
-                        addConstraint(new TypeVariable(inst.getVar().getID()),
-                                      new PrimitiveTypeConstant(methodReturnType.getPrimitiveType()));
+                        addConstraint(inst.getVar(), methodReturnType.getPrimitiveType());
                     }
                 } else {
-                    addConstraint(new TypeVariable(inst.getVar().getID()),
-                                  new ReferenceTypeConstant(methodReturnType.getClassName(), null));
+                    // TODO
                 }
             }
             return null;
@@ -492,8 +307,7 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(SwitchInst inst, Void arg) {
-            addConstraint(new TypeVariable(inst.getIndex().getID()),
-                          new PrimitiveTypeConstant(PrimitiveType.INTEGER));
+            addConstraint(inst.getIndex(), PrimitiveType.INTEGER);
             return null;
         }
 
@@ -521,11 +335,9 @@ public class LocalVariableTypeAnalyser {
         public Void visit(GetStaticFieldInst inst, Void arg) {
             JavaType fieldType = inst.getFieldType();
             if (inst.getFieldType().getKind() == TypeKind.PRIMITIVE) {
-                addConstraint(new TypeVariable(inst.getResult().getID()),
-                              new PrimitiveTypeConstant(fieldType.getPrimitiveType()));
+                addConstraint(inst.getResult(), fieldType.getPrimitiveType());
             } else {
-                addConstraint(new TypeVariable(inst.getResult().getID()),
-                              new ReferenceTypeConstant(fieldType.getClassName(), null));
+                // TODO
             }
             return null;
         }
@@ -534,11 +346,9 @@ public class LocalVariableTypeAnalyser {
         public Void visit(SetStaticFieldInst inst, Void arg) {
             JavaType fieldType = inst.getFieldType();
             if (inst.getFieldType().getKind() == TypeKind.PRIMITIVE) {
-                addConstraint(new TypeVariable(inst.getValue().getID()),
-                              new PrimitiveTypeConstant(fieldType.getPrimitiveType()));
+                addConstraint(inst.getValue(), fieldType.getPrimitiveType());
             } else {
-                addConstraint(new TypeVariable(inst.getValue().getID()),
-                              new ReferenceTypeConstant(fieldType.getClassName(), null));
+                // TODO
             }
             return null;
         }
@@ -563,7 +373,14 @@ public class LocalVariableTypeAnalyser {
 
     private final ClassName javaLangClassClassName;
 
-    private final Multimap<TypeVariable, TypeConstraint> constaints = HashMultimap.create();
+    private Model model;
+
+    private int cstID = 0;
+
+    private final Map<VariableID, SetVariable> variables = new HashMap<VariableID, SetVariable>();
+
+    private int VALUE_MIN = PrimitiveType.BOOLEAN.ordinal();
+    private int VALUE_MAX = PrimitiveType.DOUBLE.ordinal();
 
     public LocalVariableTypeAnalyser(ControlFlowGraph cfg, JavaType thisType,
                                      JavaType methodReturnType, List<Variable> methodArgs,
@@ -578,71 +395,98 @@ public class LocalVariableTypeAnalyser {
         javaLangClassClassName = classNameFactory.newClassName(Class.class.getName());
     }
 
-    private void addConstraint(TypeVariable left, TypeVariableOrConstant right) {
-        TypeConstraint constraint = new TypeConstraint(left, right);
-        constaints.put(left, constraint);
+    private void addConstraint(Variable var1, Variable var2) {
+        SetVariable set1 = variables.get(var1.getID());
+        if (set1 == null) {
+            set1 = Choco.makeSetVar(var1.getID().toString(), VALUE_MIN, VALUE_MAX);
+            variables.put(var1.getID(), set1);
+        }
+        SetVariable set2 = variables.get(var2.getID());
+        if (set2 == null) {
+            set2 = Choco.makeSetVar(var2.getID().toString(), VALUE_MIN, VALUE_MAX);
+            variables.put(var2.getID(), set2);
+        }
+        model.addConstraints(Choco.eq(set1, set2));
     }
 
-    private void printConstraints() {
-        LOGGER.log(Level.FINEST, "Type constraints :");
-        for (TypeConstraint constaint : constaints.values()) {
-            LOGGER.log(Level.FINEST, constaint.toString());
+    private int[] toOrdinal(PrimitiveType[] types) {
+        int[] ordinals = new int[types.length];
+        for (int i = 0 ; i < types.length; i++) {
+            ordinals[i] = types[i].ordinal();
         }
+        return ordinals;
+    }
+
+    private Set<PrimitiveType> fromOrdinal(int[] ordinals) {
+        Set<PrimitiveType> types = EnumSet.noneOf(PrimitiveType.class);
+        for (int i = 0 ; i < ordinals.length; i++) {
+            types.add(PrimitiveType.values()[ordinals[i]]);
+        }
+        return types;
+    }
+
+    private void addConstraint(Variable var, PrimitiveType... types) {
+        int[] valuesArray = toOrdinal(types);
+        SetVariable cst = Choco.makeSetVar("c" + cstID++, valuesArray);
+        SetVariable set = variables.get(var.getID());
+        if (set == null) {
+            set = Choco.makeSetVar(var.getID().toString(), VALUE_MIN, VALUE_MAX);
+            variables.put(var.getID(), set);
+        }
+        model.addConstraints(Choco.eq(set, cst));
     }
 
     public void analyse() {
+        model = new CPModel();
+
         // this type constraint
         if (thisType != null) {
-            addConstraint(new TypeVariable(new VariableID(0)),
-                          new ReferenceTypeConstant(thisType.getClassName(),
-                                                    thisType.getClassName()));
+            // TODO
         }
         // method arguments constraints
         for (Variable varArg : methodArgs) {
             JavaType varType = varArg.getType();
-            TypeConstant typeCst = null;
             if (varType.getKind() == TypeKind.PRIMITIVE) {
-                typeCst = new PrimitiveTypeConstant(varType.getPrimitiveType());
+                addConstraint(varArg, varType.getPrimitiveType());
             } else {
-                typeCst = new ReferenceTypeConstant(null, varType.getClassName());
+                // TODO
             }
-            addConstraint(new TypeVariable(varArg.getID()), typeCst);
         }
         // local variables constraints
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             bb.getInstructions().accept(visitor, null);
         }
 
-        printConstraints();
+        LOGGER.log(Level.FINEST, model.constraintsToString());
 
-        // unify constraints
-        Deque<TypeConstraint> constraintStack = new ArrayDeque<TypeConstraint>();
-        Deque<TypeConstraint> substitutionStack = new ArrayDeque<TypeConstraint>();
-        for (TypeConstraint constraint : constaints.values()) {
-            if (constraint.getRight() instanceof TypeConstant) {
-                substitutionStack.push(constraint);
-            } else {
-                constraintStack.push(constraint);
+        Solver s = new CPSolver();
+        s.read(model);
+        if (Boolean.FALSE.equals(s.solve())) {
+            throw new ABCDException("Type analysis failed");
+        }
+
+        LOGGER.log(Level.FINEST, "Solution :");
+        Map<VariableID, JavaType> types = new HashMap<VariableID, JavaType>();
+        for (Map.Entry<VariableID, SetVariable> entry : variables.entrySet()) {
+            VariableID ID = entry.getKey();
+            SetVariable var = entry.getValue();
+            Set<PrimitiveType> possibleTypes = fromOrdinal(s.getVar(var).getValue());
+            LOGGER.log(Level.FINEST, "{0} = {1}", new Object[] {ID, possibleTypes});
+            if (possibleTypes.size() == 1) {
+                types.put(ID, JavaType.newPrimitiveType(possibleTypes.iterator().next()));
             }
         }
-        while (substitutionStack.size() > 0) {
-            TypeConstraint substitution = substitutionStack.pop();
-            TypeVariable typeVar = substitution.getLeft();
-            TypeConstant typeCst = (TypeConstant) substitution.getRight();
-            for (Iterator<TypeConstraint> it = constraintStack.iterator(); it.hasNext();) {
-                TypeConstraint constraint = it.next();
-                if (constraint.getRight().equals(typeVar)) {
-                    constraint.setRight(typeCst);
-                    it.remove();
-                    substitutionStack.push(constraint);
+
+        for (BasicBlock block : cfg.getBasicBlocks()) {
+            for (IRInst inst : block.getInstructions()) {
+                if (inst instanceof DefInst) {
+                    Variable def = ((DefInst) inst).getResult();
+                    def.setType(types.get(def.getID()));
+                }
+                for (Variable use : inst.getUses()) {
+                    use.setType(types.get(use.getID()));
                 }
             }
-        }
-
-        printConstraints();
-
-        if (constraintStack.size() > 0) {
-            throw new ABCDException("Type analysis failed");
         }
     }
 }
