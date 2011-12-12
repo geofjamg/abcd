@@ -27,7 +27,9 @@ import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.type.PrimitiveType;
+import fr.jamgotchian.abcd.core.type.TypeHierarchyIndexer;
 import fr.jamgotchian.abcd.core.type.TypeKind;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -398,8 +400,7 @@ public class LocalVariableTypeAnalyser {
 
     private final Map<VariableID, SetVariable> variables = new HashMap<VariableID, SetVariable>();
 
-    private int VALUE_MIN = PrimitiveType.BOOLEAN.ordinal();
-    private int VALUE_MAX = PrimitiveType.DOUBLE.ordinal();
+    private final TypeHierarchyIndexer indexer = new TypeHierarchyIndexer();
 
     public LocalVariableTypeAnalyser(ControlFlowGraph cfg, JavaType thisType,
                                      JavaType methodReturnType, List<Variable> methodArgs,
@@ -417,39 +418,32 @@ public class LocalVariableTypeAnalyser {
     private void addConstraint(Variable var1, Variable var2) {
         SetVariable set1 = variables.get(var1.getID());
         if (set1 == null) {
-            set1 = Choco.makeSetVar(var1.getID().toString(), VALUE_MIN, VALUE_MAX);
+            set1 = Choco.makeSetVar(var1.getID().toString(),
+                                    indexer.getFirstIndex(),
+                                    indexer.getLastIndex());
             variables.put(var1.getID(), set1);
         }
         SetVariable set2 = variables.get(var2.getID());
         if (set2 == null) {
-            set2 = Choco.makeSetVar(var2.getID().toString(), VALUE_MIN, VALUE_MAX);
+            set2 = Choco.makeSetVar(var2.getID().toString(),
+                                    indexer.getFirstIndex(),
+                                    indexer.getLastIndex());
             variables.put(var2.getID(), set2);
         }
         model.addConstraints(Choco.eq(set1, set2));
     }
 
-    private int[] toOrdinal(PrimitiveType[] types) {
-        int[] ordinals = new int[types.length];
-        for (int i = 0 ; i < types.length; i++) {
-            ordinals[i] = types[i].ordinal();
-        }
-        return ordinals;
-    }
-
-    private Set<PrimitiveType> fromOrdinal(int[] ordinals) {
-        Set<PrimitiveType> types = EnumSet.noneOf(PrimitiveType.class);
-        for (int i = 0 ; i < ordinals.length; i++) {
-            types.add(PrimitiveType.values()[ordinals[i]]);
-        }
-        return types;
-    }
-
     private void addConstraint(Variable var, PrimitiveType... types) {
-        int[] valuesArray = toOrdinal(types);
+        int[] valuesArray = new int[types.length];
+        for (int i = 0; i < types.length; i++) {
+            valuesArray[i] = indexer.getIndex(JavaType.newPrimitiveType(types[i]));
+        }
         SetVariable cst = Choco.makeSetVar("c" + cstID++, valuesArray);
         SetVariable set = variables.get(var.getID());
         if (set == null) {
-            set = Choco.makeSetVar(var.getID().toString(), VALUE_MIN, VALUE_MAX);
+            set = Choco.makeSetVar(var.getID().toString(),
+                                   indexer.getFirstPrimitiveTypeIndex(),
+                                   indexer.getLastPrimitiveTypeIndex());
             variables.put(var.getID(), set);
         }
         model.addConstraints(Choco.eq(set, cst));
@@ -489,10 +483,10 @@ public class LocalVariableTypeAnalyser {
         for (Map.Entry<VariableID, SetVariable> entry : variables.entrySet()) {
             VariableID ID = entry.getKey();
             SetVariable var = entry.getValue();
-            Set<PrimitiveType> possibleTypes = fromOrdinal(s.getVar(var).getValue());
+            Collection<JavaType> possibleTypes = indexer.getTypes(s.getVar(var).getValue());
             LOGGER.log(Level.FINEST, "{0} = {1}", new Object[] {ID, possibleTypes});
             if (possibleTypes.size() == 1) {
-                types.put(ID, JavaType.newPrimitiveType(possibleTypes.iterator().next()));
+                types.put(ID, possibleTypes.iterator().next());
             }
         }
 
