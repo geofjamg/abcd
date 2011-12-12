@@ -55,8 +55,9 @@ public class SimpleVariableNameProvider implements VariableNameProvider {
         counter++;
     }
 
-    public String getName(Variable var, boolean isStaticMethod) {
-        if (!isStaticMethod && var.getIndex() == 0) {
+    @Override
+    public String getName(Variable var) {
+        if (var.isThis()) {
             return "this";
         } else {
             String name = names.get(var.getID());

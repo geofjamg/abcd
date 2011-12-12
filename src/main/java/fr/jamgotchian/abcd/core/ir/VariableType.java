@@ -20,11 +20,19 @@ package fr.jamgotchian.abcd.core.ir;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SimpleVariableNameProviderFactory implements VariableNameProviderFactory {
+public enum VariableType {
+    THIS('v'),
+    ARGUMENT('p'),
+    LOCAL('v'),
+    TEMPORARY('t');
 
-    @Override
-    public VariableNameProvider create(ControlFlowGraph cfg) {
-        return new SimpleVariableNameProvider();
+    private char letter;
+
+    private VariableType(char letter) {
+        this.letter = letter;
     }
 
+    public char getLetter() {
+        return letter;
+    }
 }

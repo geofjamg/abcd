@@ -44,14 +44,6 @@ public class Variable {
         this.position = position;
     }
 
-    Variable(int index, BasicBlock block, int position) {
-        this(new VariableID(index), block, position);
-    }
-
-    Variable(int index) {
-        this(new VariableID(index), null, -1);
-    }
-
     private Variable(Variable other) {
         ID = other.ID.clone();
         block = other.block;
@@ -88,8 +80,12 @@ public class Variable {
         return position;
     }
 
+    public boolean isThis() {
+        return ID.getType() == VariableType.THIS;
+    }
+
     public boolean isTemporary() {
-        return ID.getIndex() < 0;
+        return ID.getType() == VariableType.TEMPORARY;
     }
 
     public JavaType getType() {

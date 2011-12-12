@@ -40,7 +40,7 @@ import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.ir.LocalVariableTableNameProviderFactory;
+import fr.jamgotchian.abcd.core.ir.DebugInfoVariableNameProviderFactory;
 import fr.jamgotchian.abcd.core.ir.ExceptionTable;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.VariableFactory;
@@ -136,7 +136,7 @@ public class ABCDContext {
     public void decompile(ABCDDataSource dataSrc, ABCDWriter writer, ABCDPreferences prefs) throws IOException {
         VariableNameProviderFactory nameProviderFactory = null;
         if (prefs.isUseLocalVariableTable()) {
-            nameProviderFactory = new LocalVariableTableNameProviderFactory();
+            nameProviderFactory = new DebugInfoVariableNameProviderFactory();
         } else {
             nameProviderFactory = new SimpleVariableNameProviderFactory();
         }
@@ -214,6 +214,8 @@ public class ABCDContext {
 
                 LOGGER.log(Level.FINER, "Bytecode :\n{0}", methodFactory.getBytecodeAsText());
 
+                LOGGER.log(Level.FINER, "Argument indexes : {0}", varFactory.getArgIndexes());
+
                 ControlFlowGraphBuilder cfgBuilder
                         = methodFactory.createCFGBuilder(methodSignature);
 
@@ -229,7 +231,6 @@ public class ABCDContext {
                                                             instFactory,
                                                             nameProviderFactory,
                                                             thisType,
-                                                            method.getModifiers().contains(Modifier.STATIC),
                                                             method.getReturnType(),
                                                             method.getArguments())
                         .build(writer);

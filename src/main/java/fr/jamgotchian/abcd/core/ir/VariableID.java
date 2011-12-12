@@ -26,19 +26,29 @@ public class VariableID {
 
     private final int index;
 
+    private final VariableType type;
+
     private int version;
 
-    public VariableID(int index, int version) {
+    public VariableID(int index, VariableType type, int version) {
+        if (type == VariableType.TEMPORARY && index >= 0) {
+            throw new IllegalArgumentException("A temporary variable should have a negative index");
+        }
         this.index = index;
+        this.type = type;
         this.version = version;
     }
 
-    public VariableID(int index) {
-        this(index, UNDEFINED_VERSION);
+    public VariableID(int index, VariableType type) {
+        this(index, type, UNDEFINED_VERSION);
     }
 
     public int getIndex() {
         return index;
+    }
+
+    public VariableType getType() {
+        return type;
     }
 
     public int getVersion() {
@@ -54,6 +64,7 @@ public class VariableID {
         if (obj instanceof VariableID) {
             VariableID id = (VariableID) obj;
             return index == id.index
+                    && type == id.type
                     && version == id.version;
         }
         return false;
@@ -61,22 +72,18 @@ public class VariableID {
 
     @Override
     public int hashCode() {
-        return index + version;
+        return index + type.hashCode() + version;
     }
 
     @Override
     public VariableID clone() {
-        return new VariableID(index, version);
+        return new VariableID(index, type, version);
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        if (index < 0) {
-            builder.append("_t").append(-index);
-        } else {
-            builder.append("v").append(index);
-        }
+        builder.append(type.getLetter()).append(Math.abs(index));
         if (version != VariableID.UNDEFINED_VERSION) {
             builder.append("_").append(version);
         }

@@ -89,13 +89,18 @@ public class JavaBytecodeMethodFactory implements MethodFactory {
         Set<Modifier> methodModifiers = JavaBytecodeUtil.getModifiers(mn.access);
 
         // parameters
-        boolean isMethodStatic = methodModifiers.contains(Modifier.STATIC);
+        boolean isStatic = methodModifiers.contains(Modifier.STATIC);
+        if (!isStatic) {
+            varFactory.setThisIndex(0);
+        }
         Type[] argTypes = Type.getArgumentTypes(mn.desc);
         List<Variable> arguments = new ArrayList<Variable>(argTypes.length);
-        for(int index = 0; index < argTypes.length; index++) {
-            Type argType = argTypes[index];
+        for(int i = 0; i < argTypes.length; i++) {
+            Type argType = argTypes[i];
             // index 0 of local variable table contains this for non static method
-            Variable arg = varFactory.create(isMethodStatic ? index : index + 1);
+            int index = isStatic ? i : i + 1;
+            varFactory.addArgIndex(index);
+            Variable arg = varFactory.create(index);
             arg.setType(JavaBytecodeUtil.newType(argType, importManager));
             arguments.add(arg);
         }

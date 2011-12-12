@@ -28,7 +28,8 @@ public class DebugInfoVariableNameProvider implements VariableNameProvider {
         this.table = table;
     }
 
-    public String getName(Variable var, boolean isStaticMethod) {
+    @Override
+    public String getName(Variable var) {
         StringBuilder builder = new StringBuilder();
         String name = table.getName(var.getIndex(), var.getPosition());
         if (name == null) {

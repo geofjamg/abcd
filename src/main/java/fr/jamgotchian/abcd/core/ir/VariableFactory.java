@@ -16,23 +16,50 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class VariableFactory {
 
+    private int _thisIndex = -1;
+
+    private final Set<Integer> argIndexes = new TreeSet<Integer>();
+
     private int count = -1;
 
+    public void setThisIndex(int _thisIndex) {
+        this._thisIndex = _thisIndex;
+    }
+
+    public void addArgIndex(int argIndex) {
+        argIndexes.add(argIndex);
+    }
+
+    public Set<Integer> getArgIndexes() {
+        return argIndexes;
+    }
+
     public Variable createTmp(BasicBlock block) {
-        return new Variable(count--, block, -1);
+        return new Variable(new VariableID(count--, VariableType.TEMPORARY), block, -1);
     }
 
     public Variable create(int index, BasicBlock block, int position) {
-        return new Variable(new VariableID(index), block, position);
+        VariableType type = null;
+        if (_thisIndex != -1 && index == _thisIndex) {
+            type = VariableType.THIS;
+        } else if (argIndexes.contains(index)) {
+            type = VariableType.ARGUMENT;
+        } else {
+            type = VariableType.LOCAL;
+        }
+        return new Variable(new VariableID(index, type), block, position);
     }
 
     public Variable create(int index) {
-        return new Variable(index);
+        return create(index, null, -1);
     }
 }

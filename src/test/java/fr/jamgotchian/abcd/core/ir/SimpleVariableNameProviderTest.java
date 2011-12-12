@@ -26,13 +26,13 @@ import static org.junit.Assert.*;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class SimpleNameGeneratorTest {
+public class SimpleVariableNameProviderTest {
 
     private SimpleVariableNameProvider provider;
 
     private VariableFactory varFactory;
 
-    public SimpleNameGeneratorTest() {
+    public SimpleVariableNameProviderTest() {
     }
 
     @Before
@@ -49,17 +49,17 @@ public class SimpleNameGeneratorTest {
 
     private void generate(int n, int offset) {
         for (int i = offset; i < offset + n; i++) {
-            provider.getName(varFactory.create(i), true);
+            provider.getName(varFactory.create(i));
         }
     }
 
     @Test
     public void testGenerate() {
-        assertTrue(provider.getName(varFactory.create(0), true).equals("a"));
-        assertTrue(provider.getName(varFactory.create(1), true).equals("b"));
+        assertTrue(provider.getName(varFactory.create(0)).equals("a"));
+        assertTrue(provider.getName(varFactory.create(1)).equals("b"));
         generate(24,  2);
-        assertTrue(provider.getName(varFactory.create(26), true).equals("ba"));
-        assertTrue(provider.getName(varFactory.create(27), true).equals("bb"));
+        assertTrue(provider.getName(varFactory.create(26)).equals("ba"));
+        assertTrue(provider.getName(varFactory.create(27)).equals("bb"));
     }
 
 }

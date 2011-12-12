@@ -23,5 +23,5 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public interface VariableNameProvider {
 
-    String getName(Variable var, boolean isStaticMethod);
+    String getName(Variable var);
 }

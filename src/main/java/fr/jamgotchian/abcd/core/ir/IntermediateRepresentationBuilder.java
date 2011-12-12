@@ -61,8 +61,6 @@ public class IntermediateRepresentationBuilder {
 
     private final JavaType thisType;
 
-    private final boolean staticMethod;
-
     private final JavaType methodReturnType;
 
     private final List<Variable> methodArgs;
@@ -76,7 +74,6 @@ public class IntermediateRepresentationBuilder {
                                              IRInstFactory instFactory,
                                              VariableNameProviderFactory nameProviderFactory,
                                              JavaType thisType,
-                                             boolean staticMethod,
                                              JavaType methodReturnType,
                                              List<Variable> methodArgs) {
         this.cfgBuilder = cfgBuilder;
@@ -86,7 +83,6 @@ public class IntermediateRepresentationBuilder {
         this.instFactory = instFactory;
         this.nameProviderFactory = nameProviderFactory;
         this.thisType = thisType;
-        this.staticMethod = staticMethod;
         this.methodReturnType = methodReturnType;
         this.methodArgs = methodArgs;
     }
@@ -225,7 +221,7 @@ public class IntermediateRepresentationBuilder {
         Set<Variable> variables = new HashSet<Variable>();
 
         for (Variable arg : methodArgs) {
-            arg.setName(nameProvider.getName(arg, staticMethod));
+            arg.setName(nameProvider.getName(arg));
         }
         for (BasicBlock block : cfg.getBasicBlocks()) {
             for (IRInst inst : block.getInstructions()) {
@@ -233,13 +229,13 @@ public class IntermediateRepresentationBuilder {
                     Variable def = ((DefInst) inst).getResult();
                     if (!def.isTemporary()) {
                         variables.add(def);
-                        def.setName(nameProvider.getName(def, staticMethod));
+                        def.setName(nameProvider.getName(def));
                     }
                 }
                 for (Variable use : inst.getUses()) {
                     if (!use.isTemporary()) {
                         variables.add(use);
-                        use.setName(nameProvider.getName(use, staticMethod));
+                        use.setName(nameProvider.getName(use));
                     }
                 }
             }
