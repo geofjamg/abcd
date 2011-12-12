@@ -17,21 +17,34 @@
 package fr.jamgotchian.abcd.core.ast;
 
 import fr.jamgotchian.abcd.core.type.ClassName;
-import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.ClassNameManager;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ImportManager implements ClassNameFactory {
+public class ImportManager implements ClassNameManager {
+
+    private final List<ClassName> classNames = new ArrayList<ClassName>();
 
     public ImportManager() {
     }
 
+    @Override
     public ClassName newClassName(String className) {
-        return new ClassNameImpl(className, this);
+        ClassName cn = new ClassNameImpl(className, this);
+        classNames.add(cn);
+        return cn;
+    }
+
+    @Override
+    public Collection<ClassName> getAllClassNames() {
+        return classNames;
     }
 
     public boolean isImported(ClassName className) {
@@ -41,6 +54,7 @@ public class ImportManager implements ClassNameFactory {
     }
 
     public Set<String> getImports() {
+        // TODO
         return Collections.emptySet();
     }
 

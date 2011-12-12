@@ -16,11 +16,15 @@
  */
 package fr.jamgotchian.abcd.core.type;
 
+import java.util.Collection;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface ClassNameFactory {
+public interface ClassNameManager {
 
     ClassName newClassName(String className);
+
+    Collection<ClassName> getAllClassNames();
 }

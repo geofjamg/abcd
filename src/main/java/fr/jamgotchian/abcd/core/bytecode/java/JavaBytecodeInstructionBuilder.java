@@ -41,7 +41,7 @@ import fr.jamgotchian.abcd.core.ir.ThrowInst;
 import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.ir.VariableStack;
 import fr.jamgotchian.abcd.core.type.ClassName;
-import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.ComputationalType;
 import static fr.jamgotchian.abcd.core.type.ComputationalType.Category.*;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -101,7 +101,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
     private final LabelManager labelManager;
 
-    private final ClassNameFactory classNameFactory;
+    private final ClassNameManager classNameManager;
 
     private final TemporaryVariableFactory tmpVarFactory;
 
@@ -162,12 +162,12 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
         @Override
         public void visitFieldInsn(BasicBlock bb, int position, FieldInsnNode node) {
-            JavaType fieldType = JavaBytecodeUtil.newType(Type.getType(node.desc), classNameFactory);
+            JavaType fieldType = JavaBytecodeUtil.newType(Type.getType(node.desc), classNameManager);
             String fieldName = node.name;
 
             switch (node.getOpcode()) {
                 case GETSTATIC: {
-                    ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
+                    ClassName className = classNameManager.newClassName(node.owner.replace('/', '.'));
                     Variable tmpVar = tmpVarFactory.create(bb);
                     bb.getInstructions().add(instFactory.newGetStaticField(tmpVar, className, fieldName, fieldType));
                     stack.push(tmpVar, fieldType.getComputationalType());
@@ -175,7 +175,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 }
 
                 case PUTSTATIC: {
-                    ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
+                    ClassName className = classNameManager.newClassName(node.owner.replace('/', '.'));
                     Variable tmpVar = stack.pop();
                     bb.getInstructions().add(instFactory.newSetStaticField(className, fieldName, fieldType, tmpVar));
                     break;
@@ -938,7 +938,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         public void visitLdcInsn(BasicBlock bb, int position, LdcInsnNode node) {
             Variable tmpVar = tmpVarFactory.create(bb);
             if (node.cst instanceof Type) {
-                ClassName className = classNameFactory.newClassName(((Type)node.cst).getClassName());
+                ClassName className = classNameManager.newClassName(((Type)node.cst).getClassName());
                 bb.getInstructions().add(instFactory.newAssignClass(tmpVar, className));
                 stack.push(tmpVar, ComputationalType.REFERENCE);
             } else if (node.cst instanceof Integer) {
@@ -970,7 +970,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         public void visitMethodInsn(BasicBlock bb, int position, MethodInsnNode node) {
             // return type
             Type returnType = Type.getReturnType(node.desc);
-            JavaType returnJavaType = JavaBytecodeUtil.newType(returnType, classNameFactory);
+            JavaType returnJavaType = JavaBytecodeUtil.newType(returnType, classNameManager);
 
             // argument types
             Type[] argTypes = Type.getArgumentTypes(node.desc);
@@ -978,7 +978,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             List<JavaType> argJavaTypes = new ArrayList<JavaType>(argTypes.length);
             for (int i = 0; i < argTypes.length; i++) {
                 args.add(0, stack.pop());
-                argJavaTypes.add(0, JavaBytecodeUtil.newType(argTypes[i], classNameFactory));
+                argJavaTypes.add(0, JavaBytecodeUtil.newType(argTypes[i], classNameManager));
             }
 
             String methodName = node.name;
@@ -999,7 +999,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 }
 
                 case INVOKESTATIC: {
-                    ClassName className = classNameFactory.newClassName(node.owner.replace('/', '.'));
+                    ClassName className = classNameManager.newClassName(node.owner.replace('/', '.'));
                     bb.getInstructions().add(instFactory.newCallStaticMethod(resultVar, className,
                                                                    signature, args));
                     break;
@@ -1016,7 +1016,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         @Override
         public void visitMultiANewArrayInsn(BasicBlock bb, int position, MultiANewArrayInsnNode node) {
             Type type = Type.getType(node.desc).getElementType();
-            JavaType javaType = JavaBytecodeUtil.newType(type, classNameFactory);
+            JavaType javaType = JavaBytecodeUtil.newType(type, classNameManager);
             List<Variable> dimensions = new ArrayList<Variable>(node.dims);
             for (int i = 0; i < node.dims; i++) {
                 dimensions.add(0, stack.pop());
@@ -1033,7 +1033,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
         @Override
         public void visitTypeInsnInsn(BasicBlock bb, int position, TypeInsnNode node) {
-            JavaType type = JavaBytecodeUtil.newType(Type.getObjectType(node.desc), classNameFactory);
+            JavaType type = JavaBytecodeUtil.newType(Type.getObjectType(node.desc), classNameManager);
 
             switch (node.getOpcode()) {
                 case NEW: {
@@ -1114,12 +1114,12 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
     public JavaBytecodeInstructionBuilder(InsnList instructions,
                                     LabelManager labelManager,
-                                    ClassNameFactory classNameFactory,
+                                    ClassNameManager classNameManager,
                                     TemporaryVariableFactory tmpVarFactory,
                                     IRInstFactory instFactory) {
         this.instructions = instructions;
         this.labelManager = labelManager;
-        this.classNameFactory = classNameFactory;
+        this.classNameManager = classNameManager;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
         finallyTmpVars = new HashSet<Variable>();
@@ -1145,7 +1145,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 ExceptionHandlerInfo info
                         = (ExceptionHandlerInfo) bb.getProperty(EXCEPTION_HANDLER_ENTRY);
                 catchTmpVars.add(exceptionVar);
-                ClassName className = classNameFactory.newClassName(info.getClassName());
+                ClassName className = classNameManager.newClassName(info.getClassName());
                 tmpInst = instFactory.newNewObject(exceptionVar, JavaType.newRefType(className));
             }
             bb.getInstructions().add(tmpInst);

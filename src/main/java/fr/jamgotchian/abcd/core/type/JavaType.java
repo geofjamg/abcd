@@ -18,14 +18,10 @@ package fr.jamgotchian.abcd.core.type;
 
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +48,7 @@ public class JavaType {
             = EnumSet.of(PrimitiveType.INTEGER, PrimitiveType.LONG, PrimitiveType.BYTE,
                          PrimitiveType.SHORT, PrimitiveType.FLOAT, PrimitiveType.DOUBLE);
 
-    private static final Map<JavaType, List<JavaType>> WIDENING_PRIMITIVE_CONVERSION;
+    public static final Map<JavaType, List<JavaType>> WIDENING_PRIMITIVE_CONVERSION;
 
     static {
         Map<JavaType, List<JavaType>> conversion = new HashMap<JavaType, List<JavaType>>();
@@ -210,136 +206,6 @@ public class JavaType {
 
     public String getQualifiedName() {
         return getName(true);
-    }
-
-    public static Set<JavaType> widen(Set<JavaType> types1, Set<JavaType> types2,
-                                      ClassNameFactory factory) {
-        if (types2.isEmpty()) {
-            return types1;
-        }
-        Set<JavaType> newTypes = new HashSet<JavaType>();
-        for (JavaType type1 : types1) {
-            newTypes.addAll(type1.widen(types2, factory));
-        }
-        return newTypes;
-    }
-
-    public Set<JavaType> widen(Set<JavaType> otherTypes, ClassNameFactory factory) {
-        if (otherTypes.isEmpty()) {
-            throw new ABCDException("otherTypes.isEmpty()");
-        }
-        Set<JavaType> newTypes = new HashSet<JavaType>();
-        for (JavaType otherType : otherTypes) {
-            JavaType newType = widen(otherType, factory);
-            if (newType != null) {
-                newTypes.add(newType);
-            }
-        }
-        return newTypes;
-    }
-
-    public JavaType widen(JavaType otherType, ClassNameFactory factory) {
-        if (otherType == null) {
-            throw new ABCDException("otherType == null");
-        }
-        // types are equals
-        if (otherType.equals(this)) {
-            return this;
-        }
-        if (getKind() == TypeKind.PRIMITIVE) {
-            // cannot widen primitive to reference type
-            if (otherType.getKind() == TypeKind.REFERENCE) {
-                return null;
-            }
-            // try to find a common widening conversion type
-            List<JavaType> possibleTypes
-                    = new ArrayList<JavaType>(WIDENING_PRIMITIVE_CONVERSION.get(this));
-            possibleTypes.retainAll(WIDENING_PRIMITIVE_CONVERSION.get(otherType));
-            if (possibleTypes.isEmpty()) {
-                return null;
-            }
-            JavaType newType = possibleTypes.get(0);
-            if (newType.equals(this)) {
-                return this;
-            } else {
-                return newType;
-            }
-        }
-        if (getKind() == TypeKind.REFERENCE) {
-            if (otherType.getKind() == TypeKind.PRIMITIVE) {
-                // cannot widen reference to primitive type
-                return null;
-            }
-
-            ClassName javaLangObjectClassName = factory.newClassName(Object.class.getName());
-            if (getArrayDimension() == 0 && otherType.getArrayDimension() > 0) {
-                if (javaLangObjectClassName.equals(getClassName())) {
-                    return JavaType.newRefType(javaLangObjectClassName);
-                } else {
-                    return null;
-                }
-            } else if (getArrayDimension() > 0 && otherType.getArrayDimension() == 0) {
-                if (javaLangObjectClassName.equals(otherType.getClassName())) {
-                    return JavaType.newRefType(javaLangObjectClassName);
-                } else {
-                    return null;
-                }
-            } else if (getArrayDimension() > 0 && otherType.getArrayDimension() > 0) {
-                if (getArrayDimension() != otherType.getArrayDimension()) {
-                    return null;
-                } else {
-                    if (getArrayElementType().getKind() == TypeKind.PRIMITIVE
-                            || otherType.getArrayElementType().getKind() == TypeKind.PRIMITIVE) {
-                        // equality test have already be done
-                        return null;
-                    }
-                    JavaType commonArrayEltType
-                            = getFirstCommonAncestor(getArrayElementType(),
-                                                     otherType.getArrayElementType(),
-                                                     factory);
-                    return JavaType.newArrayType(commonArrayEltType, getArrayDimension());
-                }
-            } else {
-                // find first common ancestor
-                return getFirstCommonAncestor(this, otherType, factory);
-            }
-        }
-        throw new InternalError();
-    }
-
-    private static JavaType getFirstCommonAncestor(JavaType type1, JavaType type2, ClassNameFactory factory) {
-        try {
-            Class<?> clazz1 = Class.forName(type1.getClassName().getQualifiedName());
-            Collection<Class<?>> ancestors1 = getAncestors(clazz1);
-
-            Class<?> clazz2 = Class.forName(type2.getClassName().getQualifiedName());
-            Collection<Class<?>> ancestors2 = getAncestors(clazz2);
-
-            ancestors1.retainAll(ancestors2);
-            // should remain at least java.lang.Object
-            Class<?> firstCommonAncestor = ancestors1.iterator().next();
-
-            return JavaType.newRefType(factory.newClassName(firstCommonAncestor.getName()));
-        } catch (ClassNotFoundException e) {
-            throw new ABCDException(e);
-        }
-    }
-
-    private static void addAncestors(Set<Class<?>> ancestors, Class<?> clazz) {
-        ancestors.add(clazz);
-        for (Class<?> i : clazz.getInterfaces()) {
-            addAncestors(ancestors, i);
-        }
-        Class<?> sc = clazz.getSuperclass();
-        if (sc != null) {
-            addAncestors(ancestors, sc);
-        }
-    }
-
-    private static Collection<Class<?>> getAncestors(Class<?> clazz) {
-        Set<Class<?>> ancestors = new LinkedHashSet<Class<?>>();
-        addAncestors(ancestors, clazz);
-        return ancestors;
     }
 
     @Override

@@ -24,7 +24,7 @@ import choco.kernel.model.variables.set.SetVariable;
 import choco.kernel.solver.Solver;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.type.ClassName;
-import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.type.PrimitiveType;
 import fr.jamgotchian.abcd.core.type.TypeKind;
@@ -87,7 +87,7 @@ public class LocalVariableTypeAnalyser {
                                                     PrimitiveType.CHAR);
                 }
             } else if (inst.getConst() instanceof ClassConst) {
-                ClassName subclass = classNameFactory.newClassName(Class.class.getName());
+                ClassName subclass = classNameManager.newClassName(Class.class.getName());
                 // TODO
             } else if (inst.getConst() instanceof DoubleConst) {
                 addConstraint(inst.getResult(), PrimitiveType.DOUBLE);
@@ -293,7 +293,7 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(NewObjectInst inst, Void arg) {
-            ClassName superclass = classNameFactory.newClassName(Object.class.getName());
+            ClassName superclass = classNameManager.newClassName(Object.class.getName());
             ClassName subclass = inst.getType().getClassName();
             // TODO
             return null;
@@ -382,7 +382,7 @@ public class LocalVariableTypeAnalyser {
 
     private final List<Variable> methodArgs;
 
-    private final ClassNameFactory classNameFactory;
+    private final ClassNameManager classNameManager;
 
     private final Visitor visitor = new Visitor();
 
@@ -403,15 +403,15 @@ public class LocalVariableTypeAnalyser {
 
     public LocalVariableTypeAnalyser(ControlFlowGraph cfg, JavaType thisType,
                                      JavaType methodReturnType, List<Variable> methodArgs,
-                                     ClassNameFactory classNameFactory) {
+                                     ClassNameManager classNameManager) {
         this.cfg = cfg;
         this.thisType = thisType;
         this.methodReturnType = methodReturnType;
         this.methodArgs = methodArgs;
-        this.classNameFactory = classNameFactory;
-        javaLangObjectClassName = classNameFactory.newClassName(Object.class.getName());
-        javaLangStringClassName = classNameFactory.newClassName(String.class.getName());
-        javaLangClassClassName = classNameFactory.newClassName(Class.class.getName());
+        this.classNameManager = classNameManager;
+        javaLangObjectClassName = classNameManager.newClassName(Object.class.getName());
+        javaLangStringClassName = classNameManager.newClassName(String.class.getName());
+        javaLangClassClassName = classNameManager.newClassName(Class.class.getName());
     }
 
     private void addConstraint(Variable var1, Variable var2) {

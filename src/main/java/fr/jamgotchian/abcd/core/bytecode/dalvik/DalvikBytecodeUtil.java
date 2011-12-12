@@ -18,7 +18,7 @@ package fr.jamgotchian.abcd.core.bytecode.dalvik;
 
 import fr.jamgotchian.abcd.core.ast.ClassKind;
 import fr.jamgotchian.abcd.core.bytecode.java.JavaBytecodeUtil;
-import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.EnumSet;
 import java.util.Set;
@@ -118,8 +118,8 @@ public class DalvikBytecodeUtil {
         return modifiers;
     }
 
-    public static JavaType newType(TypeIdItem type, ClassNameFactory factory) {
+    public static JavaType newType(TypeIdItem type, ClassNameManager classNameManager) {
         Type asmType = Type.getType(type.getTypeDescriptor());
-        return JavaBytecodeUtil.newType(asmType, factory);
+        return JavaBytecodeUtil.newType(asmType, classNameManager);
     }
 }

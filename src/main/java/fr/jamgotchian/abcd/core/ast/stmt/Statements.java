@@ -25,7 +25,7 @@ import fr.jamgotchian.abcd.core.ast.expr.ObjectCreationExpression;
 import fr.jamgotchian.abcd.core.ast.expr.StringLiteralExpression;
 import fr.jamgotchian.abcd.core.ast.expr.UnaryExpression;
 import fr.jamgotchian.abcd.core.ast.expr.ASTUnaryOperator;
-import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,9 +71,9 @@ public class Statements {
     }
 
     public static <E extends Throwable> Statement
-            createThrowErrorStmt(Class<E> excCls, String msg, ClassNameFactory factory) {
+            createThrowErrorStmt(Class<E> excCls, String msg, ClassNameManager classNameManager) {
         StringLiteralExpression msgExpr = Expressions.newStringExpr(msg);
-        JavaType type = JavaType.newRefType(factory.newClassName(excCls.getName()));
+        JavaType type = JavaType.newRefType(classNameManager.newClassName(excCls.getName()));
         ObjectCreationExpression objCreatExpr
                 = Expressions.newObjCreatExpr(type,
                                               Collections.<Expression>singletonList(msgExpr));

@@ -42,10 +42,12 @@ class ClassNameImpl implements ClassName {
         }
     }
 
+    @Override
     public String getPackageName() {
         return packageName;
     }
 
+    @Override
     public String getName() {
         if (packageName == null || importManager.isImported(this)) {
             return name;
@@ -54,6 +56,7 @@ class ClassNameImpl implements ClassName {
         }
     }
 
+    @Override
     public String getQualifiedName() {
         return packageName + '.' + name;
     }

@@ -20,7 +20,7 @@ package fr.jamgotchian.abcd.core.bytecode.java;
 import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.ast.ClassKind;
 import fr.jamgotchian.abcd.core.type.ClassName;
-import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.ArrayList;
@@ -93,10 +93,10 @@ public class JavaBytecodeUtil implements Opcodes {
     /**
      * Convert from ASM type to ABCD type
      * @param type ASM type
-     * @param factory <code>ClassName</code> factory
+     * @param classNameManager <code>ClassName</code> factory
      * @return ABCD type
      */
-    public static JavaType newType(Type type, ClassNameFactory factory) {
+    public static JavaType newType(Type type, ClassNameManager classNameManager) {
         switch (type.getSort()) {
             case Type.VOID:
                 return JavaType.VOID;
@@ -117,9 +117,9 @@ public class JavaBytecodeUtil implements Opcodes {
             case Type.DOUBLE:
                 return JavaType.DOUBLE;
             case Type.ARRAY:
-                return JavaType.newArrayType(newType(type.getElementType(), factory), type.getDimensions());
+                return JavaType.newArrayType(newType(type.getElementType(), classNameManager), type.getDimensions());
             case Type.OBJECT: {
-                ClassName argClassName = factory.newClassName(type.getClassName());
+                ClassName argClassName = classNameManager.newClassName(type.getClassName());
                 return JavaType.newRefType(argClassName);
             }
             default:

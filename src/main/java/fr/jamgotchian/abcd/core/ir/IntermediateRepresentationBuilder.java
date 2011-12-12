@@ -25,7 +25,7 @@ import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import static fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName.*;
-import fr.jamgotchian.abcd.core.type.ClassNameFactory;
+import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ public class IntermediateRepresentationBuilder {
 
     private final InstructionBuilder instBuilder;
 
-    private final ClassNameFactory classNameFactory;
+    private final ClassNameManager classNameManager;
 
     private final TemporaryVariableFactory tmpVarFactory;
 
@@ -71,7 +71,7 @@ public class IntermediateRepresentationBuilder {
 
     public IntermediateRepresentationBuilder(ControlFlowGraphBuilder cfgBuilder,
                                              InstructionBuilder instBuilder,
-                                             ClassNameFactory classNameFactory,
+                                             ClassNameManager classNameManager,
                                              TemporaryVariableFactory tmpVarFactory,
                                              IRInstFactory instFactory,
                                              VariableNameProviderFactory nameProviderFactory,
@@ -81,7 +81,7 @@ public class IntermediateRepresentationBuilder {
                                              List<Variable> methodArgs) {
         this.cfgBuilder = cfgBuilder;
         this.instBuilder = instBuilder;
-        this.classNameFactory = classNameFactory;
+        this.classNameManager = classNameManager;
         this.tmpVarFactory = tmpVarFactory;
         this.instFactory = instFactory;
         this.nameProviderFactory = nameProviderFactory;
@@ -353,7 +353,7 @@ public class IntermediateRepresentationBuilder {
 
             // analyse local variables types
             new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
-                                          methodArgs, classNameFactory)
+                                          methodArgs, classNameManager)
                     .analyse();
 
             // assign a name to each variable
