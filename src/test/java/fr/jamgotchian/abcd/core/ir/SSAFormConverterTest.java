@@ -42,6 +42,8 @@ public class SSAFormConverterTest {
 
     private IRInstFactory instFactory;
 
+    private VariableFactory varFactory;
+
     public SSAFormConverterTest() {
     }
 
@@ -70,18 +72,20 @@ public class SSAFormConverterTest {
     @Before
     public void setUp() {
         instFactory = new IRInstFactory();
+        varFactory = new VariableFactory();
     }
 
     @After
     public void tearDown() {
         instFactory = null;
+        varFactory = null;
     }
 
     private BasicBlock newBasicBlock(int id, int... vars) {
         BasicBlock bb = new BasicBlockTestImpl("BB" + id);
         for (int var : vars) {
             bb.setInstructions(new IRInstSeq());
-            bb.getInstructions().add(instFactory.newAssignInt(new Variable(var, bb, -1), 0));
+            bb.getInstructions().add(instFactory.newAssignInt(varFactory.create(var, bb, -1), 0));
         }
         return bb;
     }
@@ -144,7 +148,6 @@ public class SSAFormConverterTest {
         Assert.assertTrue(Collections3.sameContent(info.getDominanceFrontierOf2(bb7),
                                                    Arrays.asList(bb1)));
 
-        IRInstFactory factory = new IRInstFactory();
-        new SSAFormConverter(graph, factory).convert();
+        new SSAFormConverter(graph, instFactory, varFactory).convert();
     }
 }

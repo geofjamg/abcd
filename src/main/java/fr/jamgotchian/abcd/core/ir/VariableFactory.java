@@ -20,11 +20,19 @@ package fr.jamgotchian.abcd.core.ir;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class TemporaryVariableFactory {
+public class VariableFactory {
 
     private int count = -1;
 
-    public Variable create(BasicBlock block) {
+    public Variable createTmp(BasicBlock block) {
         return new Variable(count--, block, -1);
+    }
+
+    public Variable create(int index, BasicBlock block, int position) {
+        return new Variable(new VariableID(index), block, position);
+    }
+
+    public Variable create(int index) {
+        return new Variable(index);
     }
 }

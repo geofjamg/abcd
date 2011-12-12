@@ -22,7 +22,7 @@ import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
-import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.ir.VariableFactory;
 import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -50,7 +50,8 @@ public class DalvikMethodFactory implements MethodFactory {
         addressManager = new CodeAddressManager(encodedMethod.codeItem.getInstructions());
     }
 
-    public Method createMethod(ImportManager importManager) {
+    @Override
+    public Method createMethod(ImportManager importManager, VariableFactory varFactory) {
         MethodIdItem methodItem = encodedMethod.method;
         String name = methodItem.getMethodName().getStringValue();
         AccessFlags[] accessFlags = AccessFlags.getAccessFlagsForClass(encodedMethod.accessFlags);
@@ -62,18 +63,21 @@ public class DalvikMethodFactory implements MethodFactory {
         return new Method(name, modifiers, returnType, arguments, exceptions, false);
     }
 
+    @Override
     public ControlFlowGraphBuilder createCFGBuilder(String methodSignature) {
         return new DalvikBytecodeControlFlowGraphBuilder(methodSignature,
                                                          encodedMethod.codeItem,
                                                          addressManager);
     }
 
+    @Override
     public InstructionBuilder createInstBuilder(ImportManager importManager,
-                                                TemporaryVariableFactory tmpVarFactory,
+                                                VariableFactory varFactory,
                                                 IRInstFactory instFactory) {
         return new DalvikBytecodeInstructionBuilder();
     }
 
+    @Override
     public String getBytecodeAsText() {
         return DalvikBytecodeWriter.toText(encodedMethod.codeItem.getInstructions(),
                                            addressManager);

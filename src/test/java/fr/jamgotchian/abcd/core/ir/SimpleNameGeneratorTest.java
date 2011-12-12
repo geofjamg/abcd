@@ -30,32 +30,36 @@ public class SimpleNameGeneratorTest {
 
     private SimpleVariableNameProvider provider;
 
+    private VariableFactory varFactory;
+
     public SimpleNameGeneratorTest() {
     }
 
     @Before
     public void setUp() {
         provider = new SimpleVariableNameProvider();
+        varFactory = new VariableFactory();
     }
 
     @After
     public void tearDown() {
         provider = null;
+        varFactory = null;
     }
 
     private void generate(int n, int offset) {
         for (int i = offset; i < offset + n; i++) {
-            provider.getName(new Variable(i), true);
+            provider.getName(varFactory.create(i), true);
         }
     }
 
     @Test
     public void testGenerate() {
-        assertTrue(provider.getName(new Variable(0), true).equals("a"));
-        assertTrue(provider.getName(new Variable(1), true).equals("b"));
+        assertTrue(provider.getName(varFactory.create(0), true).equals("a"));
+        assertTrue(provider.getName(varFactory.create(1), true).equals("b"));
         generate(24,  2);
-        assertTrue(provider.getName(new Variable(26), true).equals("ba"));
-        assertTrue(provider.getName(new Variable(27), true).equals("bb"));
+        assertTrue(provider.getName(varFactory.create(26), true).equals("ba"));
+        assertTrue(provider.getName(varFactory.create(27), true).equals("bb"));
     }
 
 }

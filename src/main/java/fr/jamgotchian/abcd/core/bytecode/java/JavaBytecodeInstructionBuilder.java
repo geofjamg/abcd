@@ -36,7 +36,7 @@ import fr.jamgotchian.abcd.core.ir.IRInstSeq;
 import fr.jamgotchian.abcd.core.ir.IRInstWriter;
 import fr.jamgotchian.abcd.core.ir.IRUnaryOperator;
 import fr.jamgotchian.abcd.core.ir.NewObjectInst;
-import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.ir.VariableFactory;
 import fr.jamgotchian.abcd.core.ir.ThrowInst;
 import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.ir.VariableStack;
@@ -103,7 +103,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
     private final ClassNameManager classNameManager;
 
-    private final TemporaryVariableFactory tmpVarFactory;
+    private final VariableFactory varFactory;
 
     private final IRInstFactory instFactory;
 
@@ -124,7 +124,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         private void pushGetArray(BasicBlock bb, ComputationalType type) {
             Variable arrayIndex = stack.pop();
             Variable arrayVar = stack.pop();
-            Variable tmpResultVar = tmpVarFactory.create(bb);
+            Variable tmpResultVar = varFactory.createTmp(bb);
             bb.getInstructions().add(instFactory.newGetArray(tmpResultVar, arrayVar, arrayIndex));
             stack.push(tmpResultVar, type);
         }
@@ -132,26 +132,26 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         private void pushBinOp(BasicBlock bb, IRBinaryOperator operator, ComputationalType type) {
             Variable right = stack.pop();
             Variable left = stack.pop();
-            Variable tmpResult = tmpVarFactory.create(bb);
+            Variable tmpResult = varFactory.createTmp(bb);
             bb.getInstructions().add(instFactory.newBinary(tmpResult, operator, left, right));
             stack.push(tmpResult, type);
         }
 
         private void pushUnaryOp(BasicBlock bb, IRUnaryOperator operator, ComputationalType type) {
-            Variable tmpResult = tmpVarFactory.create(bb);
+            Variable tmpResult = varFactory.createTmp(bb);
             bb.getInstructions().add(instFactory.newUnary(tmpResult, operator, stack.pop()));
             stack.push(tmpResult, type);
         }
 
         private void pushCast(BasicBlock bb, JavaType type) {
-            Variable tmpResult = tmpVarFactory.create(bb);
+            Variable tmpResult = varFactory.createTmp(bb);
             Variable var = stack.pop();
             bb.getInstructions().add(instFactory.newCast(tmpResult, var, type));
             stack.push(tmpResult, type.getComputationalType());
         }
 
         private void pushAssign(BasicBlock bb, ComputationalType type, Variable var) {
-            Variable tmpVar = tmpVarFactory.create(bb);
+            Variable tmpVar = varFactory.createTmp(bb);
             stack.push(tmpVar, type);
             bb.getInstructions().add(instFactory.newAssignVar(tmpVar, var));
         }
@@ -168,7 +168,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             switch (node.getOpcode()) {
                 case GETSTATIC: {
                     ClassName className = classNameManager.newClassName(node.owner.replace('/', '.'));
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newGetStaticField(tmpVar, className, fieldName, fieldType));
                     stack.push(tmpVar, fieldType.getComputationalType());
                     break;
@@ -182,7 +182,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 }
 
                 case GETFIELD: {
-                    Variable resultVar = tmpVarFactory.create(bb);
+                    Variable resultVar = varFactory.createTmp(bb);
                     Variable objVar = stack.pop();
                     bb.getInstructions().add(instFactory.newGetField(resultVar, objVar, fieldName, fieldType));
                     stack.push(resultVar, fieldType.getComputationalType());
@@ -203,14 +203,14 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
         @Override
         public void visitIincInsn(BasicBlock bb, int position, IincInsnNode node) {
-            Variable tmpVar = tmpVarFactory.create(bb);
-            bb.getInstructions().add(instFactory.newAssignVar(tmpVar, new Variable(node.var, bb, position)));
-            Variable tmpValue = tmpVarFactory.create(bb);
+            Variable tmpVar = varFactory.createTmp(bb);
+            bb.getInstructions().add(instFactory.newAssignVar(tmpVar, varFactory.create(node.var, bb, position)));
+            Variable tmpValue = varFactory.createTmp(bb);
             bb.getInstructions().add(instFactory.newAssignInt(tmpValue, Math.abs(node.incr)));
-            Variable tmpResult = tmpVarFactory.create(bb);
+            Variable tmpResult = varFactory.createTmp(bb);
             IRBinaryOperator binOp = node.incr > 0 ? IRBinaryOperator.PLUS : IRBinaryOperator.MINUS;
             bb.getInstructions().add(instFactory.newBinary(tmpResult, binOp, tmpVar, tmpValue));
-            bb.getInstructions().add(instFactory.newAssignVar(new Variable(node.var, bb, position), tmpResult));
+            bb.getInstructions().add(instFactory.newAssignVar(varFactory.create(node.var, bb, position), tmpResult));
         }
 
         @Override
@@ -220,105 +220,105 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     break;
 
                 case ACONST_NULL: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignNull(tmpVar));
                     stack.push(tmpVar, ComputationalType.REFERENCE);
                     break;
                 }
 
                 case ICONST_M1: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpVar, 1));
                     stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case ICONST_0: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpVar, 0));
                     stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case ICONST_1: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpVar, 1));
                     stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case ICONST_2: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpVar, 2));
                     stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case ICONST_3: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpVar, 3));
                     stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case ICONST_4: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpVar, 4));
                     stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case ICONST_5: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpVar, 5));
                     stack.push(tmpVar, ComputationalType.INT);
                     break;
                 }
 
                 case LCONST_0: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignLong(tmpVar, 0));
                     stack.push(tmpVar, ComputationalType.LONG);
                     break;
                 }
 
                 case LCONST_1: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignLong(tmpVar, 1));
                     stack.push(tmpVar, ComputationalType.LONG);
                     break;
                 }
 
                 case FCONST_0: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignFloat(tmpVar, 0f));
                     stack.push(tmpVar, ComputationalType.FLOAT);
                     break;
                 }
 
                 case FCONST_1: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignFloat(tmpVar, 1f));
                     stack.push(tmpVar, ComputationalType.FLOAT);
                     break;
                 }
 
                 case FCONST_2: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignFloat(tmpVar, 2f));
                     stack.push(tmpVar, ComputationalType.FLOAT);
                     break;
                 }
 
                 case DCONST_0: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignDouble(tmpVar, 0d));
                     stack.push(tmpVar, ComputationalType.DOUBLE);
                     break;
                 }
 
                 case DCONST_1: {
-                    Variable tmpVar = tmpVarFactory.create(bb);
+                    Variable tmpVar = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignDouble(tmpVar, 1d));
                     stack.push(tmpVar, ComputationalType.DOUBLE);
                     break;
@@ -713,7 +713,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case DCMPG: {
                     Variable value2 = stack.pop();
                     Variable value1 = stack.pop();
-                    Variable tmpResult = tmpVarFactory.create(bb);
+                    Variable tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.MINUS, value1, value2));
                     stack.push(tmpResult, ComputationalType.INT);
                     break;
@@ -732,7 +732,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     break;
 
                 case ARRAYLENGTH: {
-                    Variable result = tmpVarFactory.create(bb);
+                    Variable result = varFactory.createTmp(bb);
                     Variable arrayVar = stack.pop();
                     bb.getInstructions().add(instFactory.newArrayLength(result, arrayVar));
                     stack.push(result, ComputationalType.INT);
@@ -758,7 +758,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
         @Override
         public void visitIntInsn(BasicBlock bb, int position, IntInsnNode node) {
-            Variable tmpVar = tmpVarFactory.create(bb);
+            Variable tmpVar = varFactory.createTmp(bb);
             switch (node.getOpcode()) {
                 case BIPUSH:
                     bb.getInstructions().add(instFactory.newAssignByte(tmpVar, (byte) node.operand));
@@ -788,49 +788,49 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
             switch(node.getOpcode()) {
                 case IFEQ: {
-                    Variable tmpZero = tmpVarFactory.create(bb);
+                    Variable tmpZero = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpZero, 0));
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.EQ, stack.pop(), tmpZero));
                     break;
                 }
 
                 case IFNE: {
-                    Variable tmpZero = tmpVarFactory.create(bb);
+                    Variable tmpZero = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpZero, 0));
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.NE, stack.pop(), tmpZero));
                     break;
                 }
 
                 case IFLT: {
-                    Variable tmpZero = tmpVarFactory.create(bb);
+                    Variable tmpZero = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpZero, 0));
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.LT, stack.pop(), tmpZero));
                     break;
                 }
 
                 case IFGE: {
-                    Variable tmpZero = tmpVarFactory.create(bb);
+                    Variable tmpZero = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpZero, 0));
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.GE, stack.pop(), tmpZero));
                     break;
                 }
 
                 case IFGT: {
-                    Variable tmpZero = tmpVarFactory.create(bb);
+                    Variable tmpZero = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpZero, 0));
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.GT, stack.pop(), tmpZero));
                     break;
                 }
 
                 case IFLE: {
-                    Variable tmpZero = tmpVarFactory.create(bb);
+                    Variable tmpZero = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignInt(tmpZero, 0));
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.LE, stack.pop(), tmpZero));
                     break;
                 }
@@ -838,7 +838,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case IF_ICMPEQ: {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.EQ, left, right));
                     break;
                 }
@@ -846,7 +846,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case IF_ICMPNE: {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.NE, left, right));
                     break;
                 }
@@ -854,7 +854,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case IF_ICMPLT: {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.LT, left, right));
                     break;
                 }
@@ -862,7 +862,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case IF_ICMPGE: {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.GE, left, right));
                     break;
                 }
@@ -870,7 +870,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case IF_ICMPGT: {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.GT, left, right));
                     break;
                 }
@@ -878,7 +878,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case IF_ICMPLE: {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.LE, left, right));
                     break;
                 }
@@ -886,7 +886,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case IF_ACMPEQ: {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.EQ, left, right));
                     break;
                 }
@@ -894,7 +894,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 case IF_ACMPNE: {
                     Variable right = stack.pop();
                     Variable left = stack.pop();
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.NE, left, right));
                     break;
                 }
@@ -906,17 +906,17 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     throw new ABCDException("TODO : support JSR instruction");
 
                 case IFNULL: {
-                    Variable tmpNull = tmpVarFactory.create(bb);
+                    Variable tmpNull = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignNull(tmpNull));
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.EQ, stack.pop(), tmpNull));
                     break;
                 }
 
                 case IFNONNULL: {
-                    Variable tmpNull = tmpVarFactory.create(bb);
+                    Variable tmpNull = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newAssignNull(tmpNull));
-                    tmpResult = tmpVarFactory.create(bb);
+                    tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newBinary(tmpResult, IRBinaryOperator.NE, stack.pop(), tmpNull));
                     break;
                 }
@@ -936,7 +936,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
         @Override
         public void visitLdcInsn(BasicBlock bb, int position, LdcInsnNode node) {
-            Variable tmpVar = tmpVarFactory.create(bb);
+            Variable tmpVar = varFactory.createTmp(bb);
             if (node.cst instanceof Type) {
                 ClassName className = classNameManager.newClassName(((Type)node.cst).getClassName());
                 bb.getInstructions().add(instFactory.newAssignClass(tmpVar, className));
@@ -986,7 +986,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             MethodSignature signature = new MethodSignature(methodName, returnJavaType,
                                                             argJavaTypes);
 
-            Variable resultVar = tmpVarFactory.create(bb);
+            Variable resultVar = varFactory.createTmp(bb);
             switch (node.getOpcode()) {
                 case INVOKEVIRTUAL:
                 case INVOKESPECIAL:
@@ -1021,7 +1021,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             for (int i = 0; i < node.dims; i++) {
                 dimensions.add(0, stack.pop());
             }
-            Variable tmpResult = tmpVarFactory.create(bb);
+            Variable tmpResult = varFactory.createTmp(bb);
             bb.getInstructions().add(instFactory.newNewArray(tmpResult, javaType, dimensions));
             stack.push(tmpResult, ComputationalType.REFERENCE);
         }
@@ -1037,14 +1037,14 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
             switch (node.getOpcode()) {
                 case NEW: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
+                    Variable tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newNewObject(tmpResult, type));
                     stack.push(tmpResult, ComputationalType.REFERENCE);
                     break;
                 }
 
                 case ANEWARRAY: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
+                    Variable tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newNewArray(tmpResult, type,
                                              Collections.singletonList(stack.pop())));
                     stack.push(tmpResult, ComputationalType.REFERENCE);
@@ -1055,7 +1055,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     break;
 
                 case INSTANCEOF: {
-                    Variable tmpResult = tmpVarFactory.create(bb);
+                    Variable tmpResult = varFactory.createTmp(bb);
                     bb.getInstructions().add(instFactory.newInstanceOf(tmpResult, stack.pop(), type));
                     stack.push(tmpResult, ComputationalType.INT);
                     break;
@@ -1068,7 +1068,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
         @Override
         public void visitVarInsn(BasicBlock bb, int position, VarInsnNode node) {
-            Variable var = new Variable(node.var, bb, position);
+            Variable var = varFactory.create(node.var, bb, position);
             switch (node.getOpcode()) {
                 case ILOAD:
                     pushAssign(bb, ComputationalType.INT, var);
@@ -1115,12 +1115,12 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
     public JavaBytecodeInstructionBuilder(InsnList instructions,
                                     LabelManager labelManager,
                                     ClassNameManager classNameManager,
-                                    TemporaryVariableFactory tmpVarFactory,
+                                    VariableFactory varFactory,
                                     IRInstFactory instFactory) {
         this.instructions = instructions;
         this.labelManager = labelManager;
         this.classNameManager = classNameManager;
-        this.tmpVarFactory = tmpVarFactory;
+        this.varFactory = varFactory;
         this.instFactory = instFactory;
         finallyTmpVars = new HashSet<Variable>();
         catchTmpVars = new HashSet<Variable>();
@@ -1136,7 +1136,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             // at the entry block of an exception handler the stack only contains
             // the exception variable
             inputStack = new VariableStack();
-            Variable exceptionVar = tmpVarFactory.create(bb);
+            Variable exceptionVar = varFactory.createTmp(bb);
             IRInst tmpInst;
             if (bb.hasProperty(FINALLY_ENTRY)) {
                 finallyTmpVars.add(exceptionVar);
@@ -1207,7 +1207,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 Variable var1 = vars.iterator().next();
                 stacksMerge.push(var1, var1.getComputationalType());
             } else {
-                Variable result = tmpVarFactory.create(bb);
+                Variable result = varFactory.createTmp(bb);
                 bb.getInstructions().add(instFactory.newChoice(result, vars));
                 stacksMerge.push(result, vars.iterator().next().getComputationalType());
             }

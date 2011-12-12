@@ -19,7 +19,7 @@ package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.VariableExpression;
-import fr.jamgotchian.abcd.core.ir.Variable;
+import fr.jamgotchian.abcd.core.ir.VariableFactory;
 import java.util.Iterator;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,11 +33,13 @@ public class StatementsTest {
 
     private BlockStatement sourceBlock;
     private BlockStatement targetBlock;
+    private VariableFactory varFactory;
 
     @Before
     public void setup() {
          sourceBlock = new BlockStatement();
          targetBlock = new BlockStatement();
+         varFactory = new VariableFactory();
     }
 
     @Test
@@ -51,7 +53,7 @@ public class StatementsTest {
 
     @Test
     public void oneStatementSourceBlockMoveTest() {
-        VariableExpression var = Expressions.newVarExpr(new Variable(0));
+        VariableExpression var = Expressions.newVarExpr(varFactory.create(0));
         Statement stmt = new LocalVariableDeclarationStatement(var);
         sourceBlock.add(stmt);
         Assert.assertFalse(sourceBlock.isEmpty());

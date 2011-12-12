@@ -44,11 +44,11 @@ public class Variable {
         this.position = position;
     }
 
-    public Variable(int index, BasicBlock block, int position) {
+    Variable(int index, BasicBlock block, int position) {
         this(new VariableID(index), block, position);
     }
 
-    public Variable(int index) {
+    Variable(int index) {
         this(new VariableID(index), null, -1);
     }
 

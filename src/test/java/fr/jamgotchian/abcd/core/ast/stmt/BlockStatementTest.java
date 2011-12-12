@@ -19,7 +19,7 @@ package fr.jamgotchian.abcd.core.ast.stmt;
 
 import fr.jamgotchian.abcd.core.ast.expr.Expressions;
 import fr.jamgotchian.abcd.core.ast.expr.VariableExpression;
-import fr.jamgotchian.abcd.core.ir.Variable;
+import fr.jamgotchian.abcd.core.ir.VariableFactory;
 import java.util.Collections;
 import java.util.Iterator;
 import org.junit.Assert;
@@ -34,13 +34,16 @@ public class BlockStatementTest {
 
     private BlockStatement block;
 
+    private VariableFactory varFactory;
+
     @Before
     public void setup() {
          block = new BlockStatement();
+         varFactory = new VariableFactory();
     }
 
-    private static Statement newStmt(int index) {
-        VariableExpression varExpr = Expressions.newVarExpr(new Variable(index));
+    private Statement newStmt(int index) {
+        VariableExpression varExpr = Expressions.newVarExpr(varFactory.create(index));
         return new LocalVariableDeclarationStatement(varExpr);
     }
 

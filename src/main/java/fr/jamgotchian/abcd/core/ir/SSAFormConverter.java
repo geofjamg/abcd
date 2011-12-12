@@ -45,15 +45,19 @@ public class SSAFormConverter {
 
     private final IRInstFactory instFactory;
 
+    private final VariableFactory varFactory;
+
     private Multimap<BasicBlock, Integer> liveVariables;
 
     private Multimap<Integer, BasicBlock> defBlocks;
 
     private Set<Integer> globals;
 
-    public SSAFormConverter(ControlFlowGraph graph, IRInstFactory instFactory) {
+    public SSAFormConverter(ControlFlowGraph graph, IRInstFactory instFactory,
+                            VariableFactory varFactory) {
         this.graph = graph;
         this.instFactory = instFactory;
+        this.varFactory = varFactory;
     }
 
     private static boolean containsDef(BasicBlock block, int defIndex) {
@@ -85,12 +89,12 @@ public class SSAFormConverter {
                             boolean contains = containsDef(y, defIndex);
                             List<Variable> args = new ArrayList<Variable>();
                             for (int i = 0; i < graph.getPredecessorCountOf(y); i++) {
-                                args.add(new Variable(defIndex, y, -1));
+                                args.add(varFactory.create(defIndex, y, -1));
                             }
                             // is definition alive in basic block y ?
                             if (liveVariables.get(y).contains(defIndex)) {
                                 y.getInstructions()
-                                 .insertAt(0, instFactory.newPhi(new Variable(defIndex, y, -1), args));
+                                 .insertAt(0, instFactory.newPhi(varFactory.create(defIndex, y, -1), args));
                                 LOGGER.log(Level.FINEST, "  Add Phi function to {0} for var {1}",
                                         new Object[] {y, defIndex});
                             }

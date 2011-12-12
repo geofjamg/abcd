@@ -22,7 +22,7 @@ import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
-import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.ir.VariableFactory;
 import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -51,7 +51,8 @@ public class JavaBytecodeMethodFactory implements MethodFactory {
         this.mn = mn;
     }
 
-    public Method createMethod(ImportManager importManager) {
+    @Override
+    public Method createMethod(ImportManager importManager, VariableFactory varFactory) {
         // return type
         JavaType javaReturnType = null;
         if (!"<init>".equals(mn.name)) {
@@ -94,7 +95,7 @@ public class JavaBytecodeMethodFactory implements MethodFactory {
         for(int index = 0; index < argTypes.length; index++) {
             Type argType = argTypes[index];
             // index 0 of local variable table contains this for non static method
-            Variable arg = new Variable(isMethodStatic ? index : index + 1);
+            Variable arg = varFactory.create(isMethodStatic ? index : index + 1);
             arg.setType(JavaBytecodeUtil.newType(argType, importManager));
             arguments.add(arg);
         }
@@ -103,17 +104,20 @@ public class JavaBytecodeMethodFactory implements MethodFactory {
                           exceptions, constructor);
     }
 
+    @Override
     public ControlFlowGraphBuilder createCFGBuilder(String methodSignature) {
         return new JavaBytecodeControlFlowGraphBuilder(methodSignature, mn, labelManager);
     }
 
+    @Override
     public InstructionBuilder createInstBuilder(ImportManager importManager,
-                                                TemporaryVariableFactory tmpVarFactory,
+                                                VariableFactory varFactory,
                                                 IRInstFactory instFactory) {
         return new JavaBytecodeInstructionBuilder(mn.instructions, labelManager,
-                                                  importManager, tmpVarFactory, instFactory);
+                                                  importManager, varFactory, instFactory);
     }
 
+    @Override
     public String getBytecodeAsText() {
         return JavaBytecodeWriter.toText(mn.instructions, labelManager);
     }

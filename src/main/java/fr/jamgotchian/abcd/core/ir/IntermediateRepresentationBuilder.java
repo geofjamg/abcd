@@ -53,7 +53,7 @@ public class IntermediateRepresentationBuilder {
 
     private final ClassNameManager classNameManager;
 
-    private final TemporaryVariableFactory tmpVarFactory;
+    private final VariableFactory varFactory;
 
     private final IRInstFactory instFactory;
 
@@ -72,7 +72,7 @@ public class IntermediateRepresentationBuilder {
     public IntermediateRepresentationBuilder(ControlFlowGraphBuilder cfgBuilder,
                                              InstructionBuilder instBuilder,
                                              ClassNameManager classNameManager,
-                                             TemporaryVariableFactory tmpVarFactory,
+                                             VariableFactory varFactory,
                                              IRInstFactory instFactory,
                                              VariableNameProviderFactory nameProviderFactory,
                                              JavaType thisType,
@@ -82,7 +82,7 @@ public class IntermediateRepresentationBuilder {
         this.cfgBuilder = cfgBuilder;
         this.instBuilder = instBuilder;
         this.classNameManager = classNameManager;
-        this.tmpVarFactory = tmpVarFactory;
+        this.varFactory = varFactory;
         this.instFactory = instFactory;
         this.nameProviderFactory = nameProviderFactory;
         this.thisType = thisType;
@@ -162,7 +162,7 @@ public class IntermediateRepresentationBuilder {
                                             new Object[]{i, joinBlock, IRInstWriter.toText(condInst)});
                                     condInsts.add(condInst);
                                 } else {
-                                    Variable resultVar = tmpVarFactory.create(forkBlock);
+                                    Variable resultVar = varFactory.createTmp(forkBlock);
                                     ConditionalInst condInst
                                             = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
                                     LOGGER.log(Level.FINER, "Insert inst at {0} of {1} : {2}",
@@ -320,7 +320,7 @@ public class IntermediateRepresentationBuilder {
 
             // collapse shortcut operators (&&, ||)
             ShortcutOperatorsCollapser collapser
-                    = new ShortcutOperatorsCollapser(cfg, tmpVarFactory, instFactory);
+                    = new ShortcutOperatorsCollapser(cfg, varFactory, instFactory);
             if (collapser.collapse()) {
                 cfg.updateDominatorInfo();
                 cfg.updatePostDominatorInfo();

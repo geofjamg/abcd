@@ -21,7 +21,7 @@ import fr.jamgotchian.abcd.core.ast.Method;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
-import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.ir.VariableFactory;
 
 /**
  *
@@ -29,12 +29,12 @@ import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
  */
 public interface MethodFactory {
 
-    Method createMethod(ImportManager importManager);
+    Method createMethod(ImportManager importManager, VariableFactory varFactory);
 
     ControlFlowGraphBuilder createCFGBuilder(String methodSignature);
 
     InstructionBuilder createInstBuilder(ImportManager importManager,
-                                         TemporaryVariableFactory tmpVarFactory,
+                                         VariableFactory varFactory,
                                          IRInstFactory instFactory);
 
     String getBytecodeAsText();

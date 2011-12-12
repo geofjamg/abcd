@@ -43,7 +43,7 @@ import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.LocalVariableTableNameProviderFactory;
 import fr.jamgotchian.abcd.core.ir.ExceptionTable;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
-import fr.jamgotchian.abcd.core.ir.TemporaryVariableFactory;
+import fr.jamgotchian.abcd.core.ir.VariableFactory;
 import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.ir.Region;
 import fr.jamgotchian.abcd.core.ir.RegionAnalysis;
@@ -191,7 +191,10 @@ public class ABCDContext {
 
         Collection<MethodFactory> methodFactories = classFactory.createMethodFactories();
         for (MethodFactory methodFactory : methodFactories) {
-            Method method = methodFactory.createMethod(importManager);
+
+            VariableFactory varFactory = new VariableFactory();
+
+            Method method = methodFactory.createMethod(importManager, varFactory);
             _class.addMethod(method);
 
             if (_class.getKind() == ClassKind.INTERFACE
@@ -214,17 +217,15 @@ public class ABCDContext {
                 ControlFlowGraphBuilder cfgBuilder
                         = methodFactory.createCFGBuilder(methodSignature);
 
-                TemporaryVariableFactory tmpVarFactory = new TemporaryVariableFactory();
-
                 IRInstFactory instFactory = new IRInstFactory();
 
                 InstructionBuilder instBuilder
-                    = methodFactory.createInstBuilder(importManager, tmpVarFactory, instFactory);
+                    = methodFactory.createInstBuilder(importManager, varFactory, instFactory);
 
                 cfg = new IntermediateRepresentationBuilder(cfgBuilder,
                                                             instBuilder,
                                                             importManager,
-                                                            tmpVarFactory,
+                                                            varFactory,
                                                             instFactory,
                                                             nameProviderFactory,
                                                             thisType,

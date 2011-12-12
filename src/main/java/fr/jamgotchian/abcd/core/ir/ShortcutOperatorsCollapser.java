@@ -31,15 +31,15 @@ public class ShortcutOperatorsCollapser {
 
     private final ControlFlowGraph cfg;
 
-    private final TemporaryVariableFactory tmpVarFactory;
+    private final VariableFactory varFactory;
 
     private final IRInstFactory instFactory;
 
     public ShortcutOperatorsCollapser(ControlFlowGraph cfg,
-                                      TemporaryVariableFactory tmpVarFactory,
+                                      VariableFactory varFactory,
                                       IRInstFactory instFactory) {
         this.cfg = cfg;
-        this.tmpVarFactory = tmpVarFactory;
+        this.varFactory = varFactory;
         this.instFactory = instFactory;
     }
 
@@ -70,12 +70,12 @@ public class ShortcutOperatorsCollapser {
         seq2.clear();
         Variable cond2;
         if (invert2) {
-            cond2 = tmpVarFactory.create(bb1);
+            cond2 = varFactory.createTmp(bb1);
             seq1.add(instFactory.newUnary(cond2, IRUnaryOperator.NOT, jumpInst2.getCond()));
         } else {
             cond2 = jumpInst2.getCond();
         }
-        Variable newCond = tmpVarFactory.create(bb1);
+        Variable newCond = varFactory.createTmp(bb1);
         seq1.add(instFactory.newBinary(newCond,
                                        operator,
                                        jumpInst1.getCond(),
@@ -205,12 +205,12 @@ public class ShortcutOperatorsCollapser {
         seq3.clear();
         Variable cond2;
         if (invert2) {
-            cond2 = tmpVarFactory.create(bb1);
+            cond2 = varFactory.createTmp(bb1);
             seq1.add(instFactory.newUnary(cond2, IRUnaryOperator.NOT, jumpInst2.getCond()));
         } else {
             cond2 = jumpInst2.getCond();
         }
-        Variable newCond = tmpVarFactory.create(bb1);
+        Variable newCond = varFactory.createTmp(bb1);
         seq1.add(instFactory.newConditional(newCond,
                                             jumpInst1.getCond(),
                                             cond2,
