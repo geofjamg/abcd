@@ -33,6 +33,7 @@ import javax.lang.model.element.Modifier;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.MethodIdItem;
 import org.jf.dexlib.ProtoIdItem;
+import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Util.AccessFlags;
 
 /**
@@ -53,14 +54,44 @@ public class DalvikMethodFactory implements MethodFactory {
     @Override
     public Method createMethod(ImportManager importManager, VariableFactory varFactory) {
         MethodIdItem methodItem = encodedMethod.method;
-        String name = methodItem.getMethodName().getStringValue();
+
+        String methodName = methodItem.getMethodName().getStringValue();
+
+        // contructor or method ?
+        boolean constructor = "<init>".equals(methodName);
+
+        // method modifiers
         AccessFlags[] accessFlags = AccessFlags.getAccessFlagsForClass(encodedMethod.accessFlags);
         Set<Modifier> modifiers = DalvikBytecodeUtil.getModifiers(accessFlags);
+
         ProtoIdItem prototype = methodItem.getPrototype();
+
+        // return type
         JavaType returnType = DalvikBytecodeUtil.newType(prototype.getReturnType(), importManager);
+
+        // parameters
         List<Variable> arguments = new ArrayList<Variable>();
+        if (prototype.getParameters() != null) {
+            int argRegister = encodedMethod.codeItem.getRegisterCount()
+                    - prototype.getParameterRegisterCount();
+            for (TypeIdItem argItem : prototype.getParameters().getTypes()) {
+                JavaType argType = DalvikBytecodeUtil.newType(argItem, importManager);
+                varFactory.addArgIndex(argRegister);
+                Variable arg = varFactory.create(argRegister);
+                arg.setType(argType);
+                arguments.add(arg);
+                if (argType == JavaType.LONG || argType == JavaType.DOUBLE) {
+                    argRegister += 2;
+                } else {
+                    argRegister++;
+                }
+            }
+        }
+
         List<ClassName> exceptions = new ArrayList<ClassName>();
-        return new Method(name, modifiers, returnType, arguments, exceptions, false);
+
+        return new Method(methodName, modifiers, returnType, arguments,
+                          exceptions, constructor);
     }
 
     @Override
