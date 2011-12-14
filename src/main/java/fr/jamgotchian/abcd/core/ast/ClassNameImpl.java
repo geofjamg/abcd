@@ -26,19 +26,22 @@ class ClassNameImpl implements ClassName {
 
     private final ImportManager importManager;
 
-    private final String name;
+    private final String qualifiedName;
 
     private final String packageName;
 
-    ClassNameImpl(String qname, ImportManager importManager) {
+    private final String name;
+
+    ClassNameImpl(String qualifiedName, ImportManager importManager) {
+        this.qualifiedName = qualifiedName;
         this.importManager = importManager;
-        int lastDotIndex = qname.lastIndexOf('.');
+        int lastDotIndex = qualifiedName.lastIndexOf('.');
         if (lastDotIndex == -1)  {
             packageName = null;
-            name = qname;
+            name = qualifiedName;
         } else {
-            packageName = qname.substring(0, lastDotIndex);
-            name = qname.substring(lastDotIndex+1);
+            packageName = qualifiedName.substring(0, lastDotIndex);
+            name = qualifiedName.substring(lastDotIndex+1);
         }
     }
 
@@ -49,16 +52,16 @@ class ClassNameImpl implements ClassName {
 
     @Override
     public String getName() {
-        if (packageName == null || importManager.isImported(this)) {
+        if (packageName == null || importManager == null || importManager.isImported(this)) {
             return name;
         } else {
-            return getQualifiedName();
+            return qualifiedName;
         }
     }
 
     @Override
     public String getQualifiedName() {
-        return packageName + '.' + name;
+        return qualifiedName;
     }
 
     @Override
@@ -66,12 +69,12 @@ class ClassNameImpl implements ClassName {
         if (!(obj instanceof ClassNameImpl)) {
             return false;
         }
-        return ((ClassNameImpl) obj).name.equals(name);
+        return ((ClassNameImpl) obj).qualifiedName.equals(qualifiedName);
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return qualifiedName.hashCode();
     }
 
     @Override
