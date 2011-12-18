@@ -1051,8 +1051,12 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     break;
                 }
 
-                case CHECKCAST:
+                case CHECKCAST: {
+                    Variable tmpResult = varFactory.createTmp(bb);
+                    bb.getInstructions().add(instFactory.newCast(tmpResult, stack.pop(), type));
+                    stack.push(tmpResult, ComputationalType.REFERENCE);
                     break;
+                }
 
                 case INSTANCEOF: {
                     Variable tmpResult = varFactory.createTmp(bb);
