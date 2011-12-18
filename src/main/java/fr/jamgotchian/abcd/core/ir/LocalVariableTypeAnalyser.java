@@ -75,6 +75,12 @@ public class LocalVariableTypeAnalyser {
             return null;
         }
 
+        @Override
+        public Void visit(CastInst inst, Void arg) {
+            indexer.addIndex(inst.getCastType());
+            return null;
+        }
+
         private void visitCallableInst(CallableInst inst) {
             JavaType returnType = inst.getSignature().getReturnType();
             if (returnType.getKind() == TypeKind.REFERENCE) {
@@ -91,6 +97,30 @@ public class LocalVariableTypeAnalyser {
         @Override
         public Void visit(CallStaticMethodInst inst, Void arg) {
             visitCallableInst(inst);
+            return null;
+        }
+
+        @Override
+        public Void visit(GetFieldInst inst, Void arg) {
+            indexer.addIndex(inst.getFieldType());
+            return null;
+        }
+
+        @Override
+        public Void visit(SetFieldInst inst, Void arg) {
+            indexer.addIndex(inst.getFieldType());
+            return null;
+        }
+
+        @Override
+        public Void visit(GetStaticFieldInst inst, Void arg) {
+            indexer.addIndex(inst.getFieldType());
+            return null;
+        }
+
+        @Override
+        public Void visit(SetStaticFieldInst inst, Void arg) {
+            indexer.addIndex(inst.getFieldType());
             return null;
         }
     }
@@ -253,7 +283,8 @@ public class LocalVariableTypeAnalyser {
             if (castType.getKind() == TypeKind.PRIMITIVE) {
                 addPrimConstraint(inst.getResult(), castType);
             } else {
-                // TODO
+                addRefConstraint(inst.getResult(), castType,
+                                 ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
             }
             return null;
         }
@@ -284,7 +315,8 @@ public class LocalVariableTypeAnalyser {
             if (fieldType.getKind() == TypeKind.PRIMITIVE) {
                 addPrimConstraint(inst.getResult(), fieldType);
             } else {
-                // TODO
+                addRefConstraint(inst.getResult(), fieldType,
+                                 ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
             }
             return null;
         }
@@ -295,7 +327,8 @@ public class LocalVariableTypeAnalyser {
             if (inst.getFieldType().getKind() == TypeKind.PRIMITIVE) {
                 addPrimConstraint(inst.getValue(), fieldType);
             } else {
-                // TODO
+                addRefConstraint(inst.getValue(), fieldType,
+                                 ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
             }
             return null;
         }
@@ -395,7 +428,8 @@ public class LocalVariableTypeAnalyser {
             if (inst.getFieldType().getKind() == TypeKind.PRIMITIVE) {
                 addPrimConstraint(inst.getResult(), fieldType);
             } else {
-                // TODO
+                addRefConstraint(inst.getResult(), fieldType,
+                                 ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
             }
             return null;
         }
@@ -406,7 +440,8 @@ public class LocalVariableTypeAnalyser {
             if (inst.getFieldType().getKind() == TypeKind.PRIMITIVE) {
                 addPrimConstraint(inst.getValue(), fieldType);
             } else {
-                // TODO
+                addRefConstraint(inst.getValue(), fieldType,
+                                 ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
             }
             return null;
         }
