@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.type;
 import com.google.common.collect.LinkedHashMultimap;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
+import fr.jamgotchian.abcd.core.util.TablePrinter;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -255,17 +256,10 @@ public class TypeHierarchyIndexer {
     }
 
     public String indexesToString() {
-        List<String> indexColumn = new ArrayList<String>(1);
-        List<String> typeColumn = new ArrayList<String>(1);
-        List<String> ancestorsColumn = new ArrayList<String>(1);
-        indexColumn.add("Index");
-        typeColumn.add("Type");
-        ancestorsColumn.add("Ancestors");
+        TablePrinter printer = ConsoleUtil.newTablePrinter("Index", "Type", "Ancestors");
         for (TypeNode node : index2node.values()) {
-            indexColumn.add(Integer.toString(node.getIndex()));
-            typeColumn.add(node.getTypeStr());
-            ancestorsColumn.add(getIndexes(node).toString());
+            printer.addRow(node.getIndex(), node.getTypeStr(), getIndexes(node).toString());
         }
-        return ConsoleUtil.printTable(indexColumn, typeColumn, ancestorsColumn);
+        return printer.toString();
     }
 }

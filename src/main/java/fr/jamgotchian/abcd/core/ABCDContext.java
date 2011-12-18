@@ -53,9 +53,9 @@ import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
+import fr.jamgotchian.abcd.core.util.TablePrinter;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -162,18 +162,11 @@ public class ABCDContext {
                 Integer.toString(summary.getNumberOfClassesPerfectlyDecompiled()));
         LOGGER.log(Level.FINE, "Number of class partially decompiled : {0}",
                 Integer.toString(summary.getNumberOfClassesPartiallyDecompiled()));
-        List<String> errorColumn = new ArrayList<String>(summary.getErrors().size()+1);
-        List<String> classColumn = new ArrayList<String>(summary.getErrors().size()+1);
-        List<String> methodColumn = new ArrayList<String>(summary.getErrors().size()+1);
-        errorColumn.add("Error");
-        classColumn.add("Class");
-        methodColumn.add("Method");
+        TablePrinter printer = ConsoleUtil.newTablePrinter("Error", "Class", "Method");
         for (ErrorInfo error : summary.getErrors()) {
-            errorColumn.add(error.getMessage());
-            classColumn.add(error.getClassName());
-            methodColumn.add(error.getMethodSignature());
+            printer.addRow(error.getMessage(), error.getMessage(), error.getMethodSignature());
         }
-        LOGGER.log(Level.FINE, "\n{0}", ConsoleUtil.printTable(errorColumn, classColumn, methodColumn));
+        LOGGER.log(Level.FINE, "\n{0}", printer.toString());
     }
 
     private Class decompileClass(ClassFactory classFactory, ImportManager importManager,

@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
+import fr.jamgotchian.abcd.core.util.TablePrinter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -94,26 +95,12 @@ public class LocalVariableTable {
     }
 
     public void print(StringBuilder builder) {
-        int rowCount = entries.size()+1;
-        List<String> indexColumn = new ArrayList<String>(rowCount);
-        List<String> startColumn = new ArrayList<String>(rowCount);
-        List<String> endColumn = new ArrayList<String>(rowCount);
-        List<String> nameColumn = new ArrayList<String>(rowCount);
-        List<String> typeColumn = new ArrayList<String>(rowCount);
-        indexColumn.add("index");
-        startColumn.add("start");
-        endColumn.add("end");
-        nameColumn.add("name");
-        typeColumn.add("type");
+        TablePrinter printer = ConsoleUtil.newTablePrinter("index", "start", "end", "name", "type");
         for (int i = 0; i < entries.size(); i++) {
             Entry entry = entries.get(i);
-            indexColumn.add(Integer.toString(entry.getIndex()));
-            startColumn.add(Integer.toString(entry.getStart()));
-            endColumn.add(Integer.toString(entry.getEnd()));
-            nameColumn.add(entry.getName());
-            typeColumn.add(entry.getDescriptor());
+            printer.addRow(entry.getIndex(), entry.getStart(), entry.getEnd(),
+                           entry.getName(), entry.getDescriptor());
         }
-        ConsoleUtil.printTable(builder, indexColumn, startColumn, endColumn,
-                               nameColumn, typeColumn);
+        printer.print(builder);
     }
 }

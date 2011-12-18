@@ -23,6 +23,7 @@ import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
+import fr.jamgotchian.abcd.core.util.TablePrinter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -129,20 +130,15 @@ public class JavaBytecodeUtil implements Opcodes {
 
     public static void printInnerClasses(Multimap<String, String> innerClasses,
                                          StringBuilder builder) {
-        List<String> outerClassColumn = new ArrayList<String>();
-        List<String> innerClassColumn = new ArrayList<String>();
-        outerClassColumn.add("Outer class");
-        innerClassColumn.add("Inner class");
+        TablePrinter printer = ConsoleUtil.newTablePrinter("Outer class", "Inner class");
         for (Map.Entry<String, Collection<String>> entry : innerClasses.asMap().entrySet()) {
             String outerClass = entry.getKey();
             List<String> innerClasses2 = new ArrayList<String>(entry.getValue());
-            outerClassColumn.add(outerClass);
-            innerClassColumn.add(innerClasses2.get(0));
+            printer.addRow(outerClass, innerClasses2.get(0));
             for (int i = 1; i < innerClasses2.size(); i++) {
-                outerClassColumn.add("");
-                innerClassColumn.add(innerClasses2.get(i));
+                printer.addRow("", innerClasses2.get(i));
             }
         }
-        ConsoleUtil.printTable(builder, outerClassColumn, innerClassColumn);
+        printer.print(builder);
     }
 }

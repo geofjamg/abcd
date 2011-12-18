@@ -28,6 +28,7 @@ import static fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName.*;
 import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
+import fr.jamgotchian.abcd.core.util.TablePrinter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -241,19 +242,13 @@ public class IntermediateRepresentationBuilder {
             }
         }
 
-        List<String> variableColumn = new ArrayList<String>(1);
-        List<String> positionColumn = new ArrayList<String>(1);
-        List<String> nameColumn = new ArrayList<String>(1);
-        variableColumn.add("Variable");
-        positionColumn.add("Position");
-        nameColumn.add("Name");
+        TablePrinter printer = ConsoleUtil.newTablePrinter("Variable", "Position", "Name");
         for (Variable v : variables) {
-            variableColumn.add(v.getID().toString());
-            positionColumn.add(Integer.toString(v.getPosition()));
-            nameColumn.add(v.getName() != null ? v.getName() : "<undefined>");
+            printer.addRow(v.getID().toString(),
+                           v.getPosition(),
+                           v.getName() != null ? v.getName() : "<undefined>");
         }
-        LOGGER.log(Level.FINEST, "Variable names :\n{0}",
-                ConsoleUtil.printTable(variableColumn, positionColumn, nameColumn));
+        LOGGER.log(Level.FINEST, "Variable names :\n{0}", printer.toString());
     }
 
     private void addVariableDeclarations() {
