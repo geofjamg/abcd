@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
+import fr.jamgotchian.abcd.core.util.TablePrinter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -80,24 +81,12 @@ public class ExceptionTable {
     }
 
     public void print(StringBuilder builder) {
-        int rowCount = entries.size() + 1;
-        List<String> tryStartColumn = new ArrayList<String>(rowCount);
-        List<String> tryEndColumn = new ArrayList<String>(rowCount);
-        List<String> catchStartColumn = new ArrayList<String>(rowCount);
-        List<String> typeColumn = new ArrayList<String>(rowCount);
-        tryStartColumn.add("tryStart");
-        tryEndColumn.add("tryEnd");
-        catchStartColumn.add("catchStart");
-        typeColumn.add("type");
-
+        TablePrinter printer = ConsoleUtil.newTablePrinter("tryStart", "tryEnd", "catchStart", "type");
         for (int i = 0; i < entries.size(); i++) {
             Entry entry = entries.get(i);
-            tryStartColumn.add(Integer.toString(entry.getTryStart()));
-            tryEndColumn.add(Integer.toString(entry.getTryEnd()));
-            catchStartColumn.add(Integer.toString(entry.getCatchStart()));
-            typeColumn.add(entry.getExceptionClassName());
+            printer.addRow(entry.getTryStart(), entry.getTryEnd(),
+                           entry.getCatchStart(), entry.getExceptionClassName());
         }
-        ConsoleUtil.printTable(builder, tryStartColumn, tryEndColumn,
-                               catchStartColumn, typeColumn);
+        printer.print(builder);
     }
 }
