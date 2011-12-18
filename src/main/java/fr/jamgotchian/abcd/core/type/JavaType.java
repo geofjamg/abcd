@@ -93,6 +93,11 @@ public class JavaType {
         return new JavaType(null, className, null, 0);
     }
 
+    public static JavaType newRefType(Class<?> clazz, ClassNameManager classNameManager) {
+        ClassName className = classNameManager.newClassName(clazz.getName());
+        return new JavaType(null, className, null, 0);
+    }
+
     public static JavaType newArrayType(JavaType arrayElementType, int arrayDimension) {
         return new JavaType(null, null, arrayElementType, arrayDimension);
     }

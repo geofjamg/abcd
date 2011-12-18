@@ -330,7 +330,7 @@ public class IntermediateRepresentationBuilder {
             }
 
             // convert to SSA form
-//            new SSAFormConverter(cfg, instFactory).convert();
+//            new SSAFormConverter(cfg, instFactory, varFactory).convert();
 
             // to remove empty basic blocks added tu remove critical edges
             if (cfg.removeUnnecessaryBlock()) {

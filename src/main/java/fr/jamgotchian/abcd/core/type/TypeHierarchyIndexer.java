@@ -40,6 +40,8 @@ public class TypeHierarchyIndexer {
 
         private final List<TypeNode> parents = new ArrayList<TypeNode>();
 
+        private final List<TypeNode> children = new ArrayList<TypeNode>();
+
         private final PrimitiveType primitiveType;
 
         private final String className;
@@ -74,12 +76,21 @@ public class TypeHierarchyIndexer {
             return index;
         }
 
+        void addChild(TypeNode child) {
+            children.add(child);
+        }
+
         void addParent(TypeNode parent) {
             parents.add(parent);
+            parent.addChild(this);
         }
 
         List<TypeNode> getParents() {
             return parents;
+        }
+
+        public List<TypeNode> getChildren() {
+            return children;
         }
     }
 
@@ -148,35 +159,46 @@ public class TypeHierarchyIndexer {
         return node;
     }
 
-    private void getAncestors(Class<?> clazz, LinkedHashMultimap<Class<?>, Class<?>> ancestors) {
-        for (Class<?> _interface : clazz.getInterfaces()) {
-            ancestors.put(clazz, _interface);
-            getAncestors(_interface, ancestors);
-        }
-        if (clazz.getSuperclass() != null) {
-            ancestors.put(clazz, clazz.getSuperclass());
-            getAncestors(clazz.getSuperclass(), ancestors);
+    private TypeNode getNode(JavaType type) {
+        TypeNode node = null;
+        if (type.getKind() == TypeKind.PRIMITIVE) {
+            node = primitiveTypeNodes.get(type.getPrimitiveType());
         } else {
-            ancestors.put(clazz, null);
+            node = referenceTypeNodes.get(type.getClassName().getQualifiedName());
         }
+        if (node == null) {
+            throw new ABCDException("Type " + type + " not indexed");
+        }
+        return node;
+    }
+
+    private void getAncestors(Class<?> clazz, Class<?> parent, LinkedHashMultimap<Class<?>, Class<?>> ancestors) {
+        if (clazz.getSuperclass() != null) {
+            getAncestors(clazz.getSuperclass(), clazz, ancestors);
+        } else {
+            if (clazz.isInterface()) {
+                ancestors.put(Object.class, clazz);
+            }
+        }
+        for (Class<?> _interface : clazz.getInterfaces()) {
+            getAncestors(_interface, clazz, ancestors);
+        }
+        ancestors.put(clazz, parent);
     }
 
     private void addIndex(String className) {
         try {
             Class<?> clazz = Class.forName(className);
             LinkedHashMultimap<Class<?>, Class<?>> ancestors = LinkedHashMultimap.create();
-            getAncestors(clazz, ancestors);
-            Set<Map.Entry<Class<?>, Class<?>>> entries = ancestors.entries();
-            List<Map.Entry<Class<?>, Class<?>>> reversedEntries
-                    = new ArrayList<Map.Entry<Class<?>, Class<?>>>(entries.size());
-            for (Map.Entry<Class<?>, Class<?>> entry : entries) {
-                reversedEntries.add(0, entry);
+            getAncestors(clazz, null, ancestors);
+            for (Map.Entry<Class<?>, Class<?>> entry : ancestors.entries()) {
+                createNode(entry.getKey());
             }
-            for (Map.Entry<Class<?>, Class<?>> entry : reversedEntries) {
-                TypeNode node = createNode(entry.getKey());
+            for (Map.Entry<Class<?>, Class<?>> entry : ancestors.entries()) {
+                TypeNode superNode = createNode(entry.getKey());
                 if (entry.getValue() != null) {
-                    TypeNode parent = createNode(entry.getValue());
-                    node.addParent(parent);
+                    TypeNode node = createNode(entry.getValue());
+                    node.addParent(superNode);
                 }
             }
         } catch (ClassNotFoundException e) {
@@ -197,30 +219,40 @@ public class TypeHierarchyIndexer {
         }
     }
 
-    private void getIndexes(TypeNode node, Set<Integer> indexes) {
+    private void getParentIndexes(TypeNode node, Set<Integer> indexes) {
         indexes.add(node.getIndex());
         for (TypeNode parent : node.getParents()) {
-            getIndexes(parent, indexes);
+            getParentIndexes(parent, indexes);
         }
     }
 
-    private Set<Integer> getIndexes(TypeNode node) {
+    private Set<Integer> getParentIndexes(TypeNode node) {
         Set<Integer> indexes = new HashSet<Integer>();
-        getIndexes(node, indexes);
+        getParentIndexes(node, indexes);
         return indexes;
     }
 
-    public Set<Integer> getIndexes(JavaType type) {
-        TypeNode node = null;
-        if (type.getKind() == TypeKind.PRIMITIVE) {
-            node = primitiveTypeNodes.get(type.getPrimitiveType());
-        } else {
-            node = referenceTypeNodes.get(type.getClassName().getQualifiedName());
+    public Set<Integer> getParentIndexes(JavaType type) {
+        TypeNode node = getNode(type);
+        return getParentIndexes(node);
+    }
+
+    private void getChildIndexes(TypeNode node, Set<Integer> indexes) {
+        indexes.add(node.getIndex());
+        for (TypeNode parent : node.getChildren()) {
+            getChildIndexes(parent, indexes);
         }
-        if (node == null) {
-            throw new ABCDException("Type " + type + " not indexed");
-        }
-        return getIndexes(node);
+    }
+
+    private Set<Integer> getChildIndexes(TypeNode node) {
+        Set<Integer> indexes = new HashSet<Integer>();
+        getChildIndexes(node, indexes);
+        return indexes;
+    }
+
+    public Set<Integer> getChildIndexes(JavaType type) {
+        TypeNode node = getNode(type);
+        return getChildIndexes(node);
     }
 
     public JavaType resolveType(int[] indexes, ClassNameManager classNameManager) {
@@ -258,7 +290,7 @@ public class TypeHierarchyIndexer {
     public String indexesToString() {
         TablePrinter printer = ConsoleUtil.newTablePrinter("Index", "Type", "Ancestors");
         for (TypeNode node : index2node.values()) {
-            printer.addRow(node.getIndex(), node.getTypeStr(), getIndexes(node).toString());
+            printer.addRow(node.getIndex(), node.getTypeStr(), getParentIndexes(node).toString());
         }
         return printer.toString();
     }

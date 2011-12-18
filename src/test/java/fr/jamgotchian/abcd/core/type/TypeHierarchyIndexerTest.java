@@ -58,7 +58,7 @@ public class TypeHierarchyIndexerTest {
         assertTrue(indexer.getLastIndex() == 12);
         assertArrayEquals(Collections3.toArray(indexer.getReferenceTypeIndexes()),
                           new int[] {8, 9, 10, 11, 12});
-        assertArrayEquals(Collections3.toArray(indexer.getIndexes(javaLangStringType)),
+        assertArrayEquals(Collections3.toArray(indexer.getParentIndexes(javaLangStringType)),
                           new int[] {8, 9, 10, 11, 12});
     }
 }

@@ -23,7 +23,6 @@ import choco.kernel.model.Model;
 import choco.kernel.model.variables.set.SetVariable;
 import choco.kernel.solver.Solver;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.type.TypeHierarchyIndexer;
@@ -63,11 +62,35 @@ public class LocalVariableTypeAnalyser {
                                                         JavaType.FLOAT,
                                                         JavaType.DOUBLE };
 
+    private enum ReferenceConstraintType {
+        SUPER_CLASS_CONSTRAINT,
+        SUB_CLASS_CONSTRAINT
+    }
+
     private class TypeIndexer extends EmptyIRInstVisitor<Void, Void> {
 
         @Override
         public Void visit(NewObjectInst inst, Void arg) {
             indexer.addIndex(inst.getType());
+            return null;
+        }
+
+        private void visitCallableInst(CallableInst inst) {
+            JavaType returnType = inst.getSignature().getReturnType();
+            if (returnType.getKind() == TypeKind.REFERENCE) {
+                indexer.addIndex(returnType);
+            }
+        }
+
+        @Override
+        public Void visit(CallMethodInst inst, Void arg) {
+            visitCallableInst(inst);
+            return null;
+        }
+
+        @Override
+        public Void visit(CallStaticMethodInst inst, Void arg) {
+            visitCallableInst(inst);
             return null;
         }
     }
@@ -98,8 +121,9 @@ public class LocalVariableTypeAnalyser {
                                                         JavaType.CHAR);
                 }
             } else if (inst.getConst() instanceof ClassConst) {
-                ClassName subclass = classNameManager.newClassName(Class.class.getName());
-                // TODO
+                addRefConstraint(inst.getResult(),
+                                 JavaType.newRefType(Class.class, classNameManager),
+                                 ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
             } else if (inst.getConst() instanceof DoubleConst) {
                 addPrimConstraint(inst.getResult(), JavaType.DOUBLE);
             } else if (inst.getConst() instanceof FloatConst) {
@@ -121,7 +145,7 @@ public class LocalVariableTypeAnalyser {
                     addPrimConstraint(inst.getResult(), JavaType.LONG);
                 }
             } else if (inst.getConst() instanceof NullConst) {
-                // TODO
+                // could be every reference type...
             } else if (inst.getConst() instanceof ShortConst) {
                 short value = ((ShortConst) inst.getConst()).getValue();
                 if (value == 0 || value == 1) {
@@ -131,7 +155,9 @@ public class LocalVariableTypeAnalyser {
                     addPrimConstraint(inst.getResult(), JavaType.SHORT);
                 }
             } else if (inst.getConst() instanceof StringConst) {
-                // TODO
+                addRefConstraint(inst.getResult(),
+                                 JavaType.newRefType(String.class, classNameManager),
+                                 ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
             } else {
                 throw new InternalError();
             }
@@ -175,7 +201,7 @@ public class LocalVariableTypeAnalyser {
                     addPrimConstraint(inst.getResult(), JavaType.BOOLEAN);
                     addPrimConstraint(inst.getResult(), PRIMITIVE_TYPES);
                     break;
-                    
+
                 case OR:
                 case AND:
                     addPrimConstraint(inst.getResult(), JavaType.BOOLEAN);
@@ -194,7 +220,8 @@ public class LocalVariableTypeAnalyser {
                     addPrimConstraint(inst.getResult(), returnType);
                 }
             } else {
-                // TODO
+                addRefConstraint(inst.getResult(), returnType,
+                                 ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
             }
             for (int i = 0; i < signature.getArgumentTypes().size(); i++) {
                 JavaType argType = signature.getArgumentTypes().get(i);
@@ -202,7 +229,8 @@ public class LocalVariableTypeAnalyser {
                 if (argType.getKind() == TypeKind.PRIMITIVE) {
                     addPrimConstraint(argVar, argType);
                 } else {
-                    // TODO
+                    addRefConstraint(argVar, argType,
+                                     ReferenceConstraintType.SUB_CLASS_CONSTRAINT);
                 }
             }
         }
@@ -305,7 +333,8 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(NewObjectInst inst, Void arg) {
-            addRefConstraint(inst.getResult(), inst.getType());
+            addRefConstraint(inst.getResult(), inst.getType(),
+                             ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
             return null;
         }
 
@@ -438,10 +467,8 @@ public class LocalVariableTypeAnalyser {
         Set<Integer> values = new TreeSet<Integer>();
         for (int i = 0; i < types.length; i++) {
             JavaType type = types[i];
-            if (type.getKind() != TypeKind.PRIMITIVE) {
-                throw new IllegalStateException("type.getKind() != TypeKind.PRIMITIVE");
-            }
-            values.addAll(indexer.getIndexes(type));
+            assert type.getKind() == TypeKind.PRIMITIVE;
+            values.addAll(indexer.getParentIndexes(type));
         }
         SetVariable cst = Choco.makeSetVar("c" + cstID++, Collections3.toArray(values));
         SetVariable set = variables.get(var.getID());
@@ -453,11 +480,21 @@ public class LocalVariableTypeAnalyser {
         model.addConstraints(Choco.eq(set, cst));
     }
 
-    private void addRefConstraint(Variable var, JavaType type) {
-        if (type.getKind() != TypeKind.REFERENCE) {
-            throw new IllegalStateException("type.getKind() != TypeKind.REFERENCE");
+    private void addRefConstraint(Variable var, JavaType type, ReferenceConstraintType constraintType) {
+        assert type.getKind() == TypeKind.REFERENCE;
+        Set<Integer> values = null;
+        switch (constraintType) {
+            case SUPER_CLASS_CONSTRAINT:
+                values = indexer.getParentIndexes(type);
+                break;
+
+            case SUB_CLASS_CONSTRAINT:
+                values = indexer.getChildIndexes(type);
+                break;
+
+            default:
+                throw new InternalError();
         }
-        Set<Integer> values = indexer.getIndexes(type);
         SetVariable cst = Choco.makeSetVar("c" + cstID++, Collections3.toArray(values));
         SetVariable set = variables.get(var.getID());
         if (set == null) {
@@ -475,10 +512,12 @@ public class LocalVariableTypeAnalyser {
         for (Variable varArg : methodArgs) {
             indexer.addIndex(varArg.getType());
         }
+        indexer.addIndex(JavaType.newRefType(String.class, classNameManager));
+        indexer.addIndex(JavaType.newRefType(Class.class, classNameManager));
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             bb.getInstructions().accept(new TypeIndexer(), null);
         }
-        LOGGER.log(Level.FINEST, "Type indexes\n{0}", indexer.indexesToString());
+        LOGGER.log(Level.FINEST, "Type indexes :\n{0}", indexer.indexesToString());
     }
 
     public void analyse() {
@@ -488,7 +527,8 @@ public class LocalVariableTypeAnalyser {
 
         // this type constraint
         if (thisType != null) {
-            addRefConstraint(varFactory.create(0), thisType);
+            addRefConstraint(varFactory.create(0), thisType,
+                             ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
         }
         // method arguments constraints
         for (Variable varArg : methodArgs) {
@@ -496,7 +536,8 @@ public class LocalVariableTypeAnalyser {
             if (varType.getKind() == TypeKind.PRIMITIVE) {
                 addPrimConstraint(varArg, varType);
             } else {
-                addRefConstraint(varArg, varType);
+                addRefConstraint(varArg, varType,
+                                 ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
             }
         }
         // local variables constraints
