@@ -14,34 +14,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.ast;
-
-import fr.jamgotchian.abcd.core.type.ClassName;
+package fr.jamgotchian.abcd.core.type;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class ClassNameImpl implements ClassName {
+public class ClassNameImpl implements ClassName {
 
-    private final ImportManager importManager;
+    protected final String qualifiedName;
 
-    private final String qualifiedName;
+    protected final String packageName;
 
-    private final String packageName;
+    protected final String simpleName;
 
-    private final String name;
-
-    ClassNameImpl(String qualifiedName, ImportManager importManager) {
+    public ClassNameImpl(String qualifiedName) {
         this.qualifiedName = qualifiedName;
-        this.importManager = importManager;
         int lastDotIndex = qualifiedName.lastIndexOf('.');
         if (lastDotIndex == -1)  {
             packageName = null;
-            name = qualifiedName;
+            simpleName = qualifiedName;
         } else {
             packageName = qualifiedName.substring(0, lastDotIndex);
-            name = qualifiedName.substring(lastDotIndex+1);
+            simpleName = qualifiedName.substring(lastDotIndex+1);
         }
     }
 
@@ -51,16 +46,17 @@ class ClassNameImpl implements ClassName {
     }
 
     @Override
-    public String getName() {
-        if (packageName == null || importManager == null || importManager.isImported(this)) {
-            return name;
-        } else {
-            return qualifiedName;
-        }
+    public String getSimpleName() {
+        return simpleName;
     }
 
     @Override
     public String getQualifiedName() {
+        return qualifiedName;
+    }
+
+    @Override
+    public String getName() {
         return qualifiedName;
     }
 

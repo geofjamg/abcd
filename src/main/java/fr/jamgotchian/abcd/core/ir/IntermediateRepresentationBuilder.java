@@ -349,7 +349,8 @@ public class IntermediateRepresentationBuilder {
 
             // analyse local variables types
             new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
-                                          methodArgs, classNameManager)
+                                          methodArgs, classNameManager,
+                                          varFactory)
                     .analyse();
 
             // assign a name to each variable

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
+ * Copyright (C) 2011 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,38 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.jamgotchian.abcd.core.ast;
 
-package fr.jamgotchian.abcd.core.util;
-
-import java.util.Collection;
+import fr.jamgotchian.abcd.core.type.ClassNameImpl;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Collections3 {
+class ImportableClassName extends ClassNameImpl {
 
-    private Collections3() {
+    private final ImportManager importManager;
+
+    ImportableClassName(String qualifiedName, ImportManager importManager) {
+        super(qualifiedName);
+        this.importManager = importManager;
     }
 
-    public static <E> boolean sameContent(Collection<E> coll1, Collection<E> coll2) {
-        if (coll1.size() != coll2.size()) {
-            return false;
+    @Override
+    public String getName() {
+        if (packageName == null
+                || (importManager != null && importManager.isImported(this))) {
+            return simpleName;
+        } else {
+            return qualifiedName;
         }
-        for (E e1 : coll1) {
-            if (!coll2.contains(e1)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static <E extends Integer> int[] toArray(Collection<E> coll) {
-        int[] array = new int[coll.size()];
-        int i = 0;
-        for (E e : coll) {
-            array[i++] = e.intValue();
-        }
-        return array;
     }
 }

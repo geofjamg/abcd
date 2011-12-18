@@ -37,7 +37,7 @@ public class ImportManager implements ClassNameManager {
 
     @Override
     public ClassName newClassName(String className) {
-        ClassName cn = new ClassNameImpl(className, this);
+        ClassName cn = new ImportableClassName(className, this);
         classNames.add(cn);
         return cn;
     }

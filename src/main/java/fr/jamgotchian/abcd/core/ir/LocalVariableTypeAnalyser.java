@@ -26,15 +26,15 @@ import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.type.PrimitiveType;
 import fr.jamgotchian.abcd.core.type.TypeHierarchyIndexer;
 import fr.jamgotchian.abcd.core.type.TypeKind;
-import java.util.Collection;
-import java.util.EnumSet;
+import fr.jamgotchian.abcd.core.util.Collections3;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,23 +47,32 @@ public class LocalVariableTypeAnalyser {
     private static final Logger LOGGER
             = Logger.getLogger(LocalVariableTypeAnalyser.class.getName());
 
-    private static PrimitiveType[] PRIMITIVE_TYPES = { PrimitiveType.BOOLEAN,
-                                                       PrimitiveType.CHAR,
-                                                       PrimitiveType.BYTE,
-                                                       PrimitiveType.SHORT,
-                                                       PrimitiveType.INTEGER,
-                                                       PrimitiveType.LONG,
-                                                       PrimitiveType.FLOAT,
-                                                       PrimitiveType.DOUBLE };
+    private static JavaType[] PRIMITIVE_TYPES = { JavaType.BOOLEAN,
+                                                  JavaType.CHAR,
+                                                  JavaType.BYTE,
+                                                  JavaType.SHORT,
+                                                  JavaType.INT,
+                                                  JavaType.LONG,
+                                                  JavaType.FLOAT,
+                                                  JavaType.DOUBLE };
 
-    public static final PrimitiveType[] ARITHMETIC_TYPES = { PrimitiveType.INTEGER,
-                                                             PrimitiveType.LONG,
-                                                             PrimitiveType.BYTE,
-                                                             PrimitiveType.SHORT,
-                                                             PrimitiveType.FLOAT,
-                                                             PrimitiveType.DOUBLE };
+    public static final JavaType[] ARITHMETIC_TYPES = { JavaType.INT,
+                                                        JavaType.LONG,
+                                                        JavaType.BYTE,
+                                                        JavaType.SHORT,
+                                                        JavaType.FLOAT,
+                                                        JavaType.DOUBLE };
 
-    private class Visitor extends EmptyIRInstVisitor<Void, Void> {
+    private class TypeIndexer extends EmptyIRInstVisitor<Void, Void> {
+
+        @Override
+        public Void visit(NewObjectInst inst, Void arg) {
+            indexer.addIndex(inst.getType());
+            return null;
+        }
+    }
+
+    private class ConstraintsAdder extends EmptyIRInstVisitor<Void, Void> {
 
         @Override
         public Void visit(IRInstSeq seq, Void arg) {
@@ -72,7 +81,7 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(ArrayLengthInst inst, Void arg) {
-            addConstraint(inst.getResult(), PrimitiveType.INTEGER);
+            addPrimConstraint(inst.getResult(), JavaType.INT);
             return null;
         }
 
@@ -81,45 +90,45 @@ public class LocalVariableTypeAnalyser {
             if (inst.getConst() instanceof ByteConst) {
                 byte value = ((ByteConst) inst.getConst()).getValue();
                 if (value == 0 || value == 1) {
-                    addConstraint(inst.getResult(), PrimitiveType.BYTE,
-                                                    PrimitiveType.CHAR,
-                                                    PrimitiveType.BOOLEAN);
+                    addPrimConstraint(inst.getResult(), JavaType.BYTE,
+                                                        JavaType.CHAR,
+                                                        JavaType.BOOLEAN);
                 } else {
-                    addConstraint(inst.getResult(), PrimitiveType.BYTE,
-                                                    PrimitiveType.CHAR);
+                    addPrimConstraint(inst.getResult(), JavaType.BYTE,
+                                                        JavaType.CHAR);
                 }
             } else if (inst.getConst() instanceof ClassConst) {
                 ClassName subclass = classNameManager.newClassName(Class.class.getName());
                 // TODO
             } else if (inst.getConst() instanceof DoubleConst) {
-                addConstraint(inst.getResult(), PrimitiveType.DOUBLE);
+                addPrimConstraint(inst.getResult(), JavaType.DOUBLE);
             } else if (inst.getConst() instanceof FloatConst) {
-                addConstraint(inst.getResult(), PrimitiveType.FLOAT);
+                addPrimConstraint(inst.getResult(), JavaType.FLOAT);
             } else if (inst.getConst() instanceof IntConst) {
                 int value = ((IntConst) inst.getConst()).getValue();
                 if (value == 0 || value == 1) {
-                    addConstraint(inst.getResult(), PrimitiveType.INTEGER,
-                                                    PrimitiveType.BOOLEAN);
+                    addPrimConstraint(inst.getResult(), JavaType.INT,
+                                                        JavaType.BOOLEAN);
                 } else {
-                    addConstraint(inst.getResult(), PrimitiveType.INTEGER);
+                    addPrimConstraint(inst.getResult(), JavaType.INT);
                 }
             } else if (inst.getConst() instanceof LongConst) {
                 long value = ((LongConst) inst.getConst()).getValue();
                 if (value == 0 || value == 1) {
-                    addConstraint(inst.getResult(), PrimitiveType.LONG,
-                                                    PrimitiveType.BOOLEAN);
+                    addPrimConstraint(inst.getResult(), JavaType.LONG,
+                                                        JavaType.BOOLEAN);
                 } else {
-                    addConstraint(inst.getResult(), PrimitiveType.LONG);
+                    addPrimConstraint(inst.getResult(), JavaType.LONG);
                 }
             } else if (inst.getConst() instanceof NullConst) {
                 // TODO
             } else if (inst.getConst() instanceof ShortConst) {
                 short value = ((ShortConst) inst.getConst()).getValue();
                 if (value == 0 || value == 1) {
-                    addConstraint(inst.getResult(), PrimitiveType.SHORT,
-                                                    PrimitiveType.BOOLEAN);
+                    addPrimConstraint(inst.getResult(), JavaType.SHORT,
+                                                        JavaType.BOOLEAN);
                 } else {
-                    addConstraint(inst.getResult(), PrimitiveType.SHORT);
+                    addPrimConstraint(inst.getResult(), JavaType.SHORT);
                 }
             } else if (inst.getConst() instanceof StringConst) {
                 // TODO
@@ -141,36 +150,37 @@ public class LocalVariableTypeAnalyser {
                 case PLUS:
                 case MINUS:
                 case MUL:
-                    addConstraint(inst.getResult(), ARITHMETIC_TYPES);
+                    addPrimConstraint(inst.getResult(), ARITHMETIC_TYPES);
                     addConstraint(inst.getLeft(), inst.getRight());
                     addConstraint(inst.getResult(), inst.getLeft());
                     break;
 
                 case DIV:
-                    addConstraint(inst.getResult(), PrimitiveType.FLOAT);
-                    addConstraint(inst.getLeft(), ARITHMETIC_TYPES);
-                    addConstraint(inst.getRight(), ARITHMETIC_TYPES);
+                    addPrimConstraint(inst.getResult(), JavaType.FLOAT);
+                    addPrimConstraint(inst.getLeft(), ARITHMETIC_TYPES);
+                    addPrimConstraint(inst.getRight(), ARITHMETIC_TYPES);
                     break;
 
                 case LT:
                 case LE:
                 case GT:
                 case GE:
-                    addConstraint(inst.getResult(), PrimitiveType.BOOLEAN);
-                    addConstraint(inst.getLeft(), ARITHMETIC_TYPES);
+                    addPrimConstraint(inst.getResult(), JavaType.BOOLEAN);
+                    addPrimConstraint(inst.getLeft(), ARITHMETIC_TYPES);
                     addConstraint(inst.getLeft(), inst.getRight());
                     break;
 
                 case EQ:
                 case NE:
-                    addConstraint(inst.getResult(), PrimitiveType.BOOLEAN);
-                    addConstraint(inst.getResult(), PRIMITIVE_TYPES);
-
+                    addPrimConstraint(inst.getResult(), JavaType.BOOLEAN);
+                    addPrimConstraint(inst.getResult(), PRIMITIVE_TYPES);
+                    break;
+                    
                 case OR:
                 case AND:
-                    addConstraint(inst.getResult(), PrimitiveType.BOOLEAN);
-                    addConstraint(inst.getLeft(), PrimitiveType.BOOLEAN);
-                    addConstraint(inst.getRight(), PrimitiveType.BOOLEAN);
+                    addPrimConstraint(inst.getResult(), JavaType.BOOLEAN);
+                    addPrimConstraint(inst.getLeft(), JavaType.BOOLEAN);
+                    addPrimConstraint(inst.getRight(), JavaType.BOOLEAN);
                     break;
             }
             return null;
@@ -180,8 +190,8 @@ public class LocalVariableTypeAnalyser {
             MethodSignature signature = inst.getSignature();
             JavaType returnType = signature.getReturnType();
             if (returnType.getKind() == TypeKind.PRIMITIVE) {
-                if (returnType.getPrimitiveType() != PrimitiveType.VOID) {
-                    addConstraint(inst.getResult(), returnType.getPrimitiveType());
+                if (!returnType.equals(JavaType.VOID)) {
+                    addPrimConstraint(inst.getResult(), returnType);
                 }
             } else {
                 // TODO
@@ -190,7 +200,7 @@ public class LocalVariableTypeAnalyser {
                 JavaType argType = signature.getArgumentTypes().get(i);
                 Variable argVar = inst.getArguments().get(i);
                 if (argType.getKind() == TypeKind.PRIMITIVE) {
-                    addConstraint(argVar, argType.getPrimitiveType());
+                    addPrimConstraint(argVar, argType);
                 } else {
                     // TODO
                 }
@@ -213,7 +223,7 @@ public class LocalVariableTypeAnalyser {
         public Void visit(CastInst inst, Void arg) {
             JavaType castType = inst.getCastType();
             if (castType.getKind() == TypeKind.PRIMITIVE) {
-                addConstraint(inst.getResult(), castType.getPrimitiveType());
+                addPrimConstraint(inst.getResult(), castType);
             } else {
                 // TODO
             }
@@ -222,7 +232,7 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(ConditionalInst inst, Void arg) {
-            addConstraint(inst.getCond(), PrimitiveType.BOOLEAN);
+            addPrimConstraint(inst.getCond(), JavaType.BOOLEAN);
             addConstraint(inst.getThen(), inst.getElse());
             addConstraint(inst.getResult(), inst.getThen());
             return null;
@@ -230,13 +240,13 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(GetArrayInst inst, Void arg) {
-            addConstraint(inst.getIndex(), PrimitiveType.INTEGER);
+            addPrimConstraint(inst.getIndex(), JavaType.INT);
             return null;
         }
 
         @Override
         public Void visit(SetArrayInst inst, Void arg) {
-            addConstraint(inst.getIndex(), PrimitiveType.INTEGER);
+            addPrimConstraint(inst.getIndex(), JavaType.INT);
             return null;
         }
 
@@ -244,7 +254,7 @@ public class LocalVariableTypeAnalyser {
         public Void visit(GetFieldInst inst, Void arg) {
             JavaType fieldType = inst.getFieldType();
             if (fieldType.getKind() == TypeKind.PRIMITIVE) {
-                addConstraint(inst.getResult(), fieldType.getPrimitiveType());
+                addPrimConstraint(inst.getResult(), fieldType);
             } else {
                 // TODO
             }
@@ -255,7 +265,7 @@ public class LocalVariableTypeAnalyser {
         public Void visit(SetFieldInst inst, Void arg) {
             JavaType fieldType = inst.getFieldType();
             if (inst.getFieldType().getKind() == TypeKind.PRIMITIVE) {
-                addConstraint(inst.getValue(), fieldType.getPrimitiveType());
+                addPrimConstraint(inst.getValue(), fieldType);
             } else {
                 // TODO
             }
@@ -264,13 +274,13 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(JumpIfInst inst, Void arg) {
-            addConstraint(inst.getCond(), PrimitiveType.BOOLEAN);
+            addPrimConstraint(inst.getCond(), JavaType.BOOLEAN);
             return null;
         }
 
         @Override
         public Void visit(InstanceOfInst inst, Void arg) {
-            addConstraint(inst.getResult(), PrimitiveType.BOOLEAN);
+            addPrimConstraint(inst.getResult(), JavaType.BOOLEAN);
             // TODO
             return null;
         }
@@ -288,16 +298,14 @@ public class LocalVariableTypeAnalyser {
         @Override
         public Void visit(NewArrayInst inst, Void arg) {
             for (Variable dimVar : inst.getDimensions()) {
-                addConstraint(dimVar, PrimitiveType.INTEGER);
+                addPrimConstraint(dimVar, JavaType.INT);
             }
             return null;
         }
 
         @Override
         public Void visit(NewObjectInst inst, Void arg) {
-            ClassName superclass = classNameManager.newClassName(Object.class.getName());
-            ClassName subclass = inst.getType().getClassName();
-            // TODO
+            addRefConstraint(inst.getResult(), inst.getType());
             return null;
         }
 
@@ -305,8 +313,8 @@ public class LocalVariableTypeAnalyser {
         public Void visit(ReturnInst inst, Void arg) {
             if (methodReturnType != null) {
                 if (methodReturnType.getKind() == TypeKind.PRIMITIVE) {
-                    if (methodReturnType.getPrimitiveType() != PrimitiveType.VOID) {
-                        addConstraint(inst.getVar(), methodReturnType.getPrimitiveType());
+                    if (!methodReturnType.equals(JavaType.VOID)) {
+                        addPrimConstraint(inst.getVar(), methodReturnType);
                     }
                 } else {
                     // TODO
@@ -317,7 +325,7 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(SwitchInst inst, Void arg) {
-            addConstraint(inst.getIndex(), PrimitiveType.INTEGER);
+            addPrimConstraint(inst.getIndex(), JavaType.INT);
             return null;
         }
 
@@ -330,13 +338,13 @@ public class LocalVariableTypeAnalyser {
         public Void visit(UnaryInst inst, Void arg) {
             switch (inst.getOperator()) {
                 case MINUS:
-                    addConstraint(inst.getResult(), ARITHMETIC_TYPES);
+                    addPrimConstraint(inst.getResult(), ARITHMETIC_TYPES);
                     addConstraint(inst.getResult(), inst.getVar());
                     break;
 
                 case NOT:
-                    addConstraint(inst.getResult(), PrimitiveType.BOOLEAN);
-                    addConstraint(inst.getVar(), PrimitiveType.BOOLEAN);
+                    addPrimConstraint(inst.getResult(), JavaType.BOOLEAN);
+                    addPrimConstraint(inst.getVar(), JavaType.BOOLEAN);
                     break;
             }
             return null;
@@ -356,7 +364,7 @@ public class LocalVariableTypeAnalyser {
         public Void visit(GetStaticFieldInst inst, Void arg) {
             JavaType fieldType = inst.getFieldType();
             if (inst.getFieldType().getKind() == TypeKind.PRIMITIVE) {
-                addConstraint(inst.getResult(), fieldType.getPrimitiveType());
+                addPrimConstraint(inst.getResult(), fieldType);
             } else {
                 // TODO
             }
@@ -367,7 +375,7 @@ public class LocalVariableTypeAnalyser {
         public Void visit(SetStaticFieldInst inst, Void arg) {
             JavaType fieldType = inst.getFieldType();
             if (inst.getFieldType().getKind() == TypeKind.PRIMITIVE) {
-                addConstraint(inst.getValue(), fieldType.getPrimitiveType());
+                addPrimConstraint(inst.getValue(), fieldType);
             } else {
                 // TODO
             }
@@ -386,13 +394,7 @@ public class LocalVariableTypeAnalyser {
 
     private final ClassNameManager classNameManager;
 
-    private final Visitor visitor = new Visitor();
-
-    private final ClassName javaLangObjectClassName;
-
-    private final ClassName javaLangStringClassName;
-
-    private final ClassName javaLangClassClassName;
+    private final VariableFactory varFactory;
 
     private Model model;
 
@@ -404,15 +406,14 @@ public class LocalVariableTypeAnalyser {
 
     public LocalVariableTypeAnalyser(ControlFlowGraph cfg, JavaType thisType,
                                      JavaType methodReturnType, List<Variable> methodArgs,
-                                     ClassNameManager classNameManager) {
+                                     ClassNameManager classNameManager,
+                                     VariableFactory varFactory) {
         this.cfg = cfg;
         this.thisType = thisType;
         this.methodReturnType = methodReturnType;
         this.methodArgs = methodArgs;
         this.classNameManager = classNameManager;
-        javaLangObjectClassName = classNameManager.newClassName(Object.class.getName());
-        javaLangStringClassName = classNameManager.newClassName(String.class.getName());
-        javaLangClassClassName = classNameManager.newClassName(Class.class.getName());
+        this.varFactory = varFactory;
     }
 
     private void addConstraint(Variable var1, Variable var2) {
@@ -433,41 +434,74 @@ public class LocalVariableTypeAnalyser {
         model.addConstraints(Choco.eq(set1, set2));
     }
 
-    private void addConstraint(Variable var, PrimitiveType... types) {
-        int[] valuesArray = new int[types.length];
+    private void addPrimConstraint(Variable var, JavaType... types) {
+        Set<Integer> values = new TreeSet<Integer>();
         for (int i = 0; i < types.length; i++) {
-            valuesArray[i] = indexer.getIndex(JavaType.newPrimitiveType(types[i]));
+            JavaType type = types[i];
+            if (type.getKind() != TypeKind.PRIMITIVE) {
+                throw new IllegalStateException("type.getKind() != TypeKind.PRIMITIVE");
+            }
+            values.addAll(indexer.getIndexes(type));
         }
-        SetVariable cst = Choco.makeSetVar("c" + cstID++, valuesArray);
+        SetVariable cst = Choco.makeSetVar("c" + cstID++, Collections3.toArray(values));
         SetVariable set = variables.get(var.getID());
         if (set == null) {
             set = Choco.makeSetVar(var.getID().toString(),
-                                   indexer.getFirstPrimitiveTypeIndex(),
-                                   indexer.getLastPrimitiveTypeIndex());
+                                   Collections3.toArray(indexer.getPrimitiveTypeIndexes()));
             variables.put(var.getID(), set);
         }
         model.addConstraints(Choco.eq(set, cst));
     }
 
+    private void addRefConstraint(Variable var, JavaType type) {
+        if (type.getKind() != TypeKind.REFERENCE) {
+            throw new IllegalStateException("type.getKind() != TypeKind.REFERENCE");
+        }
+        Set<Integer> values = indexer.getIndexes(type);
+        SetVariable cst = Choco.makeSetVar("c" + cstID++, Collections3.toArray(values));
+        SetVariable set = variables.get(var.getID());
+        if (set == null) {
+            set = Choco.makeSetVar(var.getID().toString(),
+                                   Collections3.toArray(indexer.getReferenceTypeIndexes()));
+            variables.put(var.getID(), set);
+        }
+        model.addConstraints(Choco.eq(set, cst));
+    }
+
+    private void createIndexes() {
+        if (thisType != null) {
+            indexer.addIndex(thisType);
+        }
+        for (Variable varArg : methodArgs) {
+            indexer.addIndex(varArg.getType());
+        }
+        for (BasicBlock bb : cfg.getBasicBlocks()) {
+            bb.getInstructions().accept(new TypeIndexer(), null);
+        }
+        LOGGER.log(Level.FINEST, "Type indexes\n{0}", indexer.indexesToString());
+    }
+
     public void analyse() {
+        createIndexes();
+
         model = new CPModel();
 
         // this type constraint
         if (thisType != null) {
-            // TODO
+            addRefConstraint(varFactory.create(0), thisType);
         }
         // method arguments constraints
         for (Variable varArg : methodArgs) {
             JavaType varType = varArg.getType();
             if (varType.getKind() == TypeKind.PRIMITIVE) {
-                addConstraint(varArg, varType.getPrimitiveType());
+                addPrimConstraint(varArg, varType);
             } else {
-                // TODO
+                addRefConstraint(varArg, varType);
             }
         }
         // local variables constraints
         for (BasicBlock bb : cfg.getBasicBlocks()) {
-            bb.getInstructions().accept(visitor, null);
+            bb.getInstructions().accept(new ConstraintsAdder(), null);
         }
 
         LOGGER.log(Level.FINEST, model.constraintsToString());
@@ -483,11 +517,12 @@ public class LocalVariableTypeAnalyser {
         for (Map.Entry<VariableID, SetVariable> entry : variables.entrySet()) {
             VariableID ID = entry.getKey();
             SetVariable var = entry.getValue();
-            Collection<JavaType> possibleTypes = indexer.getTypes(s.getVar(var).getValue());
-            LOGGER.log(Level.FINEST, "{0} = {1}", new Object[] {ID, possibleTypes});
-            if (possibleTypes.size() == 1) {
-                types.put(ID, possibleTypes.iterator().next());
-            }
+            int[] values = s.getVar(var).getValue();
+            LOGGER.log(Level.FINEST, "{0} = {1}",
+                    new Object[] {ID, Arrays.toString(values)});
+            JavaType type = indexer.resolveType(values, classNameManager);
+            LOGGER.log(Level.FINEST, "  => {0}", type);
+            types.put(ID, type);
         }
 
         for (BasicBlock block : cfg.getBasicBlocks()) {

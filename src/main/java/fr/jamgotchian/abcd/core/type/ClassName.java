@@ -24,7 +24,9 @@ public interface ClassName {
 
     String getPackageName();
 
-    String getName();
+    String getSimpleName();
 
     String getQualifiedName();
+
+    String getName();
 }
