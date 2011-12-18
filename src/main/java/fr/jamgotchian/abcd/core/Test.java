@@ -2,6 +2,7 @@ package fr.jamgotchian.abcd.core;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -1467,6 +1468,18 @@ public class Test {
     int testType5() {
         char a = 'e';
         return a;
+    }
+
+    private InputStream is;
+
+    void testType6() throws IOException {
+        InputStream a = is;
+        System.out.println(a.available());
+    }
+
+    void testType7(Object a) throws IOException {
+        InputStream b = (InputStream) a;
+        System.out.println(b.available());
     }
 
     void testTypeArray(int x) {
