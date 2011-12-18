@@ -41,7 +41,7 @@ public class TablePrinter {
         }
         for (int c = 0; c < values.length; c++) {
             Object value = values[c];
-            columns.get(c).add(value.toString());
+            columns.get(c).add(value == null ? "" : value.toString());
         }
     }
 
