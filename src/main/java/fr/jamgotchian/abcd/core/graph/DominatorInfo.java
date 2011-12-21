@@ -108,9 +108,9 @@ public class DominatorInfo<N, E> {
                 boolean found = false;
                 for (N d : dominators) {
                     if (!d.equals(n)
-                            && Collections3.sameContent(Sets.union(dominatorsOf.get(d),
-                                                                   Collections.singleton(n)),
-                                                        dominators)) {
+                            && Collections3.equals(Sets.union(dominatorsOf.get(d),
+                                                              Collections.singleton(n)),
+                                                   dominators)) {
                         immediateDominator.put(n, d);
                         found = true;
                         break;

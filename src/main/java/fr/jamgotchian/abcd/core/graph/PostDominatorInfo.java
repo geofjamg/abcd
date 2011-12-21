@@ -108,9 +108,9 @@ public class PostDominatorInfo<N, E> {
                 boolean found = false;
                 for (N pd : postDominators) {
                     if (!pd.equals(n)
-                            && Collections3.sameContent(Sets.union(postDominatorsOf.get(pd),
-                                                                   Collections.singleton(n)),
-                                                        postDominators)) {
+                            && Collections3.equals(Sets.union(postDominatorsOf.get(pd),
+                                                              Collections.singleton(n)),
+                                                   postDominators)) {
                         immediatePostDominator.put(n, pd);
                         found = true;
                         break;

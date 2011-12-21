@@ -116,16 +116,16 @@ public class ControlFlowGraphImplTest {
 
         DominatorInfo<BasicBlock, Edge> dominatorsInfo = graph.getDominatorInfo();
 
-        assertTrue(Collections3.sameContent(Arrays.asList(b1), dominatorsInfo.getDominatorsOf(b1)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b2), dominatorsInfo.getDominatorsOf(b2)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b3), dominatorsInfo.getDominatorsOf(b3)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b3, b4), dominatorsInfo.getDominatorsOf(b4)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b3, b4, b5), dominatorsInfo.getDominatorsOf(b5)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b3, b4, b6), dominatorsInfo.getDominatorsOf(b6)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b3, b4, b7), dominatorsInfo.getDominatorsOf(b7)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b3, b4, b7, b8), dominatorsInfo.getDominatorsOf(b8)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b3, b4, b7, b8, b9), dominatorsInfo.getDominatorsOf(b9)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b3, b4, b7, b8, b10), dominatorsInfo.getDominatorsOf(b10)));
+        assertTrue(Collections3.equals(Arrays.asList(b1), dominatorsInfo.getDominatorsOf(b1)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b2), dominatorsInfo.getDominatorsOf(b2)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b3), dominatorsInfo.getDominatorsOf(b3)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b3, b4), dominatorsInfo.getDominatorsOf(b4)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b3, b4, b5), dominatorsInfo.getDominatorsOf(b5)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b3, b4, b6), dominatorsInfo.getDominatorsOf(b6)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b3, b4, b7), dominatorsInfo.getDominatorsOf(b7)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b3, b4, b7, b8), dominatorsInfo.getDominatorsOf(b8)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b3, b4, b7, b8, b9), dominatorsInfo.getDominatorsOf(b9)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b3, b4, b7, b8, b10), dominatorsInfo.getDominatorsOf(b10)));
 
         Multimap<BasicBlock, NaturalLoop> naturalLoops = graph.getNaturalLoops();
         printNaturalLoops(graph);
@@ -158,9 +158,9 @@ public class ControlFlowGraphImplTest {
 
         DominatorInfo<BasicBlock, Edge> dominatorsInfo = graph.getDominatorInfo();
 
-        assertTrue(Collections3.sameContent(Arrays.asList(b1), dominatorsInfo.getDominatorsOf(b1)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b2), dominatorsInfo.getDominatorsOf(b2)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b3), dominatorsInfo.getDominatorsOf(b3)));
+        assertTrue(Collections3.equals(Arrays.asList(b1), dominatorsInfo.getDominatorsOf(b1)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b2), dominatorsInfo.getDominatorsOf(b2)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b3), dominatorsInfo.getDominatorsOf(b3)));
 
         Multimap<BasicBlock, NaturalLoop> naturalLoops = graph.getNaturalLoops();
         printNaturalLoops(graph);
@@ -203,20 +203,20 @@ public class ControlFlowGraphImplTest {
 
         DominatorInfo<BasicBlock, Edge> dominatorsInfo = graph.getDominatorInfo();
 
-        assertTrue(Collections3.sameContent(Arrays.asList(b1), dominatorsInfo.getDominatorsOf(b1)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b2), dominatorsInfo.getDominatorsOf(b2)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b2, b3), dominatorsInfo.getDominatorsOf(b3)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b2, b4), dominatorsInfo.getDominatorsOf(b4)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b2, b3, b5), dominatorsInfo.getDominatorsOf(b5)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b2, b3, b5, b6), dominatorsInfo.getDominatorsOf(b6)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b1, b2, b3, b5, b7), dominatorsInfo.getDominatorsOf(b7)));
+        assertTrue(Collections3.equals(Arrays.asList(b1), dominatorsInfo.getDominatorsOf(b1)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b2), dominatorsInfo.getDominatorsOf(b2)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b2, b3), dominatorsInfo.getDominatorsOf(b3)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b2, b4), dominatorsInfo.getDominatorsOf(b4)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b2, b3, b5), dominatorsInfo.getDominatorsOf(b5)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b2, b3, b5, b6), dominatorsInfo.getDominatorsOf(b6)));
+        assertTrue(Collections3.equals(Arrays.asList(b1, b2, b3, b5, b7), dominatorsInfo.getDominatorsOf(b7)));
 
         Multimap<BasicBlock, NaturalLoop> naturalLoops = graph.getNaturalLoops();
         printNaturalLoops(graph);
 
-        assertTrue(Collections3.sameContent(naturalLoops.keySet(), Arrays.asList(b2, b5)));
-        assertTrue(Collections3.sameContent(Arrays.asList(b2, b3, b5, b6, b7), naturalLoops.get(b2).iterator().next().getBody()));
-        assertTrue(Collections3.sameContent(Arrays.asList(b5, b6), naturalLoops.get(b5).iterator().next().getBody()));
+        assertTrue(Collections3.equals(naturalLoops.keySet(), Arrays.asList(b2, b5)));
+        assertTrue(Collections3.equals(Arrays.asList(b2, b3, b5, b6, b7), naturalLoops.get(b2).iterator().next().getBody()));
+        assertTrue(Collections3.equals(Arrays.asList(b5, b6), naturalLoops.get(b5).iterator().next().getBody()));
     }
 
 //    @Test
@@ -366,8 +366,8 @@ public class ControlFlowGraphImplTest {
 
         BasicBlock block0_20 = graph.getBasicBlock(0, 20);
         assertTrue(block0_20 != null);
-        assertTrue(Collections3.sameContent(graph.getSuccessorsOf(entryBlock), Arrays.asList(block0_20)));
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block0_20), Arrays.asList(entryBlock)));
+        assertTrue(Collections3.equals(graph.getSuccessorsOf(entryBlock), Arrays.asList(block0_20)));
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block0_20), Arrays.asList(entryBlock)));
 
         block0_20 = null;
         BasicBlockSplit split8 = graph.splitBasicBlockAt(8);
@@ -375,11 +375,11 @@ public class ControlFlowGraphImplTest {
         BasicBlock block8_20 = split8.getBlockAfter();
         assertTrue(block0_7 != null);
         assertTrue(block8_20 != null);
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block0_7),
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block0_7),
                                                Arrays.asList(entryBlock)));
-        assertTrue(Collections3.sameContent(graph.getSuccessorsOf(block0_7),
+        assertTrue(Collections3.equals(graph.getSuccessorsOf(block0_7),
                                                Arrays.asList(block8_20)));
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block8_20),
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block8_20),
                                                Arrays.asList(block0_7)));
         assertTrue(graph.getSuccessorsOf(block8_20).isEmpty());
         assertTrue(graph.containsEdge(block0_7, block8_20));
@@ -390,30 +390,30 @@ public class ControlFlowGraphImplTest {
         BasicBlock block17_20 = split17.getBlockAfter();
         assertTrue(block8_16 != null);
         assertTrue(block17_20 != null);
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block0_7),
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block0_7),
                                                Arrays.asList(entryBlock)));
-        assertTrue(Collections3.sameContent(graph.getSuccessorsOf(block0_7),
+        assertTrue(Collections3.equals(graph.getSuccessorsOf(block0_7),
                                                Arrays.asList(block8_16)));
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block8_16),
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block8_16),
                                                Arrays.asList(block0_7)));
-        assertTrue(Collections3.sameContent(graph.getSuccessorsOf(block8_16),
+        assertTrue(Collections3.equals(graph.getSuccessorsOf(block8_16),
                                                Arrays.asList(block17_20)));
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block17_20),
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block17_20),
                                                Arrays.asList(block8_16)));
         assertTrue(graph.getSuccessorsOf(block17_20).isEmpty());
 
 
         graph.addEdge(block0_7, block8_16);
         graph.addEdge(block0_7, block17_20);
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block0_7),
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block0_7),
                                                Arrays.asList(entryBlock)));
-        assertTrue(Collections3.sameContent(graph.getSuccessorsOf(block0_7),
+        assertTrue(Collections3.equals(graph.getSuccessorsOf(block0_7),
                                                Arrays.asList(block8_16, block17_20)));
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block8_16),
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block8_16),
                                                Arrays.asList(block0_7)));
-        assertTrue(Collections3.sameContent(graph.getSuccessorsOf(block8_16),
+        assertTrue(Collections3.equals(graph.getSuccessorsOf(block8_16),
                                                Arrays.asList(block17_20)));
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block17_20),
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block17_20),
                                                Arrays.asList(block8_16, block0_7)));
         assertTrue(graph.getSuccessorsOf(block17_20).isEmpty());
 
@@ -424,19 +424,19 @@ public class ControlFlowGraphImplTest {
         BasicBlock block4_7 = split4.getBlockAfter();
         assertTrue(block0_3 != null);
         assertTrue(block4_7 != null);
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block0_3),
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block0_3),
                                                Arrays.asList(entryBlock)));
-        assertTrue(Collections3.sameContent(graph.getSuccessorsOf(block0_3),
+        assertTrue(Collections3.equals(graph.getSuccessorsOf(block0_3),
                                                Arrays.asList(block4_7)));
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block4_7),
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block4_7),
                                                Arrays.asList(block0_3)));
-        assertTrue(Collections3.sameContent(graph.getSuccessorsOf(block4_7),
+        assertTrue(Collections3.equals(graph.getSuccessorsOf(block4_7),
                                                Arrays.asList(block8_16, block17_20)));
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block8_16),
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block8_16),
                                                Arrays.asList(block4_7)));
-        assertTrue(Collections3.sameContent(graph.getSuccessorsOf(block8_16),
+        assertTrue(Collections3.equals(graph.getSuccessorsOf(block8_16),
                                                Arrays.asList(block17_20)));
-        assertTrue(Collections3.sameContent(graph.getPredecessorsOf(block17_20),
+        assertTrue(Collections3.equals(graph.getPredecessorsOf(block17_20),
                                                Arrays.asList(block8_16, block4_7)));
         assertTrue(graph.getSuccessorsOf(block17_20).isEmpty());
     }

@@ -37,7 +37,7 @@ public class TreeImplTest {
     public void testInit() {
         Vertex n1 = new Vertex("n", 1);
         Tree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
-        assertTrue(Collections3.sameContent(Arrays.asList(n1), tree.getNodes()));
+        assertTrue(Collections3.equals(Arrays.asList(n1), tree.getNodes()));
     }
 
     @Test
@@ -53,11 +53,11 @@ public class TreeImplTest {
         tree.addNode(n1, n2, e12);
         tree.addNode(n2, n3, e23);
         tree.addNode(n2, n4, e24);
-        assertTrue(Collections3.sameContent(Arrays.asList(n1, n2, n3, n4), tree.getNodes()));
+        assertTrue(Collections3.equals(Arrays.asList(n1, n2, n3, n4), tree.getNodes()));
         assertTrue(tree.getParent(n1) == null);
-        assertTrue(Collections3.sameContent(Arrays.asList(n2), tree.getChildren(n1)));
+        assertTrue(Collections3.equals(Arrays.asList(n2), tree.getChildren(n1)));
         assertTrue(tree.getParent(n2).equals(n1));
-        assertTrue(Collections3.sameContent(Arrays.asList(n3, n4), tree.getChildren(n2)));
+        assertTrue(Collections3.equals(Arrays.asList(n3, n4), tree.getChildren(n2)));
         assertTrue(tree.getParent(n3).equals(n2));
         assertTrue(tree.getChildren(n3).isEmpty());
         assertTrue(tree.getParent(n4).equals(n2));
@@ -87,8 +87,8 @@ public class TreeImplTest {
         assertTrue(subtree.getNodes().size() == 3);
         assertTrue(subtree.getRoot() == n4);
         assertTrue(subtree.getChildren(n4).size() == 2);
-        assertTrue(Collections3.sameContent(subtree.getChildren(n4), Arrays.asList(n5, n6)));
-        assertTrue(Collections3.sameContent(subtree.getNodes(), Arrays.asList(n4, n5, n6)));
+        assertTrue(Collections3.equals(subtree.getChildren(n4), Arrays.asList(n5, n6)));
+        assertTrue(Collections3.equals(subtree.getNodes(), Arrays.asList(n4, n5, n6)));
     }
 
     /**
@@ -126,11 +126,11 @@ public class TreeImplTest {
         tree.addNode(n3, n7, e37);
         tree.setParent(n4, n3);
         assertTrue(tree.getNodes().size() == 7);
-        assertTrue(Collections3.sameContent(tree.getNodes(), Arrays.asList(n1, n2, n3, n4, n5, n6, n7)));
-        assertTrue(Collections3.sameContent(tree.getChildren(n2), Arrays.asList(n3)));
-        assertTrue(Collections3.sameContent(tree.getChildren(n3), Arrays.asList(n4, n7)));
+        assertTrue(Collections3.equals(tree.getNodes(), Arrays.asList(n1, n2, n3, n4, n5, n6, n7)));
+        assertTrue(Collections3.equals(tree.getChildren(n2), Arrays.asList(n3)));
+        assertTrue(Collections3.equals(tree.getChildren(n3), Arrays.asList(n4, n7)));
         assertTrue(tree.getParent(n4).equals(n3));
-        assertTrue(Collections3.sameContent(tree.getChildren(n4), Arrays.asList(n5, n6)));
+        assertTrue(Collections3.equals(tree.getChildren(n4), Arrays.asList(n5, n6)));
     }
 
     @Test

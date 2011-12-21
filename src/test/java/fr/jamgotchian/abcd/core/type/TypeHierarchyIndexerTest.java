@@ -46,7 +46,7 @@ public class TypeHierarchyIndexerTest {
     public void test1() {
         assertTrue(indexer.getFirstIndex() == 0);
         assertTrue(indexer.getLastIndex() == 7);
-        assertArrayEquals(Collections3.toArray(indexer.getPrimitiveTypeIndexes()),
+        assertArrayEquals(Collections3.toIntArray(indexer.getPrimitiveTypeIndexes()),
                           new int[] {0, 1, 2, 3, 4, 5, 6, 7});
     }
 
@@ -56,9 +56,9 @@ public class TypeHierarchyIndexerTest {
         indexer.addIndex(javaLangStringType);
         assertTrue(indexer.getFirstIndex() == 0);
         assertTrue(indexer.getLastIndex() == 12);
-        assertArrayEquals(Collections3.toArray(indexer.getReferenceTypeIndexes()),
+        assertArrayEquals(Collections3.toIntArray(indexer.getReferenceTypeIndexes()),
                           new int[] {8, 9, 10, 11, 12});
-        assertArrayEquals(Collections3.toArray(indexer.getParentIndexes(javaLangStringType)),
+        assertArrayEquals(Collections3.toIntArray(indexer.getParentIndexes(javaLangStringType)),
                           new int[] {8, 9, 10, 11, 12});
     }
 }

@@ -60,6 +60,6 @@ class DominatorsFinder<N, E> extends ForwardDataFlowAnalysis<N, E, Set<N>>  {
 
     @Override
     public boolean valuesEqual(Set<N> value1, Set<N> value2) {
-        return Collections3.sameContent(value1, value2);
+        return Collections3.equals(value1, value2);
     }
 }

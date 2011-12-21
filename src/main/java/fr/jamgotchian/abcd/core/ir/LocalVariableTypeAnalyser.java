@@ -514,11 +514,11 @@ public class LocalVariableTypeAnalyser {
             assert type.getKind() == TypeKind.PRIMITIVE;
             values.addAll(indexer.getParentIndexes(type));
         }
-        SetVariable cst = Choco.makeSetVar("c" + cstID++, Collections3.toArray(values));
+        SetVariable cst = Choco.makeSetVar("c" + cstID++, Collections3.toIntArray(values));
         SetVariable set = variables.get(var.getID());
         if (set == null) {
             set = Choco.makeSetVar(var.getID().toString(),
-                                   Collections3.toArray(indexer.getPrimitiveTypeIndexes()));
+                                   Collections3.toIntArray(indexer.getPrimitiveTypeIndexes()));
             variables.put(var.getID(), set);
         }
         model.addConstraints(Choco.eq(set, cst));
@@ -539,11 +539,11 @@ public class LocalVariableTypeAnalyser {
             default:
                 throw new InternalError();
         }
-        SetVariable cst = Choco.makeSetVar("c" + cstID++, Collections3.toArray(values));
+        SetVariable cst = Choco.makeSetVar("c" + cstID++, Collections3.toIntArray(values));
         SetVariable set = variables.get(var.getID());
         if (set == null) {
             set = Choco.makeSetVar(var.getID().toString(),
-                                   Collections3.toArray(indexer.getReferenceTypeIndexes()));
+                                   Collections3.toIntArray(indexer.getReferenceTypeIndexes()));
             variables.put(var.getID(), set);
         }
         model.addConstraints(Choco.eq(set, cst));

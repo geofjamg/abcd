@@ -104,6 +104,6 @@ public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBl
 
     @Override
     protected boolean valuesEqual(Set<Integer> value1, Set<Integer> value2) {
-        return Collections3.sameContent(value1, value2);
+        return Collections3.equals(value1, value2);
     }
 }

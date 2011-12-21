@@ -135,18 +135,18 @@ public class SSAFormConverterTest {
          */
         Assert.assertTrue(info.getDominanceFrontierOf(bb0).isEmpty());
         Assert.assertTrue(info.getDominanceFrontierOf(bb1).isEmpty());
-        Assert.assertTrue(Collections3.sameContent(info.getDominanceFrontierOf2(bb2),
-                                                   Arrays.asList(bb7)));
-        Assert.assertTrue(Collections3.sameContent(info.getDominanceFrontierOf2(bb3),
-                                                   Arrays.asList(bb7)));
-        Assert.assertTrue(Collections3.sameContent(info.getDominanceFrontierOf2(bb4),
-                                                   Arrays.asList(bb6)));
-        Assert.assertTrue(Collections3.sameContent(info.getDominanceFrontierOf2(bb5),
-                                                   Arrays.asList(bb6)));
-        Assert.assertTrue(Collections3.sameContent(info.getDominanceFrontierOf2(bb6),
-                                                   Arrays.asList(bb7)));
-        Assert.assertTrue(Collections3.sameContent(info.getDominanceFrontierOf2(bb7),
-                                                   Arrays.asList(bb1)));
+        Assert.assertTrue(Collections3.equals(info.getDominanceFrontierOf2(bb2),
+                                              Arrays.asList(bb7)));
+        Assert.assertTrue(Collections3.equals(info.getDominanceFrontierOf2(bb3),
+                                              Arrays.asList(bb7)));
+        Assert.assertTrue(Collections3.equals(info.getDominanceFrontierOf2(bb4),
+                                              Arrays.asList(bb6)));
+        Assert.assertTrue(Collections3.equals(info.getDominanceFrontierOf2(bb5),
+                                              Arrays.asList(bb6)));
+        Assert.assertTrue(Collections3.equals(info.getDominanceFrontierOf2(bb6),
+                                              Arrays.asList(bb7)));
+        Assert.assertTrue(Collections3.equals(info.getDominanceFrontierOf2(bb7),
+                                              Arrays.asList(bb1)));
 
         new SSAFormConverter(graph, instFactory, varFactory).convert();
     }

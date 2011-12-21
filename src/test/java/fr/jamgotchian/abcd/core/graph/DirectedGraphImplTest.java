@@ -135,7 +135,7 @@ public class DirectedGraphImplTest {
         assertArrayEquals(graph.getSuccessorsOf(v0).toArray(), Arrays.asList(v0).toArray());
         assertArrayEquals(graph.getPredecessorsOf(v0).toArray(), Arrays.asList(v0).toArray());
     }
-    
+
     @Test
     public void testSelfLoopGraph2() {
         Vertex v0 = new Vertex("v", 0);
@@ -150,24 +150,24 @@ public class DirectedGraphImplTest {
         graph.addEdge(v0, v1, e01);
         graph.addEdge(v1, v2, e12);
         graph.addEdge(v1, v1, e11);
-        assertTrue(Collections3.sameContent(Arrays.asList(v0, v1, v2), graph.getVertices()));
-        assertTrue(Collections3.sameContent(Arrays.asList(e01, e12, e11), graph.getEdges()));
+        assertTrue(Collections3.equals(Arrays.asList(v0, v1, v2), graph.getVertices()));
+        assertTrue(Collections3.equals(Arrays.asList(e01, e12, e11), graph.getEdges()));
         assertTrue(graph.getPredecessorsOf(v0).isEmpty());
         assertTrue(graph.getIncomingEdgesOf(v0).isEmpty());
-        assertTrue(Collections3.sameContent(Arrays.asList(v1), graph.getSuccessorsOf(v0)));
-        assertTrue(Collections3.sameContent(Arrays.asList(e01), graph.getOutgoingEdgesOf(v0)));
-        assertTrue(Collections3.sameContent(Arrays.asList(v0, v1), graph.getPredecessorsOf(v1)));
-        assertTrue(Collections3.sameContent(Arrays.asList(e01, e11), graph.getIncomingEdgesOf(v1)));
-        assertTrue(Collections3.sameContent(Arrays.asList(v1, v2), graph.getSuccessorsOf(v1)));
-        assertTrue(Collections3.sameContent(Arrays.asList(e12, e11), graph.getOutgoingEdgesOf(v1)));
+        assertTrue(Collections3.equals(Arrays.asList(v1), graph.getSuccessorsOf(v0)));
+        assertTrue(Collections3.equals(Arrays.asList(e01), graph.getOutgoingEdgesOf(v0)));
+        assertTrue(Collections3.equals(Arrays.asList(v0, v1), graph.getPredecessorsOf(v1)));
+        assertTrue(Collections3.equals(Arrays.asList(e01, e11), graph.getIncomingEdgesOf(v1)));
+        assertTrue(Collections3.equals(Arrays.asList(v1, v2), graph.getSuccessorsOf(v1)));
+        assertTrue(Collections3.equals(Arrays.asList(e12, e11), graph.getOutgoingEdgesOf(v1)));
         assertTrue(graph.getSuccessorCountOf(v1) == 2);
         assertTrue(graph.getPredecessorCountOf(v1) == 2);
-        assertTrue(Collections3.sameContent(Arrays.asList(v1), graph.getPredecessorsOf(v2)));
-        assertTrue(Collections3.sameContent(Arrays.asList(e12), graph.getIncomingEdgesOf(v2)));
+        assertTrue(Collections3.equals(Arrays.asList(v1), graph.getPredecessorsOf(v2)));
+        assertTrue(Collections3.equals(Arrays.asList(e12), graph.getIncomingEdgesOf(v2)));
         assertTrue(graph.getSuccessorsOf(v2).isEmpty());
         assertTrue(graph.getOutgoingEdgesOf(v2).isEmpty());
     }
-    
+
     @Test
     public void testParallelEdges() {
         Vertex v0 = new Vertex("v", 0);
@@ -180,8 +180,8 @@ public class DirectedGraphImplTest {
         graph.addEdge(v0, v1, e01_2);
         assertTrue(graph.getVertexCount() == 2);
         assertTrue(graph.getEdgeCount() == 2);
-        assertTrue(Collections3.sameContent(Arrays.asList(v0, v1), graph.getVertices()));
-        assertTrue(Collections3.sameContent(Arrays.asList(e01_1, e01_2), graph.getEdges()));
+        assertTrue(Collections3.equals(Arrays.asList(v0, v1), graph.getVertices()));
+        assertTrue(Collections3.equals(Arrays.asList(e01_1, e01_2), graph.getEdges()));
     }
-    
+
 }

@@ -88,6 +88,6 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
 
     @Override
     protected boolean valuesEqual(Set<Variable> value1, Set<Variable> value2) {
-        return Collections3.sameContent(value1, value2);
+        return Collections3.equals(value1, value2);
     }
 }

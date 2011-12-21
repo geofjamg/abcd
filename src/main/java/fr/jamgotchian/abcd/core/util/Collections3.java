@@ -28,19 +28,14 @@ public class Collections3 {
     private Collections3() {
     }
 
-    public static <E> boolean sameContent(Collection<E> coll1, Collection<E> coll2) {
+    public static <E> boolean equals(Collection<E> coll1, Collection<E> coll2) {
         if (coll1.size() != coll2.size()) {
             return false;
         }
-        for (E e1 : coll1) {
-            if (!coll2.contains(e1)) {
-                return false;
-            }
-        }
-        return true;
+        return coll1.containsAll(coll2);
     }
 
-    public static <E extends Integer> int[] toArray(Collection<E> coll) {
+    public static <E extends Integer> int[] toIntArray(Collection<E> coll) {
         int[] array = new int[coll.size()];
         int i = 0;
         for (E e : coll) {
