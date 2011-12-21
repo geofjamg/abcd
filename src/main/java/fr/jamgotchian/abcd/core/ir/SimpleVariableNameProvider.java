@@ -64,9 +64,6 @@ public class SimpleVariableNameProvider implements VariableNameProvider {
             if (name == null) {
                 StringBuilder builder = new StringBuilder();
                 addPrefix(builder);
-                if (var.getID().getVersion() != VariableID.UNDEFINED_VERSION) {
-                    builder.append("_").append(var.getID().getVersion());
-                }
                 name = builder.toString();
                 names.put(var.getID(), name);
             }
