@@ -16,12 +16,12 @@
  */
 package fr.jamgotchian.abcd.core.type;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.LinkedHashMultimap;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.TablePrinter;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,40 +36,97 @@ import java.util.TreeSet;
  */
 public class TypeHierarchyIndexer {
 
+    private static class Type {
+
+        private final PrimitiveType primitiveType;
+
+        private final String className;
+
+        private int arrayDimension;
+
+        private Type(JavaType type) {
+            primitiveType = type.getPrimitiveType();
+            if (type.getClassName() != null) {
+                className = type.getClassName().getQualifiedName();
+            } else {
+                className = null;
+            }
+            arrayDimension = type.getArrayDimension();
+        }
+
+        private Type(PrimitiveType primitiveType, String className, int arrayDimension) {
+            assert primitiveType != null ^ className != null;
+            this.primitiveType = primitiveType;
+            this.className = className;
+            this.arrayDimension = arrayDimension;
+        }
+
+        private PrimitiveType getPrimitiveType() {
+            return primitiveType;
+        }
+
+        private String getClassName() {
+            return className;
+        }
+
+        private int getArrayDimension() {
+            return arrayDimension;
+        }
+
+        private JavaType toJavaType(ClassNameManager classNameManager) {
+            return new JavaType(primitiveType,
+                                className != null ? classNameManager.newClassName(className) : null,
+                                arrayDimension);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Type) {
+                Type other = (Type) obj;
+                return Objects.equal(primitiveType, other.primitiveType)
+                        && Objects.equal(className, other.className)
+                        && arrayDimension == other.arrayDimension;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(primitiveType, className, arrayDimension);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            if (primitiveType != null) {
+                builder.append(primitiveType);
+            } else {
+                builder.append(className);
+            }
+            for (int i = 0; i < arrayDimension; i++) {
+                builder.append("[]");
+            }
+            return builder.toString();
+        }
+    }
+
     private static class TypeNode {
 
         private final List<TypeNode> parents = new ArrayList<TypeNode>();
 
         private final List<TypeNode> children = new ArrayList<TypeNode>();
 
-        private final PrimitiveType primitiveType;
-
-        private final String className;
+        private final Type type;
 
         private final int index;
 
-        private TypeNode(String className, int index) {
-            this.primitiveType = null;
-            this.className = className;
+        private TypeNode(Type type, int index) {
+            this.type = type;
             this.index = index;
         }
 
-        private TypeNode(PrimitiveType primitiveType, int index) {
-            this.primitiveType = primitiveType;
-            this.className = null;
-            this.index = index;
-        }
-
-        public PrimitiveType getPrimitiveType() {
-            return primitiveType;
-        }
-
-        public String getClassName() {
-            return className;
-        }
-
-        public String getTypeStr() {
-            return primitiveType != null ? primitiveType.toString() : className;
+        public Type getType() {
+            return type;
         }
 
         int getIndex() {
@@ -100,10 +157,7 @@ public class TypeHierarchyIndexer {
 
     private final Set<Integer> referenceTypeIndexes = new TreeSet<Integer>();
 
-    private final Map<PrimitiveType, TypeNode> primitiveTypeNodes
-            = new EnumMap<PrimitiveType, TypeNode>(PrimitiveType.class);
-
-    private final Map<String, TypeNode> referenceTypeNodes = new HashMap<String, TypeNode>();
+    private final Map<Type, TypeNode> type2Node = new HashMap<Type, TypeNode>();
 
     private final Map<Integer, TypeNode> index2node = new TreeMap<Integer, TypeNode>();
 
@@ -134,38 +188,31 @@ public class TypeHierarchyIndexer {
         return referenceTypeIndexes;
     }
 
-    private TypeNode createNode(PrimitiveType primitiveType) {
-        TypeNode node = primitiveTypeNodes.get(primitiveType);
+    private TypeNode createNode(Type type) {
+        TypeNode node = type2Node.get(type);
         if (node == null) {
             int index = nextIndex++;
-            node = new TypeNode(primitiveType, index);
-            primitiveTypeNodes.put(primitiveType, node);
-            index2node.put(node.getIndex(), node);
-            primitiveTypeIndexes.add(index);
+            node = new TypeNode(type, index);
+            type2Node.put(type, node);
+            index2node.put(index, node);
         }
+        return node;
+    }
+
+    private TypeNode createNode(PrimitiveType primitiveType) {
+        TypeNode node = createNode(new Type(primitiveType, null, 0));
+        primitiveTypeIndexes.add(node.getIndex());
         return node;
     }
 
     private TypeNode createNode(Class<?> clazz) {
-        String className = clazz.getName();
-        TypeNode node = referenceTypeNodes.get(className);
-        if (node == null) {
-            int index = nextIndex++;
-            node = new TypeNode(className, index);
-            referenceTypeNodes.put(className, node);
-            index2node.put(node.getIndex(), node);
-            referenceTypeIndexes.add(index);
-        }
+        TypeNode node = createNode(new Type(null, clazz.getName(), 0));
+        referenceTypeIndexes.add(node.getIndex());
         return node;
     }
 
     private TypeNode getNode(JavaType type) {
-        TypeNode node = null;
-        if (type.getKind() == TypeKind.PRIMITIVE) {
-            node = primitiveTypeNodes.get(type.getPrimitiveType());
-        } else {
-            node = referenceTypeNodes.get(type.getClassName().getQualifiedName());
-        }
+        TypeNode node = type2Node.get(new Type(type));
         if (node == null) {
             throw new ABCDException("Type " + type + " not indexed");
         }
@@ -271,13 +318,13 @@ public class TypeHierarchyIndexer {
             if (node == null) {
                 throw new ABCDException("Index " + index + " not found");
             }
-            if (node.getPrimitiveType() != null) {
-                types.add(JavaType.newPrimitiveType(node.getPrimitiveType()));
+            JavaType type = node.getType().toJavaType(classNameManager);
+            if (type.getKind() == TypeKind.PRIMITIVE) {
                 primitiveTypeCount++;
             } else {
-                types.add(JavaType.newRefType(classNameManager.newClassName(node.getClassName())));
                 referenceTypeCount++;
             }
+            types.add(type);
         }
         assert !(primitiveTypeCount > 0 && referenceTypeCount > 0);
         if (primitiveTypeCount > 0) {
@@ -290,7 +337,7 @@ public class TypeHierarchyIndexer {
     public String indexesToString() {
         TablePrinter printer = ConsoleUtil.newTablePrinter("Index", "Type", "Ancestors");
         for (TypeNode node : index2node.values()) {
-            printer.addRow(node.getIndex(), node.getTypeStr(), getParentIndexes(node).toString());
+            printer.addRow(node.getIndex(), node.getType(), getParentIndexes(node).toString());
         }
         return printer.toString();
     }

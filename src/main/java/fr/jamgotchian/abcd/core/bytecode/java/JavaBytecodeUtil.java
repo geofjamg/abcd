@@ -119,10 +119,8 @@ public class JavaBytecodeUtil implements Opcodes {
                 return JavaType.DOUBLE;
             case Type.ARRAY:
                 return JavaType.newArrayType(newType(type.getElementType(), classNameManager), type.getDimensions());
-            case Type.OBJECT: {
-                ClassName argClassName = classNameManager.newClassName(type.getClassName());
-                return JavaType.newRefType(argClassName);
-            }
+            case Type.OBJECT:
+                return JavaType.newRefType(classNameManager.newClassName(type.getClassName()));
             default:
                 throw new InternalError();
         }

@@ -34,15 +34,15 @@ public class JavaType {
 
     public static final String UNDEFINED_TYPE = "???";
 
-    public static final JavaType VOID = new JavaType(PrimitiveType.VOID, null, null, 0);
-    public static final JavaType INT = new JavaType(PrimitiveType.INTEGER, null, null, 0);
-    public static final JavaType LONG = new JavaType(PrimitiveType.LONG, null, null, 0);
-    public static final JavaType CHAR = new JavaType(PrimitiveType.CHAR, null, null, 0);
-    public static final JavaType BYTE = new JavaType(PrimitiveType.BYTE, null, null, 0);
-    public static final JavaType SHORT = new JavaType(PrimitiveType.SHORT, null, null, 0);
-    public static final JavaType BOOLEAN = new JavaType(PrimitiveType.BOOLEAN, null, null, 0);
-    public static final JavaType FLOAT = new JavaType(PrimitiveType.FLOAT, null, null, 0);
-    public static final JavaType DOUBLE = new JavaType(PrimitiveType.DOUBLE, null, null, 0);
+    public static final JavaType VOID = new JavaType(PrimitiveType.VOID, null, 0);
+    public static final JavaType INT = new JavaType(PrimitiveType.INTEGER, null, 0);
+    public static final JavaType LONG = new JavaType(PrimitiveType.LONG, null, 0);
+    public static final JavaType CHAR = new JavaType(PrimitiveType.CHAR, null, 0);
+    public static final JavaType BYTE = new JavaType(PrimitiveType.BYTE, null, 0);
+    public static final JavaType SHORT = new JavaType(PrimitiveType.SHORT, null, 0);
+    public static final JavaType BOOLEAN = new JavaType(PrimitiveType.BOOLEAN, null, 0);
+    public static final JavaType FLOAT = new JavaType(PrimitiveType.FLOAT, null, 0);
+    public static final JavaType DOUBLE = new JavaType(PrimitiveType.DOUBLE, null, 0);
 
     public static final Set<PrimitiveType> ARITHMETIC_TYPES
             = EnumSet.of(PrimitiveType.INTEGER, PrimitiveType.LONG, PrimitiveType.BYTE,
@@ -86,46 +86,42 @@ public class JavaType {
     }
 
     public static JavaType newPrimitiveType(PrimitiveType primitiveType) {
-        return new JavaType(primitiveType, null, null, 0);
+        return new JavaType(primitiveType, null, 0);
     }
 
     public static JavaType newRefType(ClassName className) {
-        return new JavaType(null, className, null, 0);
+        return new JavaType(null, className, 0);
     }
 
     public static JavaType newRefType(Class<?> clazz, ClassNameManager classNameManager) {
         ClassName className = classNameManager.newClassName(clazz.getName());
-        return new JavaType(null, className, null, 0);
+        return new JavaType(null, className, 0);
     }
 
     public static JavaType newArrayType(JavaType arrayElementType, int arrayDimension) {
-        return new JavaType(null, null, arrayElementType, arrayDimension);
+        assert arrayElementType.getArrayDimension() == 0;
+        return new JavaType(arrayElementType.getPrimitiveType(), arrayElementType.getClassName(), arrayDimension);
     }
 
     private final PrimitiveType primitiveType;
 
     private final ClassName className;
 
-    private final JavaType arrayElementType;
-
     private final int arrayDimension;
 
-    private JavaType(PrimitiveType primitiveType, ClassName className,
-                     JavaType arrayElementType, int arrayDimension) {
-        assert (primitiveType != null && className == null && arrayElementType == null)
-                || (primitiveType == null && (className != null || arrayElementType != null));
+    JavaType(PrimitiveType primitiveType, ClassName className, int arrayDimension) {
+        assert (primitiveType != null ^ className != null);
         this.primitiveType = primitiveType;
         this.className = className;
-        this.arrayElementType = arrayElementType;
         this.arrayDimension = arrayDimension;
     }
 
     public TypeKind getKind() {
-        return primitiveType != null ? TypeKind.PRIMITIVE : TypeKind.REFERENCE;
+        return primitiveType != null && arrayDimension == 0 ? TypeKind.PRIMITIVE : TypeKind.REFERENCE;
     }
 
     public boolean isArray() {
-        return arrayElementType != null;
+        return arrayDimension > 0;
     }
 
     public PrimitiveType getPrimitiveType() {
@@ -134,10 +130,6 @@ public class JavaType {
 
     public ClassName getClassName() {
         return className;
-    }
-
-    public JavaType getArrayElementType() {
-        return arrayElementType;
     }
 
     public int getArrayDimension() {
@@ -180,33 +172,29 @@ public class JavaType {
 
         return Objects.equal(className, other.className)
                 && Objects.equal(primitiveType, other.primitiveType)
-                && Objects.equal(arrayElementType, other.arrayElementType)
                 && Objects.equal(arrayDimension, other.arrayDimension);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(className, primitiveType, arrayElementType, arrayDimension);
+        return Objects.hashCode(className, primitiveType, arrayDimension);
     }
 
     public String getName(boolean qualifiedName) {
-        if (isArray()) {
-            StringBuilder builder = new StringBuilder(arrayElementType.getName(qualifiedName));
-            for (int i = 0; i < arrayDimension; i++) {
-                builder.append("[]");
-            }
-            return builder.toString();
-        } else {
-            if (getKind() == TypeKind.PRIMITIVE) {
-                return primitiveType.toString();
-            } else { // reference
-                if (qualifiedName) {
-                    return className.getQualifiedName();
-                } else {
-                    return className.getName();
-                }
+        StringBuilder builder = new StringBuilder();
+        if (primitiveType != null) {
+            builder.append(primitiveType.toString());
+        } else { // reference
+            if (qualifiedName) {
+                builder.append(className.getQualifiedName());
+            } else {
+                builder.append(className.getName());
             }
         }
+        for (int i = 0; i < arrayDimension; i++) {
+            builder.append("[]");
+        }
+        return builder.toString();
     }
 
     public String getQualifiedName() {
