@@ -365,7 +365,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
 
     public Void visit(NewArrayInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
-              .writeKeyword("new").writeSpace().write(inst.getType());
+              .writeKeyword("new").writeSpace().write(inst.getElementType());
         for (Variable dimVar : inst.getDimensions()) {
             writer.write("[").write(dimVar).write("]");
         }

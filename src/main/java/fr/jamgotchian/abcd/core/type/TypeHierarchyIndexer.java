@@ -205,6 +205,12 @@ public class TypeHierarchyIndexer {
         return node;
     }
 
+    private TypeNode createNode(PrimitiveType primitiveType, int arrayDimension) {
+        TypeNode node = createNode(new Type(primitiveType, null, arrayDimension));
+        referenceTypeIndexes.add(node.getIndex());
+        return node;
+    }
+
     private TypeNode createNode(Class<?> clazz) {
         TypeNode node = createNode(new Type(null, clazz.getName(), 0));
         referenceTypeIndexes.add(node.getIndex());
@@ -253,13 +259,23 @@ public class TypeHierarchyIndexer {
         }
     }
 
+    private void addIndex(PrimitiveType primitiveType, int arrayDimension) {
+        TypeNode node = createNode(primitiveType, arrayDimension);
+        TypeNode javaLangObjectNode = createNode(Object.class);
+        node.addParent(javaLangObjectNode);
+    }
+
     public void addIndex(JavaType type) {
         if (type.getKind() == TypeKind.PRIMITIVE) {
             createNode(type.getPrimitiveType());
         } else { // reference
             if (type.isArray()) {
-                // TODO
-                throw new ABCDException("TODO");
+                if (type.getElementTypeKind() == TypeKind.PRIMITIVE) {
+                    addIndex(type.getPrimitiveType(), type.getArrayDimension());
+                } else {
+                    // TODO
+                    throw new ABCDException("TODO");
+                }
             } else {
                 addIndex(type.getClassName().getQualifiedName());
             }

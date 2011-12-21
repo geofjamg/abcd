@@ -224,7 +224,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
         }
         NewArrayInst inst2 = (NewArrayInst) arg;
         return mapping.defEqual(inst.getResult(), inst2.getResult())
-                && inst.getType().equals(inst2.getType())
+                && inst.getElementType().equals(inst2.getElementType())
                 && mapping.usesEqual(inst.getDimensions(), inst2.getDimensions());
     }
 

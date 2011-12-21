@@ -120,6 +120,14 @@ public class JavaType {
         return primitiveType != null && arrayDimension == 0 ? TypeKind.PRIMITIVE : TypeKind.REFERENCE;
     }
 
+    public TypeKind getElementTypeKind() {
+        if (arrayDimension == 0) {
+            return null;
+        } else {
+            return primitiveType != null ? TypeKind.PRIMITIVE : TypeKind.REFERENCE;
+        }
+    }
+
     public boolean isArray() {
         return arrayDimension > 0;
     }

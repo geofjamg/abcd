@@ -37,7 +37,7 @@ public class NewArrayInst extends DefInst {
         this.dimensions = dimensions;
     }
 
-    public JavaType getType() {
+    public JavaType getElementType() {
         return type;
     }
 

@@ -70,6 +70,12 @@ public class LocalVariableTypeAnalyser {
     private class TypeIndexer extends EmptyIRInstVisitor<Void, Void> {
 
         @Override
+        public Void visit(NewArrayInst inst, Void arg) {
+            indexer.addIndex(JavaType.newArrayType(inst.getElementType(), inst.getDimensionCount()));
+            return null;
+        }
+
+        @Override
         public Void visit(NewObjectInst inst, Void arg) {
             indexer.addIndex(inst.getType());
             return null;
@@ -358,6 +364,9 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(NewArrayInst inst, Void arg) {
+            addRefConstraint(inst.getResult(),
+                             JavaType.newArrayType(inst.getElementType(), inst.getDimensionCount()),
+                             ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
             for (Variable dimVar : inst.getDimensions()) {
                 addPrimConstraint(dimVar, JavaType.INT);
             }

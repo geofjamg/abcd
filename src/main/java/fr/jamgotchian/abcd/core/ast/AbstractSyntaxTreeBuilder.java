@@ -451,7 +451,7 @@ public class AbstractSyntaxTreeBuilder {
             for (Variable dimVar : inst.getDimensions()) {
                 dimExprs.add(getVarExpr(dimVar));
             }
-            Expression newArrExpr = Expressions.newArrayCreatExpr(inst.getType(), dimExprs);
+            Expression newArrExpr = Expressions.newArrayCreatExpr(inst.getElementType(), dimExprs);
             addVarAssignExpr(resultVar, newArrExpr, blockStmt);
             return null;
         }
