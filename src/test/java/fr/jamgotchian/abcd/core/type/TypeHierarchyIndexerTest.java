@@ -35,7 +35,7 @@ public class TypeHierarchyIndexerTest {
 
     @Before
     public void setUp() {
-        indexer = new TypeHierarchyIndexer();
+        indexer = new TypeHierarchyIndexer(TypeHierarchyIndexerTest.class.getClassLoader());
     }
 
     @After

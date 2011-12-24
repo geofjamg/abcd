@@ -133,7 +133,8 @@ public class ABCDContext {
     public ABCDContext() {
     }
 
-    public void decompile(ABCDDataSource dataSrc, ABCDWriter writer, ABCDPreferences prefs) throws IOException {
+    public void decompile(ABCDDataSource dataSrc, ABCDWriter writer,
+                          ABCDPreferences prefs, ClassLoader classLoader) throws IOException {
         VariableNameProviderFactory nameProviderFactory = null;
         if (prefs.isUseLocalVariableTable()) {
             nameProviderFactory = new DebugInfoVariableNameProviderFactory();
@@ -144,7 +145,8 @@ public class ABCDContext {
         for (ClassFactory classFactory : dataSrc.createClassFactories()) {
             ImportManager importManager = new ImportManager();
             Class _class = decompileClass(classFactory, importManager,
-                                          nameProviderFactory, writer, summary);
+                                          nameProviderFactory, writer,
+                                          classLoader, summary);
 
             CompilationUnit compilUnit = new CompilationUnit(_class.getPackage(), importManager);
             compilUnit.getClasses().add(_class);
@@ -171,7 +173,8 @@ public class ABCDContext {
 
     private Class decompileClass(ClassFactory classFactory, ImportManager importManager,
                                  VariableNameProviderFactory nameProviderFactory,
-                                 ABCDWriter writer, Summary summary) throws IOException {
+                                 ABCDWriter writer, ClassLoader classLoader,
+                                 Summary summary) throws IOException {
         Class _class = classFactory.createClass(importManager);
 
         ClassName thisClassName = importManager.newClassName(_class.getQualifiedName());
@@ -225,7 +228,8 @@ public class ABCDContext {
                                                             nameProviderFactory,
                                                             thisType,
                                                             method.getReturnType(),
-                                                            method.getArguments())
+                                                            method.getArguments(),
+                                                            classLoader)
                         .build(writer);
 
                 ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Analyse regions of {0}",
@@ -366,7 +370,8 @@ public class ABCDContext {
                     prefs.setUseLocalVariableTable(true);
                 }
 
-                new ABCDContext().decompile(dataSrc, writer, prefs);
+                new ABCDContext().decompile(dataSrc, writer, prefs,
+                                            ABCDContext.class.getClassLoader());
             }
             catch(ParseException e) {
                 printError(e.getMessage());

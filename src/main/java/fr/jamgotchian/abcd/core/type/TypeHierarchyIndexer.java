@@ -154,6 +154,8 @@ public class TypeHierarchyIndexer {
         }
     }
 
+    private final ClassLoader classLoader;
+
     private int nextIndex = 0;
 
     private final Set<Integer> primitiveTypeIndexes = new TreeSet<Integer>();
@@ -164,7 +166,8 @@ public class TypeHierarchyIndexer {
 
     private final Map<Integer, TypeNode> index2node = new TreeMap<Integer, TypeNode>();
 
-    public TypeHierarchyIndexer() {
+    public TypeHierarchyIndexer(ClassLoader classLoader) {
+        this.classLoader = classLoader;
         addIndex(JavaType.BOOLEAN);
         addIndex(JavaType.BYTE);
         addIndex(JavaType.CHAR);
@@ -249,7 +252,7 @@ public class TypeHierarchyIndexer {
     }
 
     private Multimap<String, String> getAncestors(String className) throws ClassNotFoundException {
-        Class<?> clazz = Class.forName(className);
+        Class<?> clazz = Class.forName(className, true, classLoader);
         LinkedHashMultimap<String, String> ancestors = LinkedHashMultimap.create();
         getAncestors(clazz, null, ancestors);
         return ancestors;

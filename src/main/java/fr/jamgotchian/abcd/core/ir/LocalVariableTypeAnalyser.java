@@ -475,18 +475,19 @@ public class LocalVariableTypeAnalyser {
 
     private final Map<VariableID, SetVariable> variables = new HashMap<VariableID, SetVariable>();
 
-    private final TypeHierarchyIndexer indexer = new TypeHierarchyIndexer();
+    private final TypeHierarchyIndexer indexer;
 
     public LocalVariableTypeAnalyser(ControlFlowGraph cfg, JavaType thisType,
                                      JavaType methodReturnType, List<Variable> methodArgs,
                                      ClassNameManager classNameManager,
-                                     VariableFactory varFactory) {
+                                     VariableFactory varFactory, ClassLoader classLoader) {
         this.cfg = cfg;
         this.thisType = thisType;
         this.methodReturnType = methodReturnType;
         this.methodArgs = methodArgs;
         this.classNameManager = classNameManager;
         this.varFactory = varFactory;
+        indexer = new TypeHierarchyIndexer(classLoader);
     }
 
     private void addConstraint(Variable var1, Variable var2) {
@@ -605,9 +606,13 @@ public class LocalVariableTypeAnalyser {
             int[] values = s.getVar(var).getValue();
             LOGGER.log(Level.FINEST, "{0} = {1}",
                     new Object[] {ID, Arrays.toString(values)});
-            JavaType type = indexer.resolveType(values, classNameManager);
-            LOGGER.log(Level.FINEST, "  => {0}", type);
-            types.put(ID, type);
+            if (values.length == 0) {
+                LOGGER.warning("  => No solution found");
+            } else {
+                JavaType type = indexer.resolveType(values, classNameManager);
+                LOGGER.log(Level.FINEST, "  => {0}", type);
+                types.put(ID, type);
+            }
         }
 
         for (BasicBlock block : cfg.getBasicBlocks()) {

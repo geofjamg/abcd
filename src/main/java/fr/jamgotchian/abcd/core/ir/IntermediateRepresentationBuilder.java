@@ -66,6 +66,8 @@ public class IntermediateRepresentationBuilder {
 
     private final List<Variable> methodArgs;
 
+    private final ClassLoader classLoader;
+
     private ControlFlowGraph cfg;
 
     public IntermediateRepresentationBuilder(ControlFlowGraphBuilder cfgBuilder,
@@ -76,7 +78,8 @@ public class IntermediateRepresentationBuilder {
                                              VariableNameProviderFactory nameProviderFactory,
                                              JavaType thisType,
                                              JavaType methodReturnType,
-                                             List<Variable> methodArgs) {
+                                             List<Variable> methodArgs,
+                                             ClassLoader classLoader) {
         this.cfgBuilder = cfgBuilder;
         this.instBuilder = instBuilder;
         this.classNameManager = classNameManager;
@@ -86,6 +89,7 @@ public class IntermediateRepresentationBuilder {
         this.thisType = thisType;
         this.methodReturnType = methodReturnType;
         this.methodArgs = methodArgs;
+        this.classLoader = classLoader;
     }
 
     /**
@@ -330,7 +334,7 @@ public class IntermediateRepresentationBuilder {
             }
 
             // convert to SSA form
-//            new SSAFormConverter(cfg, instFactory, varFactory).convert();
+            new SSAFormConverter(cfg, instFactory, varFactory).convert();
 
             // to remove empty basic blocks added tu remove critical edges
             if (cfg.removeUnnecessaryBlock()) {
@@ -345,7 +349,7 @@ public class IntermediateRepresentationBuilder {
             // analyse local variables types
             new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
                                           methodArgs, classNameManager,
-                                          varFactory)
+                                          varFactory, classLoader)
                     .analyse();
 
             // assign a name to each variable
