@@ -122,70 +122,87 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 new BasicBlockImpl(BasicBlockType.EXIT));
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public DirectedGraph<BasicBlock, Edge> getGraph() {
         return DirectedGraphs.unmodifiableDirectedGraph(graph);
     }
 
+    @Override
     public BasicBlock getEntryBlock() {
         return entryBlock;
     }
 
+    @Override
     public BasicBlock getExitBlock() {
         return exitBlock;
     }
 
+    @Override
     public void updateDominatorInfo() {
         dominatorInfo = DominatorInfo.create(graph, entryBlock, EDGE_FACTORY);
     }
 
+    @Override
     public void updatePostDominatorInfo() {
         postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY);
     }
 
+    @Override
     public DominatorInfo<BasicBlock, Edge> getDominatorInfo() {
         return dominatorInfo;
     }
 
+    @Override
     public PostDominatorInfo<BasicBlock, Edge> getPostDominatorInfo() {
         return postDominatorInfo;
     }
 
+    @Override
     public Tree<BasicBlock, Edge> getDFST() {
         return dfst;
     }
 
+    @Override
     public Multimap<BasicBlock, NaturalLoop> getNaturalLoops() {
         return naturalLoops;
     }
 
+    @Override
     public int getBasicBlockCount() {
         return graph.getVertices().size();
     }
 
+    @Override
     public Collection<BasicBlock> getBasicBlocks() {
         return graph.getVertices();
     }
 
+    @Override
     public BasicBlock getBasicBlock(Range range) {
         return basicBlocks.get(range);
     }
 
+    @Override
     public BasicBlock getBasicBlock(int first, int last) {
         return getBasicBlock(new RangeImpl(first, last));
     }
 
+    @Override
     public boolean containsBasicBlock(BasicBlock bb) {
         return graph.containsVertex(bb);
     }
 
+    @Override
     public Collection<Edge> getOutgoingEdgesOf(BasicBlock block) {
         return graph.getOutgoingEdgesOf(block);
     }
 
+    @Override
     public Collection<Edge> getNormalOutgoingEdgesOf(BasicBlock block) {
         List<Edge> edges = new ArrayList<Edge>();
         for (Edge e : getOutgoingEdgesOf(block)) {
@@ -196,10 +213,12 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return edges;
     }
 
+    @Override
     public Edge getFirstOutgoingEdgeOf(BasicBlock block) {
         return graph.getFirstOutgoingEdgeOf(block);
     }
 
+    @Override
     public Edge getFirstNormalOutgoingEdgeOf(BasicBlock block) {
         for (Edge e : getOutgoingEdgesOf(block)) {
             if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
@@ -209,14 +228,17 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return null;
     }
 
+    @Override
     public Collection<Edge> getIncomingEdgesOf(BasicBlock block) {
         return graph.getIncomingEdgesOf(block);
     }
 
+    @Override
     public Edge getFirstIncomingEdgeOf(BasicBlock block) {
         return graph.getFirstIncomingEdgeOf(block);
     }
 
+    @Override
     public Edge getFirstNormalIncomingEdgeOf(BasicBlock block) {
         for (Edge e : getIncomingEdgesOf(block)) {
             if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
@@ -226,14 +248,17 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return null;
     }
 
+    @Override
     public Collection<BasicBlock> getPredecessorsOf(BasicBlock block) {
         return graph.getPredecessorsOf(block);
     }
 
+    @Override
     public int getPredecessorCountOf(BasicBlock block) {
         return graph.getPredecessorCountOf(block);
     }
 
+    @Override
     public int getNormalPredecessorCountOf(BasicBlock block) {
         int count = 0;
         for (Edge e : getIncomingEdgesOf(block)) {
@@ -244,22 +269,27 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return count;
     }
 
+    @Override
     public BasicBlock getFirstPredecessorOf(BasicBlock block) {
         return graph.getFirstPredecessorOf(block);
     }
 
+    @Override
     public Collection<BasicBlock> getSuccessorsOf(BasicBlock block) {
         return graph.getSuccessorsOf(block);
     }
 
+    @Override
     public BasicBlock getFirstSuccessorOf(BasicBlock block) {
         return graph.getFirstSuccessorOf(block);
     }
 
+    @Override
     public int getSuccessorCountOf(BasicBlock block) {
         return graph.getSuccessorCountOf(block);
     }
 
+    @Override
     public Collection<BasicBlock> getExceptionalSuccessorsOf(BasicBlock block) {
         List<BasicBlock> successors = new ArrayList<BasicBlock>();
         for (Edge e : graph.getOutgoingEdgesOf(block)) {
@@ -270,6 +300,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return successors;
     }
 
+    @Override
     public Collection<BasicBlock> getNormalSuccessorsOf(BasicBlock block) {
         List<BasicBlock> successors = new ArrayList<BasicBlock>();
         for (Edge e : graph.getOutgoingEdgesOf(block)) {
@@ -280,6 +311,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return successors;
     }
 
+    @Override
     public int getNormalSuccessorCountOf(BasicBlock block) {
         int count = 0;
         for (Edge e : getOutgoingEdgesOf(block)) {
@@ -290,23 +322,28 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return count;
     }
 
+    @Override
     public Collection<BasicBlock> getBasicBlocksWithinRange(Range range) {
         return basicBlocks.values(range);
     }
 
+    @Override
     public Collection<BasicBlock> getBasicBlocksWithinRange(int first, int last) {
         return getBasicBlocksWithinRange(new RangeImpl(first, last));
     }
 
+    @Override
     public boolean isBasicBlockReachable(BasicBlock block) {
         return graph.getIncomingEdgesOf(block).size() > 0
                 || graph.getOutgoingEdgesOf(block).size() > 0;
     }
 
+    @Override
     public Collection<BasicBlock> getNonEmptyBasicBlocks() {
         return basicBlocks.values();
     }
 
+    @Override
     public void addBasicBlock(BasicBlock block) {
         graph.addVertex(block);
         if (block.getRange() != null) {
@@ -314,6 +351,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
     }
 
+    @Override
     public void removeBasicBlock(BasicBlock block) {
         graph.removeVertex(block);
         if (block.getRange() != null) {
@@ -321,6 +359,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
     }
 
+    @Override
     public BasicBlockSplit splitBasicBlockAt(int index) {
         if (index == Integer.MIN_VALUE) {
             throw new ABCDException("Can't split at index Integer.MIN_VALUE");
@@ -365,14 +404,17 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
     }
 
+    @Override
     public Edge addEdge(BasicBlock source, BasicBlock target) {
         return addEdge(source, target, false);
     }
 
+    @Override
     public void addEdge(BasicBlock source, BasicBlock target, Edge edge) {
         graph.addEdge(source, target, edge);
     }
 
+    @Override
     public Edge addEdge(BasicBlock source, BasicBlock target, boolean exceptional) {
         Edge edge = graph.getEdge(source, target);
         if (edge == null) {
@@ -387,36 +429,44 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return edge;
     }
 
+    @Override
     public void removeEdge(Edge edge) {
         graph.removeEdge(edge);
     }
 
+    @Override
     public boolean removeEdge(BasicBlock source, BasicBlock target) {
         LOGGER.log(Level.FINEST, "  Remove edge between {0} and {1}", new Object[]{source, target});
 
         return graph.removeEdge(source, target);
     }
 
+    @Override
     public Edge getEdge(BasicBlock source, BasicBlock target) {
         return graph.getEdge(source, target);
     }
 
+    @Override
     public Set<Edge> getEdges() {
         return graph.getEdges();
     }
 
+    @Override
     public boolean containsEdge(BasicBlock source, BasicBlock target) {
         return graph.containsEdge(source, target);
     }
 
+    @Override
     public BasicBlock getEdgeSource(Edge edge) {
         return graph.getEdgeSource(edge);
     }
 
+    @Override
     public BasicBlock getEdgeTarget(Edge edge) {
         return graph.getEdgeTarget(edge);
     }
 
+    @Override
     public void updateLoopInfo() {
         LOGGER.log(Level.FINER, "Update loop info");
         performDepthFirstSearch();
@@ -447,6 +497,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
      * Remove unreachable basic blocks. A basic block is unreachable if it has no
      * predecessors et no successors.
      */
+    @Override
     public boolean removeUnreachableBlocks() {
         boolean removed = false;
         for (BasicBlock block : new HashSet<BasicBlock>(graph.getVertices())) {
@@ -465,6 +516,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     /**
      * Remove unnecessary basic blocks.
      */
+    @Override
     public boolean removeUnnecessaryBlock() {
         Set<BasicBlock> toRemove = new HashSet<BasicBlock>();
         for (BasicBlock bb : graph.getVertices()) {
@@ -518,6 +570,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
      * the edge) in order to insert computations on the edge without affecting
      * any other edges.
      */
+    @Override
     public boolean removeCriticalEdges() {
         List<Edge> criticalEdges = new ArrayList<Edge>();
 
@@ -548,6 +601,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         return criticalEdges.size() > 0;
     }
 
+    @Override
     public boolean mergeNaturalLoops() {
         boolean merged = false;
         for (Map.Entry<BasicBlock, Collection<NaturalLoop>> entry : naturalLoops.asMap().entrySet()) {
@@ -672,17 +726,20 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
     }
 
+    @Override
     public void export(Writer writer,
                        GraphvizRenderer<BasicBlock> bbRenderer,
                        GraphvizRenderer<Edge> edgeRenderer) throws IOException {
         graph.export(writer, "\"" + name + "\"", bbRenderer, edgeRenderer);
     }
 
+    @Override
     public void export(Writer writer) throws IOException {
         graph.export(writer, "\"" + name + "\"", RANGE_GRAPHVIZ_RENDERER,
                      EDGE_GRAPHVIZ_RENDERER);
     }
 
+    @Override
     public void export(String fileName) {
         Writer writer = null;
         try {
@@ -701,31 +758,38 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
     }
 
+    @Override
     public void exportInst(Writer writer) throws IOException {
         graph.export(writer, "\"" + name + "\"", IR_GRAPHVIZ_RENDERER,
                      EDGE_GRAPHVIZ_RENDERER);
     }
 
+    @Override
     public String toString(Collection<Edge> edges) {
         return graph.toString(edges);
     }
 
+    @Override
     public String toString(Edge edge) {
         return graph.toString(edge);
     }
 
+    @Override
     public LocalVariableTable getLocalVariableTable() {
         return localVariableTable;
     }
 
+    @Override
     public void setLocalVariableTable(LocalVariableTable localVariableTable) {
         this.localVariableTable = localVariableTable;
     }
 
+    @Override
     public ExceptionTable getExceptionTable() {
         return exceptionTable;
     }
 
+    @Override
     public void setExceptionTable(ExceptionTable exceptionTable) {
         this.exceptionTable = exceptionTable;
     }
