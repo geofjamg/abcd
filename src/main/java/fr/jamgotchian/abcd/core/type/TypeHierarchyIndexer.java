@@ -18,12 +18,15 @@ package fr.jamgotchian.abcd.core.type;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.TablePrinter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,9 +115,9 @@ public class TypeHierarchyIndexer {
 
     private static class TypeNode {
 
-        private final List<TypeNode> parents = new ArrayList<TypeNode>();
+        private final Set<TypeNode> parents = new LinkedHashSet<TypeNode>();
 
-        private final List<TypeNode> children = new ArrayList<TypeNode>();
+        private final Set<TypeNode> children = new LinkedHashSet<TypeNode>();
 
         private final Type type;
 
@@ -142,11 +145,11 @@ public class TypeHierarchyIndexer {
             parent.addChild(this);
         }
 
-        List<TypeNode> getParents() {
+        Collection<TypeNode> getParents() {
             return parents;
         }
 
-        public List<TypeNode> getChildren() {
+        public Collection<TypeNode> getChildren() {
             return children;
         }
     }
@@ -211,8 +214,14 @@ public class TypeHierarchyIndexer {
         return node;
     }
 
-    private TypeNode createNode(Class<?> clazz) {
-        TypeNode node = createNode(new Type(null, clazz.getName(), 0));
+    private TypeNode createNode(String className) {
+        TypeNode node = createNode(new Type(null, className, 0));
+        referenceTypeIndexes.add(node.getIndex());
+        return node;
+    }
+
+    private TypeNode createNode(String className, int arrayDimension) {
+        TypeNode node = createNode(new Type(null, className, arrayDimension));
         referenceTypeIndexes.add(node.getIndex());
         return node;
     }
@@ -225,29 +234,34 @@ public class TypeHierarchyIndexer {
         return node;
     }
 
-    private void getAncestors(Class<?> clazz, Class<?> parent, LinkedHashMultimap<Class<?>, Class<?>> ancestors) {
+    private void getAncestors(Class<?> clazz, Class<?> parent, LinkedHashMultimap<String, String> ancestors) {
         if (clazz.getSuperclass() != null) {
             getAncestors(clazz.getSuperclass(), clazz, ancestors);
         } else {
             if (clazz.isInterface()) {
-                ancestors.put(Object.class, clazz);
+                ancestors.put(Object.class.getName(), clazz.getName());
             }
         }
         for (Class<?> _interface : clazz.getInterfaces()) {
             getAncestors(_interface, clazz, ancestors);
         }
-        ancestors.put(clazz, parent);
+        ancestors.put(clazz.getName(), parent == null ? null : parent.getName());
+    }
+
+    private Multimap<String, String> getAncestors(String className) throws ClassNotFoundException {
+        Class<?> clazz = Class.forName(className);
+        LinkedHashMultimap<String, String> ancestors = LinkedHashMultimap.create();
+        getAncestors(clazz, null, ancestors);
+        return ancestors;
     }
 
     private void addIndex(String className) {
         try {
-            Class<?> clazz = Class.forName(className);
-            LinkedHashMultimap<Class<?>, Class<?>> ancestors = LinkedHashMultimap.create();
-            getAncestors(clazz, null, ancestors);
-            for (Map.Entry<Class<?>, Class<?>> entry : ancestors.entries()) {
+            Multimap<String, String> ancestors = getAncestors(className);
+            for (Map.Entry<String, String> entry : ancestors.entries()) {
                 createNode(entry.getKey());
             }
-            for (Map.Entry<Class<?>, Class<?>> entry : ancestors.entries()) {
+            for (Map.Entry<String, String> entry : ancestors.entries()) {
                 TypeNode superNode = createNode(entry.getKey());
                 if (entry.getValue() != null) {
                     TypeNode node = createNode(entry.getValue());
@@ -261,8 +275,31 @@ public class TypeHierarchyIndexer {
 
     private void addIndex(PrimitiveType primitiveType, int arrayDimension) {
         TypeNode node = createNode(primitiveType, arrayDimension);
-        TypeNode javaLangObjectNode = createNode(Object.class);
+        // java.lang.Object is a super class of primitive arrays (int[], float[], ...)
+        TypeNode javaLangObjectNode = createNode(Object.class.getName());
         node.addParent(javaLangObjectNode);
+    }
+
+    private void addIndex(String className, int arrayDimension) {
+        try {
+            Multimap<String, String> ancestors = getAncestors(className);
+            for (Map.Entry<String, String> entry : ancestors.entries()) {
+                createNode(entry.getKey(), arrayDimension);
+            }
+            for (Map.Entry<String, String> entry : ancestors.entries()) {
+                TypeNode superNode = createNode(entry.getKey(), arrayDimension);
+                if (entry.getValue() != null) {
+                    TypeNode node = createNode(entry.getValue(), arrayDimension);
+                    node.addParent(superNode);
+                }
+            }
+            // java.lang.Object is a super class of java.lang.Object[]
+            TypeNode javaLangObjectArrayNode = createNode(Object.class.getName(), arrayDimension);
+            TypeNode javaLangObjectNode = createNode(Object.class.getName());
+            javaLangObjectArrayNode.addParent(javaLangObjectNode);
+        } catch (ClassNotFoundException e) {
+            throw new ABCDException(e);
+        }
     }
 
     public void addIndex(JavaType type) {
@@ -273,8 +310,7 @@ public class TypeHierarchyIndexer {
                 if (type.getElementTypeKind() == TypeKind.PRIMITIVE) {
                     addIndex(type.getPrimitiveType(), type.getArrayDimension());
                 } else {
-                    // TODO
-                    throw new ABCDException("TODO");
+                    addIndex(type.getClassName().getQualifiedName(), type.getArrayDimension());
                 }
             } else {
                 addIndex(type.getClassName().getQualifiedName());
