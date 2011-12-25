@@ -1522,6 +1522,23 @@ public class Test {
         double d = 1.2952385285323184823482d;
         System.out.println(d);
     }
+    
+    void testNestedLoop() {
+        for (int i = 0; i < 3; i++) {
+            System.out.println("a");
+            for (int j = 0; j < 3; j++) {
+                System.out.println("c");
+                for (int k = 0; k < 3; k++) {
+                    System.out.println("d");
+                }
+            }
+            System.out.println("b");
+            for (int j = 0; j < 3; j++) {
+                System.out.println("e");
+            }
+            System.out.println("f");
+        }
+    }
 
 //    public static void main(String[] args) {
 //        new Test().testBreakLabel2();
