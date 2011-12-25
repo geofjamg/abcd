@@ -212,7 +212,7 @@ public class IntermediateRepresentationBuilder {
             }
         }
         for (NaturalLoop loop : cfg.getNaturalLoops().values()) {
-            if (loop.getExits().isEmpty()) { // infinite loop
+            if (loop.isInfinite()) {
                 Edge fakeEdge = cfg.addEdge(loop.getHead(), cfg.getExitBlock());
                 fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
                 LOGGER.log(Level.FINEST, "Add fake edge {0}", cfg.toString(fakeEdge));

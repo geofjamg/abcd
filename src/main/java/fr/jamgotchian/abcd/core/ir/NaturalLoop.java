@@ -17,49 +17,26 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class NaturalLoop {
+public interface NaturalLoop {
 
-    private final BasicBlock head;
+    Edge getBackEdge();
 
-    private final BasicBlock tail;
+    BasicBlock getHead();
 
-    private final Set<BasicBlock> body;
+    BasicBlock getTail();
 
-    private final Set<Edge> exits;
+    List<BasicBlock> getBody();
 
-    public NaturalLoop(BasicBlock head, BasicBlock tail, Set<BasicBlock> body) {
-        this.head = head;
-        this.tail = tail;
-        this.body = body;
-        this.exits = new HashSet<Edge>();
-    }
+    Collection<Edge> getExits();
 
-    public BasicBlock getHead() {
-        return head;
-    }
+    void addExit(Edge e);
 
-    public BasicBlock getTail() {
-        return tail;
-    }
-
-    public Set<BasicBlock> getBody() {
-        return body;
-    }
-
-    public Set<Edge> getExits() {
-        return exits;
-    }
-
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "(head=" + head + ", tail=" + tail
-                + ", body=" + body + ")";
-    }
+    boolean isInfinite();
 }
