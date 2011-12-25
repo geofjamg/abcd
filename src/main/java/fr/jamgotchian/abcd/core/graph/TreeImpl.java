@@ -323,6 +323,20 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         nodesPostOrder.add(node);
     }
 
+    @Override
+    public List<N> getNodesPreOrder() {
+        List<N> nodesPreOrder = new ArrayList<N>(nodes.size());
+        visitNodePreOrder(root, nodesPreOrder);
+        return nodesPreOrder;
+    }
+
+    private void visitNodePreOrder(N node, List<N> nodesPreOrder) {
+        nodesPreOrder.add(node);
+        for (N child : getChildren(node)) {
+            visitNodePreOrder(child, nodesPreOrder);
+        }
+    }
+
     private Collection<N> getNodePlusAncestors(N node) {
         List<N> ancestors = new ArrayList<N>(1);
         ancestors.add(node);

@@ -132,6 +132,11 @@ public class Trees {
         }
 
         @Override
+        public List<N> getNodesPreOrder() {
+            return delegate.getNodesPreOrder();
+        }
+
+        @Override
         public N getFirstCommonAncestor(Collection<N> nodes) {
             return delegate.getFirstCommonAncestor(nodes);
         }

@@ -64,6 +64,8 @@ public interface Tree<N, E> extends Iterable<N>, GraphvizDigraph<N, E> {
 
     List<N> getNodesPostOrder();
 
+    List<N> getNodesPreOrder();
+
     N getFirstCommonAncestor(Collection<N> nodes);
 
     void export(Writer writer, String name,
