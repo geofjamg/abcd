@@ -17,23 +17,103 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface NaturalLoop {
+public class NaturalLoop {
 
-    Edge getBackEdge();
+    private final ControlFlowGraph cfg;
 
-    BasicBlock getHead();
+    private final Edge backEdge;
 
-    BasicBlock getTail();
+    private final List<BasicBlock> body;
 
-    List<BasicBlock> getBody();
+    private NaturalLoop parent;
 
-    List<Edge> getExits();
+    private final List<NaturalLoop> children = new ArrayList<NaturalLoop>();
 
-    boolean isInfinite();
+    public NaturalLoop(ControlFlowGraph cfg, Edge backEdge, List<BasicBlock> body) {
+        this.cfg = cfg;
+        this.backEdge = backEdge;
+        this.body = body;
+    }
+
+    public Edge getBackEdge() {
+        return backEdge;
+    }
+
+    public List<BasicBlock> getBody() {
+        return body;
+    }
+
+    public NaturalLoop getParent() {
+        return parent;
+    }
+
+    public void setParent(NaturalLoop parent) {
+        if (this.parent != null) {
+            this.parent.children.remove(this);
+        }
+        this.parent = parent;
+        this.parent.children.add(this);
+    }
+
+    public List<NaturalLoop> getChildren() {
+        return children;
+    }
+
+    public BasicBlock getHead() {
+        return cfg.getEdgeTarget(backEdge);
+    }
+
+    public BasicBlock getTail() {
+        return cfg.getEdgeSource(backEdge);
+    }
+
+    public List<Edge> getExits() {
+        List<Edge> exits = new ArrayList<Edge>(1);
+        for (BasicBlock bb : body) {
+            for (Edge e : cfg.getOutgoingEdgesOf(bb)) {
+                BasicBlock t = cfg.getEdgeTarget(e);
+                if (!body.contains(t)) {
+                    exits.add(e);
+                }
+            }
+        }
+        return exits;
+    }
+
+    public boolean isInfinite() {
+        return getExits().isEmpty();
+    }
+
+    public static String toString(Collection<NaturalLoop> outermostLoops) {
+        StringBuilder builder = new StringBuilder();
+        print(outermostLoops, builder);
+        return builder.toString();
+    }
+
+    public static void print(Collection<NaturalLoop> loops, StringBuilder builder) {
+        print(loops, builder, 0);
+    }
+
+    private static void print(Collection<NaturalLoop> loops, StringBuilder builder, int depth) {
+        for (NaturalLoop loop : loops) {
+            for (int i = 0; i < depth * 4; i++) {
+                builder.append(' ');
+            }
+            builder.append(loop.toString()).append("\n");
+            print(loop.getChildren(), builder, depth+1);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return  "NaturalLoop(head=" + getHead() + ", tail=" + getTail() + ")";
+    }
 }

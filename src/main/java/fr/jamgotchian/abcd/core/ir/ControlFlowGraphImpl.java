@@ -30,7 +30,6 @@ import fr.jamgotchian.abcd.core.graph.Matrix;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
 import fr.jamgotchian.abcd.core.graph.EdgeFactory;
-import fr.jamgotchian.abcd.core.graph.MutableTree;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
 import fr.jamgotchian.abcd.core.util.RangeMap;
@@ -77,7 +76,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private final Multimap<BasicBlock, NaturalLoop> naturalLoops;
 
-    private MutableTree<NaturalLoop, Object> loopTree;
+    private List<NaturalLoop> outermostLoops;
 
     private Tree<BasicBlock, Edge> dfst;
 
@@ -90,44 +89,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     private ExceptionTable exceptionTable;
 
     private static final EdgeFactory<Edge> EDGE_FACTORY = new EdgeFactoryImpl();
-
-    private static class NaturalLoopTreeRoot implements NaturalLoop {
-
-        @Override
-        public Edge getBackEdge() {
-            throw new AssertionError("Not implemented");
-        }
-
-        @Override
-        public BasicBlock getHead() {
-            return null;
-        }
-
-        @Override
-        public BasicBlock getTail() {
-            throw new AssertionError("Not implemented");
-        }
-
-        @Override
-        public List<BasicBlock> getBody() {
-            throw new AssertionError("Not implemented");
-        }
-
-        @Override
-        public List<Edge> getExits() {
-            throw new AssertionError("Not implemented");
-        }
-
-        @Override
-        public boolean isInfinite() {
-            throw new AssertionError("Not implemented");
-        }
-
-        @Override
-        public String toString() {
-            return "Root";
-        }
-    }
 
     public ControlFlowGraphImpl(String name, int instructionCount) {
         this(name, new BasicBlockImpl(Integer.MIN_VALUE, -1, BasicBlockType.ENTRY),
@@ -155,6 +116,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         graph = DirectedGraphs.newDirectedGraph();
         basicBlocks = new RangeMap<Range, BasicBlock>();
         naturalLoops = HashMultimap.create();
+        outermostLoops = new ArrayList<NaturalLoop>();
         addBasicBlock(entryBlock);
         addBasicBlock(exitBlock);
     }
@@ -215,8 +177,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     }
 
     @Override
-    public Tree<NaturalLoop, Object> getLoopTree() {
-        return Trees.unmodifiableTree(loopTree);
+    public Collection<NaturalLoop> getOutermostLoops() {
+        return outermostLoops;
     }
 
     @Override
@@ -539,12 +501,14 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
 
         // build loop tree
-        NaturalLoop root = new NaturalLoopTreeRoot();
-        loopTree = Trees.<NaturalLoop, Object>newTree(root);
-        List<BasicBlock> loopBody = new ArrayList<BasicBlock>(dominatorInfo.getDominatorsTree().getNodesPreOrder());
-        buildLoopTree(root, loopBody, loopTree);
+        outermostLoops.clear();
+        Tree<BasicBlock, Edge> domTree = dominatorInfo.getDominatorsTree();
+        List<BasicBlock> loopBody = new ArrayList<BasicBlock>(domTree.getNodesPreOrder());
+        buildLoopTree(null, loopBody);
 
-        LOGGER.log(Level.FINER, "Loop tree :\n{0}", Trees.toString(loopTree));
+        if (outermostLoops.size() > 0) {
+            LOGGER.log(Level.FINER, "Loop tree :\n{0}", NaturalLoop.toString(outermostLoops));
+        }
     }
 
     void performDepthFirstSearch() {
@@ -737,7 +701,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                             return dominatorInfo.dominates(bb1, bb2) ? -1 : 1;
                         }
                     });
-                    NaturalLoop nl = new NaturalLoopImpl(this, e, body);
+                    NaturalLoop nl = new NaturalLoop(this, e, body);
                     naturalLoops.put(head, nl);
                     e.addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
                     LOGGER.log(Level.FINER, " Found natural loop : {0}", nl);
@@ -758,24 +722,27 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 edge.addAttribute(EdgeAttribute.SELF_LOOP_EDGE);
                 edge.addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
 
-                NaturalLoop nl = new NaturalLoopImpl(this, edge, Collections.singletonList(source));
+                NaturalLoop nl = new NaturalLoop(this, edge, Collections.singletonList(source));
                 naturalLoops.put(nl.getHead(), nl);
                 LOGGER.log(Level.FINER, " Found self loop : {0}", nl);
             }
         }
     }
 
-    private void buildLoopTree(NaturalLoop loop, List<BasicBlock> loopBody,
-                               MutableTree<NaturalLoop, Object> loopTree) {
+    private void buildLoopTree(NaturalLoop parent, List<BasicBlock> loopBody) {
         while (loopBody.size() > 0) {
             BasicBlock bb = loopBody.remove(0);
-            if (bb.equals(loop.getHead())) {
+            if (parent != null && bb.equals(parent.getHead())) {
                 continue;
             }
             Collection<NaturalLoop> children = naturalLoops.get(bb);
             for (NaturalLoop child : children) {
-                loopTree.addNode(loop, child, new Object());
-                buildLoopTree(child, new ArrayList<BasicBlock>(child.getBody()), loopTree);
+                if (parent == null) {
+                    outermostLoops.add(child);
+                } else {
+                    child.setParent(parent);
+                }
+                buildLoopTree(child, new ArrayList<BasicBlock>(child.getBody()));
                 loopBody.removeAll(child.getBody());
             }
         }

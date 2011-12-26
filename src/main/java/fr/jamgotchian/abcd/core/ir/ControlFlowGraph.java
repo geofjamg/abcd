@@ -113,7 +113,7 @@ public interface ControlFlowGraph {
 
     Multimap<BasicBlock, NaturalLoop> getNaturalLoops();
 
-    Tree<NaturalLoop, Object> getLoopTree();
+    Collection<NaturalLoop> getOutermostLoops();
 
     Collection<BasicBlock> getNonEmptyBasicBlocks();
 
