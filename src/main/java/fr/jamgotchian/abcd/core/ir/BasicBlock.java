@@ -53,9 +53,9 @@ public interface BasicBlock extends Orderable {
 
     void setOutputRegisters(VariableRegisters outputRegisters);
 
-    Region getParent();
+    Region getRegion();
 
-    void setParent(Region region);
+    void setRegion(Region region);
 
     void putProperty(BasicBlockPropertyName name, Object value);
 

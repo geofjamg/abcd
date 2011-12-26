@@ -182,7 +182,7 @@ public class RPST {
                      LOGGER.log(Level.FINEST, "Parent of region {0} is {1}",
                             new Object[] {lastRegion, newRegion});
                 } else {
-                    entry.setParent(newRegion);
+                    entry.setRegion(newRegion);
                     LOGGER.log(Level.FINEST, "Parent of BB {0} is {1}",
                             new Object[] {entry, newRegion});
                 }
@@ -226,7 +226,7 @@ public class RPST {
         } else {
             LOGGER.log(Level.FINEST, "Parent of BB {0} is {1}",
                     new Object[] {bb, newRegion});
-            bb.setParent(region);
+            bb.setRegion(region);
             bb2region.put(bb, region);
         }
         for (BasicBlock c : domInfo.getDominatorsTree().getChildren(bb)) {
@@ -303,7 +303,7 @@ public class RPST {
     private void build() {
         // reset basic blocks parent
         for (BasicBlock bb : cfg.getBasicBlocks()) {
-            bb.setParent(null);
+            bb.setRegion(null);
         }
 
         // find canonical regions
@@ -316,9 +316,9 @@ public class RPST {
 
         // insert dummy region for each basic block
         for (BasicBlock bb : cfg.getBasicBlocks()) {
-            Region oldParent = bb.getParent();
+            Region oldParent = bb.getRegion();
             Region newParent = new Region(bb, bb, ParentType.BASIC_BLOCK);
-            bb.setParent(newParent);
+            bb.setRegion(newParent);
             newParent.setParent(oldParent);
         }
 

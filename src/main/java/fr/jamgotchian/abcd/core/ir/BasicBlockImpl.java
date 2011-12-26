@@ -44,7 +44,7 @@ public class BasicBlockImpl implements BasicBlock {
 
     private VariableRegisters outputRegisters;
 
-    private Region parent;
+    private Region region;
 
     private Map<BasicBlockPropertyName, Object> properties;
 
@@ -143,13 +143,13 @@ public class BasicBlockImpl implements BasicBlock {
     }
 
     @Override
-    public Region getParent() {
-        return parent;
+    public Region getRegion() {
+        return region;
     }
 
     @Override
-    public void setParent(Region parent) {
-        this.parent = parent;
+    public void setRegion(Region region) {
+        this.region = region;
     }
 
     @Override
