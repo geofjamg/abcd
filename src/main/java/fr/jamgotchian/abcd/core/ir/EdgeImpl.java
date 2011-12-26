@@ -42,45 +42,45 @@ class EdgeImpl implements Edge {
         attributes = EnumSet.copyOf(other.attributes);
     }
 
+    @Override
     public EdgeCategory getCategory() {
         return category;
     }
 
+    @Override
     public void setCategory(EdgeCategory category) {
         this.category = category;
     }
 
+    @Override
     public Object getValue() {
         return value;
     }
 
+    @Override
     public void setValue(Object value) {
         this.value = value;
     }
 
+    @Override
     public void addAttribute(EdgeAttribute attr) {
         attributes.add(attr);
     }
 
+    @Override
     public boolean hasAttribute(EdgeAttribute attr) {
         return attributes.contains(attr);
     }
 
+    @Override
     public void removeAttribute(EdgeAttribute attr) {
         attributes.remove(attr);
     }
 
+    @Override
     public void resetAttributes() {
         attributes.clear();
     }
-
-    public void resetState() {
-        category = null;
-        attributes.remove(EdgeAttribute.LOOP_BACK_EDGE);
-        attributes.remove(EdgeAttribute.LOOP_EXIT_EDGE);
-        attributes.remove(EdgeAttribute.SELF_LOOP_EDGE);
-    }
-
     @Override
     public Edge clone() {
         return new EdgeImpl(this);

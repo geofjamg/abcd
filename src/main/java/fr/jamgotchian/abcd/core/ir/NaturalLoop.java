@@ -17,7 +17,6 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -34,9 +33,7 @@ public interface NaturalLoop {
 
     List<BasicBlock> getBody();
 
-    Collection<Edge> getExits();
-
-    void addExit(Edge e);
+    List<Edge> getExits();
 
     boolean isInfinite();
 }

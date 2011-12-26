@@ -17,10 +17,8 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -28,22 +26,16 @@ import java.util.Set;
  */
 public class NaturalLoopImpl implements NaturalLoop {
 
+    private final ControlFlowGraph cfg;
+
     private final Edge backEdge;
-
-    private final BasicBlock head;
-
-    private final BasicBlock tail;
 
     private final List<BasicBlock> body;
 
-    private final Set<Edge> exits;
-
-    public NaturalLoopImpl(Edge backEdge, BasicBlock head, BasicBlock tail, List<BasicBlock> body) {
+    public NaturalLoopImpl(ControlFlowGraph cfg, Edge backEdge, List<BasicBlock> body) {
+        this.cfg = cfg;
         this.backEdge = backEdge;
-        this.head = head;
-        this.tail = tail;
         this.body = body;
-        this.exits = new HashSet<Edge>();
     }
 
     @Override
@@ -53,12 +45,12 @@ public class NaturalLoopImpl implements NaturalLoop {
 
     @Override
     public BasicBlock getHead() {
-        return head;
+        return cfg.getEdgeTarget(backEdge);
     }
 
     @Override
     public BasicBlock getTail() {
-        return tail;
+        return cfg.getEdgeSource(backEdge);
     }
 
     @Override
@@ -67,22 +59,26 @@ public class NaturalLoopImpl implements NaturalLoop {
     }
 
     @Override
-    public Collection<Edge> getExits() {
+    public List<Edge> getExits() {
+        List<Edge> exits = new ArrayList<Edge>(1);
+        for (BasicBlock bb : body) {
+            for (Edge e : cfg.getOutgoingEdgesOf(bb)) {
+                BasicBlock t = cfg.getEdgeTarget(e);
+                if (!body.contains(t)) {
+                    exits.add(e);
+                }
+            }
+        }
         return exits;
     }
 
     @Override
-    public void addExit(Edge e) {
-        exits.add(e);
-    }
-
-    @Override
     public boolean isInfinite() {
-        return exits.isEmpty();
+        return getExits().isEmpty();
     }
 
     @Override
     public String toString() {
-        return  "NaturalLoop(head=" + head + ", tail=" + tail + ")";
+        return  "NaturalLoop(head=" + getHead() + ", tail=" + getTail() + ")";
     }
 }

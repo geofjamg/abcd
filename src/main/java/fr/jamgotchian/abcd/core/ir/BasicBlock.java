@@ -33,10 +33,6 @@ public interface BasicBlock extends Orderable {
 
     void setType(BasicBlockType type);
 
-    int getLoopLevel();
-
-    void setLoopLevel(int loopLevel);
-
     IRInstSeq getInstructions();
 
     void setInstructions(IRInstSeq instructions);
@@ -56,8 +52,6 @@ public interface BasicBlock extends Orderable {
     VariableRegisters getOutputRegisters();
 
     void setOutputRegisters(VariableRegisters outputRegisters);
-
-    void resetState();
 
     Region getParent();
 

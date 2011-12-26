@@ -34,8 +34,6 @@ public class BasicBlockImpl implements BasicBlock {
 
     private int order;
 
-    private int loopLevel;
-
     private IRInstSeq instructions;
 
     private VariableStack inputStack;
@@ -54,7 +52,6 @@ public class BasicBlockImpl implements BasicBlock {
         this.range = range;
         this.type = type;
         order = -1;
-        loopLevel = 0;
         properties = new EnumMap<BasicBlockPropertyName, Object>(BasicBlockPropertyName.class);
     }
 
@@ -93,16 +90,6 @@ public class BasicBlockImpl implements BasicBlock {
     @Override
     public int getOrder() {
         return order;
-    }
-
-    @Override
-    public int getLoopLevel() {
-        return loopLevel;
-    }
-
-    @Override
-    public void setLoopLevel(int loopLevel) {
-        this.loopLevel = loopLevel;
     }
 
     @Override
@@ -153,11 +140,6 @@ public class BasicBlockImpl implements BasicBlock {
     @Override
     public void setOutputRegisters(VariableRegisters outputRegisters) {
         this.outputRegisters = outputRegisters;
-    }
-
-    @Override
-    public void resetState() {
-        loopLevel = 0;
     }
 
     @Override

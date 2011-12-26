@@ -77,6 +77,8 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private final Multimap<BasicBlock, NaturalLoop> naturalLoops;
 
+    private MutableTree<NaturalLoop, Object> loopTree;
+
     private Tree<BasicBlock, Edge> dfst;
 
     private DominatorInfo<BasicBlock, Edge> dominatorInfo;
@@ -112,12 +114,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
         }
 
         @Override
-        public Collection<Edge> getExits() {
-            throw new AssertionError("Not implemented");
-        }
-
-        @Override
-        public void addExit(Edge e) {
+        public List<Edge> getExits() {
             throw new AssertionError("Not implemented");
         }
 
@@ -215,6 +212,11 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     @Override
     public Multimap<BasicBlock, NaturalLoop> getNaturalLoops() {
         return naturalLoops;
+    }
+
+    @Override
+    public Tree<NaturalLoop, Object> getLoopTree() {
+        return Trees.unmodifiableTree(loopTree);
     }
 
     @Override
@@ -514,16 +516,35 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
     @Override
     public void updateLoopInfo() {
         LOGGER.log(Level.FINER, "Update loop info");
+
         performDepthFirstSearch();
+
+        // reset edge loop attributes
         for (Edge e : getEdges()) {
-            e.resetState();
+            e.setCategory(null);
+            e.removeAttribute(EdgeAttribute.LOOP_BACK_EDGE);
+            e.removeAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
+            e.removeAttribute(EdgeAttribute.SELF_LOOP_EDGE);
         }
-        for (BasicBlock bb : getBasicBlocks()) {
-            bb.resetState();
-        }
-        analyseEdgeCategory();
+
+        // detect natural loops
         analyseNaturalLoops();
-        analyseLoopLevel();
+
+        // tag loop exit edges
+        for (NaturalLoop nl : naturalLoops.values()) {
+            for (Edge exitEdge : nl.getExits()) {
+                LOGGER.log(Level.FINEST, "Loop exit edge {0}", graph.toString(exitEdge));
+                exitEdge.addAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
+            }
+        }
+
+        // build loop tree
+        NaturalLoop root = new NaturalLoopTreeRoot();
+        loopTree = Trees.<NaturalLoop, Object>newTree(root);
+        List<BasicBlock> loopBody = new ArrayList<BasicBlock>(dominatorInfo.getDominatorsTree().getNodesPreOrder());
+        buildLoopTree(root, loopBody, loopTree);
+
+        LOGGER.log(Level.FINER, "Loop tree :\n{0}", Trees.toString(loopTree));
     }
 
     void performDepthFirstSearch() {
@@ -690,12 +711,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 e.setCategory(EdgeCategory.CROSS);
             }
 
-            // self loop
-            if (source.equals(target)) {
-                e.addAttribute(EdgeAttribute.SELF_LOOP_EDGE);
-                e.addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
-            }
-
             LOGGER.log(Level.FINEST, "Edge Category of {0} : {1}",
                     new Object[] {graph.toString(e), e.getCategory()});
         }
@@ -703,10 +718,11 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
     private void analyseNaturalLoops() {
         naturalLoops.clear();
+
+        analyseEdgeCategory();
         for (Edge e : graph.getEdges()) {
             switch (e.getCategory()) {
                 case BACK: {
-                    BasicBlock tail = graph.getEdgeSource(e);
                     BasicBlock head = graph.getEdgeTarget(e);
                     BasicBlock v = graph.getEdgeSource(e);
                     Set<BasicBlock> visited = new HashSet<BasicBlock>();
@@ -721,7 +737,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                             return dominatorInfo.dominates(bb1, bb2) ? -1 : 1;
                         }
                     });
-                    NaturalLoop nl = new NaturalLoopImpl(e, head, tail, body);
+                    NaturalLoop nl = new NaturalLoopImpl(this, e, body);
                     naturalLoops.put(head, nl);
                     e.addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
                     LOGGER.log(Level.FINER, " Found natural loop : {0}", nl);
@@ -731,6 +747,20 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 case RETREATING:
                     LOGGER.warning("Irreducible control flow detected");
                     break;
+            }
+        }
+
+        // self loops
+        for (Edge edge : graph.getEdges()) {
+            BasicBlock source = graph.getEdgeSource(edge);
+            BasicBlock target = graph.getEdgeTarget(edge);
+            if (source.equals(target)) {
+                edge.addAttribute(EdgeAttribute.SELF_LOOP_EDGE);
+                edge.addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
+
+                NaturalLoop nl = new NaturalLoopImpl(this, edge, Collections.singletonList(source));
+                naturalLoops.put(nl.getHead(), nl);
+                LOGGER.log(Level.FINER, " Found self loop : {0}", nl);
             }
         }
     }
@@ -749,56 +779,6 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
                 loopBody.removeAll(child.getBody());
             }
         }
-    }
-
-    private void analyseLoopLevel() {
-        // from outermost to innermost loops
-        for (BasicBlock loopHead : dfst.getNodes()) {
-            for (NaturalLoop nl : naturalLoops.get(loopHead)) {
-                // increase loop level for all blocks of the loop
-                for (BasicBlock block : nl.getBody()) {
-                    block.setLoopLevel(block.getLoopLevel()+1);
-                }
-            }
-        }
-
-        // self loop
-        for (Edge edge : graph.getEdges()) {
-            if (edge.hasAttribute(EdgeAttribute.SELF_LOOP_EDGE)) {
-                BasicBlock block = graph.getEdgeSource(edge);
-
-                NaturalLoop nl = new NaturalLoopImpl(edge, block, block, Collections.singletonList(block));
-                naturalLoops.put(nl.getHead(), nl);
-                LOGGER.log(Level.FINER, " Found self loop : {0}", nl);
-
-                block.setLoopLevel(block.getLoopLevel()+1);
-            }
-        }
-
-        for (BasicBlock block : dfst.getNodes()) {
-            LOGGER.log(Level.FINEST, "Loop level of {0} : {1}",
-                    new Object[] {block, block.getLoopLevel()});
-        }
-
-        for (NaturalLoop nl : naturalLoops.values()) {
-            for (BasicBlock bb : nl.getBody()) {
-                for (Edge e : graph.getOutgoingEdgesOf(bb)) {
-                    BasicBlock t = graph.getEdgeTarget(e);
-                    if (!nl.getBody().contains(t)) {
-                        LOGGER.log(Level.FINEST, "Loop exit edge {0}", graph.toString(e));
-                        e.addAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
-                        nl.addExit(e);
-                    }
-                }
-            }
-        }
-
-        NaturalLoop root = new NaturalLoopTreeRoot();
-        MutableTree<NaturalLoop, Object> loopTree = Trees.<NaturalLoop, Object>newTree(root);
-        List<BasicBlock> loopBody = new ArrayList<BasicBlock>(dominatorInfo.getDominatorsTree().getNodesPreOrder());
-        buildLoopTree(root, loopBody, loopTree);
-
-        LOGGER.log(Level.FINER, "Loop tree :\n{0}", Trees.toString(loopTree));
     }
 
     @Override

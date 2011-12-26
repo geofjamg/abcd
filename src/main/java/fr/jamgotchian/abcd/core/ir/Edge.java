@@ -39,7 +39,5 @@ public interface Edge {
 
     void resetAttributes();
 
-    void resetState();
-
     Edge clone();
 }
