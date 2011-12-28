@@ -56,6 +56,8 @@ import fr.jamgotchian.abcd.core.util.Exceptions;
 import fr.jamgotchian.abcd.core.util.TablePrinter;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -346,12 +348,14 @@ public class ABCDContext {
                 }
 
                 ABCDDataSource dataSrc = null;
+                ClassLoader classLoader = null;
                 if (line.hasOption("class")) {
                     String className = line.getOptionValue("class");
                     if (line.hasOption("classdir")) {
                         File classDir = new File(line.getOptionValue("classdir"));
                         checkDir(classDir);
                         dataSrc = new ClassFileDataSource(classDir, className);
+                        classLoader = new URLClassLoader(new URL[] {classDir.toURI().toURL()});
                     } else {
                         printError("classdir option is mandatory with class option");
                     }
@@ -359,10 +363,12 @@ public class ABCDContext {
                     File jarFile = new File(line.getOptionValue("jar"));
                     checkFile(jarFile);
                     dataSrc = new JarFileDataSource(new JarFile(jarFile));
+                    classLoader = new URLClassLoader(new URL[] {jarFile.toURI().toURL()});
                 } else { // line.hasOption("dex")
                     File dexFile = new File(line.getOptionValue("dex"));
                     checkFile(dexFile);
                     dataSrc = new DexFileDataSource(dexFile);
+                    classLoader = new URLClassLoader(new URL[] {dexFile.toURI().toURL()});
                 }
 
                 ABCDPreferences prefs = new ABCDPreferencesImpl();
@@ -370,8 +376,7 @@ public class ABCDContext {
                     prefs.setUseLocalVariableTable(true);
                 }
 
-                new ABCDContext().decompile(dataSrc, writer, prefs,
-                                            ABCDContext.class.getClassLoader());
+                new ABCDContext().decompile(dataSrc, writer, prefs, classLoader);
             }
             catch(ParseException e) {
                 printError(e.getMessage());
