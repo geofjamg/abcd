@@ -26,6 +26,7 @@ import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.code.TextCodeWriter;
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.common.ABCDPreferences;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,8 +46,11 @@ public class DefaultABCDWriter implements ABCDWriter {
 
     private final File outDir;
 
-    public DefaultABCDWriter(File outDir) {
+    private final ABCDPreferences preferences;
+
+    public DefaultABCDWriter(File outDir, ABCDPreferences preferences) {
         this.outDir = outDir;
+        this.preferences = preferences;
         if (!outDir.exists()) {
             throw new ABCDException(outDir + " does not exist");
         }
@@ -80,7 +84,7 @@ public class DefaultABCDWriter implements ABCDWriter {
             Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
             try {
                 CodeWriter codeWriter = new TextCodeWriter(writer, 4);
-                compilUnit.accept(new JavaCompilationUnitWriter(codeWriter), null);
+                compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, preferences), null);
             } finally {
                 writer.close();
             }

@@ -23,6 +23,7 @@ import fr.jamgotchian.abcd.core.ast.CompilationUnitVisitor;
 import fr.jamgotchian.abcd.core.ast.Package;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
+import fr.jamgotchian.abcd.core.common.ABCDPreferences;
 import fr.jamgotchian.abcd.core.common.ABCDUtil;
 
 /**
@@ -33,13 +34,17 @@ public class JavaCompilationUnitWriter implements CompilationUnitVisitor<Void, V
 
     private final CodeWriter writer;
 
+    private final ABCDPreferences preferences;
+
     private final JavaClassWriter classVisitor;
 
-    public JavaCompilationUnitWriter(CodeWriter writer) {
+    public JavaCompilationUnitWriter(CodeWriter writer, ABCDPreferences preferences) {
         this.writer = writer;
+        this.preferences = preferences;
         classVisitor = new JavaClassWriter(writer);
     }
 
+    @Override
     public Void visit(CompilationUnit compilUnit, Void arg) {
 
         // write ABCD banner
@@ -48,6 +53,8 @@ public class JavaCompilationUnitWriter implements CompilationUnitVisitor<Void, V
                 .write(ABCDUtil.VERSION).newLine()
                 .writeSpace().write("*").writeSpace().write("ABCD home page : ")
                 .write(ABCDUtil.HOME_PAGE).newLine()
+                .writeSpace().write("*").writeSpace().write("Options : ")
+                .write(preferences.writeToString()).newLine()
                 .writeSpace().write("*/").newLine().newLine();
 
         if (compilUnit.getPackage() != null) {
@@ -65,11 +72,14 @@ public class JavaCompilationUnitWriter implements CompilationUnitVisitor<Void, V
         return null;
     }
 
+    @Override
     public Void visit(Package _package, Void arg) {
-        writer.writeKeyword("package").writeSpace().write(_package.getName()).write(";").newLine();
+        writer.writeKeyword("package").writeSpace().write(_package.getName())
+                .write(";").newLine();
         return null;
     }
 
+    @Override
     public Void visit(ImportManager importManager, Void arg) {
         for (String className : importManager.getImports()) {
             writer.writeKeyword("import").writeSpace().write(className)

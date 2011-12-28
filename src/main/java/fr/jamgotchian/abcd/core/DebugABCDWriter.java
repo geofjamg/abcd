@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.common.ABCDPreferences;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.RangeGraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
@@ -47,8 +48,8 @@ public class DebugABCDWriter extends DefaultABCDWriter {
 
     private final File debugDir;
 
-    public DebugABCDWriter(File outDir, File debugDir) {
-        super(outDir);
+    public DebugABCDWriter(File outDir, ABCDPreferences preferences, File debugDir) {
+        super(outDir, preferences);
         if (!debugDir.exists()) {
             throw new ABCDException(debugDir + " does not exist");
         }

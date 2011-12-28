@@ -138,13 +138,21 @@ public class Main {
                 File outDir = new File(line.getOptionValue("d"));
                 checkDir(outDir);
 
+                ABCDPreferences prefs = new ABCDPreferencesImpl();
+                if (line.hasOption("ulvt")) {
+                    prefs.setUseLocalVariableTable(true);
+                }
+                if (line.hasOption("alvt")) {
+                    prefs.setAnalyseLocalVariableType(true);
+                }
+
                 ABCDWriter writer = null;
                 if (line.hasOption("debug")) {
                     File debugDir = new File(line.getOptionValue("debug"));
                     checkDir(debugDir);
-                    writer = new DebugABCDWriter(outDir, debugDir);
+                    writer = new DebugABCDWriter(outDir, prefs, debugDir);
                 } else {
-                    writer = new DefaultABCDWriter(outDir);
+                    writer = new DefaultABCDWriter(outDir, prefs);
                 }
 
                 ABCDDataSource dataSrc = null;
@@ -169,14 +177,6 @@ public class Main {
                     checkFile(dexFile);
                     dataSrc = new DexFileDataSource(dexFile);
                     classLoader = new URLClassLoader(new URL[] {dexFile.toURI().toURL()});
-                }
-
-                ABCDPreferences prefs = new ABCDPreferencesImpl();
-                if (line.hasOption("ulvt")) {
-                    prefs.setUseLocalVariableTable(true);
-                }
-                if (line.hasOption("alvt")) {
-                    prefs.setAnalyseLocalVariableType(true);
                 }
 
                 new ABCDContext().decompile(dataSrc, writer, prefs, classLoader);

@@ -29,4 +29,6 @@ public interface ABCDPreferences {
     boolean isAnalyseLocalVariableType();
 
     void setAnalyseLocalVariableType(boolean analyseLocalVariableType);
+
+    String writeToString();
 }
