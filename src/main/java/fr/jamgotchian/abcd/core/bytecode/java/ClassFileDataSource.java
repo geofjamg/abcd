@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -47,11 +48,9 @@ public class ClassFileDataSource implements ABCDDataSource {
 
     private final String className;
 
-    private class InnerClassChecker extends EmptyVisitor {
+    private static class InnerClassChecker extends EmptyVisitor {
 
         private final String outerClassName;
-
-        private String innerClassName;
 
         private boolean innerClass = false;
 
@@ -61,12 +60,6 @@ public class ClassFileDataSource implements ABCDDataSource {
 
         public boolean isInnerClass() {
             return innerClass;
-        }
-
-        @Override
-        public void visit(int version, int access, String name, String signature,
-                String superName, String[] interfaces) {
-            innerClassName = name.replace('/', '.');
         }
 
         @Override
@@ -105,13 +98,23 @@ public class ClassFileDataSource implements ABCDDataSource {
             @Override
             public boolean accept(File pathname) {
                 if (pathname.getName().endsWith(".class")) {
+                    InputStream is = null;
                     try {
-                        ClassReader cr = new ClassReader(new FileInputStream(pathname));
+                        is = new FileInputStream(pathname);
+                        ClassReader cr = new ClassReader(is);
                         InnerClassChecker checker = new InnerClassChecker(className);
                         cr.accept(checker, 0);
                         return checker.isInnerClass();
                     } catch (IOException e) {
                         LOGGER.log(Level.SEVERE, e.toString(), e);
+                    } finally {
+                        if (is != null) {
+                            try {
+                                is.close();
+                            } catch (IOException e) {
+                                LOGGER.log(Level.SEVERE, e.toString(), e);
+                            }
+                        }
                     }
                 }
                 return false;

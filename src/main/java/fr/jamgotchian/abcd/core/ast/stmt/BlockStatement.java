@@ -27,16 +27,11 @@ import java.util.Iterator;
 public class BlockStatement extends AbstractStatement
                               implements Iterable<Statement> {
 
-    private static volatile int ID_GENERATOR = 0;
-
-    private int id;
-
     private Statement first;
 
     private Statement last;
 
     public BlockStatement() {
-        id = ID_GENERATOR++;
     }
 
     public BlockStatement(Iterable<Statement> stmts) {

@@ -46,21 +46,21 @@ public class LocalVariableTypeAnalyser {
     private static final Logger LOGGER
             = Logger.getLogger(LocalVariableTypeAnalyser.class.getName());
 
-    private static JavaType[] PRIMITIVE_TYPES = { JavaType.BOOLEAN,
-                                                  JavaType.CHAR,
-                                                  JavaType.BYTE,
-                                                  JavaType.SHORT,
-                                                  JavaType.INT,
-                                                  JavaType.LONG,
-                                                  JavaType.FLOAT,
-                                                  JavaType.DOUBLE };
-
-    public static final JavaType[] ARITHMETIC_TYPES = { JavaType.INT,
-                                                        JavaType.LONG,
+    private static final JavaType[] PRIMITIVE_TYPES = { JavaType.BOOLEAN,
+                                                        JavaType.CHAR,
                                                         JavaType.BYTE,
                                                         JavaType.SHORT,
+                                                        JavaType.INT,
+                                                        JavaType.LONG,
                                                         JavaType.FLOAT,
                                                         JavaType.DOUBLE };
+
+    private static final JavaType[] ARITHMETIC_TYPES = { JavaType.INT,
+                                                         JavaType.LONG,
+                                                         JavaType.BYTE,
+                                                         JavaType.SHORT,
+                                                         JavaType.FLOAT,
+                                                         JavaType.DOUBLE };
 
     private enum ReferenceConstraintType {
         SUPER_CLASS_CONSTRAINT,
