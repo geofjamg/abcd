@@ -32,7 +32,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>fr.jamgotchian.abcd.core.ABCDContext</mainClass>
+                            <mainClass>fr.jamgotchian.abcd.core.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

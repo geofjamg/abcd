@@ -31,9 +31,6 @@ import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
 import fr.jamgotchian.abcd.core.bytecode.ABCDDataSource;
 import fr.jamgotchian.abcd.core.bytecode.ClassFactory;
-import fr.jamgotchian.abcd.core.bytecode.dalvik.DexFileDataSource;
-import fr.jamgotchian.abcd.core.bytecode.java.ClassFileDataSource;
-import fr.jamgotchian.abcd.core.bytecode.java.JarFileDataSource;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
@@ -54,27 +51,14 @@ import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
 import fr.jamgotchian.abcd.core.util.TablePrinter;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 
 /**
  *
@@ -86,51 +70,6 @@ public class ABCDContext {
 
     private static List<Refactorer> REFACTORERS = Collections.unmodifiableList(
             Arrays.<Refactorer>asList(new ForLoopRefactorer()));
-
-    private static final Options OPTIONS;
-
-    static {
-        Option classFile = OptionBuilder.withArgName("file")
-                            .hasArg()
-                            .withDescription("to decompile a class file")
-                            .create("class");
-        Option jarFile = OptionBuilder.withArgName("file")
-                            .hasArg()
-                            .withDescription("to decompile a jar file")
-                            .create("jar");
-        Option dexFile = OptionBuilder.withArgName("file")
-                            .hasArg()
-                            .withDescription("to decompile a dex file")
-                            .create("dex");
-        OptionGroup file = new OptionGroup();
-        file.addOption(classFile);
-        file.addOption(jarFile);
-        file.addOption(dexFile);
-        file.setRequired(true);
-        Option outputDir = OptionBuilder.withArgName("dir")
-                            .hasArg()
-                            .withDescription("directory where to write java sources")
-                            .isRequired(true)
-                            .create("d");
-        Option classDir = OptionBuilder.withArgName("dir")
-                            .hasArg()
-                            .withDescription("directory where to find classes")
-                            .create("classdir");
-        Option debugDir = OptionBuilder.withArgName("dir")
-                            .hasArg()
-                            .withDescription("directory where to write analysis data")
-                            .create("debug");
-        Option useLvtDir = OptionBuilder.hasArg(false)
-                            .isRequired(false)
-                            .withDescription("use local variable table")
-                            .create("uselvt");
-        OPTIONS = new Options();
-        OPTIONS.addOptionGroup(file)
-                .addOption(outputDir)
-                .addOption(classDir)
-                .addOption(debugDir)
-                .addOption(useLvtDir);
-    }
 
     public ABCDContext() {
     }
@@ -299,90 +238,5 @@ public class ABCDContext {
         }
 
         return _class;
-    }
-
-    private static void printUsage() {
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("abcd", OPTIONS);
-        System.exit(-1);
-    }
-
-    private static void printError(String msg) {
-        System.err.println(msg);
-        printUsage();
-    }
-
-    private static void checkDir(File dir) {
-        if (!dir.exists()) {
-            printError(dir + " does not exist");
-        }
-        if (!dir.isDirectory()) {
-            printError(dir + " is not a directory");
-        }
-    }
-
-    private static void checkFile(File file) {
-        if (!file.exists()) {
-            printError(file + " does not exist");
-        }
-        if (!file.isFile()) {
-            printError(file + " is not a file");
-        }
-    }
-
-    public static void main(String[] args) {
-        try {
-            CommandLineParser parser = new GnuParser();
-            try {
-                CommandLine line = parser.parse(OPTIONS, args);
-                File outDir = new File(line.getOptionValue("d"));
-                checkDir(outDir);
-
-                ABCDWriter writer = null;
-                if (line.hasOption("debug")) {
-                    File debugDir = new File(line.getOptionValue("debug"));
-                    checkDir(debugDir);
-                    writer = new DebugABCDWriter(outDir, debugDir);
-                } else {
-                    writer = new DefaultABCDWriter(outDir);
-                }
-
-                ABCDDataSource dataSrc = null;
-                ClassLoader classLoader = null;
-                if (line.hasOption("class")) {
-                    String className = line.getOptionValue("class");
-                    if (line.hasOption("classdir")) {
-                        File classDir = new File(line.getOptionValue("classdir"));
-                        checkDir(classDir);
-                        dataSrc = new ClassFileDataSource(classDir, className);
-                        classLoader = new URLClassLoader(new URL[] {classDir.toURI().toURL()});
-                    } else {
-                        printError("classdir option is mandatory with class option");
-                    }
-                } else if (line.hasOption("jar")) {
-                    File jarFile = new File(line.getOptionValue("jar"));
-                    checkFile(jarFile);
-                    dataSrc = new JarFileDataSource(new JarFile(jarFile));
-                    classLoader = new URLClassLoader(new URL[] {jarFile.toURI().toURL()});
-                } else { // line.hasOption("dex")
-                    File dexFile = new File(line.getOptionValue("dex"));
-                    checkFile(dexFile);
-                    dataSrc = new DexFileDataSource(dexFile);
-                    classLoader = new URLClassLoader(new URL[] {dexFile.toURI().toURL()});
-                }
-
-                ABCDPreferences prefs = new ABCDPreferencesImpl();
-                if (line.hasOption("uselvt")) {
-                    prefs.setUseLocalVariableTable(true);
-                }
-
-                new ABCDContext().decompile(dataSrc, writer, prefs, classLoader);
-            }
-            catch(ParseException e) {
-                printError(e.getMessage());
-            }
-        } catch (Throwable exc) {
-            LOGGER.log(Level.SEVERE, exc.toString(), exc);
-        }
     }
 }
