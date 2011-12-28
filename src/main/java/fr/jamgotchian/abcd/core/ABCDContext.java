@@ -87,7 +87,7 @@ public class ABCDContext {
         for (ClassFactory classFactory : dataSrc.createClassFactories()) {
             ImportManager importManager = new ImportManager();
             Class _class = decompileClass(classFactory, importManager,
-                                          nameProviderFactory, writer,
+                                          nameProviderFactory, writer, prefs,
                                           classLoader, summary);
 
             CompilationUnit compilUnit = new CompilationUnit(_class.getPackage(), importManager);
@@ -115,8 +115,8 @@ public class ABCDContext {
 
     private Class decompileClass(ClassFactory classFactory, ImportManager importManager,
                                  VariableNameProviderFactory nameProviderFactory,
-                                 ABCDWriter writer, ClassLoader classLoader,
-                                 Summary summary) throws IOException {
+                                 ABCDWriter writer, ABCDPreferences prefs,
+                                 ClassLoader classLoader, Summary summary) throws IOException {
         Class _class = classFactory.createClass(importManager);
 
         ClassName thisClassName = importManager.newClassName(_class.getQualifiedName());
@@ -171,8 +171,10 @@ public class ABCDContext {
                                                             thisType,
                                                             method.getReturnType(),
                                                             method.getArguments(),
+                                                            writer,
+                                                            prefs,
                                                             classLoader)
-                        .build(writer);
+                        .build();
 
                 ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Analyse regions of {0}",
                         '=', methodSignature);

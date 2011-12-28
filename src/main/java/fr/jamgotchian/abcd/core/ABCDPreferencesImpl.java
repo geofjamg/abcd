@@ -26,11 +26,25 @@ class ABCDPreferencesImpl implements ABCDPreferences {
 
     private boolean useLocalVariableTable = false;
 
+    private boolean analyseLocalVariableType = true;
+
+    @Override
     public boolean isUseLocalVariableTable() {
         return useLocalVariableTable;
     }
 
+    @Override
     public void setUseLocalVariableTable(boolean useLocalVariableTable) {
         this.useLocalVariableTable = useLocalVariableTable;
+    }
+
+    @Override
+    public boolean isAnalyseLocalVariableType() {
+        return analyseLocalVariableType;
+    }
+
+    @Override
+    public void setAnalyseLocalVariableType(boolean analyseLocalVariableType) {
+        this.analyseLocalVariableType = analyseLocalVariableType;
     }
 }

@@ -20,6 +20,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.common.ABCDPreferences;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
@@ -66,6 +67,10 @@ public class IntermediateRepresentationBuilder {
 
     private final List<Variable> methodArgs;
 
+    private final ABCDWriter writer;
+
+    private final ABCDPreferences preferences;
+
     private final ClassLoader classLoader;
 
     private ControlFlowGraph cfg;
@@ -79,6 +84,8 @@ public class IntermediateRepresentationBuilder {
                                              JavaType thisType,
                                              JavaType methodReturnType,
                                              List<Variable> methodArgs,
+                                             ABCDWriter writer,
+                                             ABCDPreferences preferences,
                                              ClassLoader classLoader) {
         this.cfgBuilder = cfgBuilder;
         this.instBuilder = instBuilder;
@@ -89,6 +96,8 @@ public class IntermediateRepresentationBuilder {
         this.thisType = thisType;
         this.methodReturnType = methodReturnType;
         this.methodArgs = methodArgs;
+        this.writer = writer;
+        this.preferences = preferences;
         this.classLoader = classLoader;
     }
 
@@ -282,7 +291,7 @@ public class IntermediateRepresentationBuilder {
         }
     }
 
-    public ControlFlowGraph build(ABCDWriter writer) {
+    public ControlFlowGraph build() {
         // build control flow graph from bytecode
         cfg = cfgBuilder.build();
 
@@ -326,31 +335,33 @@ public class IntermediateRepresentationBuilder {
             // instruction with shortcut operators in the condition
             resolveChoiceInst();
 
-            // need to remove critical edges to convert to SSA
-            if (cfg.removeCriticalEdges()) {
-                cfg.updateDominatorInfo();
-                cfg.updatePostDominatorInfo();
-                cfg.updateLoopInfo();
-            }
+            if (preferences.isAnalyseLocalVariableType()) {
+                // need to remove critical edges to convert to SSA
+                if (cfg.removeCriticalEdges()) {
+                    cfg.updateDominatorInfo();
+                    cfg.updatePostDominatorInfo();
+                    cfg.updateLoopInfo();
+                }
 
-            // convert to SSA form
-            new SSAFormConverter(cfg, instFactory, varFactory).convert();
+                // convert to SSA form
+                new SSAFormConverter(cfg, instFactory, varFactory).convert();
 
-            // to remove empty basic blocks added tu remove critical edges
-            if (cfg.removeUnnecessaryBlock()) {
-                cfg.updateDominatorInfo();
-                cfg.updatePostDominatorInfo();
-                cfg.updateLoopInfo();
+                // to remove empty basic blocks added tu remove critical edges
+                if (cfg.removeUnnecessaryBlock()) {
+                    cfg.updateDominatorInfo();
+                    cfg.updatePostDominatorInfo();
+                    cfg.updateLoopInfo();
+                }
+
+                // analyse local variables types
+                new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
+                                              methodArgs, classNameManager,
+                                              varFactory, classLoader)
+                        .analyse();
             }
 
             // add variable declarations
             addVariableDeclarations();
-
-            // analyse local variables types
-            new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
-                                          methodArgs, classNameManager,
-                                          varFactory, classLoader)
-                    .analyse();
 
             // assign a name to each variable
             assignNameToVariables();

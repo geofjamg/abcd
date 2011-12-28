@@ -79,16 +79,21 @@ public class Main {
                             .hasArg()
                             .withDescription("directory where to write analysis data")
                             .create("debug");
-        Option useLvtDir = OptionBuilder.hasArg(false)
+        Option ulvt = OptionBuilder.hasArg(false)
                             .isRequired(false)
                             .withDescription("use local variable table")
-                            .create("uselvt");
+                            .create("ulvt");
+        Option alvt = OptionBuilder.hasArg(false)
+                            .isRequired(false)
+                            .withDescription("analyse local variable type")
+                            .create("alvt");
         OPTIONS = new Options();
         OPTIONS.addOptionGroup(file)
                 .addOption(outputDir)
                 .addOption(classDir)
                 .addOption(debugDir)
-                .addOption(useLvtDir);
+                .addOption(ulvt)
+                .addOption(alvt);
     }
 
     private Main() {
@@ -167,8 +172,11 @@ public class Main {
                 }
 
                 ABCDPreferences prefs = new ABCDPreferencesImpl();
-                if (line.hasOption("uselvt")) {
+                if (line.hasOption("ulvt")) {
                     prefs.setUseLocalVariableTable(true);
+                }
+                if (line.hasOption("alvt")) {
+                    prefs.setAnalyseLocalVariableType(true);
                 }
 
                 new ABCDContext().decompile(dataSrc, writer, prefs, classLoader);

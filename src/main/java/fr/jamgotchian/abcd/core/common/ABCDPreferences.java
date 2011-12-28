@@ -25,4 +25,8 @@ public interface ABCDPreferences {
     boolean isUseLocalVariableTable();
 
     void setUseLocalVariableTable(boolean useLocalVariableTable);
+
+    boolean isAnalyseLocalVariableType();
+
+    void setAnalyseLocalVariableType(boolean analyseLocalVariableType);
 }
