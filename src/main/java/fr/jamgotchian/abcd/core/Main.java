@@ -20,6 +20,7 @@ import fr.jamgotchian.abcd.core.bytecode.ABCDDataSource;
 import fr.jamgotchian.abcd.core.bytecode.dalvik.DexFileDataSource;
 import fr.jamgotchian.abcd.core.bytecode.java.ClassFileDataSource;
 import fr.jamgotchian.abcd.core.bytecode.java.JarFileDataSource;
+import fr.jamgotchian.abcd.core.common.ABCDPreferences;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import java.io.File;
 import java.net.URL;

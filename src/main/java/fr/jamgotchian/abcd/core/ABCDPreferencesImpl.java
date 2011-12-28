@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core;
 
+import fr.jamgotchian.abcd.core.common.ABCDPreferences;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
