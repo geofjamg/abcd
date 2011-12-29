@@ -86,7 +86,7 @@ public class RPSTTest {
         BasicBlock j = new BasicBlockTestImpl("j");
         BasicBlock k = new BasicBlockTestImpl("k");
         BasicBlock l = new BasicBlockTestImpl("l");
-        ControlFlowGraphImpl cfg = new ControlFlowGraphImpl("Test", a, e);
+        ControlFlowGraph cfg = new ControlFlowGraph("Test", a, e);
         cfg.addBasicBlock(b);
         cfg.addBasicBlock(c);
         cfg.addBasicBlock(d);

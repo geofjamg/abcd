@@ -43,6 +43,12 @@ public class VariableID {
         this(index, type, UNDEFINED_VERSION);
     }
 
+    public VariableID(VariableID other) {
+        index = other.index;
+        type = other.type;
+        version = other.version;
+    }
+
     public int getIndex() {
         return index;
     }
@@ -73,11 +79,6 @@ public class VariableID {
     @Override
     public int hashCode() {
         return index + type.hashCode() + version;
-    }
-
-    @Override
-    public VariableID clone() {
-        return new VariableID(index, type, version);
     }
 
     @Override

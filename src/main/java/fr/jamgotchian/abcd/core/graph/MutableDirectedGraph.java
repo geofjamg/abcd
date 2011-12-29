@@ -36,6 +36,4 @@ public interface MutableDirectedGraph<V, E> extends DirectedGraph<V, E> {
     void splitVertex(V vertex, V newVertex);
 
     MutableDirectedGraph<V, E> getSubgraphContaining(V vertex);
-
-    MutableDirectedGraph<V, E> clone();
 }

@@ -36,12 +36,6 @@ class EdgeImpl implements Edge {
         attributes = EnumSet.noneOf(EdgeAttribute.class);
     }
 
-    private EdgeImpl(EdgeImpl other) {
-        category = other.category;
-        value = other.value;
-        attributes = EnumSet.copyOf(other.attributes);
-    }
-
     @Override
     public EdgeCategory getCategory() {
         return category;
@@ -80,10 +74,6 @@ class EdgeImpl implements Edge {
     @Override
     public void resetAttributes() {
         attributes.clear();
-    }
-    @Override
-    public Edge clone() {
-        return new EdgeImpl(this);
     }
 
     @Override

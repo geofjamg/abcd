@@ -92,6 +92,17 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         vertices = new HashMap<V, Neighbors<V, E>>();
     }
 
+    DirectedGraphImpl(DirectedGraph<V, E> other) {
+        this();
+        for (V v : other.getVertices()) {
+            addVertex(v);
+        }
+        for (E e : other.getEdges()) {
+            addEdge(other.getEdgeSource(e), other.getEdgeTarget(e), e);
+        }
+    }
+
+    @Override
     public void addVertex(V vertex) {
         if (vertex == null) {
             throw new ABCDException("vertex == null");
@@ -102,6 +113,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         vertices.put(vertex, new Neighbors<V, E>());
     }
 
+    @Override
     public void addEdge(V source, V target, E edge) {
         if (source == null) {
             throw new ABCDException("source == null");
@@ -126,26 +138,32 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         vertices.get(target).getPredecessors().put(source, edge);
     }
 
+    @Override
     public Set<V> getVertices() {
         return Collections.unmodifiableSet(vertices.keySet());
     }
 
+    @Override
     public int getVertexCount() {
         return vertices.size();
     }
 
+    @Override
     public boolean containsVertex(V vertex) {
         return vertices.containsKey(vertex);
     }
 
+    @Override
     public Set<E> getEdges() {
         return Collections.unmodifiableSet(edges.keySet());
     }
 
+    @Override
     public int getEdgeCount() {
         return edges.size();
     }
 
+    @Override
     public E getEdge(V source, V target) {
         if (source == null) {
             throw new ABCDException("source == null");
@@ -164,10 +182,12 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return null;
     }
 
+    @Override
     public boolean containsEdge(V source, V target) {
         return getEdge(source, target) != null;
     }
 
+    @Override
     public V getEdgeSource(E edge) {
         if (edge == null) {
             throw new ABCDException("edge == null");
@@ -179,6 +199,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return connection.getSource();
     }
 
+    @Override
     public V getEdgeTarget(E edge) {
         if (edge == null) {
             throw new ABCDException("edge == null");
@@ -190,6 +211,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return connection.getTarget();
     }
 
+    @Override
     public Collection<E> getOutgoingEdgesOf(V vertex) {
         if (vertex == null) {
             throw new ABCDException("vertex == null");
@@ -201,11 +223,13 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return neighbors.getSuccessors().values();
     }
 
+    @Override
     public E getFirstOutgoingEdgeOf(V vertex) {
         Iterator<E> it = getOutgoingEdgesOf(vertex).iterator();
         return it.hasNext() ? it.next() : null;
     }
 
+    @Override
     public Collection<E> getIncomingEdgesOf(V vertex) {
         if (vertex == null) {
             throw new ABCDException("vertex == null");
@@ -217,11 +241,13 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return neighbors.getPredecessors().values();
     }
 
+    @Override
     public E getFirstIncomingEdgeOf(V vertex) {
         Iterator<E> it = getIncomingEdgesOf(vertex).iterator();
         return it.hasNext() ? it.next() : null;
     }
 
+    @Override
     public Set<V> getSuccessorsOf(V vertex) {
         if (vertex == null) {
             throw new ABCDException("vertex == null");
@@ -233,15 +259,18 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return neighbors.getSuccessors().keySet();
     }
 
+    @Override
     public V getFirstSuccessorOf(V vertex) {
         Iterator<V> it = getSuccessorsOf(vertex).iterator();
         return it.hasNext() ? it.next() : null;
     }
 
+    @Override
     public int getSuccessorCountOf(V vertex) {
         return getOutgoingEdgesOf(vertex).size();
     }
 
+    @Override
     public Set<V> getPredecessorsOf(V vertex) {
         if (vertex == null) {
             throw new ABCDException("vertex == null");
@@ -253,15 +282,18 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return neighbors.getPredecessors().keySet();
     }
 
+    @Override
     public V getFirstPredecessorOf(V vertex) {
         Iterator<V> it = getPredecessorsOf(vertex).iterator();
         return it.hasNext() ? it.next() : null;
     }
 
+    @Override
     public int getPredecessorCountOf(V vertex) {
         return getIncomingEdgesOf(vertex).size();
     }
 
+    @Override
     public void removeEdge(E edge) {
         if (edge == null) {
             throw new ABCDException("edge == null");
@@ -283,6 +315,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
     }
 
+    @Override
     public boolean removeEdge(V source, V target) {
         E edge = getEdge(source, target);
         if  (edge != null) {
@@ -293,6 +326,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
     }
 
+    @Override
     public void removeVertex(V vertex) {
         if (vertex == null) {
             throw new ABCDException("vertex == null");
@@ -321,6 +355,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         vertices.remove(vertex);
     }
 
+    @Override
     public void splitVertex(V vertex, V newVertex) {
         if (vertex == null) {
             throw new ABCDException("vertex == null");
@@ -351,10 +386,12 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         vertices.put(newVertex, newNeighbors);
     }
 
+    @Override
     public void reversePostOrderDFS(V v, List<V> vertices, List<E> edges, boolean invert) {
         reversePostOrderDFS(v, new HashSet<V>(), vertices, edges, invert);
     }
 
+    @Override
     public void reversePostOrderDFS(V v, Set<V> visited, List<V> vertices, List<E> edges,
                                     boolean invert) {
         visited.add(v);
@@ -372,10 +409,12 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
     }
 
+    @Override
     public Tree<V, E> getReversePostOrderDFST(V root, boolean invert) {
         return getReversePostOrderDFST(root, new HashSet<V>(), invert);
     }
 
+    @Override
     public Tree<V, E> getReversePostOrderDFST(V root, Set<V> visited, boolean invert) {
         List<V> dfstBlocks = new ArrayList<V>();
         List<E> dfstEdges = new ArrayList<E>();
@@ -393,10 +432,12 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return dfst;
     }
 
+    @Override
     public String toString(E edge) {
         return getEdgeSource(edge) + "->" + getEdgeTarget(edge);
     }
 
+    @Override
     public String toString(Collection<E> edges) {
         StringBuilder builder = new StringBuilder("[");
         for (Iterator<E> it = edges.iterator(); it.hasNext();) {
@@ -409,20 +450,24 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return builder.toString();
     }
 
+    @Override
     public String getClusterID() {
         return Integer.toString(System.identityHashCode(this));
     }
 
+    @Override
     public void export(Writer writer, String name) throws IOException {
         export(writer, name, VERTEX_GRAPHVIZ_RENDERER, EDGE_GRAPHVIZ_RENDERER);
     }
 
+    @Override
     public void export(Writer writer, String name,
                        GraphvizRenderer<V> vertexRenderer,
                        GraphvizRenderer<E> edgeRenderer) throws IOException {
         export(writer, name, vertexRenderer, edgeRenderer, false);
     }
 
+    @Override
     public void export(Writer writer, String name,
                        GraphvizRenderer<V> vertexRenderer,
                        GraphvizRenderer<E> edgeRenderer,
@@ -475,6 +520,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
     }
 
+    @Override
     public MutableDirectedGraph<V, E> getSubgraphContaining(V vertex) {
         if (!vertices.containsKey(vertex)) {
             throw new ABCDException("Vertex " + vertex + " not found");
@@ -495,6 +541,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return subgraph;
     }
 
+    @Override
     public Set<V> getEntries() {
         Set<V> entries = new HashSet<V>();
         for (V v : getVertices()) {
@@ -505,6 +552,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return entries;
     }
 
+    @Override
     public Set<V> getExits() {
         Set<V> exits = new HashSet<V>();
         for (V v : getVertices()) {
@@ -513,17 +561,5 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
             }
         }
         return exits;
-    }
-
-    @Override
-    public MutableDirectedGraph<V, E> clone() {
-        DirectedGraphImpl<V, E> clone = new DirectedGraphImpl<V, E>();
-        for (V v : getVertices()) {
-            clone.addVertex(v);
-        }
-        for (E e : getEdges()) {
-            clone.addEdge(getEdgeSource(e), getEdgeTarget(e), e);
-        }
-        return clone;
     }
 }

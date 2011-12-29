@@ -63,8 +63,8 @@ public class RegionAnalysis {
                     && region.getExit().equals(cfg.getExitBlock()))) {
             return null;
         }
-        ControlFlowGraphImpl subCfg
-                = new ControlFlowGraphImpl(cfg.getName(), region.getEntry(),
+        ControlFlowGraph subCfg
+                = new ControlFlowGraph(cfg.getName(), region.getEntry(),
                                            region.getExit());
         for (BasicBlock bb : region.getBasicBlocks()) {
             if (!bb.equals(region.getEntry()) && !bb.equals(region.getExit())) {
@@ -445,7 +445,7 @@ public class RegionAnalysis {
     private ControlFlowGraph createSmoothedSubCfg(ControlFlowGraph subCfg,
                                                   Edge exitEdge,
                                                   Map<Edge, BasicBlock> joinBlocks) {
-        ControlFlowGraph cloneSubCfg = subCfg.clone();
+        ControlFlowGraph cloneSubCfg = new ControlFlowGraph(subCfg);
         LOGGER.log(Level.FINER, "Exit edge is {0}", cloneSubCfg.toString(exitEdge));
         for (Map.Entry<Edge, BasicBlock> entry : joinBlocks.entrySet()) {
             Edge abruptEdge = entry.getKey();
@@ -486,6 +486,7 @@ public class RegionAnalysis {
         // sort exit edges by dominance of it source basic block
         List<Edge> exitEdges = new ArrayList<Edge>(subCfg.getIncomingEdgesOf(subCfg.getExitBlock()));
         Collections.sort(exitEdges, new Comparator<Edge>() {
+            @Override
             public int compare(Edge e1, Edge e2) {
                 BasicBlock bb1 = subCfg.getEdgeSource(e1);
                 BasicBlock bb2 = subCfg.getEdgeSource(e2);

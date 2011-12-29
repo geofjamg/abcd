@@ -206,7 +206,7 @@ public class SSAFormConverter {
                         Variable result = phiInst.getResult();
                         Variable v = phiInst.getArgs().get(i);
                         BasicBlock p = predecessors.get(i);
-                        addInst(p, instFactory.newAssignVar(result.clone(),
+                        addInst(p, instFactory.newAssignVar(new Variable(result),
                                                             v /* no need to clone */));
                     }
                     it.remove();

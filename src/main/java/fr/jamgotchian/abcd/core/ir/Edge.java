@@ -38,6 +38,4 @@ public interface Edge {
     void removeAttribute(EdgeAttribute attr);
 
     void resetAttributes();
-
-    Edge clone();
 }

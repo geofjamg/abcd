@@ -38,14 +38,14 @@ public class Variable {
 
     private String name = "???";
 
-    Variable(VariableID ID, BasicBlock block, int position) {
+    public Variable(VariableID ID, BasicBlock block, int position) {
         this.ID = ID;
         this.block = block;
         this.position = position;
     }
 
-    private Variable(Variable other) {
-        ID = other.ID.clone();
+    public Variable(Variable other) {
+        ID = new VariableID(other.ID);
         block = other.block;
         position = other.position;
         type = other.type;
@@ -124,11 +124,6 @@ public class Variable {
     @Override
     public int hashCode() {
         return ID.hashCode();
-    }
-
-    @Override
-    public Variable clone() {
-        return new Variable(this);
     }
 
     @Override

@@ -46,7 +46,7 @@ public abstract class ControlFlowGraphBuilder {
         ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Build CFG of {0}",
                 '=', methodName);
 
-        cfg = new ControlFlowGraphImpl(methodName, getInstructionCount());
+        cfg = new ControlFlowGraph(methodName, getInstructionCount());
 
         ExceptionTable table = getExceptionTable();
         cfg.setExceptionTable(getExceptionTable());

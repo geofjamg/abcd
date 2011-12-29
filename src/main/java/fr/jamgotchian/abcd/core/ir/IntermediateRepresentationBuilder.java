@@ -163,7 +163,7 @@ public class IntermediateRepresentationBuilder {
                                 JumpIfInst jumpIfInst = (JumpIfInst) forkBlock.getInstructions().getLast();
                                 choiceInst.getChoices().remove(thenVar);
                                 choiceInst.getChoices().remove(elseVar);
-                                Variable condVar = jumpIfInst.getCond().clone();
+                                Variable condVar = new Variable(jumpIfInst.getCond());
                                 if (choiceInst.getChoices().isEmpty()) {
                                     Variable resultVar = choiceInst.getResult();
                                     ConditionalInst condInst

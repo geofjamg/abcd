@@ -926,7 +926,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             }
 
             if (tmpResult != null) {
-                bb.getInstructions().add(instFactory.newJumpIf(tmpResult.clone()));
+                bb.getInstructions().add(instFactory.newJumpIf(new Variable(tmpResult)));
             }
         }
 
@@ -1158,19 +1158,19 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             if (inputStacks.isEmpty()) {
                 inputStack = new VariableStack();
             } else if (inputStacks.size() == 1) {
-                inputStack = inputStacks.get(0).clone();
+                inputStack = new VariableStack(inputStacks.get(0));
             } else {
                 inputStack = mergeStacks(inputStacks, bb);
             }
         }
 
-        bb.setInputStack(inputStack.clone());
+        bb.setInputStack(new VariableStack(inputStack));
 
         if (bb.getInputStack().size() > 0) {
             LOGGER.log(Level.FINEST, ">>> Input stack : {0}", bb.getInputStack());
         }
 
-        VariableStack outputStack = inputStack.clone();
+        VariableStack outputStack = new VariableStack(inputStack);
 
         new BytecodeRangeVisitorImpl(outputStack).visit(instructions, bb, labelManager);
 
@@ -1330,7 +1330,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                         continue;
                     }
                     BasicBlock pred = cfg.getEdgeSource(incomingEdge);
-                    inputStacks.add(pred.getOutputStack().clone());
+                    inputStacks.add(new VariableStack(pred.getOutputStack()));
                 }
 
                 processBB(bb, inputStacks);

@@ -37,12 +37,12 @@ public class VariableStack {
     public VariableStack(VariableStack other) {
         stack = new ArrayDeque<Variable>(other.stack.size());
         for (Variable v : other.stack) {
-            stack.add(v.clone());
+            stack.add(new Variable(v));
         }
     }
 
     public void push(Variable v, ComputationalType type) {
-        Variable clone = v.clone();
+        Variable clone = new Variable(v);
         clone.setComputationalType(type);
         stack.push(clone);
     }
@@ -51,7 +51,7 @@ public class VariableStack {
         if (stack.isEmpty()) {
             throw new ABCDException("stack.isEmpty()");
         }
-        return stack.pop().clone();
+        return new Variable(stack.pop());
     }
 
     public int size() {
@@ -60,11 +60,6 @@ public class VariableStack {
 
     public List<Variable> toList() {
         return new ArrayList<Variable>(stack);
-    }
-
-    @Override
-    public VariableStack clone() {
-        return new VariableStack(this);
     }
 
     @Override
