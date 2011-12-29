@@ -39,7 +39,7 @@ import org.objectweb.asm.tree.MultiANewArrayInsnNode;
 import org.objectweb.asm.tree.TableSwitchInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
-import static org.objectweb.asm.util.AbstractVisitor.*;
+import static org.objectweb.asm.util.Printer.*;
 
 /**
  *

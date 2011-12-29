@@ -30,10 +30,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.EmptyVisitor;
 
 /**
  *
@@ -48,13 +48,14 @@ public class ClassFileDataSource implements ABCDDataSource {
 
     private final String className;
 
-    private static class InnerClassChecker extends EmptyVisitor {
+    private static class InnerClassChecker extends ClassVisitor {
 
         private final String outerClassName;
 
         private boolean innerClass = false;
 
         private InnerClassChecker(String outerClassName) {
+            super(Opcodes.ASM4);
             this.outerClassName = outerClassName;
         }
 
