@@ -494,7 +494,7 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
         // tag loop exit edges
         for (NaturalLoop nl : naturalLoops.values()) {
-            for (Edge exitEdge : nl.getExits()) {
+            for (Edge exitEdge : nl.getExitEdges()) {
                 LOGGER.log(Level.FINEST, "Loop exit edge {0}", graph.toString(exitEdge));
                 exitEdge.addAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
             }
@@ -508,6 +508,16 @@ public class ControlFlowGraphImpl implements ControlFlowGraph {
 
         if (outermostLoops.size() > 0) {
             LOGGER.log(Level.FINER, "Loop tree :\n{0}", NaturalLoop.toString(outermostLoops));
+        }
+
+        // try to reduce the number of loop exits by expanding the body
+        for (NaturalLoop nl : naturalLoops.values()) {
+            Collection<Edge> exits = nl.getExitEdges();
+            if (exits.size() > 1) {
+                LOGGER.log(Level.WARNING, "{0} has {1} exits",
+                        new Object[] {nl, exits.size()});
+                // TODO
+            }
         }
     }
 

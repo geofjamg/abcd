@@ -75,21 +75,33 @@ public class NaturalLoop {
         return cfg.getEdgeSource(backEdge);
     }
 
-    public List<Edge> getExits() {
-        List<Edge> exits = new ArrayList<Edge>(1);
+    public List<Edge> getExitEdges() {
+        List<Edge> exitEdges = new ArrayList<Edge>(1);
         for (BasicBlock bb : body) {
             for (Edge e : cfg.getOutgoingEdgesOf(bb)) {
                 BasicBlock t = cfg.getEdgeTarget(e);
                 if (!body.contains(t)) {
-                    exits.add(e);
+                    exitEdges.add(e);
                 }
             }
         }
-        return exits;
+        return exitEdges;
+    }
+
+    public List<BasicBlock> getExitBlocks() {
+        List<BasicBlock> exitBlocks = new ArrayList<BasicBlock>(1);
+        for (BasicBlock bb : body) {
+            for (BasicBlock t : cfg.getSuccessorsOf(bb)) {
+                if (!body.contains(t)) {
+                    exitBlocks.add(t);
+                }
+            }
+        }
+        return exitBlocks;
     }
 
     public boolean isInfinite() {
-        return getExits().isEmpty();
+        return getExitEdges().isEmpty();
     }
 
     public static String toString(Collection<NaturalLoop> outermostLoops) {
