@@ -35,9 +35,9 @@ import static org.junit.Assert.*;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ControlFlowGraphImplTest {
+public class ControlFlowGraphTest {
 
-    public ControlFlowGraphImplTest() {
+    public ControlFlowGraphTest() {
     }
 
     @Before
