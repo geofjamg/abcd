@@ -19,7 +19,9 @@ package fr.jamgotchian.abcd.core.ir;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -75,7 +77,7 @@ public class NaturalLoop {
         return cfg.getEdgeSource(backEdge);
     }
 
-    public List<Edge> getExitEdges() {
+    public Collection<Edge> getExitEdges() {
         List<Edge> exitEdges = new ArrayList<Edge>(1);
         for (BasicBlock bb : body) {
             for (Edge e : cfg.getOutgoingEdgesOf(bb)) {
@@ -88,8 +90,8 @@ public class NaturalLoop {
         return exitEdges;
     }
 
-    public List<BasicBlock> getExitBlocks() {
-        List<BasicBlock> exitBlocks = new ArrayList<BasicBlock>(1);
+    public Collection<BasicBlock> getExitBlocks() {
+        Set<BasicBlock> exitBlocks = new HashSet<BasicBlock>(1);
         for (BasicBlock bb : body) {
             for (BasicBlock t : cfg.getSuccessorsOf(bb)) {
                 if (!body.contains(t)) {
@@ -126,6 +128,6 @@ public class NaturalLoop {
 
     @Override
     public String toString() {
-        return  "NaturalLoop(head=" + getHead() + ", tail=" + getTail() + ")";
+        return  "Loop(head=" + getHead() + ", tail=" + getTail() + ")";
     }
 }
