@@ -108,7 +108,7 @@ public class ABCDContext {
                 Integer.toString(summary.getNumberOfClassesPartiallyDecompiled()));
         TablePrinter printer = ConsoleUtil.newTablePrinter("Error", "Class", "Method");
         for (ErrorInfo error : summary.getErrors()) {
-            printer.addRow(error.getMessage(), error.getMessage(), error.getMethodSignature());
+            printer.addRow(error.getMessage(), error.getClassName(), error.getMethodSignature());
         }
         LOGGER.log(Level.FINE, "\n{0}", printer.toString());
     }
