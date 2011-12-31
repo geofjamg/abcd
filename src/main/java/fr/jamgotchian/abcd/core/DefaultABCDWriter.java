@@ -77,7 +77,11 @@ public class DefaultABCDWriter implements ABCDWriter {
         try {
             File packageDir = new File(outDir.getAbsolutePath() + File.separator
                     + compilUnit.getPackage().getName().replace('.', File.separatorChar));
-            packageDir.mkdirs();
+            if (!packageDir.exists()) {
+                if (!packageDir.mkdirs()) {
+                    throw new ABCDException("Fail to create directory " + packageDir);
+                }
+            }
             File srcDir = new File(packageDir.getAbsolutePath() + File.separator
                     + compilUnit.getClasses().get(0).getName() + ".java");
             FileOutputStream os = new FileOutputStream(srcDir);

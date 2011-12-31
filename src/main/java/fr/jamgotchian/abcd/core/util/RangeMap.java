@@ -41,14 +41,17 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
     public RangeMap() {
     }
 
+    @Override
     public int size() {
         return map.size();
     }
 
+    @Override
     public boolean isEmpty() {
         return map.isEmpty();
     }
 
+    @Override
     public boolean containsKey(Object key) {
         if (key == null) {
             throw new NullPointerException();
@@ -62,6 +65,7 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
         }
     }
 
+    @Override
     public boolean containsValue(Object value) {
         for (Map.Entry<K, V> entry : map.values()) {
             if (entry.getValue().equals(value)) {
@@ -71,6 +75,7 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
         return false;
     }
 
+    @Override
     public V get(Object key) {
         if (key == null) {
             throw new NullPointerException();
@@ -84,6 +89,7 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
         }
     }
 
+    @Override
     public V put(K key, V value) {
         if (key == null) {
             throw new NullPointerException();
@@ -102,6 +108,7 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
         return previousValue;
     }
 
+    @Override
     public V remove(Object key) {
         if (key == null) {
             throw new NullPointerException();
@@ -116,16 +123,19 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
         }
     }
 
+    @Override
     public void putAll(Map<? extends K, ? extends V> m) {
         for (Map.Entry<? extends K, ? extends V> entry : m.entrySet()) {
             put(entry.getKey(), entry.getValue());
         }
     }
 
+    @Override
     public void clear() {
         map.clear();
     }
 
+    @Override
     public Set<K> keySet() {
         Set<K> keys = new TreeSet<K>();
         for (Map.Entry<K, V> entry : map.values()) {
@@ -134,6 +144,7 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
         return keys;
     }
 
+    @Override
     public Collection<V> values() {
         List<V> values = new ArrayList<V>(map.size());
         for (Map.Entry<K, V> entry : map.values()) {
@@ -142,6 +153,7 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
         return values;
     }
 
+    @Override
     public Set<Entry<K, V>> entrySet() {
         return new LinkedHashSet<Entry<K, V>>(map.values());
     }
@@ -182,7 +194,7 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
     @Override
     public String toString() {
         Iterator<Entry<K,V>> i = map.values().iterator();
-        if (! i.hasNext()) {
+        if (!i.hasNext()) {
             return "{}";
         }
         StringBuilder sb = new StringBuilder();
@@ -191,10 +203,10 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
             Entry<K,V> e = i.next();
             K key = e.getKey();
             V value = e.getValue();
-            sb.append(key   == this ? "(this Map)" : key);
-            sb.append('=');
-            sb.append(value == this ? "(this Map)" : value);
-            if (! i.hasNext()) {
+            sb.append(key)
+              .append('=')
+              .append(value == this ? "(this Map)" : value);
+            if (!i.hasNext()) {
                 return sb.append('}').toString();
             }
             sb.append(", ");

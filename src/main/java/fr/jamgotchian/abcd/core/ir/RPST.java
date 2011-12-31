@@ -225,7 +225,7 @@ public class RPST {
             region = newRegion;
         } else {
             LOGGER.log(Level.FINEST, "Parent of BB {0} is {1}",
-                    new Object[] {bb, newRegion});
+                    new Object[] {bb, region});
             bb.setRegion(region);
             bb2region.put(bb, region);
         }
