@@ -271,6 +271,16 @@ public class ControlFlowGraph {
         return graph.getFirstPredecessorOf(block);
     }
 
+    public Collection<BasicBlock> getExceptionalPredecessorsOf(BasicBlock block) {
+        List<BasicBlock> predecessors = new ArrayList<BasicBlock>();
+        for (Edge e : graph.getIncomingEdgesOf(block)) {
+            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                predecessors.add(graph.getEdgeSource(e));
+            }
+        }
+        return predecessors;
+    }
+
     public Collection<BasicBlock> getSuccessorsOf(BasicBlock block) {
         return graph.getSuccessorsOf(block);
     }
