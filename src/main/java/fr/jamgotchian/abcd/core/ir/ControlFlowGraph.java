@@ -205,124 +205,6 @@ public class ControlFlowGraph {
         return graph.containsVertex(bb);
     }
 
-    public Collection<Edge> getOutgoingEdgesOf(BasicBlock block) {
-        return graph.getOutgoingEdgesOf(block);
-    }
-
-    public Collection<Edge> getNormalOutgoingEdgesOf(BasicBlock block) {
-        List<Edge> edges = new ArrayList<Edge>();
-        for (Edge e : getOutgoingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                edges.add(e);
-            }
-        }
-        return edges;
-    }
-
-    public Edge getFirstOutgoingEdgeOf(BasicBlock block) {
-        return graph.getFirstOutgoingEdgeOf(block);
-    }
-
-    public Edge getFirstNormalOutgoingEdgeOf(BasicBlock block) {
-        for (Edge e : getOutgoingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                return e;
-            }
-        }
-        return null;
-    }
-
-    public Collection<Edge> getIncomingEdgesOf(BasicBlock block) {
-        return graph.getIncomingEdgesOf(block);
-    }
-
-    public Edge getFirstIncomingEdgeOf(BasicBlock block) {
-        return graph.getFirstIncomingEdgeOf(block);
-    }
-
-    public Edge getFirstNormalIncomingEdgeOf(BasicBlock block) {
-        for (Edge e : getIncomingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                return e;
-            }
-        }
-        return null;
-    }
-
-    public Collection<BasicBlock> getPredecessorsOf(BasicBlock block) {
-        return graph.getPredecessorsOf(block);
-    }
-
-    public int getPredecessorCountOf(BasicBlock block) {
-        return graph.getPredecessorCountOf(block);
-    }
-
-    public int getNormalPredecessorCountOf(BasicBlock block) {
-        int count = 0;
-        for (Edge e : getIncomingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    public BasicBlock getFirstPredecessorOf(BasicBlock block) {
-        return graph.getFirstPredecessorOf(block);
-    }
-
-    public Collection<BasicBlock> getExceptionalPredecessorsOf(BasicBlock block) {
-        List<BasicBlock> predecessors = new ArrayList<BasicBlock>();
-        for (Edge e : graph.getIncomingEdgesOf(block)) {
-            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                predecessors.add(graph.getEdgeSource(e));
-            }
-        }
-        return predecessors;
-    }
-
-    public Collection<BasicBlock> getSuccessorsOf(BasicBlock block) {
-        return graph.getSuccessorsOf(block);
-    }
-
-    public BasicBlock getFirstSuccessorOf(BasicBlock block) {
-        return graph.getFirstSuccessorOf(block);
-    }
-
-    public int getSuccessorCountOf(BasicBlock block) {
-        return graph.getSuccessorCountOf(block);
-    }
-
-    public Collection<BasicBlock> getExceptionalSuccessorsOf(BasicBlock block) {
-        List<BasicBlock> successors = new ArrayList<BasicBlock>();
-        for (Edge e : graph.getOutgoingEdgesOf(block)) {
-            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                successors.add(graph.getEdgeTarget(e));
-            }
-        }
-        return successors;
-    }
-
-    public Collection<BasicBlock> getNormalSuccessorsOf(BasicBlock block) {
-        List<BasicBlock> successors = new ArrayList<BasicBlock>();
-        for (Edge e : graph.getOutgoingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                successors.add(graph.getEdgeTarget(e));
-            }
-        }
-        return successors;
-    }
-
-    public int getNormalSuccessorCountOf(BasicBlock block) {
-        int count = 0;
-        for (Edge e : getOutgoingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                count++;
-            }
-        }
-        return count;
-    }
-
     public Collection<BasicBlock> getBasicBlocksWithinRange(Range range) {
         return basicBlocks.values(range);
     }
@@ -450,111 +332,160 @@ public class ControlFlowGraph {
         return graph.getEdgeTarget(edge);
     }
 
-    private boolean isCompleteExit(BasicBlock bb) {
-        if (getSuccessorCountOf(bb) == 0) {
-            return false;
-        }
-        for (Edge e : getIncomingEdgesOf(bb)) {
-            if (!e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
-                return false;
-            }
-        }
-        return true;
+    public Collection<Edge> getOutgoingEdgesOf(BasicBlock block) {
+        return graph.getOutgoingEdgesOf(block);
     }
 
-    public void updateLoopInfo() {
-        LOGGER.log(Level.FINER, "Update loop info");
-
-        performDepthFirstSearch();
-
-        // reset edge loop attributes
-        for (Edge e : getEdges()) {
-            e.setCategory(null);
-            e.removeAttribute(EdgeAttribute.LOOP_BACK_EDGE);
-            e.removeAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
-            e.removeAttribute(EdgeAttribute.SELF_LOOP_EDGE);
-        }
-
-        // detect natural loops
-        analyseNaturalLoops();
-
-        // tag loop exit edges
-        for (NaturalLoop nl : naturalLoops.values()) {
-            for (Edge exitEdge : nl.getExitEdges()) {
-                LOGGER.log(Level.FINEST, "Loop exit edge {0}", graph.toString(exitEdge));
-                exitEdge.addAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
+    public Collection<Edge> getNormalOutgoingEdgesOf(BasicBlock block) {
+        List<Edge> edges = new ArrayList<Edge>();
+        for (Edge e : getOutgoingEdgesOf(block)) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                edges.add(e);
             }
         }
-
-        // build loop tree
-        outermostLoops.clear();
-        Tree<BasicBlock, Edge> domTree = dominatorInfo.getDominatorsTree();
-        List<BasicBlock> loopBody = new ArrayList<BasicBlock>(domTree.getNodesPreOrder());
-        buildLoopTree(null, loopBody);
-
-        if (outermostLoops.size() > 0) {
-            LOGGER.log(Level.FINER, "Loop tree :\n{0}", NaturalLoop.toString(outermostLoops));
-        }
-
-        // try to reduce the number of loop exits by expanding the body
-        for (NaturalLoop nl : naturalLoops.values()) {
-            Collection<BasicBlock> exits = nl.getExitBlocks();
-            if (exits.size() <= 1) {
-                continue;
-            }
-            LOGGER.log(Level.FINER, "{0} has {1} exits : {2}",
-                    new Object[] {nl, exits.size(), exits});
-            List<BasicBlock> incompleteExit = new ArrayList<BasicBlock>();
-            List<BasicBlock> completeExit = new ArrayList<BasicBlock>();
-            for (BasicBlock exit : exits) {
-                if (isCompleteExit(exit)) {
-                    completeExit.add(exit);
-                } else {
-                    incompleteExit.add(exit);
-                }
-            }
-            for (BasicBlock bb : incompleteExit) {
-                for (Edge e : getIncomingEdgesOf(bb)) {
-                    if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
-                        continue;
-                    }
-                    for (BasicBlock bb2 : completeExit) {
-                        Set<Edge> frontier = dominatorInfo.getDominanceFrontierOf(bb2);
-                        if (Collections3.equals(frontier, Collections.singleton(e))) {
-                            Set<BasicBlock> bodyExt = domTree.getSubTree(bb2).getNodes();
-                            LOGGER.log(Level.FINER, ">>> Expand {0} by adding {1}",
-                                    new Object[] {nl, bodyExt});
-                            // expand the loop body
-                            nl.getBody().addAll(bodyExt);
-                            for (Edge e2 : getIncomingEdgesOf(bb2)) {
-                                e2.removeAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
-                            }
-                            e.addAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
-                        }
-                    }
-                }
-            }
-            Collection<BasicBlock> newExits = nl.getExitBlocks();
-            if (newExits.size() < exits.size()) {
-                LOGGER.log(Level.FINER, "{0} has now {1} exits : {2}",
-                        new Object[] {nl, newExits.size(), newExits});
-            }
-            if (newExits.size() > 1) {
-                LOGGER.log(Level.WARNING, "{0} has multiple exits!!!", nl);
-            }
-        }
+        return edges;
     }
 
-    void performDepthFirstSearch() {
-        // build depth first spanning Tree
-        dfst = graph.getReversePostOrderDFST(entryBlock, false);
-        int order = 0;
-        for (BasicBlock block : dfst.getNodes()) {
-            block.setOrder(order++);
+    public Collection<Edge> getExceptionalOutgoingEdgesOf(BasicBlock block) {
+        List<Edge> edges = new ArrayList<Edge>();
+        for (Edge e : getOutgoingEdgesOf(block)) {
+            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                edges.add(e);
+            }
         }
+        return edges;
+    }
 
-        LOGGER.log(Level.FINEST, "Perform reverse post order DFS");
-        LOGGER.log(Level.FINEST, "DFST : \n{0}", Trees.toString(dfst));
+    public Edge getFirstOutgoingEdgeOf(BasicBlock block) {
+        return graph.getFirstOutgoingEdgeOf(block);
+    }
+
+    public Edge getFirstNormalOutgoingEdgeOf(BasicBlock block) {
+        for (Edge e : getOutgoingEdgesOf(block)) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    public Edge getFirstExceptionalOutgoingEdgeOf(BasicBlock block) {
+        for (Edge e : getOutgoingEdgesOf(block)) {
+            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    public Collection<Edge> getIncomingEdgesOf(BasicBlock block) {
+        return graph.getIncomingEdgesOf(block);
+    }
+
+    public Edge getFirstIncomingEdgeOf(BasicBlock block) {
+        return graph.getFirstIncomingEdgeOf(block);
+    }
+
+    public Edge getFirstNormalIncomingEdgeOf(BasicBlock block) {
+        for (Edge e : getIncomingEdgesOf(block)) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    public Edge getFirstExceptionalIncomingEdgeOf(BasicBlock block) {
+        for (Edge e : getIncomingEdgesOf(block)) {
+            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    public Collection<BasicBlock> getPredecessorsOf(BasicBlock block) {
+        return graph.getPredecessorsOf(block);
+    }
+
+    public Collection<BasicBlock> getNormalPredecessorsOf(BasicBlock block) {
+        List<BasicBlock> predecessors = new ArrayList<BasicBlock>();
+        for (Edge e : graph.getIncomingEdgesOf(block)) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                predecessors.add(graph.getEdgeSource(e));
+            }
+        }
+        return predecessors;
+    }
+
+    public Collection<BasicBlock> getExceptionalPredecessorsOf(BasicBlock block) {
+        List<BasicBlock> predecessors = new ArrayList<BasicBlock>();
+        for (Edge e : graph.getIncomingEdgesOf(block)) {
+            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                predecessors.add(graph.getEdgeSource(e));
+            }
+        }
+        return predecessors;
+    }
+
+    public int getPredecessorCountOf(BasicBlock block) {
+        return graph.getPredecessorCountOf(block);
+    }
+
+    public int getNormalPredecessorCountOf(BasicBlock block) {
+        int count = 0;
+        for (Edge e : getIncomingEdgesOf(block)) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public BasicBlock getFirstPredecessorOf(BasicBlock block) {
+        return graph.getFirstPredecessorOf(block);
+    }
+
+    public Collection<BasicBlock> getSuccessorsOf(BasicBlock block) {
+        return graph.getSuccessorsOf(block);
+    }
+
+    public Collection<BasicBlock> getNormalSuccessorsOf(BasicBlock block) {
+        List<BasicBlock> successors = new ArrayList<BasicBlock>();
+        for (Edge e : graph.getOutgoingEdgesOf(block)) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                successors.add(graph.getEdgeTarget(e));
+            }
+        }
+        return successors;
+    }
+
+    public Collection<BasicBlock> getExceptionalSuccessorsOf(BasicBlock block) {
+        List<BasicBlock> successors = new ArrayList<BasicBlock>();
+        for (Edge e : graph.getOutgoingEdgesOf(block)) {
+            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                successors.add(graph.getEdgeTarget(e));
+            }
+        }
+        return successors;
+    }
+
+    public int getSuccessorCountOf(BasicBlock block) {
+        return graph.getSuccessorCountOf(block);
+    }
+
+    public int getNormalSuccessorCountOf(BasicBlock block) {
+        int count = 0;
+        for (Edge e : getOutgoingEdgesOf(block)) {
+            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public BasicBlock getFirstSuccessorOf(BasicBlock block) {
+        return graph.getFirstSuccessorOf(block);
     }
 
     /**
@@ -662,26 +593,16 @@ public class ControlFlowGraph {
         return criticalEdges.size() > 0;
     }
 
-    public boolean mergeNaturalLoops() {
-        boolean merged = false;
-        for (Map.Entry<BasicBlock, Collection<NaturalLoop>> entry : naturalLoops.asMap().entrySet()) {
-            BasicBlock head = entry.getKey();
-            Collection<NaturalLoop> naturalLoopsWithSameHeader = entry.getValue();
-            if (naturalLoopsWithSameHeader.size() > 1) {
-                LOGGER.log(Level.FINEST, "Merge natural loops {0}", naturalLoopsWithSameHeader);
-                BasicBlock empty = new BasicBlockImpl(BasicBlockType.EMPTY);
-                addBasicBlock(empty);
-                addEdge(empty, head).addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
-                for (NaturalLoop nl : naturalLoopsWithSameHeader) {
-                    Edge oldBackEdge = getEdge(nl.getTail(), nl.getHead());
-                    oldBackEdge.removeAttribute(EdgeAttribute.LOOP_BACK_EDGE);
-                    removeEdge(oldBackEdge);
-                    addEdge(nl.getTail(), empty, oldBackEdge);
-                }
-                merged = true;
-            }
+    void performDepthFirstSearch() {
+        // build depth first spanning Tree
+        dfst = graph.getReversePostOrderDFST(entryBlock, false);
+        int order = 0;
+        for (BasicBlock block : dfst.getNodes()) {
+            block.setOrder(order++);
         }
-        return merged;
+
+        LOGGER.log(Level.FINEST, "Perform reverse post order DFS");
+        LOGGER.log(Level.FINEST, "DFST : \n{0}", Trees.toString(dfst));
     }
 
     private void analyseEdgeCategory() {
@@ -776,6 +697,122 @@ public class ControlFlowGraph {
                 loopBody.removeAll(child.getBody());
             }
         }
+    }
+    private boolean isCompleteExit(BasicBlock bb) {
+        if (getSuccessorCountOf(bb) == 0) {
+            return false;
+        }
+        for (Edge e : getIncomingEdgesOf(bb)) {
+            if (!e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void updateLoopInfo() {
+        LOGGER.log(Level.FINER, "Update loop info");
+
+        performDepthFirstSearch();
+
+        // reset edge loop attributes
+        for (Edge e : getEdges()) {
+            e.setCategory(null);
+            e.removeAttribute(EdgeAttribute.LOOP_BACK_EDGE);
+            e.removeAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
+            e.removeAttribute(EdgeAttribute.SELF_LOOP_EDGE);
+        }
+
+        // detect natural loops
+        analyseNaturalLoops();
+
+        // tag loop exit edges
+        for (NaturalLoop nl : naturalLoops.values()) {
+            for (Edge exitEdge : nl.getExitEdges()) {
+                LOGGER.log(Level.FINEST, "Loop exit edge {0}", graph.toString(exitEdge));
+                exitEdge.addAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
+            }
+        }
+
+        // build loop tree
+        outermostLoops.clear();
+        Tree<BasicBlock, Edge> domTree = dominatorInfo.getDominatorsTree();
+        List<BasicBlock> loopBody = new ArrayList<BasicBlock>(domTree.getNodesPreOrder());
+        buildLoopTree(null, loopBody);
+
+        if (outermostLoops.size() > 0) {
+            LOGGER.log(Level.FINER, "Loop tree :\n{0}", NaturalLoop.toString(outermostLoops));
+        }
+
+        // try to reduce the number of loop exits by expanding the body
+        for (NaturalLoop nl : naturalLoops.values()) {
+            Collection<BasicBlock> exits = nl.getExitBlocks();
+            if (exits.size() <= 1) {
+                continue;
+            }
+            LOGGER.log(Level.FINER, "{0} has {1} exits : {2}",
+                    new Object[] {nl, exits.size(), exits});
+            List<BasicBlock> incompleteExit = new ArrayList<BasicBlock>();
+            List<BasicBlock> completeExit = new ArrayList<BasicBlock>();
+            for (BasicBlock exit : exits) {
+                if (isCompleteExit(exit)) {
+                    completeExit.add(exit);
+                } else {
+                    incompleteExit.add(exit);
+                }
+            }
+            for (BasicBlock bb : incompleteExit) {
+                for (Edge e : getIncomingEdgesOf(bb)) {
+                    if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
+                        continue;
+                    }
+                    for (BasicBlock bb2 : completeExit) {
+                        Set<Edge> frontier = dominatorInfo.getDominanceFrontierOf(bb2);
+                        if (Collections3.equals(frontier, Collections.singleton(e))) {
+                            Set<BasicBlock> bodyExt = domTree.getSubTree(bb2).getNodes();
+                            LOGGER.log(Level.FINER, ">>> Expand {0} by adding {1}",
+                                    new Object[] {nl, bodyExt});
+                            // expand the loop body
+                            nl.getBody().addAll(bodyExt);
+                            for (Edge e2 : getIncomingEdgesOf(bb2)) {
+                                e2.removeAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
+                            }
+                            e.addAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
+                        }
+                    }
+                }
+            }
+            Collection<BasicBlock> newExits = nl.getExitBlocks();
+            if (newExits.size() < exits.size()) {
+                LOGGER.log(Level.FINER, "{0} has now {1} exits : {2}",
+                        new Object[] {nl, newExits.size(), newExits});
+            }
+            if (newExits.size() > 1) {
+                LOGGER.log(Level.WARNING, "{0} has multiple exits!!!", nl);
+            }
+        }
+    }
+
+    public boolean mergeNaturalLoops() {
+        boolean merged = false;
+        for (Map.Entry<BasicBlock, Collection<NaturalLoop>> entry : naturalLoops.asMap().entrySet()) {
+            BasicBlock head = entry.getKey();
+            Collection<NaturalLoop> naturalLoopsWithSameHeader = entry.getValue();
+            if (naturalLoopsWithSameHeader.size() > 1) {
+                LOGGER.log(Level.FINEST, "Merge natural loops {0}", naturalLoopsWithSameHeader);
+                BasicBlock empty = new BasicBlockImpl(BasicBlockType.EMPTY);
+                addBasicBlock(empty);
+                addEdge(empty, head).addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
+                for (NaturalLoop nl : naturalLoopsWithSameHeader) {
+                    Edge oldBackEdge = getEdge(nl.getTail(), nl.getHead());
+                    oldBackEdge.removeAttribute(EdgeAttribute.LOOP_BACK_EDGE);
+                    removeEdge(oldBackEdge);
+                    addEdge(nl.getTail(), empty, oldBackEdge);
+                }
+                merged = true;
+            }
+        }
+        return merged;
     }
 
     public void export(Writer writer,
