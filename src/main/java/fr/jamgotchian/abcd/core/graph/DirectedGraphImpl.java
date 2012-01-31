@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -140,7 +139,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public Set<V> getVertices() {
-        return Collections.unmodifiableSet(vertices.keySet());
+        return vertices.keySet();
     }
 
     @Override
@@ -155,7 +154,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public Set<E> getEdges() {
-        return Collections.unmodifiableSet(edges.keySet());
+        return edges.keySet();
     }
 
     @Override
@@ -185,6 +184,11 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
     @Override
     public boolean containsEdge(V source, V target) {
         return getEdge(source, target) != null;
+    }
+
+    @Override
+    public boolean containsEdge(E edge) {
+        return edges.containsKey(edge);
     }
 
     @Override

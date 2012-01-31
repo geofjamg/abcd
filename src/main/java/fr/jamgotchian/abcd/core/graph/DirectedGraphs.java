@@ -218,6 +218,11 @@ public class DirectedGraphs {
         }
 
         @Override
+        public boolean containsEdge(E edge) {
+            return delegate.containsEdge(edge);
+        }
+
+        @Override
         public boolean containsEdge(V source, V target) {
             return delegate.containsEdge(source, target);
         }
@@ -391,6 +396,11 @@ public class DirectedGraphs {
         @Override
         public E getEdge(V source, V target) {
             return delegate.getEdge(source, target);
+        }
+
+        @Override
+        public boolean containsEdge(E edge) {
+            return delegate.containsEdge(edge);
         }
 
         @Override

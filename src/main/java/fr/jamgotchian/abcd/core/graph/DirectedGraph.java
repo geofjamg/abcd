@@ -31,6 +31,8 @@ public interface DirectedGraph<V, E> extends GraphvizDigraph<V, E> {
 
     boolean containsEdge(V source, V target);
 
+    boolean containsEdge(E edge);
+
     E getEdge(V source, V target);
 
     V getEdgeSource(E edge);
