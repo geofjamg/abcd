@@ -527,7 +527,7 @@ public class RegionAnalysis {
         int currentLevel = level++;
 
         // build refined program structure tree
-        RPST rpst = new RPST(cfg);
+        RPST rpst = new RPSTBuilder(cfg).build();
         rpst.setTyped(true);
 
         for (Region region : rpst.getRegionsPostOrder()) {

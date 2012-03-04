@@ -127,14 +127,16 @@ public class DebugABCDWriter extends DefaultABCDWriter {
                 writer.close();
             }
 
-            writer = new FileWriter(baseName + "_PDT.dot");
-            try {
-                cfg.getPostDominatorInfo().getPostDominatorsTree()
-                        .export(writer, "PDT",
-                                RANGE_GRAPHVIZ_RENDERER,
-                                EDGE_GRAPHVIZ_RENDERER_FALSE);
-            } finally {
-                writer.close();
+            if (cfg.getPostDominatorInfo() != null) {
+                writer = new FileWriter(baseName + "_PDT.dot");
+                try {
+                    cfg.getPostDominatorInfo().getPostDominatorsTree()
+                            .export(writer, "PDT",
+                                    RANGE_GRAPHVIZ_RENDERER,
+                                    EDGE_GRAPHVIZ_RENDERER_FALSE);
+                } finally {
+                    writer.close();
+                }
             }
 
             writer = new FileWriter(baseName + "_INST.dot");
@@ -152,7 +154,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     public void writeRPST(RPST rpst, int level) {
         assert rpst != null;
 
-        String baseName = debugDir.getPath() + File.separator + rpst.getCFG().getName();
+        String baseName = debugDir.getPath() + File.separator + rpst.getCfg().getName();
 
         try {
             Writer writer = new FileWriter(baseName + "_RPST_" + level + ".dot");

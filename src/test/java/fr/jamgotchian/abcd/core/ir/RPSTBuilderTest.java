@@ -35,11 +35,11 @@ import org.junit.Test;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class RPSTTest {
+public class RPSTBuilderTest {
 
-    private static final Logger LOGGER = Logger.getLogger(RPSTTest.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RPSTBuilderTest.class.getName());
 
-    public RPSTTest() {
+    public RPSTBuilderTest() {
     }
 
     @BeforeClass
@@ -126,7 +126,7 @@ public class RPSTTest {
         } finally {
             writer.close();
         }
-        RPST rpst = new RPST(cfg);
+        RPST rpst = new RPSTBuilder(cfg).build();
         writer = new FileWriter("/tmp/RPSTTest_RPST.dot");
         try {
             rpst.export(writer);
