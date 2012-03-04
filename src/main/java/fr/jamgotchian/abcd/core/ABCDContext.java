@@ -77,7 +77,7 @@ public class ABCDContext {
 
     public void decompile(ABCDDataSource dataSrc, ABCDWriter writer,
                           ABCDPreferences prefs, ClassLoader classLoader) throws IOException {
-        VariableNameProviderFactory nameProviderFactory = null;
+        VariableNameProviderFactory nameProviderFactory;
         if (prefs.isUseLocalVariableTable()) {
             nameProviderFactory = new DebugInfoVariableNameProviderFactory();
         } else {
