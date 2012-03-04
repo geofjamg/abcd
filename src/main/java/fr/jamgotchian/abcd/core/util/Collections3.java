@@ -29,6 +29,12 @@ public class Collections3 {
     }
 
     public static <E> boolean equals(Collection<E> coll1, Collection<E> coll2) {
+        if (coll1 == null && coll2 == null) {
+            return true;
+        }
+        if (coll1 == null || coll2 == null) {
+            return false;
+        }
         if (coll1.size() != coll2.size()) {
             return false;
         }
