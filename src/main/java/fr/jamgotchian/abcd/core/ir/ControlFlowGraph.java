@@ -30,7 +30,6 @@ import fr.jamgotchian.abcd.core.graph.Matrix;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
 import fr.jamgotchian.abcd.core.graph.EdgeFactory;
-import fr.jamgotchian.abcd.core.util.Collections3;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
 import fr.jamgotchian.abcd.core.util.RangeMap;
@@ -698,17 +697,6 @@ public class ControlFlowGraph {
             }
         }
     }
-    private boolean isCompleteExit(BasicBlock bb) {
-        if (getSuccessorCountOf(bb) == 0) {
-            return false;
-        }
-        for (Edge e : getIncomingEdgesOf(bb)) {
-            if (!e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     public void updateLoopInfo() {
         LOGGER.log(Level.FINER, "Update loop info");
@@ -745,52 +733,7 @@ public class ControlFlowGraph {
         }
 
         // try to reduce the number of loop exits by expanding the body
-        for (NaturalLoop nl : naturalLoops.values()) {
-            Collection<BasicBlock> exits = nl.getExitBlocks();
-            if (exits.size() <= 1) {
-                continue;
-            }
-            LOGGER.log(Level.FINER, "{0} has {1} exits : {2}",
-                    new Object[] {nl, exits.size(), exits});
-            List<BasicBlock> incompleteExit = new ArrayList<BasicBlock>();
-            List<BasicBlock> completeExit = new ArrayList<BasicBlock>();
-            for (BasicBlock exit : exits) {
-                if (isCompleteExit(exit)) {
-                    completeExit.add(exit);
-                } else {
-                    incompleteExit.add(exit);
-                }
-            }
-            for (BasicBlock bb : incompleteExit) {
-                for (Edge e : getIncomingEdgesOf(bb)) {
-                    if (e.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
-                        continue;
-                    }
-                    for (BasicBlock bb2 : completeExit) {
-                        Set<Edge> frontier = dominatorInfo.getDominanceFrontierOf(bb2);
-                        if (Collections3.equals(frontier, Collections.singleton(e))) {
-                            Set<BasicBlock> bodyExt = domTree.getSubTree(bb2).getNodes();
-                            LOGGER.log(Level.FINER, ">>> Expand {0} by adding {1}",
-                                    new Object[] {nl, bodyExt});
-                            // expand the loop body
-                            nl.getBody().addAll(bodyExt);
-                            for (Edge e2 : getIncomingEdgesOf(bb2)) {
-                                e2.removeAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
-                            }
-                            e.addAttribute(EdgeAttribute.LOOP_EXIT_EDGE);
-                        }
-                    }
-                }
-            }
-            Collection<BasicBlock> newExits = nl.getExitBlocks();
-            if (newExits.size() < exits.size()) {
-                LOGGER.log(Level.FINER, "{0} has now {1} exits : {2}",
-                        new Object[] {nl, newExits.size(), newExits});
-            }
-            if (newExits.size() > 1) {
-                LOGGER.log(Level.WARNING, "{0} has multiple exits!!!", nl);
-            }
-        }
+        new LoopBodyExpander(this).expand();
     }
 
     public boolean mergeNaturalLoops() {
