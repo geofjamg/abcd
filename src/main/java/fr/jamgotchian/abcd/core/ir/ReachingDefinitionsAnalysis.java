@@ -38,7 +38,7 @@ public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBl
     private final Map<Integer, VariableID> defs = new HashMap<Integer, VariableID>();
 
     public ReachingDefinitionsAnalysis(ControlFlowGraph cfg) {
-        super(cfg.getGraph(), cfg.getEntryBlock());
+        super("Reaching definitions", cfg.getGraph(), cfg.getEntryBlock());
 
         for (BasicBlock block : cfg.getBasicBlocks()) {
             for (IRInst inst : block.getInstructions()) {

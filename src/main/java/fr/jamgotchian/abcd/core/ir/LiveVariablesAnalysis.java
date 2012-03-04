@@ -35,7 +35,7 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
             = Logger.getLogger(LiveVariablesAnalysis.class.getName());
 
     public LiveVariablesAnalysis(ControlFlowGraph cfg) {
-        super(cfg.getGraph(), cfg.getExitBlock());
+        super("Live variables", cfg.getGraph(), cfg.getExitBlock());
     }
 
     private static Set<Variable> getDefs(BasicBlock block) {

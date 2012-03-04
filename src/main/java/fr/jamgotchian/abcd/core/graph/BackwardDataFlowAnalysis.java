@@ -19,6 +19,8 @@ package fr.jamgotchian.abcd.core.graph;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -26,11 +28,16 @@ import java.util.Map;
  */
 public abstract class BackwardDataFlowAnalysis<N, E, V> {
 
+    private static final Logger LOGGER = Logger.getLogger(BackwardDataFlowAnalysis.class.getName());
+
+    private final String name;
+
     private final DirectedGraph<N, E> graph;
 
     private final N exitNode;
 
-    public BackwardDataFlowAnalysis(DirectedGraph<N, E> graph, N exitNode) {
+    public BackwardDataFlowAnalysis(String name, DirectedGraph<N, E> graph, N exitNode) {
+        this.name = name;
         this.graph = graph;
         this.exitNode = exitNode;
     }
@@ -40,10 +47,14 @@ public abstract class BackwardDataFlowAnalysis<N, E, V> {
     }
 
     public Map<N, V> analyse() {
+        LOGGER.log(Level.FINEST, "Begin backward dataflow analysis {0}", name);
+
         Map<N, V> values = new HashMap<N, V>();
 
         for (N node : graph.getVertices()) {
-           values.put(node, getInitValue(node, node.equals(exitNode)));
+            V initValue = getInitValue(node, node.equals(exitNode));
+            values.put(node, initValue);
+            LOGGER.log(Level.FINEST, "in[{0}]={1}", new Object[] {node, initValue});
         }
 
         boolean change = true;
@@ -64,10 +75,14 @@ public abstract class BackwardDataFlowAnalysis<N, E, V> {
                     if (!valuesEqual(inBefore, in)) {
                         values.put(n, in);
                         change = true;
+                        LOGGER.log(Level.FINEST, "in[{0}]={1}", new Object[] {n, in});
                     }
                 }
             }
         }
+
+        LOGGER.log(Level.FINEST, "End backward dataflow analysis {0}", name);
+
         return values;
     }
 

@@ -28,7 +28,7 @@ class PostDominatorsFinder<N ,E> extends BackwardDataFlowAnalysis<N, E, Set<N>> 
     private final DominatorsFinder<N, E> dominatorsFinder;
 
     PostDominatorsFinder(DirectedGraph<N, E> graph, N exitNode) {
-        super(graph, exitNode);
+        super("Post-dominators", graph, exitNode);
         dominatorsFinder = new DominatorsFinder<N, E>(graph, exitNode);
     }
 

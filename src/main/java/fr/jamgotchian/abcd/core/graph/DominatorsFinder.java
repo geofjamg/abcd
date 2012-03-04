@@ -30,7 +30,7 @@ import java.util.Set;
 class DominatorsFinder<N, E> extends ForwardDataFlowAnalysis<N, E, Set<N>>  {
 
     DominatorsFinder(DirectedGraph<N, E> graph, N entryNode) {
-        super(graph, entryNode);
+        super("Dominators", graph, entryNode);
     }
 
     @Override
