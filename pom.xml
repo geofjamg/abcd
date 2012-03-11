@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.jamgotchian.abcd.core</groupId>
@@ -20,7 +20,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
-           </resource>
+            </resource>
         </resources>
         <plugins>
             <plugin>
@@ -63,6 +63,34 @@
                     <findbugsXmlOutput>true</findbugsXmlOutput>
                     <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
                     <xmlOutput>true</xmlOutput>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-Djava.util.logging.config.file=${basedir}/logging.properties</argument>
+                        <argument>-jar</argument>
+                        <argument>${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar</argument>
+                        <argument>-d</argument>
+                        <argument>/tmp</argument>
+                        <argument>-classdir</argument>
+                        <argument>${project.build.testOutputDirectory}</argument>
+                        <argument>-class</argument>
+                        <argument>fr.jamgotchian.abcd.core.Test</argument>
+                        <argument>-debug</argument>
+                        <argument>${user.home}/dot</argument>
+                    </arguments>
                 </configuration>
             </plugin>
         </plugins>
@@ -128,6 +156,6 @@
             <id>choco.repos</id>
             <url>http://www.emn.fr/z-info/choco-solver/mvn/repository/</url>
         </repository>
-   </repositories>
+    </repositories>
 
 </project>
