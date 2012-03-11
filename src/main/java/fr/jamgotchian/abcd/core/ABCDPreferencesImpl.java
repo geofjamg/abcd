@@ -26,7 +26,7 @@ class ABCDPreferencesImpl extends ABCDAbstractPreferences {
 
     private boolean useLocalVariableTable = false;
 
-    private boolean analyseLocalVariableType = true;
+    private boolean analyseLocalVariableType = false;
 
     @Override
     public boolean isUseLocalVariableTable() {
