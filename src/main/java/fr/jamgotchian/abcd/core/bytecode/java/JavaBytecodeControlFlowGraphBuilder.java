@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.bytecode.java;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import fr.jamgotchian.abcd.core.common.ABCDPreferences;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.CaseValues;
@@ -208,6 +209,12 @@ public class JavaBytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder
                         case ARETURN:
                         case RETURN:
                             analyseReturnInst(currentInstIdx);
+                            break;
+
+                        case ATHROW:
+                            if (ABCDPreferences.UNKNOWN_TARGET_EDGE_TEST) {
+                                analyseThrowInst(currentInstIdx);
+                            }
                             break;
                     }
                     break;

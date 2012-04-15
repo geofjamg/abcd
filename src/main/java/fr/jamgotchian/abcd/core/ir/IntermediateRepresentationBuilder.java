@@ -318,7 +318,9 @@ public class IntermediateRepresentationBuilder {
 
             // add fake edges to be able to compute post dominance in case of infinite
             // loops et throw instructions
-            addFakeEdges();
+            if (!ABCDPreferences.UNKNOWN_TARGET_EDGE_TEST) {
+                addFakeEdges();
+            }
 
             cfg.updatePostDominatorInfo();
 

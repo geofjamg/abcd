@@ -201,6 +201,17 @@ public abstract class ControlFlowGraphBuilder {
         LOGGER.log(Level.FINER, "  Return : current={0}", returnBlock);
     }
 
+    protected void analyseThrowInst(int currentInstIdx) {
+        BasicBlockSplit throwSplitResult = cfg.splitBasicBlockAt(currentInstIdx + 1);
+        BasicBlock throwBlock = throwSplitResult.getBlockBefore();
+        BasicBlock remainingBlock = throwSplitResult.getBlockAfter();
+        if (remainingBlock != null) {
+            cfg.removeEdge(throwBlock, remainingBlock);
+        }
+
+        LOGGER.log(Level.FINER, "  Throw : current={0}", throwBlock);
+    }
+
     protected void analyseSwitchInst(int currentInstIdx, List<Integer> caseInstnIdxs, List<CaseValues> values) {
         BasicBlockSplit switchSplitResult = cfg.splitBasicBlockAt(currentInstIdx+1);
         BasicBlock switchBlock = switchSplitResult.getBlockBefore();
