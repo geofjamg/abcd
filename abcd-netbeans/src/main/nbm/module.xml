@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nbm>
+    <moduleType>normal</moduleType>
+    <codeNameBase>fr.jamgotchian.abcd.netbeans/1</codeNameBase>
+    <author>Geoffroy Jamgotchian</author>
+    <homepageUrl>http://code.google.com/p/abcd-netbeans/</homepageUrl>
+    <licenseName>GNU GPL v3</licenseName>
+    <licenseFile>src/main/nbm/license.txt</licenseFile>
+    <dependencies>
+       <dependency>
+            <id>org.netbeans.api:org-netbeans-modules-java-source</id>
+            <type>impl</type>
+            <explicitValue>org.netbeans.modules.java.source = 19</explicitValue>
+        </dependency>
+       <dependency>
+            <id>org.netbeans.api:org-netbeans-modules-java-parsing-api</id>
+            <type>impl</type>
+            <explicitValue>org.netbeans.modules.parsing.api = 6</explicitValue>
+        </dependency>
+    </dependencies>
+</nbm>
