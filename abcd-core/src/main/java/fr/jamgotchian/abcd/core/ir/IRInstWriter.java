@@ -31,8 +31,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -40,7 +40,7 @@ import java.util.logging.Logger;
  */
 public class IRInstWriter implements IRInstVisitor<Void, Void> {
 
-    private static final Logger LOGGER = Logger.getLogger(IRInstWriter.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(IRInstWriter.class);
 
     public static String toString(IRInst inst, CodeWriterFactory factory) {
         Writer writer = new StringWriter();
@@ -50,7 +50,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
             try {
                 writer.close();
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, e.toString(), e);
+                LOGGER.error(e.toString(), e);
             }
         }
         return writer.toString();
@@ -96,7 +96,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
             try {
                 writer.close();
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, e.toString(), e);
+                LOGGER.error(e.toString(), e);
             }
         }
         return writer.toString();

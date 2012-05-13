@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  */
 public class IRInstSeq implements Iterable<IRInst> {
 
-    private static final Logger LOGGER = Logger.getLogger(IRInstSeq.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(IRInstSeq.class);
 
     private final List<IRInst> insts;
 
@@ -47,7 +47,7 @@ public class IRInstSeq implements Iterable<IRInst> {
     }
 
     public void add(IRInst inst) {
-        LOGGER.log(Level.FINER, "Add inst : {0}", IRInstWriter.toText(inst));
+        LOGGER.debug("Add inst : {}", IRInstWriter.toText(inst));
         insts.add(inst);
     }
 

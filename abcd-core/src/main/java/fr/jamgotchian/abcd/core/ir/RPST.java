@@ -23,8 +23,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  */
 public class RPST {
 
-    private static final Logger LOGGER = Logger.getLogger(RPST.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(RPST.class);
 
     private static final EdgeGraphvizRenderer EDGE_GRAPHVIZ_RENDERER
             = new EdgeGraphvizRenderer(true);
@@ -88,7 +88,7 @@ public class RPST {
         try {
             print(out, rootRegion, 0);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.toString(), e);
+            LOGGER.error(e.toString(), e);
         }
     }
 
@@ -169,13 +169,13 @@ public class RPST {
             writer = new FileWriter(fileName);
             export(writer);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.toString(), e);
+            LOGGER.error(e.toString(), e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, e.toString(), e);
+                    LOGGER.error(e.toString(), e);
                 }
             }
         }

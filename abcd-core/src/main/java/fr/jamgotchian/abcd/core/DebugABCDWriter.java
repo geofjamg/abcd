@@ -29,7 +29,6 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.logging.Level;
 
 /**
  *
@@ -92,7 +91,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
                 writer.close();
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.toString(), e);
+            LOGGER.error(e.toString(), e);
         }
     }
 
@@ -146,7 +145,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
                 writer.close();
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.toString(), e);
+            LOGGER.error(e.toString(), e);
         }
     }
 
@@ -164,7 +163,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
                 writer.close();
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.toString(), e);
+            LOGGER.error(e.toString(), e);
         }
     }
 }

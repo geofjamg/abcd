@@ -20,8 +20,8 @@ import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  */
 public class LoopBodyExpander {
 
-    private static final Logger LOGGER = Logger.getLogger(LoopBodyExpander.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoopBodyExpander.class);
 
     private final ControlFlowGraph cfg;
 
@@ -57,7 +57,7 @@ public class LoopBodyExpander {
             if (exits.size() <= 1) {
                 continue;
             }
-            LOGGER.log(Level.FINER, "{0} has {1} exits : {2}",
+            LOGGER.debug("{} has {} exits : {}",
                     new Object[] {nl, exits.size(), exits});
             List<BasicBlock> incompleteExit = new ArrayList<BasicBlock>();
             List<BasicBlock> completeExit = new ArrayList<BasicBlock>();
@@ -77,8 +77,7 @@ public class LoopBodyExpander {
                         Set<Edge> frontier = domInfo.getDominanceFrontierOf(bb2);
                         if (Collections3.equals(frontier, Collections.singleton(e))) {
                             Set<BasicBlock> bodyExt = domTree.getSubTree(bb2).getNodes();
-                            LOGGER.log(Level.FINER, ">>> Expand {0} by adding {1}",
-                                    new Object[] {nl, bodyExt});
+                            LOGGER.debug(">>> Expand {} by adding {}", nl, bodyExt);
                             // expand the loop body
                             nl.getBody().addAll(bodyExt);
                             for (Edge e2 : cfg.getIncomingEdgesOf(bb2)) {
@@ -91,11 +90,11 @@ public class LoopBodyExpander {
             }
             Collection<BasicBlock> newExits = nl.getExitBlocks();
             if (newExits.size() < exits.size()) {
-                LOGGER.log(Level.FINER, "{0} has now {1} exits : {2}",
+                LOGGER.debug("{} has now {} exits : {}",
                         new Object[] {nl, newExits.size(), newExits});
             }
             if (newExits.size() > 1) {
-                LOGGER.log(Level.WARNING, "{0} has multiple exits!!!", nl);
+                LOGGER.warn("{} has multiple exits!!!", nl);
             }
         }
     }

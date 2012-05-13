@@ -16,8 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.util;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -30,8 +28,7 @@ public class ConsoleUtil {
     private ConsoleUtil() {
     }
 
-    public static void logTitledSeparator(Logger logger, Level level, String title,
-                                          char separator, Object... param) {
+    public static String formatTitledSeparator(String title, char separator) {
         StringBuilder builder = new StringBuilder(SEPARATOR_WIDTH);
         int remaining = SEPARATOR_WIDTH - title.length() - 2;
         remaining = Math.max(remaining, 4);
@@ -44,15 +41,15 @@ public class ConsoleUtil {
         for (int i = 0; i < after; i++) {
             builder.append(separator);
         }
-        logger.log(level, builder.toString(), param);
+        return builder.toString();
     }
 
-    public static void logSeparator(Logger logger, Level level, char separator) {
+    public static String formatSeparator(char separator) {
         StringBuilder builder = new StringBuilder(SEPARATOR_WIDTH);
         for (int i = 0; i < SEPARATOR_WIDTH; i++) {
             builder.append(separator);
         }
-        logger.log(level, builder.toString());
+        return builder.toString();
     }
 
     public static TablePrinter newTablePrinter(String... columnNames) {

@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBlock, Edge, Set<Integer>> {
 
     private static final Logger LOGGER
-            = Logger.getLogger(ReachingDefinitionsAnalysis.class.getName());
+            = LoggerFactory.getLogger(ReachingDefinitionsAnalysis.class);
 
     private final Map<Integer, VariableID> defs = new HashMap<Integer, VariableID>();
 
@@ -53,10 +53,9 @@ public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBl
     @Override
     public Map<BasicBlock, Set<Integer>> analyse() {
         Map<BasicBlock, Set<Integer>> reachingDefs  = super.analyse();
-        LOGGER.log(Level.FINER, "Reaching defintions analysis :");
+        LOGGER.debug("Reaching defintions analysis :");
         for (Map.Entry<BasicBlock, Set<Integer>> entry : reachingDefs.entrySet()) {
-            LOGGER.log(Level.FINER, "  {0} : {1}",
-                    new Object[] {entry.getKey(), entry.getValue()});
+            LOGGER.debug("  {} : {}", entry.getKey(), entry.getValue());
         }
         return reachingDefs;
     }

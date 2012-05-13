@@ -32,8 +32,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -42,7 +42,7 @@ import java.util.logging.Logger;
 public class DefaultABCDWriter implements ABCDWriter {
 
     protected final static Logger LOGGER
-            = Logger.getLogger(DefaultABCDWriter.class.getName());
+            = LoggerFactory.getLogger(DefaultABCDWriter.class);
 
     private final File outDir;
 
@@ -93,7 +93,7 @@ public class DefaultABCDWriter implements ABCDWriter {
                 writer.close();
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, e.toString(), e);
+            LOGGER.error(e.toString(), e);
         }
     }
 }

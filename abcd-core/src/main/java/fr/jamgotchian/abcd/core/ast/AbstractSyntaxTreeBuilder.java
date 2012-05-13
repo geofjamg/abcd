@@ -103,8 +103,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -112,7 +112,7 @@ import java.util.logging.Logger;
  */
 public class AbstractSyntaxTreeBuilder {
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractSyntaxTreeBuilder.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSyntaxTreeBuilder.class);
 
     private final ControlFlowGraph cfg;
 
@@ -576,8 +576,7 @@ public class AbstractSyntaxTreeBuilder {
     }
 
     private void buildAST(Region region, BlockStatement blockStmt) {
-        LOGGER.log(Level.FINEST, "Build AST from region {0} {1}",
-                new Object[] {region, region.getParentType()});
+        LOGGER.trace("Build AST from region {} {}", region, region.getParentType());
 
         switch (region.getParentType()) {
             case ROOT:

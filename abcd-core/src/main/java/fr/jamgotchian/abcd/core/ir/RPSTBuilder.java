@@ -27,8 +27,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Build a refined program structure tree (RPST) from control flow graph.
@@ -44,7 +44,7 @@ import java.util.logging.Logger;
  */
 public class RPSTBuilder {
 
-    private static final Logger LOGGER = Logger.getLogger(RPSTBuilder.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(RPSTBuilder.class);
 
     private final ControlFlowGraph cfg;
 
@@ -123,7 +123,7 @@ public class RPSTBuilder {
         if (!bb2region.containsKey(entry)) {
             bb2region.put(entry, newRegion);
         }
-        LOGGER.log(Level.FINER, "New Region {0}", newRegion);
+        LOGGER.debug("New Region {}", newRegion);
         return newRegion;
     }
 
@@ -137,12 +137,10 @@ public class RPSTBuilder {
                 Region newRegion = createRegion(entry, exit);
                 if (lastRegion != null) {
                     lastRegion.setParent(newRegion);
-                     LOGGER.log(Level.FINEST, "Parent of region {0} is {1}",
-                            new Object[] {lastRegion, newRegion});
+                     LOGGER.trace("Parent of region {} is {}", lastRegion, newRegion);
                 } else {
                     entry.setRegion(newRegion);
-                    LOGGER.log(Level.FINEST, "Parent of BB {0} is {1}",
-                            new Object[] {entry, newRegion});
+                    LOGGER.trace("Parent of BB {} is {}", entry, newRegion);
                 }
                 lastRegion = newRegion;
                 lastExit = exit;
@@ -177,13 +175,11 @@ public class RPSTBuilder {
         Region newRegion = bb2region.get(bb);
         if (newRegion != null) {
             Region topMostParent = getTopMostParent(newRegion);
-            LOGGER.log(Level.FINEST, "Parent of region {0} is {1}",
-                    new Object[] {topMostParent, region});
+            LOGGER.trace("Parent of region {} is {}", topMostParent, region);
             topMostParent.setParent(region);
             region = newRegion;
         } else {
-            LOGGER.log(Level.FINEST, "Parent of BB {0} is {1}",
-                    new Object[] {bb, region});
+            LOGGER.trace("Parent of BB {} is {}", bb, region);
             bb.setRegion(region);
             bb2region.put(bb, region);
         }
@@ -239,7 +235,7 @@ public class RPSTBuilder {
                                 Region newRegion = new Region(child1.getEntry(),
                                                               child2.getExit(),
                                                               ParentType.UNDEFINED);
-                                LOGGER.log(Level.FINER, "New non canonical region {0}", newRegion);
+                                LOGGER.debug("New non canonical region {}", newRegion);
                                 child1.setParent(newRegion);
                                 child2.setParent(newRegion);
                                 newRegion.setParent(region);

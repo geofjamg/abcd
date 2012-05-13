@@ -27,7 +27,6 @@ import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -45,6 +44,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -52,7 +53,7 @@ import org.openide.util.Lookup;
  */
 public class CodeGenerator {
 
-    private static final Logger LOG = Logger.getLogger(CodeGenerator.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(CodeGenerator.class);
     private static final Set<ElementKind> UNUSABLE_KINDS = EnumSet.of(ElementKind.PACKAGE);
     private static final String HASH_ATTRIBUTE_NAME = "origin-hash";
 
@@ -133,16 +134,16 @@ public class CodeGenerator {
                         String existingHash = (String) source.getAttribute(HASH_ATTRIBUTE_NAME);
 
                         if (hash.equals(existingHash)) {
-                            LOG.fine(FileUtil.getFileDisplayName(source) + " is up to date, reusing from cache.");  //NOI18N
+                            LOG.debug(FileUtil.getFileDisplayName(source) + " is up to date, reusing from cache.");  //NOI18N
                             return;
                         }
                     }
 
                     if (source == null) {
                         result[0] = FileUtil.createData(sourceRootFO, path);
-                        LOG.fine(FileUtil.getFileDisplayName(result[0]) + " does not exist, creating.");  //NOI18N
+                        LOG.debug(FileUtil.getFileDisplayName(result[0]) + " does not exist, creating.");  //NOI18N
                     } else {
-                        LOG.fine(FileUtil.getFileDisplayName(source) + " is not up to date, regenerating.");  //NOI18N
+                        LOG.debug(FileUtil.getFileDisplayName(source) + " is not up to date, regenerating.");  //NOI18N
                     }
 
                     result[0].setAttribute(HASH_ATTRIBUTE_NAME, hash);

@@ -19,8 +19,8 @@ package fr.jamgotchian.abcd.core.graph;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  */
 public abstract class ForwardDataFlowAnalysis<N, E, V> {
 
-    private static final Logger LOGGER = Logger.getLogger(ForwardDataFlowAnalysis.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ForwardDataFlowAnalysis.class);
 
     private final String name;
 
@@ -47,14 +47,14 @@ public abstract class ForwardDataFlowAnalysis<N, E, V> {
     }
 
     public Map<N, V> analyse() {
-        LOGGER.log(Level.FINEST, "Begin forward dataflow analysis {0}", name);
+        LOGGER.trace("Begin forward dataflow analysis {}", name);
 
         Map<N, V> values = new HashMap<N, V>();
 
         for (N node : graph.getVertices()) {
             V initValue = getInitValue(node, node.equals(entryNode));
             values.put(node, initValue);
-            LOGGER.log(Level.FINEST, "out[{0}]={1}", new Object[] {node, initValue});
+            LOGGER.trace("out[{}]={}", node, initValue);
         }
 
         boolean change = true;
@@ -75,13 +75,13 @@ public abstract class ForwardDataFlowAnalysis<N, E, V> {
                     if (!valuesEqual(outBefore, out)) {
                         values.put(n, out);
                         change = true;
-                        LOGGER.log(Level.FINEST, "out[{0}]={1}", new Object[] {n, out});
+                        LOGGER.trace("out[{}]={}", new Object[] {n, out});
                     }
                 }
             }
         }
 
-        LOGGER.log(Level.FINEST, "End forward dataflow analysis {0}", name);
+        LOGGER.trace("End forward dataflow analysis {}", name);
 
         return values;
     }

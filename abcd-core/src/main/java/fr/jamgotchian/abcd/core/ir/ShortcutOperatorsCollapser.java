@@ -17,8 +17,8 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.util.ConsoleUtil;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 public class ShortcutOperatorsCollapser {
 
     private static final Logger LOGGER
-            = Logger.getLogger(ShortcutOperatorsCollapser.class.getName());
+            = LoggerFactory.getLogger(ShortcutOperatorsCollapser.class);
 
     private final ControlFlowGraph cfg;
 
@@ -295,8 +295,8 @@ public class ShortcutOperatorsCollapser {
     }
 
     public boolean collapse() {
-        ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE,
-                "Collapse shortcut operators of {0}", '=', cfg.getName());
+        LOGGER.debug(ConsoleUtil.formatTitledSeparator("Collapse shortcut operators of {}", '='),
+                cfg.getName());
 
         boolean collapsed = false;
 

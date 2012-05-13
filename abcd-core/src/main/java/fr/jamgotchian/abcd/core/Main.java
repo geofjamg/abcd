@@ -26,8 +26,6 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.jar.JarFile;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -37,6 +35,8 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -44,7 +44,7 @@ import org.apache.commons.cli.ParseException;
  */
 public class Main {
 
-    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private static final Options OPTIONS;
 
@@ -185,7 +185,7 @@ public class Main {
                 printError(e.getMessage());
             }
         } catch (Throwable exc) {
-            LOGGER.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.error(exc.toString(), exc);
         }
     }
 }

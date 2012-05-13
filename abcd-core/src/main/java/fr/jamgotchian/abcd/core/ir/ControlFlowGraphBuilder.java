@@ -22,8 +22,8 @@ import fr.jamgotchian.abcd.core.util.ConsoleUtil;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 public abstract class ControlFlowGraphBuilder {
 
     private static final Logger LOGGER
-            = Logger.getLogger(ControlFlowGraphBuilder.class.getName());
+            = LoggerFactory.getLogger(ControlFlowGraphBuilder.class);
 
     private final String methodName;
 
@@ -43,8 +43,7 @@ public abstract class ControlFlowGraphBuilder {
     }
 
     public ControlFlowGraph build() {
-        ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Build CFG of {0}",
-                '=', methodName);
+        LOGGER.debug(ConsoleUtil.formatTitledSeparator("Build CFG of {}", '='), methodName);
 
         cfg = new ControlFlowGraph(methodName, getInstructionCount());
 
@@ -100,13 +99,13 @@ public abstract class ControlFlowGraphBuilder {
     private void printExceptionTable(ExceptionTable table) {
         StringBuilder builder = new StringBuilder();
         table.print(builder);
-        LOGGER.log(Level.FINER, "Exception table :\n{0}", builder.toString());
+        LOGGER.debug("Exception table :\n{}", builder.toString());
     }
 
     private void printLocalVariableTable(LocalVariableTable table) {
         StringBuilder builder = new StringBuilder();
         table.print(builder);
-        LOGGER.log(Level.FINER, "Local variable table :\n{0}", builder.toString());
+        LOGGER.debug("Local variable table :\n{}", builder.toString());
     }
 
     protected void analyseJumpInst(int currentInstIdx, int labelInstIdx) {
@@ -129,8 +128,8 @@ public abstract class ControlFlowGraphBuilder {
 
             currentBlock.setType(BasicBlockType.JUMP_IF);
 
-            LOGGER.log(Level.FINER, "  JumpIf : current={0}, true={1}, false={2}",
-                                     new Object[]{currentBlock, thenBlock, elseBlock});
+            LOGGER.debug("  JumpIf : current={}, true={}, false={}",
+                    new Object[]{currentBlock, thenBlock, elseBlock});
         } else if (labelInstIdx == currentInstIdx + 1) {
             // remove unnecessary jump
             //
@@ -158,8 +157,8 @@ public abstract class ControlFlowGraphBuilder {
 
             currentBlock.setType(BasicBlockType.JUMP_IF);
 
-            LOGGER.log(Level.FINER, "  JumpIf : current={0}, true={1}, false={2}",
-                                     new Object[]{currentBlock, labelBlock, exitBlock});
+            LOGGER.debug("  JumpIf : current={}, true={}, false={}",
+                    new Object[]{currentBlock, labelBlock, exitBlock});
         }
     }
 
@@ -182,8 +181,7 @@ public abstract class ControlFlowGraphBuilder {
 
             currentBlock.setType(BasicBlockType.GOTO);
 
-            LOGGER.log(Level.FINER, "  Goto : current={0}, label={1}",
-                                     new Object[]{currentBlock, labelBlock});
+            LOGGER.debug("  Goto : current={}, label={}", currentBlock, labelBlock);
         }
     }
 
@@ -198,7 +196,7 @@ public abstract class ControlFlowGraphBuilder {
 
         returnBlock.setType(BasicBlockType.RETURN);
 
-        LOGGER.log(Level.FINER, "  Return : current={0}", returnBlock);
+        LOGGER.debug("  Return : current={}", returnBlock);
     }
 
     protected void analyseThrowInst(int currentInstIdx) {
@@ -209,7 +207,7 @@ public abstract class ControlFlowGraphBuilder {
             cfg.removeEdge(throwBlock, remainingBlock);
         }
 
-        LOGGER.log(Level.FINER, "  Throw : current={0}", throwBlock);
+        LOGGER.debug("  Throw : current={}", throwBlock);
     }
 
     protected void analyseSwitchInst(int currentInstIdx, List<Integer> caseInstnIdxs, List<CaseValues> values) {
@@ -245,7 +243,6 @@ public abstract class ControlFlowGraphBuilder {
         // necessary to tag the switch block after all case have been splitted
         switchBlock.setType(BasicBlockType.SWITCH);
 
-        LOGGER.log(Level.FINER, "  Switch : switch={0}, cases={1}",
-                new Object[]{switchBlock, caseBlocks});
+        LOGGER.debug("  Switch : switch={}, cases={}", switchBlock, caseBlocks);
     }
 }

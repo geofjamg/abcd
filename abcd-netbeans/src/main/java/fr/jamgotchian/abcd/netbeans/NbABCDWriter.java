@@ -29,8 +29,8 @@ import fr.jamgotchian.abcd.core.ir.RPST;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -38,8 +38,7 @@ import java.util.logging.Logger;
  */
 public class NbABCDWriter implements ABCDWriter {
 
-    protected final static Logger LOGGER
-            = Logger.getLogger(NbABCDWriter.class.getName());
+    protected final static Logger LOGGER = LoggerFactory.getLogger(NbABCDWriter.class);
 
     private final OutputStream os;
 
@@ -73,7 +72,7 @@ public class NbABCDWriter implements ABCDWriter {
                 writer.close();
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, e.toString(), e);
+            LOGGER.error(e.toString(), e);
         }
     }
 

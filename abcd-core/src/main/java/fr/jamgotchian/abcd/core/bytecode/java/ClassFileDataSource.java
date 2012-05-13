@@ -27,13 +27,13 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -42,7 +42,7 @@ import org.objectweb.asm.Type;
 public class ClassFileDataSource implements ABCDDataSource {
 
     private static final Logger LOGGER
-            = Logger.getLogger(ClassFileDataSource.class.getName());
+            = LoggerFactory.getLogger(ClassFileDataSource.class);
 
     private final File classDir;
 
@@ -107,13 +107,13 @@ public class ClassFileDataSource implements ABCDDataSource {
                         cr.accept(checker, 0);
                         return checker.isInnerClass();
                     } catch (IOException e) {
-                        LOGGER.log(Level.SEVERE, e.toString(), e);
+                        LOGGER.error(e.toString(), e);
                     } finally {
                         if (is != null) {
                             try {
                                 is.close();
                             } catch (IOException e) {
-                                LOGGER.log(Level.SEVERE, e.toString(), e);
+                                LOGGER.error(e.toString(), e);
                             }
                         }
                     }

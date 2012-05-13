@@ -20,7 +20,6 @@ package fr.jamgotchian.abcd.core.code;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  *
@@ -54,7 +53,7 @@ public class TextCodeWriter extends CodeWriter {
         try {
             writer.write(" ");
         } catch(IOException exc) {
-            LOGGER.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.error(exc.toString(), exc);
         }
         return this;
     }
@@ -63,7 +62,7 @@ public class TextCodeWriter extends CodeWriter {
         try {
             writer.append("<");
         } catch(IOException exc) {
-            LOGGER.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.error(exc.toString(), exc);
         }
         return this;
     }
@@ -72,7 +71,7 @@ public class TextCodeWriter extends CodeWriter {
         try {
             writer.append(">");
         } catch(IOException exc) {
-            LOGGER.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.error(exc.toString(), exc);
         }
         return this;
     }
@@ -81,7 +80,7 @@ public class TextCodeWriter extends CodeWriter {
         try {
             writer.append("&");
         } catch(IOException exc) {
-            LOGGER.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.error(exc.toString(), exc);
         }
         return this;
     }

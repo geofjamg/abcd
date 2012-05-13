@@ -29,8 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Convert IR to pruned SSA form.
@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  */
 public class SSAFormConverter {
 
-    private static final Logger LOGGER = Logger.getLogger(SSAFormConverter.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(SSAFormConverter.class);
 
     private final ControlFlowGraph graph;
 
@@ -95,8 +95,7 @@ public class SSAFormConverter {
                             if (liveVariables.get(y).contains(defIndex)) {
                                 y.getInstructions()
                                  .insertAt(0, instFactory.newPhi(varFactory.create(defIndex, y, -1), args));
-                                LOGGER.log(Level.FINEST, "  Add Phi function to {0} for var {1}",
-                                        new Object[] {y, defIndex});
+                                LOGGER.trace("  Add Phi function to {} for var {}", y, defIndex);
                             }
                             phi.put(defIndex, y);
                             if (!contains) {
@@ -122,8 +121,7 @@ public class SSAFormConverter {
 
     private void renameVariables(int varIndex, BasicBlock n, Deque<Integer> versionStack,
                                  Counter versionCount) {
-        LOGGER.log(Level.FINEST, "  Rename variables {0} of {1}",
-                new Object[] {varIndex, n});
+        LOGGER.trace("  Rename variables {} of {}", varIndex, n);
 
         // generated version in current block
         Set<Integer> generatedVersion = new HashSet<Integer>();
@@ -229,7 +227,7 @@ public class SSAFormConverter {
             }
         }
 
-        LOGGER.log(Level.FINER, "Convert to SSA form");
+        LOGGER.debug("Convert to SSA form");
 
         // fill map containing all definitions and its basic block
         defBlocks = HashMultimap.create();
@@ -262,7 +260,7 @@ public class SSAFormConverter {
                 }
             }
         }
-        LOGGER.log(Level.FINEST, "Local liveness {0}", globals);
+        LOGGER.trace("Local liveness {}", globals);
 
         insertPhiFunctions();
 

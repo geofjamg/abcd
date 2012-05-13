@@ -37,8 +37,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -47,7 +47,7 @@ import java.util.logging.Logger;
 public class IntermediateRepresentationBuilder {
 
     private static final Logger LOGGER
-            = Logger.getLogger(IntermediateRepresentationBuilder.class.getName());
+            = LoggerFactory.getLogger(IntermediateRepresentationBuilder.class);
 
     private final ControlFlowGraphBuilder cfgBuilder;
 
@@ -105,8 +105,8 @@ public class IntermediateRepresentationBuilder {
      * Replace choice instructions by conditional instructions (ternary operator)
      */
     public void resolveChoiceInst() {
-        ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE,
-                "Resolve choice instructions of {0}", '=', cfg.getName());
+        LOGGER.debug(ConsoleUtil.formatTitledSeparator("Resolve choice instructions of {}", '='),
+                cfg.getName());
 
         for (BasicBlock joinBlock : cfg.getDFST()) {
             IRInstSeq joinInsts = joinBlock.getInstructions();
@@ -168,14 +168,14 @@ public class IntermediateRepresentationBuilder {
                                     Variable resultVar = choiceInst.getResult();
                                     ConditionalInst condInst
                                             = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
-                                    LOGGER.log(Level.FINER, "Replace inst at {0} of {1} : {2}",
+                                    LOGGER.debug("Replace inst at {} of {} : {}",
                                             new Object[]{i, joinBlock, IRInstWriter.toText(condInst)});
                                     condInsts.add(condInst);
                                 } else {
                                     Variable resultVar = varFactory.createTmp(forkBlock);
                                     ConditionalInst condInst
                                             = instFactory.newConditional(resultVar, condVar, thenVar, elseVar);
-                                    LOGGER.log(Level.FINER, "Insert inst at {0} of {1} : {2}",
+                                    LOGGER.debug("Insert inst at {} of {} : {}",
                                             new Object[]{i, joinBlock, IRInstWriter.toText(condInst)});
                                     condInsts.add(condInst);
                                     choiceInst.getChoices().add(resultVar);
@@ -217,14 +217,14 @@ public class IntermediateRepresentationBuilder {
                     && insts.getLast() instanceof ThrowInst) {
                 Edge fakeEdge = cfg.addEdge(bb, cfg.getExitBlock());
                 fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                LOGGER.log(Level.FINEST, "Add fake edge {0}", cfg.toString(fakeEdge));
+                LOGGER.trace("Add fake edge {}", cfg.toString(fakeEdge));
             }
         }
         for (NaturalLoop loop : cfg.getNaturalLoops().values()) {
             if (loop.isInfinite()) {
                 Edge fakeEdge = cfg.addEdge(loop.getHead(), cfg.getExitBlock());
                 fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                LOGGER.log(Level.FINEST, "Add fake edge {0}", cfg.toString(fakeEdge));
+                LOGGER.trace("Add fake edge {}", cfg.toString(fakeEdge));
             }
         }
     }
@@ -261,7 +261,7 @@ public class IntermediateRepresentationBuilder {
                            v.getPosition(),
                            v.getName() != null ? v.getName() : "<undefined>");
         }
-        LOGGER.log(Level.FINEST, "Variable names :\n{0}", printer.toString());
+        LOGGER.trace("Variable names :\n{}", printer.toString());
     }
 
     private void addVariableDeclarations() {
@@ -286,8 +286,7 @@ public class IntermediateRepresentationBuilder {
             } else {
                 commonAncestor.putProperty(VARIABLE_DECLARATION, Sets.newHashSet(ID));
             }
-            LOGGER.log(Level.FINER, "Declar variable {0} at {1} ",
-                    new Object[] {ID, commonAncestor});
+            LOGGER.debug("Declar variable {} at {} ", ID, commonAncestor);
         }
     }
 

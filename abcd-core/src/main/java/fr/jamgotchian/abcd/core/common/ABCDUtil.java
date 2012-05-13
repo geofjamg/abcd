@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  */
 public class ABCDUtil {
 
-    private static final Logger LOGGER = Logger.getLogger(ABCDUtil.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ABCDUtil.class);
 
     private static final String UNDEFINED = "UNDEFINED";
 
@@ -57,13 +57,13 @@ public class ABCDUtil {
                 version = props.getProperty("abcd.version", UNDEFINED);
                 homePage = props.getProperty("abcd.homePage", UNDEFINED);
             } catch(IOException e) {
-                LOGGER.log(Level.SEVERE, e.toString(), e);
+                LOGGER.error(e.toString(), e);
             } finally {
                 if (is != null) {
                     try {
                         is.close();
                     } catch(IOException e) {
-                        LOGGER.log(Level.SEVERE, e.toString(), e);
+                        LOGGER.error(e.toString(), e);
                     }
                 }
             }

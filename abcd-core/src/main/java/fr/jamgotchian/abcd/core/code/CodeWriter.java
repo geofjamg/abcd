@@ -20,8 +20,8 @@ package fr.jamgotchian.abcd.core.code;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  */
 public abstract class CodeWriter {
 
-    protected static final Logger LOGGER = Logger.getLogger(CodeWriter.class.getName());
+    protected static final Logger LOGGER = LoggerFactory.getLogger(CodeWriter.class);
 
     private static final int INDEX_PADDING = 4;
 
@@ -86,7 +86,7 @@ public abstract class CodeWriter {
         try {
             writeEol();
         } catch(IOException exc) {
-            LOGGER.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.error(exc.toString(), exc);
         }
         indentNeeded = true;
         return this;
@@ -144,7 +144,7 @@ public abstract class CodeWriter {
         try {
             writer.write(str);
         } catch(IOException exc) {
-            LOGGER.log(Level.SEVERE, exc.toString(), exc);
+            LOGGER.error(exc.toString(), exc);
         }
         return this;
     }

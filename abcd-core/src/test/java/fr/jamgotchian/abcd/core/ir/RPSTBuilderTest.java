@@ -16,19 +16,11 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.ABCDContext;
-import fr.jamgotchian.abcd.core.util.SimplestFormatter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -37,31 +29,7 @@ import org.junit.Test;
  */
 public class RPSTBuilderTest {
 
-    private static final Logger LOGGER = Logger.getLogger(RPSTBuilderTest.class.getName());
-
     public RPSTBuilderTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        // root logger configuration
-        Logger rootLogger = Logger.getLogger(ABCDContext.class.getPackage().getName());
-        ConsoleHandler handler = new ConsoleHandler();
-        handler.setFormatter(new SimplestFormatter());
-        handler.setLevel(Level.FINEST);
-        rootLogger.setLevel(Level.ALL);
-        rootLogger.addHandler(handler);
-        rootLogger.setUseParentHandlers(false);
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        Logger rootLogger = Logger.getLogger(ABCDContext.class.getPackage().getName());
-        for (Handler handler : rootLogger.getHandlers()) {
-            handler.close();
-        }
-
-        Thread.sleep(1000);
     }
 
     @Before

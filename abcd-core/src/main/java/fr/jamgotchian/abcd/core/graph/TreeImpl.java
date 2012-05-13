@@ -29,8 +29,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  */
 class TreeImpl<N, E> implements MutableTree<N, E> {
 
-    private static final Logger LOGGER = Logger.getLogger(TreeImpl.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(TreeImpl.class);
 
     private final GraphvizRenderer<N> NODE_GRAPHVIZ_RENDERER
             = new DefaultGraphvizRenderer<N>();
@@ -384,13 +384,13 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             writer = new FileWriter(fileName);
             export(writer, name, nodeRenderer, edgeRenderer);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.toString(), e);
+            LOGGER.error(e.toString(), e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, e.toString(), e);
+                    LOGGER.error(e.toString(), e);
                 }
             }
         }
@@ -403,13 +403,13 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             writer = new FileWriter(fileName);
             export(writer, name);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.toString(), e);
+            LOGGER.error(e.toString(), e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, e.toString(), e);
+                    LOGGER.error(e.toString(), e);
                 }
             }
         }

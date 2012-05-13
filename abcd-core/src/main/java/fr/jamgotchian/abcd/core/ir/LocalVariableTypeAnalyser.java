@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -44,7 +44,7 @@ import java.util.logging.Logger;
 public class LocalVariableTypeAnalyser {
 
     private static final Logger LOGGER
-            = Logger.getLogger(LocalVariableTypeAnalyser.class.getName());
+            = LoggerFactory.getLogger(LocalVariableTypeAnalyser.class);
 
     private static final JavaType[] PRIMITIVE_TYPES = { JavaType.BOOLEAN,
                                                         JavaType.CHAR,
@@ -562,7 +562,7 @@ public class LocalVariableTypeAnalyser {
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             bb.getInstructions().accept(new TypeIndexer(), null);
         }
-        LOGGER.log(Level.FINEST, "Type indexes :\n{0}", indexer.indexesToString());
+        LOGGER.trace("Type indexes :\n{}", indexer.indexesToString());
     }
 
     public void analyse() {
@@ -590,7 +590,7 @@ public class LocalVariableTypeAnalyser {
             bb.getInstructions().accept(new ConstraintsAdder(), null);
         }
 
-        LOGGER.log(Level.FINEST, model.constraintsToString());
+        LOGGER.trace(model.constraintsToString());
 
         Solver s = new CPSolver();
         s.read(model);
@@ -598,19 +598,18 @@ public class LocalVariableTypeAnalyser {
             throw new ABCDException("Type analysis failed");
         }
 
-        LOGGER.log(Level.FINEST, "Solution :");
+        LOGGER.trace("Solution :");
         Map<VariableID, JavaType> types = new HashMap<VariableID, JavaType>();
         for (Map.Entry<VariableID, SetVariable> entry : variables.entrySet()) {
             VariableID ID = entry.getKey();
             SetVariable var = entry.getValue();
             int[] values = s.getVar(var).getValue();
-            LOGGER.log(Level.FINEST, "{0} = {1}",
-                    new Object[] {ID, Arrays.toString(values)});
+            LOGGER.trace("{} = {}", ID, Arrays.toString(values));
             if (values.length == 0) {
-                LOGGER.warning("  => No solution found");
+                LOGGER.warn("  => No solution found");
             } else {
                 JavaType type = indexer.resolveType(values, classNameManager);
-                LOGGER.log(Level.FINEST, "  => {0}", type);
+                LOGGER.trace("  => {}", type);
                 types.put(ID, type);
             }
         }

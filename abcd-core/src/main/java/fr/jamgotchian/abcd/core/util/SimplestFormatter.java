@@ -30,7 +30,7 @@ import java.util.logging.LogRecord;
 public class SimplestFormatter extends Formatter {
 
     private final DateFormat dateFomatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
-    
+
     public SimplestFormatter() {
     }
 
@@ -52,7 +52,7 @@ public class SimplestFormatter extends Formatter {
             record.getThrown().printStackTrace(new PrintWriter(writer));
             sb.append(writer.toString());
         }
-        
+
         return sb.toString();
     }
 }

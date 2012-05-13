@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  */
 public class DominatorInfo<N, E> {
 
-    private static final Logger LOGGER = Logger.getLogger(DominatorInfo.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(DominatorInfo.class.getName());
 
     private final DirectedGraph<N, E> graph;
 
@@ -117,11 +117,11 @@ public class DominatorInfo<N, E> {
                     }
                 }
                 if (!found) {
-                    LOGGER.log(Level.WARNING, "Cannot find immediate dominator of {0}",  n);
+                    LOGGER.warn("Cannot find immediate dominator of {}",  n);
                 }
             }
         }
-        LOGGER.log(Level.FINEST, "Immediate dominators {0}", immediateDominator);
+        LOGGER.trace("Immediate dominators {}", immediateDominator);
     }
 
     private void computeDominanceFrontier() {
@@ -143,8 +143,8 @@ public class DominatorInfo<N, E> {
                 }
             }
 
-            LOGGER.log(Level.FINEST, "Dominance frontier of {0} : {1}",
-                    new Object[] {x, graph.toString(dominanceFrontierOf.get(x))});
+            LOGGER.trace("Dominance frontier of {} : {}",
+                    x, graph.toString(dominanceFrontierOf.get(x)));
        }
     }
 
@@ -157,13 +157,13 @@ public class DominatorInfo<N, E> {
     }
 
     public void update() {
-        LOGGER.log(Level.FINER, "Update dominator info");
+        LOGGER.debug("Update dominator info");
 
         // find dominators
         dominatorsOf = new DominatorsFinder<N, E>(graph, entryNode).analyse();
         for (Map.Entry<N, Set<N>> entry : dominatorsOf.entrySet()) {
-            LOGGER.log(Level.FINEST, "Dominators of {0} : {1}",
-                    new Object[] {entry.getKey(), entry.getValue()});
+            LOGGER.trace("Dominators of {} : {}",
+                    entry.getKey(), entry.getValue());
         }
 
         computeImmediateDominators();
@@ -175,7 +175,7 @@ public class DominatorInfo<N, E> {
             children.put(entry.getValue(), entry.getKey());
         }
         buildTree(entryNode, dominatorsTree, children, factory);
-        LOGGER.log(Level.FINEST, "Dominators tree :\n{0}", Trees.toString(dominatorsTree));
+        LOGGER.trace("Dominators tree :\n{}", Trees.toString(dominatorsTree));
 
         // compute dominance frontier
         computeDominanceFrontier();

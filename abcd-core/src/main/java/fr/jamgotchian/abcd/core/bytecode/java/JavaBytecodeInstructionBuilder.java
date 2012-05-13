@@ -52,8 +52,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.*;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -70,6 +68,8 @@ import org.objectweb.asm.tree.MultiANewArrayInsnNode;
 import org.objectweb.asm.tree.TableSwitchInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -78,7 +78,7 @@ import org.objectweb.asm.tree.VarInsnNode;
 public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
     private static final Logger LOGGER
-            = Logger.getLogger(JavaBytecodeInstructionBuilder.class.getName());
+            = LoggerFactory.getLogger(JavaBytecodeInstructionBuilder.class);
 
     private static final String MAGIC_STRING = "magic";
 
@@ -1132,7 +1132,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
     private void processBB(BasicBlock bb, List<VariableStack> inputStacks) {
 
-        LOGGER.log(Level.FINER, "Process {0}", bb);
+        LOGGER.debug("Process {}", bb);
 
         VariableStack inputStack = null;
 
@@ -1167,7 +1167,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         bb.setInputStack(new VariableStack(inputStack));
 
         if (bb.getInputStack().size() > 0) {
-            LOGGER.log(Level.FINEST, ">>> Input stack : {0}", bb.getInputStack());
+            LOGGER.trace(">>> Input stack : {}", bb.getInputStack());
         }
 
         VariableStack outputStack = new VariableStack(inputStack);
@@ -1177,7 +1177,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         bb.setOutputStack(outputStack);
 
         if (bb.getOutputStack().size() > 0) {
-            LOGGER.log(Level.FINEST, "<<< Output stack : {0}", bb.getOutputStack());
+            LOGGER.trace("<<< Output stack : {}", bb.getOutputStack());
         }
     }
 
@@ -1264,10 +1264,9 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
                 if (remove) {
                     ((ExceptionHandlerInfo) bb.getProperty(EXCEPTION_HANDLER_ENTRY)).setVariable(excVar);
-                    LOGGER.log(Level.FINEST, "Cleanup exception handler (bb={0}, excVar={1}) :",
-                            new Object[] {bb, excVar});
-                    LOGGER.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst));
-                    LOGGER.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst2));
+                    LOGGER.trace("Cleanup exception handler (bb={}, excVar={}) :", bb, excVar);
+                    LOGGER.trace("  Remove inst : {}", IRInstWriter.toText(inst));
+                    LOGGER.trace("  Remove inst : {}", IRInstWriter.toText(inst2));
                     inst.setIgnored(true);
                     inst2.setIgnored(true);
                 }
@@ -1295,9 +1294,9 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                 }
 
                 if (remove) {
-                    LOGGER.log(Level.FINEST, "Cleanup finally rethrow (excVar={0}) :", excVar);
-                    LOGGER.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst));
-                    LOGGER.log(Level.FINEST, "  Remove inst : {0}", IRInstWriter.toText(inst2));
+                    LOGGER.trace("Cleanup finally rethrow (excVar={}) :", excVar);
+                    LOGGER.trace("  Remove inst : {}", IRInstWriter.toText(inst));
+                    LOGGER.trace("  Remove inst : {}", IRInstWriter.toText(inst2));
                     inst.setIgnored(true);
                     inst2.setIgnored(true);
                 }
@@ -1309,8 +1308,8 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
     public void build(ControlFlowGraph cfg) {
         this.cfg = cfg;
 
-        ConsoleUtil.logTitledSeparator(LOGGER, Level.FINE, "Build instructions of {0}",
-                '=', cfg.getName());
+        LOGGER.debug(ConsoleUtil.formatTitledSeparator("Build instructions of {}", '='),
+                cfg.getName());
 
         catchTmpVars.clear();
         finallyTmpVars.clear();

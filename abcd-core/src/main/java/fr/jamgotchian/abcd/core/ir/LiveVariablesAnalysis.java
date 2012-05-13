@@ -22,8 +22,8 @@ import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, Edge, Set<Variable>> {
 
     private static final Logger LOGGER
-            = Logger.getLogger(LiveVariablesAnalysis.class.getName());
+            = LoggerFactory.getLogger(LiveVariablesAnalysis.class);
 
     public LiveVariablesAnalysis(ControlFlowGraph cfg) {
         super("Live variables", cfg.getGraph(), cfg.getExitBlock());
@@ -58,11 +58,10 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
 
     @Override
     public Map<BasicBlock, Set<Variable>> analyse() {
-        LOGGER.log(Level.FINER, "Live variables analysis :");
+        LOGGER.debug("Live variables analysis :");
         Map<BasicBlock, Set<Variable>> liveVariables = super.analyse();
         for (Map.Entry<BasicBlock, Set<Variable>> entry : liveVariables.entrySet()) {
-            LOGGER.log(Level.FINER, "  {0} : {1}",
-                    new Object[] {entry.getKey(), entry.getValue()});
+            LOGGER.debug("  {} : {}", entry.getKey(), entry.getValue());
         }
         return liveVariables;
     }
