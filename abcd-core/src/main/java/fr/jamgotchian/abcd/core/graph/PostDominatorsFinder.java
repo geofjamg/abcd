@@ -17,6 +17,9 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import fr.jamgotchian.abcd.core.util.Collections3;
+import fr.jamgotchian.abcd.core.util.Sets;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -25,30 +28,38 @@ import java.util.Set;
  */
 class PostDominatorsFinder<N ,E> extends BackwardDataFlowAnalysis<N, E, Set<N>>  {
 
-    private final DominatorsFinder<N, E> dominatorsFinder;
-
     PostDominatorsFinder(DirectedGraph<N, E> graph, N exitNode) {
         super("Post-dominators", graph, exitNode);
-        dominatorsFinder = new DominatorsFinder<N, E>(graph, exitNode);
     }
 
     @Override
     public Set<N> getInitValue(N node, boolean isExitNode) {
-        return dominatorsFinder.getInitValue(node, isExitNode);
+        if (isExitNode) {
+            Set<N> initValue = new HashSet<N>(1);
+            initValue.add(node);
+            return initValue;
+        } else {
+            return new HashSet<N>(getGraph().getVertices());
+        }
     }
 
     @Override
     public Set<N> combineValues(Set<N> value1, Set<N> value2) {
-        return dominatorsFinder.combineValues(value1, value2);
+        return Sets.intersection(value1, value2);
     }
 
     @Override
     public Set<N> applyTranferFunction(N node, Set<N> outValue) {
-        return dominatorsFinder.applyTranferFunction(node, outValue);
+        Set<N> inValue = new HashSet<N>((outValue == null ? 0 : outValue.size()) + 1);
+        inValue.add(node);
+        if (outValue != null) {
+            inValue.addAll(outValue);
+        }
+        return inValue;
     }
 
     @Override
     public boolean valuesEqual(Set<N> value1, Set<N> value2) {
-        return dominatorsFinder.valuesEqual(value1, value2);
+        return Collections3.equals(value1, value2);
     }
 }

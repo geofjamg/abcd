@@ -19,7 +19,6 @@ package fr.jamgotchian.abcd.core.graph;
 
 import fr.jamgotchian.abcd.core.util.Collections3;
 import fr.jamgotchian.abcd.core.util.Sets;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,7 +35,9 @@ class DominatorsFinder<N, E> extends ForwardDataFlowAnalysis<N, E, Set<N>>  {
     @Override
     public Set<N> getInitValue(N node, boolean isEntryNode) {
         if (isEntryNode) {
-            return com.google.common.collect.Sets.newHashSet(node);
+            Set<N> initValue = new HashSet<N>(1);
+            initValue.add(node);
+            return initValue;
         } else {
             return new HashSet<N>(getGraph().getVertices());
         }
@@ -44,13 +45,12 @@ class DominatorsFinder<N, E> extends ForwardDataFlowAnalysis<N, E, Set<N>>  {
 
     @Override
     public Set<N> combineValues(Set<N> value1, Set<N> value2) {
-        return Sets.intersection(value1 == null ? Collections.<N>emptySet() : value1,
-                                 value2 == null ? Collections.<N>emptySet() : value2);
+        return Sets.intersection(value1, value2);
     }
 
     @Override
     public Set<N> applyTranferFunction(N node, Set<N> inValue) {
-        Set<N> outValue = new HashSet<N>();
+        Set<N> outValue = new HashSet<N>((inValue == null ? 0 : inValue.size()) + 1);
         outValue.add(node);
         if (inValue != null) {
             outValue.addAll(inValue);
