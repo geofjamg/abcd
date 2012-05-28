@@ -68,7 +68,7 @@ public class ControlFlowGraph {
 
     private final BasicBlock entryBlock;
 
-    private final BasicBlock exitBlock;
+    private BasicBlock exitBlock;
 
     private final MutableDirectedGraph<BasicBlock, Edge> graph;
 
@@ -154,6 +154,10 @@ public class ControlFlowGraph {
 
     public BasicBlock getExitBlock() {
         return exitBlock;
+    }
+
+    public void setExitBlock(BasicBlock exitBlock) {
+        this.exitBlock = exitBlock;
     }
 
     public void updateDominatorInfo() {
@@ -284,6 +288,8 @@ public class ControlFlowGraph {
     }
 
     public void addEdge(BasicBlock source, BasicBlock target, Edge edge) {
+        LOGGER.trace("  Create edge between {} and {}", source, target);
+
         graph.addEdge(source, target, edge);
     }
 
@@ -301,6 +307,9 @@ public class ControlFlowGraph {
     }
 
     public void removeEdge(Edge edge) {
+        LOGGER.trace("  Remove edge between {} and {}",
+                graph.getEdgeSource(edge), graph.getEdgeTarget(edge));
+
         graph.removeEdge(edge);
     }
 
@@ -553,6 +562,28 @@ public class ControlFlowGraph {
         return toRemove.size() > 0;
     }
 
+    public List<BasicBlock> getOtherExits() {
+        List<BasicBlock> otherExits = new ArrayList<BasicBlock>();
+        for (BasicBlock bb : getBasicBlocks()) {
+            if (!bb.equals(exitBlock) && getSuccessorCountOf(bb) == 0) {
+                otherExits.add(bb);
+            }
+        }
+        return otherExits;
+    }
+
+    public boolean removeDanglingBlocks() {
+        Tree<BasicBlock, Edge> tree = graph.getReversePostOrderDFST(exitBlock, true);
+        Set<BasicBlock> toRemove = new HashSet<BasicBlock>(graph.getVertices());
+        toRemove.removeAll(tree.getNodes());
+        for (BasicBlock bb : toRemove) {
+            bb.setRegion(null);
+            graph.removeVertex(bb);
+            LOGGER.debug("Remove dangling BB {}", bb);
+        }
+        return toRemove.size() > 0;
+    }
+
     /**
      * Remove critical edges. A critical edge is an edge which is neither the
      * only edge leaving its source block, nor the only edge entering its
@@ -569,7 +600,8 @@ public class ControlFlowGraph {
             BasicBlock source = graph.getEdgeSource(e);
             BasicBlock target = graph.getEdgeTarget(e);
             if (graph.getSuccessorCountOf(source) > 1
-                    && graph.getPredecessorCountOf(target) > 1) {
+                    && graph.getPredecessorCountOf(target) > 1
+                    && !e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
                 criticalEdges.add(e);
             }
         }
@@ -579,12 +611,25 @@ public class ControlFlowGraph {
             LOGGER.debug("Remove critical edge {}", graph.toString(criticalEdge));
             BasicBlock source = graph.getEdgeSource(criticalEdge);
             BasicBlock target = graph.getEdgeTarget(criticalEdge);
-            graph.removeEdge(criticalEdge);
+            removeEdge(criticalEdge);
             BasicBlock emptyBlock = new BasicBlockImpl(BasicBlockType.EMPTY);
             emptyBlock.setInstructions(new IRInstSeq());
             graph.addVertex(emptyBlock);
-            graph.addEdge(source, emptyBlock, criticalEdge);
-            graph.addEdge(emptyBlock, target, EDGE_FACTORY.createEdge());
+            addEdge(source, emptyBlock, criticalEdge);
+            Edge newEdge = EDGE_FACTORY.createEdge();
+            if (criticalEdge.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                newEdge.addAttribute(EdgeAttribute.EXCEPTIONAL_EDGE);
+            }
+            addEdge(emptyBlock, target, newEdge);
+            // same exception handlers for the ne empty block than the source
+            // block of the critical edge (in order not to break try regions)
+            for (Edge e : getExceptionalOutgoingEdgesOf(source)) {
+                BasicBlock handlerEntry = graph.getEdgeTarget(e);
+                if (handlerEntry.getType() == BasicBlockType.EMPTY) {
+                    handlerEntry = graph.getFirstSuccessorOf(handlerEntry);
+                }
+                addEdge(emptyBlock, handlerEntry, true);
+            }
         }
 
         return criticalEdges.size() > 0;
@@ -728,9 +773,6 @@ public class ControlFlowGraph {
         if (outermostLoops.size() > 0) {
             LOGGER.debug("Loop tree :\n{}", NaturalLoop.toString(outermostLoops));
         }
-
-        // try to reduce the number of loop exits by expanding the body
-        new LoopBodyExpander(this).expand();
     }
 
     public boolean mergeNaturalLoops() {

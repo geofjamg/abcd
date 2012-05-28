@@ -19,9 +19,7 @@ package fr.jamgotchian.abcd.core.ir;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -88,18 +86,6 @@ public class NaturalLoop {
             }
         }
         return exitEdges;
-    }
-
-    public Collection<BasicBlock> getExitBlocks() {
-        Set<BasicBlock> exitBlocks = new HashSet<BasicBlock>(1);
-        for (BasicBlock bb : body) {
-            for (BasicBlock t : cfg.getSuccessorsOf(bb)) {
-                if (!body.contains(t)) {
-                    exitBlocks.add(t);
-                }
-            }
-        }
-        return exitBlocks;
     }
 
     public boolean isInfinite() {

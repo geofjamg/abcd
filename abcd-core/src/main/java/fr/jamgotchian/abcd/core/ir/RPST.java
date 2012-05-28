@@ -84,6 +84,19 @@ public class RPST {
         return regionsPostOrder;
     }
 
+    private void visitRegionPreOrder(Region region, List<Region> regionsPreOrder) {
+        regionsPreOrder.add(region);
+        for (Region child : region.getChildren()) {
+            visitRegionPreOrder(child, regionsPreOrder);
+        }
+    }
+
+    public List<Region> getRegionsPreOrder() {
+        List<Region> regionsPreOrder = new ArrayList<Region>();
+        visitRegionPreOrder(rootRegion, regionsPreOrder);
+        return regionsPreOrder;
+    }
+
     public void print(Appendable out) {
         try {
             print(out, rootRegion, 0);
@@ -150,6 +163,16 @@ public class RPST {
     public void export(Writer writer) throws IOException {
         writer.append("digraph ").append("RPST").append(" {\n");
         exportRegion(writer, rootRegion, 1);
+        for (BasicBlock bb : cfg.getBasicBlocks()) {
+            if (bb.getRegion() == null) {
+                writer.append("  ")
+                        .append(Integer.toString(System.identityHashCode(bb)))
+                        .append(" ");
+                Map<String, String> attrs = RANGE_GRAPHIZ_RENDERER.getAttributes(bb);
+                GraphvizUtil.writeAttributes(writer, attrs);
+                writer.append("\n");
+            }
+        }
         for (Edge edge : cfg.getEdges()) {
             BasicBlock source = cfg.getEdgeSource(edge);
             BasicBlock target = cfg.getEdgeTarget(edge);

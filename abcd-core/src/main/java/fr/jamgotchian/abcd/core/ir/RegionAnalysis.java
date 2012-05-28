@@ -17,19 +17,9 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import com.google.common.base.Objects;
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
-import fr.jamgotchian.abcd.core.graph.DominatorInfo;
-import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,8 +37,6 @@ public class RegionAnalysis {
 
     private int level;
 
-    private int breakLabelCount;
-
     public RegionAnalysis(ControlFlowGraph cfg0, ABCDWriter writer) {
         this.cfg0 = cfg0;
         this.writer = writer;
@@ -57,15 +45,11 @@ public class RegionAnalysis {
     private ControlFlowGraph createSubCFG(ControlFlowGraph cfg, Region region) {
         if (region.getEntry() == null
                 || region.getExit() == null
-                || region.getEntry().equals(region.getExit())
-                || cfg.getPredecessorCountOf(region.getExit()) < 2
-                || (region.getEntry().equals(cfg.getEntryBlock())
-                    && region.getExit().equals(cfg.getExitBlock()))) {
-            return null;
+                || region.getEntry().equals(region.getExit())) {
+            throw new ABCDException("Cannot create subgraph from region " + region);
         }
         ControlFlowGraph subCfg
-                = new ControlFlowGraph(cfg.getName(), region.getEntry(),
-                                           region.getExit());
+                = new ControlFlowGraph(cfg.getName(), region.getEntry(), region.getExit());
         for (BasicBlock bb : region.getBasicBlocks()) {
             if (!bb.equals(region.getEntry()) && !bb.equals(region.getExit())) {
                 subCfg.addBasicBlock(bb);
@@ -82,16 +66,21 @@ public class RegionAnalysis {
         return subCfg;
     }
 
-    private boolean checkTrivialRegion(Region region) {
+    private boolean checkTrivialRegion(ControlFlowGraph cfg, Region region) {
         LOGGER.trace("Check trivial region {}", region);
         if (region.getChildCount() == 1) {
-            region.setParentType(ParentType.TRIVIAL);
-            return true;
+            Region child = region.getFirstChild();
+            if (child.getEntry().getType() != BasicBlockType.JUMP_IF) {
+                region.setParentType(ParentType.TRIVIAL);
+
+                // propagate to children
+                return checkRegion(cfg, child);
+            }
         }
         return false;
     }
 
-    private boolean checkSequenceRegion(Region region) {
+    private boolean checkSequenceRegion(ControlFlowGraph cfg, Region region) {
         LOGGER.trace("Check sequence region {}", region);
         if (region.getChildCount() != 2) {
             return false;
@@ -104,12 +93,28 @@ public class RegionAnalysis {
             region.setParentType(ParentType.SEQUENCE);
             child1.setChildType(ChildType.FIRST);
             child2.setChildType(ChildType.SECOND);
+
+            // propagate to children
+            if (!checkRegion(cfg, child1)) {
+                return false;
+            }
+            if (!checkRegion(cfg, child2)) {
+                return false;
+            }
             return true;
         } else if (child1.getEntry().equals(child2.getExit())
                 && Objects.equal(region.getExit(), child1.getExit())) {
             region.setParentType(ParentType.SEQUENCE);
             child2.setChildType(ChildType.FIRST);
             child1.setChildType(ChildType.SECOND);
+
+            // propagate to children
+            if (!checkRegion(cfg, child2)) {
+                return false;
+            }
+            if (!checkRegion(cfg, child1)) {
+                return false;
+            }
             return true;
         }
         return false;
@@ -117,48 +122,95 @@ public class RegionAnalysis {
 
     private boolean checkWhileLoopRegion(ControlFlowGraph cfg, Region region) {
         LOGGER.trace("Check while loop region {}", region);
-        if (region.getChildCount() == 2) {
-            Region headRegion = null;
-            Region tailRegion = null;
-            for (Region child : region.getChildren()) {
-                if (child.getEntry().equals(region.getEntry())) {
-                    headRegion = child;
-                } else {
-                    tailRegion = child;
-                }
-            }
-            if (headRegion != null && tailRegion != null) {
-                if (tailRegion.getExit().equals(headRegion.getEntry())) {
-                    Edge bodyEdge = cfg.getEdge(headRegion.getExit(), tailRegion.getEntry());
-                    Edge exitEdge = cfg.getEdge(headRegion.getExit(), region.getExit());
-                    if (bodyEdge != null && exitEdge != null
-                            && exitEdge.hasAttribute(EdgeAttribute.LOOP_EXIT_EDGE)) {
-                        if (Boolean.TRUE.equals(exitEdge.getValue())
-                                && Boolean.FALSE.equals(bodyEdge.getValue())) {
-                            region.setParentType(ParentType.WHILE_LOOP);
-                            headRegion.setChildType(ChildType.LOOP_HEAD);
-                            tailRegion.setChildType(ChildType.LOOP_TAIL);
-                            return true;
-                        } else if (Boolean.FALSE.equals(exitEdge.getValue())
-                                && Boolean.TRUE.equals(bodyEdge.getValue())) {
-                            region.setParentType(ParentType.WHILE_LOOP_INVERTED_COND);
-                            headRegion.setChildType(ChildType.LOOP_HEAD);
-                            tailRegion.setChildType(ChildType.LOOP_TAIL);
-                            return true;
-                        }
-                    }
-                }
+        if (cfg.getPredecessorCountOf(region.getEntry()) != 2) {
+            return false;
+        }
+        Edge backEdge = null;
+        for (Edge e : cfg.getIncomingEdgesOf(region.getEntry())) {
+            if (e.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
+                backEdge = e;
+            } else if (e.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
+                backEdge = e;
             }
         }
-        return false;
+        if (backEdge == null) {
+            return false;
+        }
+        // that's ok we have a while loop region
+        LOGGER.debug("Suspect while loop region {}...", region);
+
+        BasicBlock tailBlock = cfg.getEdgeSource(backEdge);
+
+        // TODO : check tail block is inside the region
+
+        // check the body region
+        //
+        // contruct a subgraph containg the loop body
+        //   - intialize the subgraph with the body region blocks
+        //   - remove exit edges
+        //   - replace the exit block by the loop tail block
+        //   - remove back edge
+        ControlFlowGraph subCfg = createSubCFG(cfg, region);
+        subCfg.removeBasicBlock(subCfg.getExitBlock());
+        subCfg.setExitBlock(tailBlock);
+        for (Edge e : new ArrayList<Edge>(subCfg.getIncomingEdgesOf(subCfg.getEntryBlock()))) {
+            if (e.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
+                subCfg.removeEdge(e);
+            }
+        }
+
+        LOGGER.debug("Check body regions {}...", region);
+
+        // build rpst from control flow subgraph
+        RPST subRpst = checkRegions(subCfg);
+        if (!subRpst.isTyped()) {
+            return false;
+        }
+
+        Region rootRegion = subRpst.getRootRegion();
+        // TODO : should have only 1 child
+        // TODO : type of the child
+        region.removeChildren();
+        for (Region r : rootRegion.getChildren()) {
+            region.addChild(r);
+        }
+//        Region newBodyRegion = rootRegion.getEntryChild();
+//        region.addChild(newBodyRegion);
+//        region.addChild(exitRegion);
+        region.setParentType(ParentType.WHILE_LOOP);
+//        newBodyRegion.setChildType(ChildType.LOOP_BODY);
+//        exitRegion.setChildType(ChildType.LOOP_EXIT);
+
+        return true;
     }
 
     private boolean checkDoWhileLoopRegion(ControlFlowGraph cfg, Region region) {
         LOGGER.trace("Check do while loop region {}", region);
         if (region.getChildCount() == 1) {
             if (region.getEntry().getType() == BasicBlockType.JUMP_IF) {
-                region.setParentType(ParentType.DO_WHILE_LOOP);
-                return true;
+                if (cfg.getSuccessorCountOf(region.getEntry()) == 2) {
+                    region.setParentType(ParentType.DO_WHILE_LOOP);
+                    Region child = region.getEntryChild();
+
+                    // propagate to children
+                    return checkRegion(cfg, child);
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean checkIfThenBreakRegion(ControlFlowGraph cfg, Region region) {
+        LOGGER.trace("Check if then break region {}", region);
+        if (region.getChildCount() == 1) {
+            if (region.getEntry().getType() == BasicBlockType.JUMP_IF) {
+                if (cfg.getSuccessorCountOf(region.getEntry()) == 1) {
+                    region.setParentType(ParentType.IF_THEN_BREAK);
+                    Region child = region.getEntryChild();
+
+                    // propagate to children
+                    return checkRegion(cfg, child);
+                }
             }
         }
         return false;
@@ -186,12 +238,28 @@ public class RegionAnalysis {
                             region.setParentType(ParentType.IF_THEN);
                             ifRegion.setChildType(ChildType.IF);
                             thenRegion.setChildType(ChildType.THEN);
+
+                            // propagate to children
+                            if (!checkRegion(cfg, ifRegion)) {
+                                return false;
+                            }
+                            if (!checkRegion(cfg, thenRegion)) {
+                                return false;
+                            }
                             return true;
                         } else if (Boolean.FALSE.equals(thenEdge.getValue())
                                 && Boolean.TRUE.equals(elseEdge.getValue())) {
                             region.setParentType(ParentType.IF_NOT_THEN);
                             ifRegion.setChildType(ChildType.IF);
                             thenRegion.setChildType(ChildType.THEN);
+
+                            // propagate to children
+                            if (!checkRegion(cfg, ifRegion)) {
+                                return false;
+                            }
+                            if (!checkRegion(cfg, thenRegion)) {
+                                return false;
+                            }
                             return true;
                         }
                     }
@@ -246,6 +314,17 @@ public class RegionAnalysis {
                 ifRegion.setChildType(ChildType.IF);
                 thenRegion.setChildType(ChildType.THEN);
                 elseRegion.setChildType(ChildType.ELSE);
+
+                // propagate to children
+                if (!checkRegion(cfg, ifRegion)) {
+                    return false;
+                }
+                if (!checkRegion(cfg, thenRegion)) {
+                    return false;
+                }
+                if (!checkRegion(cfg, elseRegion)) {
+                    return false;
+                }
                 return true;
             }
         }
@@ -294,10 +373,20 @@ public class RegionAnalysis {
         for (Region caseRegion : caseRegions) {
             caseRegion.setChildType(ChildType.CASE);
         }
+
+        // propagate to children
+        if (!checkRegion(cfg, switchRegion)) {
+            return false;
+        }
+        for (Region caseRegion : caseRegions) {
+            if (!checkRegion(cfg, caseRegion)) {
+                return false;
+            }
+        }
         return true;
     }
 
-    private boolean checkTryCatchFinally(ControlFlowGraph cfg, Region region) {
+    private boolean checkTryCatchFinallyRegion(ControlFlowGraph cfg, Region region) {
         LOGGER.trace("Check try catch finally region {}", region);
         Set<Region> handlerRegions = new HashSet<Region>();
         Region finallyRegion = null;
@@ -325,8 +414,7 @@ public class RegionAnalysis {
                 if (child.equals(finallyRegion)) {
                     continue;
                 }
-                if (child.getExit().equals(region.getExit())
-                        || child.getExit().hasProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_TARGET)) {
+                if (child.getExit().equals(region.getExit())) {
                     if (child.deepEquals(finallyRegion)) {
                         inlinedFinallyRegions.add(child);
                     }
@@ -347,18 +435,13 @@ public class RegionAnalysis {
 
         // build control flow subgraph
         ControlFlowGraph subCfg = createSubCFG(cfg, region);
-        if (subCfg == null) {
-            return false;
-        }
+
         // remove handlers basic blocks
         for (Region handlerRegion : handlerRegions) {
             for (BasicBlock bb : handlerRegion.getBasicBlocks()) {
                 subCfg.removeBasicBlock(bb);
             }
         }
-        // update dominators and post dominators infos
-        subCfg.updateDominatorInfo();
-        subCfg.updatePostDominatorInfo();
 
         // build rpst from control flow subgraph
         RPST subRpst = checkRegions(subCfg);
@@ -380,6 +463,7 @@ public class RegionAnalysis {
             }
             region.addChild(handlerRegion);
         }
+        // insert inlined finally regions
         for (Region child : tryRegion.getSubRegions()) {
             for (Region inlinedFinallyRegion : inlinedFinallyRegions) {
                 if (child.getEntry().equals(inlinedFinallyRegion.getEntry())
@@ -392,132 +476,38 @@ public class RegionAnalysis {
             }
         }
 
+        // propagate to children
+        if (!checkRegion(cfg, tryRegion)) {
+            return false;
+        }
+        for (Region handlerRegion : handlerRegions) {
+            if (!checkRegion(cfg, handlerRegion)) {
+                return false;
+            }
+        }
         return true;
     }
 
-    private BasicBlock findJoinBlock(ControlFlowGraph subCfg, BasicBlock exitEdgeSource,
-                                     BasicBlock abruptEdgeSource) {
-        DominatorInfo<BasicBlock, Edge> domInfo = subCfg.getDominatorInfo();
-        PostDominatorInfo<BasicBlock, Edge> postDomInfo = subCfg.getPostDominatorInfo();
-        for (BasicBlock forkBB = abruptEdgeSource;
-                forkBB != null;
-                forkBB = domInfo.getDominatorsTree().getParent(forkBB)) {
-            if (forkBB.getType() == BasicBlockType.JUMP_IF) {
-                Collection<BasicBlock> successors = subCfg.getNormalSuccessorsOf(forkBB);
-                Iterator<BasicBlock> itB = successors.iterator();
-                BasicBlock bb1 = itB.next();
-                BasicBlock bb2 = itB.next();
-                if (bb1.equals(subCfg.getExitBlock())) {
-                    return bb2;
-                } else if (bb2.equals(subCfg.getExitBlock())) {
-                    return bb1;
-                } else if (postDomInfo.postDominates(exitEdgeSource, bb1)
-                        && !postDomInfo.postDominates(exitEdgeSource, bb2)) {
-                    return bb1;
-                } else if (postDomInfo.postDominates(exitEdgeSource, bb2)
-                        && !postDomInfo.postDominates(exitEdgeSource, bb1)) {
-                    return bb2;
-                }
-            }
+    private boolean checkRegion(ControlFlowGraph cfg, Region region) {
+        if (region.getParentType() != ParentType.UNDEFINED) {
+            return true;
         }
-        return null;
-    }
+        if (!(checkIfThenElseRegion(cfg, region)
+                || checkIfThenRegion(cfg, region)
+                || checkSwitchCaseRegion(cfg, region)
+                || checkSequenceRegion(cfg, region)
+                || checkWhileLoopRegion(cfg, region)
+                || checkDoWhileLoopRegion(cfg, region)
+                || checkTrivialRegion(cfg, region)
+                || checkIfThenBreakRegion(cfg, region)
+                || checkTryCatchFinallyRegion(cfg, region))) {
 
-    private Map<Edge, BasicBlock> findJoinBlocks(ControlFlowGraph subCfg, Edge exitEdge,
-                                                 List<Edge> abruptEdges) {
-        Map<Edge, BasicBlock> joinBlocks = new HashMap<Edge, BasicBlock>();
-        BasicBlock exitEdgeSource = subCfg.getEdgeSource(exitEdge);
-        for (Edge abruptEdge : abruptEdges) {
-            BasicBlock abruptEdgeSource = subCfg.getEdgeSource(abruptEdge);
-            BasicBlock joinBlock = findJoinBlock(subCfg, exitEdgeSource, abruptEdgeSource);
-            if (joinBlock == null) {
-                return null;
-            }
-            joinBlocks.put(abruptEdge, joinBlock);
-        }
-        return joinBlocks;
-    }
-
-    /**
-     * Create smoothed sub control flow graph by replacing abrupt edges by
-     * smooth edges
-     */
-    private ControlFlowGraph createSmoothedSubCfg(ControlFlowGraph subCfg,
-                                                  Edge exitEdge,
-                                                  Map<Edge, BasicBlock> joinBlocks) {
-        ControlFlowGraph cloneSubCfg = new ControlFlowGraph(subCfg);
-        LOGGER.debug("Exit edge is {}", cloneSubCfg.toString(exitEdge));
-        for (Map.Entry<Edge, BasicBlock> entry : joinBlocks.entrySet()) {
-            Edge abruptEdge = entry.getKey();
-            BasicBlock joinBlock = entry.getValue();
-            LOGGER.debug("Remove abrupt edge {} (join block is {})",
-                    cloneSubCfg.toString(abruptEdge), joinBlock);
-            BasicBlock source = cloneSubCfg.getEdgeSource(abruptEdge);
-            cloneSubCfg.removeEdge(abruptEdge);
-            joinBlock.putProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_TARGET, null);
-            if (source.getType() == BasicBlockType.JUMP_IF) {
-                BasicBlock empty = new BasicBlockImpl(BasicBlockType.EMPTY);
-                cloneSubCfg.addBasicBlock(empty);
-                cloneSubCfg.addEdge(source, empty, abruptEdge);
-                cloneSubCfg.addEdge(empty, joinBlock).addAttribute(EdgeAttribute.FAKE_EDGE);
-                empty.putProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_SOURCE, breakLabelCount);
-            } else {
-                cloneSubCfg.addEdge(source, joinBlock, abruptEdge);
-                abruptEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                source.putProperty(BasicBlockPropertyName.BREAK_LABEL_EXIT_SOURCE, breakLabelCount);
-            }
-            LOGGER.debug("Add smooth edge {}", cloneSubCfg.toString(abruptEdge));
-        }
-        cloneSubCfg.updateDominatorInfo();
-        cloneSubCfg.updatePostDominatorInfo();
-        cloneSubCfg.updateLoopInfo();
-        return cloneSubCfg;
-    }
-
-    private boolean checkBreakLabelRegion(ControlFlowGraph cfg, Region region) {
-        LOGGER.trace("Check break label region {}", region);
-        final ControlFlowGraph subCfg = createSubCFG(cfg, region);
-        if (subCfg == null) {
+            LOGGER.debug("Unknown region {}", region);
             return false;
+        } else {
+            LOGGER.debug("Found {} region {}", region.getParentType(), region);
+            return true;
         }
-        subCfg.updateDominatorInfo();
-        subCfg.updatePostDominatorInfo();
-
-        // sort exit edges by dominance of it source basic block
-        List<Edge> exitEdges = new ArrayList<Edge>(subCfg.getIncomingEdgesOf(subCfg.getExitBlock()));
-        Collections.sort(exitEdges, new Comparator<Edge>() {
-            @Override
-            public int compare(Edge e1, Edge e2) {
-                BasicBlock bb1 = subCfg.getEdgeSource(e1);
-                BasicBlock bb2 = subCfg.getEdgeSource(e2);
-                return subCfg.getDominatorInfo().dominates(bb1, bb2) ? 1 : -1;
-            }
-        });
-
-        for (Edge exitEdge : exitEdges) {
-            // the others edges are abrupt edges
-            List<Edge> abruptEdges = new ArrayList<Edge>(exitEdges);
-            abruptEdges.remove(exitEdge);
-
-            // find join edges, join edges are needed to remove abrupt edges
-            Map<Edge, BasicBlock> joinBlocks = findJoinBlocks(subCfg, exitEdge, abruptEdges);
-            if (joinBlocks != null) {
-                // create a smoothed sub cfg by removing abrupt edges
-                ControlFlowGraph smoothedSubCfg
-                        = createSmoothedSubCfg(subCfg, exitEdge, joinBlocks);
-                RPST rpst = checkRegions(smoothedSubCfg);
-                if (rpst.isTyped()) {
-                    region.setParentType(ParentType.BREAK_LABEL);
-                    region.setData(breakLabelCount++);
-                    Region rootRegion = rpst.getRootRegion();
-                    Region bodyRegion = rootRegion.getEntryChild();
-                    region.removeChildren();
-                    region.addChild(bodyRegion);
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     private RPST checkRegions(ControlFlowGraph cfg) {
@@ -526,25 +516,59 @@ public class RegionAnalysis {
 
         int currentLevel = level++;
 
+        cfg.updateDominatorInfo();
+
+        ControlFlowGraph cleanCfg = new ControlFlowGraph(cfg);
+        List<BasicBlock> otherExits = cleanCfg.getOtherExits();
+        cleanCfg.removeDanglingBlocks();
+        cleanCfg.updateDominatorInfo();
+        cleanCfg.updatePostDominatorInfo();
+        cleanCfg.updateLoopInfo();
+
         // build refined program structure tree
-        RPST rpst = new RPSTBuilder(cfg).build();
+        RPST rpst = new RPSTBuilder(cleanCfg).build();
         rpst.setTyped(true);
 
-        for (Region region : rpst.getRegionsPostOrder()) {
-            if (region.getParentType() == ParentType.UNDEFINED) {
-                if (!(checkIfThenElseRegion(cfg, region)
-                        || checkIfThenRegion(cfg, region)
-                        || checkSwitchCaseRegion(cfg, region)
-                        || checkSequenceRegion(region)
-                        || checkWhileLoopRegion(cfg, region)
-                        || checkDoWhileLoopRegion(cfg, region)
-                        || checkTrivialRegion(region)
-                        || checkTryCatchFinally(cfg, region)
-                        || checkBreakLabelRegion(cfg, region))) {
+        Region root = rpst.getRootRegion();
+        for (Region child : root.getChildren()) {
+            if (!checkRegion(cleanCfg, child)) {
+                rpst.setTyped(false);
+                break;
+            }
+        }
+
+        if (otherExits.size() > 0) {
+            for (BasicBlock otherExit : otherExits) {
+                LOGGER.debug("Search for {} successor", otherExit);
+                BasicBlock bb;
+                for (bb = otherExit;
+                        bb != null && bb.getRegion() == null;
+                        bb = cfg.getDominatorInfo().getImmediateDominatorOf(bb)) {
+                    // empty
+                }
+                if (bb != null) {
+                    Region region = bb.getRegion().getParent();
+                    BasicBlock successor = region.getExit();
+                    LOGGER.debug("Found successor for {} : {}", otherExit, successor);
+                    cfg.addEdge(otherExit, successor).addAttribute(EdgeAttribute.FAKE_EDGE);
+                }
+            }
+
+            cfg.updateDominatorInfo();
+            cfg.updatePostDominatorInfo();
+            cfg.updateLoopInfo();
+
+            LOGGER.debug("Re-check regions...");
+
+            // build refined program structure tree
+            rpst = new RPSTBuilder(cfg).build();
+            rpst.setTyped(true);
+
+            root = rpst.getRootRegion();
+            for (Region child : root.getChildren()) {
+                if (!checkRegion(cfg, child)) {
                     rpst.setTyped(false);
                     break;
-                } else {
-                    LOGGER.debug("Found {} region {}", region.getParentType(), region);
                 }
             }
         }
@@ -560,7 +584,13 @@ public class RegionAnalysis {
 
     public RPST analyse() {
         level = 0;
-        breakLabelCount = 0;
-        return checkRegions(cfg0);
+
+        cfg0.removeCriticalEdges();
+
+        ControlFlowGraph cfg = new ControlFlowGraph(cfg0);
+
+        RPST rpst = checkRegions(cfg);
+
+        return rpst;
     }
 }

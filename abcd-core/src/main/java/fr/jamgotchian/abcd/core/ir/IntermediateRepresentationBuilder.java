@@ -321,51 +321,51 @@ public class IntermediateRepresentationBuilder {
                 addFakeEdges();
             }
 
-            cfg.updatePostDominatorInfo();
+//            cfg.updatePostDominatorInfo();
 
             // collapse shortcut operators (&&, ||)
-            ShortcutOperatorsCollapser collapser
-                    = new ShortcutOperatorsCollapser(cfg, varFactory, instFactory);
-            if (collapser.collapse()) {
-                cfg.updateDominatorInfo();
-                cfg.updatePostDominatorInfo();
-                cfg.updateLoopInfo();
-            }
+//            ShortcutOperatorsCollapser collapser
+//                    = new ShortcutOperatorsCollapser(cfg, varFactory, instFactory);
+//            if (collapser.collapse()) {
+//                cfg.updateDominatorInfo();
+//                cfg.updatePostDominatorInfo();
+//                cfg.updateLoopInfo();
+//            }
 
             // must be done after collapsing shortcut operators because of conditional
             // instruction with shortcut operators in the condition
-            resolveChoiceInst();
+//            resolveChoiceInst();
 
-            if (preferences.isAnalyseLocalVariableType()) {
-                // need to remove critical edges to convert to SSA
-                if (cfg.removeCriticalEdges()) {
-                    cfg.updateDominatorInfo();
-                    cfg.updatePostDominatorInfo();
-                    cfg.updateLoopInfo();
-                }
-
-                // convert to SSA form
-                new SSAFormConverter(cfg, instFactory, varFactory).convert();
-
-                // to remove empty basic blocks added tu remove critical edges
-                if (cfg.removeUnnecessaryBlock()) {
-                    cfg.updateDominatorInfo();
-                    cfg.updatePostDominatorInfo();
-                    cfg.updateLoopInfo();
-                }
-
-                // analyse local variables types
-                new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
-                                              methodArgs, classNameManager,
-                                              varFactory, classLoader)
-                        .analyse();
-            }
-
-            // add variable declarations
-            addVariableDeclarations();
-
-            // assign a name to each variable
-            assignNameToVariables();
+//            if (preferences.isAnalyseLocalVariableType()) {
+//                // need to remove critical edges to convert to SSA
+//                if (cfg.removeCriticalEdges()) {
+//                    cfg.updateDominatorInfo();
+//                    cfg.updatePostDominatorInfo();
+//                    cfg.updateLoopInfo();
+//                }
+//
+//                // convert to SSA form
+//                new SSAFormConverter(cfg, instFactory, varFactory).convert();
+//
+//                // to remove empty basic blocks added tu remove critical edges
+//                if (cfg.removeUnnecessaryBlock()) {
+//                    cfg.updateDominatorInfo();
+//                    cfg.updatePostDominatorInfo();
+//                    cfg.updateLoopInfo();
+//                }
+//
+//                // analyse local variables types
+//                new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
+//                                              methodArgs, classNameManager,
+//                                              varFactory, classLoader)
+//                        .analyse();
+//            }
+//
+//            // add variable declarations
+//            addVariableDeclarations();
+//
+//            // assign a name to each variable
+//            assignNameToVariables();
 
             writer.writeCFG(cfg, false);
         } finally {

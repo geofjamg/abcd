@@ -593,9 +593,6 @@ public class AbstractSyntaxTreeBuilder {
                     RegionIRInstVisitor visitor = new RegionIRInstVisitor();
                     bb.getInstructions().accept(visitor, blockStmt);
                 }
-                if (bb.hasProperty(BREAK_LABEL_EXIT_SOURCE)) {
-                    blockStmt.add(new BreakStatement("L" + bb.getProperty(BREAK_LABEL_EXIT_SOURCE)));
-                }
                 break;
             }
 
@@ -646,23 +643,11 @@ public class AbstractSyntaxTreeBuilder {
                 break;
             }
 
-            case WHILE_LOOP:
-            case WHILE_LOOP_INVERTED_COND: {
+            case WHILE_LOOP: {
                 BlockStatement bodyBlockStmt = new BlockStatement();
-                buildAST(region.getFirstChild(ChildType.LOOP_HEAD), bodyBlockStmt);
-                IfStatement ifStmt = (IfStatement) bodyBlockStmt.getLast();
-                if (bodyBlockStmt.hasSingleStatement()) {
-                    ifStmt.remove();
-                    Expression condition = ExpressionInverter.invert(ifStmt.getCondition());
-                    buildAST(region.getFirstChild(ChildType.LOOP_TAIL), bodyBlockStmt);
-                    blockStmt.add(new WhileStatement(condition, bodyBlockStmt));
-                } else {
-                    BlockStatement thenStmt = new BlockStatement();
-                    thenStmt.add(new BreakStatement());
-                    ifStmt.setThen(thenStmt);
-                    buildAST(region.getFirstChild(ChildType.LOOP_TAIL), bodyBlockStmt);
-                    blockStmt.add(new WhileStatement(Expressions.newBooleanExpr(true), bodyBlockStmt));
-                }
+                buildAST(region.getFirstChild(ChildType.LOOP_BODY), bodyBlockStmt);
+                Expression condition = Expressions.newBooleanExpr(true);
+                blockStmt.add(new WhileStatement(condition, bodyBlockStmt));
                 break;
             }
 
