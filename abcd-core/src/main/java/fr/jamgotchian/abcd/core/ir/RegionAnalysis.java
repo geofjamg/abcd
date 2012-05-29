@@ -168,17 +168,10 @@ public class RegionAnalysis {
         RPST subRpst = checkGraph(subCfg);
 
         Region rootRegion = subRpst.getRootRegion();
-        // TODO : should have only 1 child
-        // TODO : type of the child
+        Region bodyRegion = rootRegion.getFirstChild();
+        bodyRegion.setChildType(ChildType.LOOP_BODY);
         region.removeChildren();
-        for (Region r : rootRegion.getChildren()) {
-            region.addChild(r);
-        }
-//        Region newBodyRegion = rootRegion.getEntryChild();
-//        region.addChild(newBodyRegion);
-//        region.addChild(exitRegion);
-//        newBodyRegion.setChildType(ChildType.LOOP_BODY);
-//        exitRegion.setChildType(ChildType.LOOP_EXIT);
+        region.addChild(bodyRegion);
 
         return true;
     }
@@ -216,7 +209,8 @@ public class RegionAnalysis {
 
                     LOGGER.debug("Found if then break region {}", region);
                     region.setParentType(ParentType.IF_THEN_BREAK);
-
+                    ifRegion.setChildType(ChildType.IF);
+                    
                     // propagate to children
                     if (!checkRegion(cfg, ifRegion)) {
                         throw new ABCDException("Cannot find type of if region "
