@@ -185,10 +185,6 @@ public class ABCDContext {
                 rpst.print(builder);
                 LOGGER.trace("RPST :\n{}", builder.toString());
 
-                if (!rpst.isTyped()) {
-                    throw new ABCDException("Region analysis failed");
-                }
-
                 LOGGER.debug(ConsoleUtil.formatTitledSeparator("Build AST of {}", '='),
                         methodSignature);
 

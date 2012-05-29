@@ -44,8 +44,6 @@ public class RPST {
 
     private Region rootRegion;
 
-    private boolean typed = false;
-
     public RPST(ControlFlowGraph cfg, Region rootRegion) {
         this.cfg = cfg;
         this.rootRegion = rootRegion;
@@ -61,14 +59,6 @@ public class RPST {
 
     public Region getRootRegion() {
         return rootRegion;
-    }
-
-    public boolean isTyped() {
-        return typed;
-    }
-
-    public void setTyped(boolean typed) {
-        this.typed = typed;
     }
 
     private void visitRegionPostOrder(Region region, List<Region> regionsPostOrder) {

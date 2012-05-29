@@ -64,7 +64,7 @@ public class ControlFlowGraph {
     private static final RangeGraphvizRenderer RANGE_GRAPHVIZ_RENDERER
             = new RangeGraphvizRenderer();
 
-    private final String name;
+    private String name;
 
     private final BasicBlock entryBlock;
 
@@ -142,6 +142,10 @@ public class ControlFlowGraph {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public DirectedGraph<BasicBlock, Edge> getGraph() {
