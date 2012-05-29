@@ -28,6 +28,15 @@ public class ConsoleUtil {
     private ConsoleUtil() {
     }
 
+    public static String indentMsg(String msg, int indent) {
+        StringBuilder builder = new StringBuilder(indent + msg.length());
+        for (int i = 0; i < indent; i++) {
+             builder.append(" ");
+        }
+        builder.append(msg);
+        return builder.toString();
+    }
+
     public static String formatTitledSeparator(String title, char separator) {
         StringBuilder builder = new StringBuilder(SEPARATOR_WIDTH);
         int remaining = SEPARATOR_WIDTH - title.length() - 2;
