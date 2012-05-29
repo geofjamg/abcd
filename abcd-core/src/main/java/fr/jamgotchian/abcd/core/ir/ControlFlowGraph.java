@@ -804,11 +804,11 @@ public class ControlFlowGraph {
     public void export(Writer writer,
                        GraphvizRenderer<BasicBlock> bbRenderer,
                        GraphvizRenderer<Edge> edgeRenderer) throws IOException {
-        graph.export(writer, "\"" + name + "\"", bbRenderer, edgeRenderer);
+        graph.export(writer, name, bbRenderer, edgeRenderer);
     }
 
     public void export(Writer writer) throws IOException {
-        graph.export(writer, "\"" + name + "\"", RANGE_GRAPHVIZ_RENDERER,
+        graph.export(writer, name, RANGE_GRAPHVIZ_RENDERER,
                      EDGE_GRAPHVIZ_RENDERER);
     }
 
@@ -831,7 +831,7 @@ public class ControlFlowGraph {
     }
 
     public void exportInst(Writer writer) throws IOException {
-        graph.export(writer, "\"" + name + "\"", IR_GRAPHVIZ_RENDERER,
+        graph.export(writer, name, IR_GRAPHVIZ_RENDERER,
                      EDGE_GRAPHVIZ_RENDERER);
     }
 

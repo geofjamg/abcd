@@ -481,7 +481,11 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
             writer.append("subgraph ").append(clusterName).append(" {\n");
             writer.append("label=\"").append(name).append("\";\n");
         } else {
-            writer.append("digraph ").append(name).append(" {\n");
+            writer.append("digraph \"").append(name).append("\" {\n");
+            writer.append("  subgraph cluster_title").append(" {\n");
+            writer.append("    fontsize=\"18\";\n");
+            writer.append("    labeljust=\"left\";\n");
+            writer.append("    label=\"").append(name).append("\";\n");
         }
         for (V node : getVertices()) {
             if (node instanceof GraphvizDigraph) {
@@ -490,7 +494,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
                 subgraph.export(writer, node.toString(), vertexRenderer,
                                   edgeRenderer, true);
             } else {
-                writer.append("  ")
+                writer.append("    ")
                         .append(GraphvizUtil.getSimpleVertexID(this, node))
                         .append(" ");
                 GraphvizUtil.writeAttributes(writer, vertexRenderer.getAttributes(node));
@@ -500,12 +504,15 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         for (E edge : getEdges()) {
             V source = getEdgeSource(edge);
             V target = getEdgeTarget(edge);
-            writer.append("  ")
+            writer.append("    ")
                     .append(GraphvizUtil.getVertexID(this, source))
                     .append(" -> ")
                     .append(GraphvizUtil.getVertexID(this, target));
             GraphvizUtil.writeAttributes(writer, edgeRenderer.getAttributes(edge));
             writer.append("\n");
+        }
+        if (!isSubgraph) {
+            writer.append("  }\n");
         }
         writer.append("}\n");
     }
