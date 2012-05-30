@@ -18,7 +18,7 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
-import fr.jamgotchian.abcd.core.util.ConsoleUtil;
+import fr.jamgotchian.abcd.core.util.console.ConsoleUtil;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

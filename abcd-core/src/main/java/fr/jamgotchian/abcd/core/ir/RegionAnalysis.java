@@ -19,7 +19,7 @@ package fr.jamgotchian.abcd.core.ir;
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
-import static fr.jamgotchian.abcd.core.util.ConsoleUtil.*;
+import static fr.jamgotchian.abcd.core.util.console.ConsoleUtil.*;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -45,7 +45,7 @@ import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.ComputationalType;
 import static fr.jamgotchian.abcd.core.type.ComputationalType.Category.*;
 import fr.jamgotchian.abcd.core.type.JavaType;
-import fr.jamgotchian.abcd.core.util.ConsoleUtil;
+import fr.jamgotchian.abcd.core.util.console.ConsoleUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;

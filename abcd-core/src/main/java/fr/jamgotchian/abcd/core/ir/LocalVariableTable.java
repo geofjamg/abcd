@@ -16,8 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.util.ConsoleUtil;
-import fr.jamgotchian.abcd.core.util.TablePrinter;
+import fr.jamgotchian.abcd.core.util.console.ConsoleUtil;
+import fr.jamgotchian.abcd.core.util.console.TablePrinter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
