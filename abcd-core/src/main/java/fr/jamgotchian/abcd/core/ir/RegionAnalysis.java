@@ -43,14 +43,14 @@ public class RegionAnalysis {
         this.writer = writer;
     }
 
-    private static ControlFlowGraph createSubCFG(ControlFlowGraph cfg, Region region) {
+    private static ControlFlowGraph createSubCFG(ControlFlowGraph cfg, String name, Region region) {
         if (region.getEntry() == null
                 || region.getExit() == null
                 || region.getEntry().equals(region.getExit())) {
             throw new ABCDException("Cannot create subgraph from region " + region);
         }
         ControlFlowGraph subCfg
-                = new ControlFlowGraph(cfg.getName(), region.getEntry(), region.getExit());
+                = new ControlFlowGraph(name, region.getEntry(), region.getExit());
         for (BasicBlock bb : region.getBasicBlocks()) {
             if (!bb.equals(region.getEntry()) && !bb.equals(region.getExit())) {
                 subCfg.addBasicBlock(bb);
@@ -158,8 +158,7 @@ public class RegionAnalysis {
         //   - remove exit edges and exit block
         //   - replace the exit block by the tail block
         //   - remove the back edge
-        ControlFlowGraph subCfg = createSubCFG(cfg, region);
-        subCfg.setName("Body subgraph of loop " + region);
+        ControlFlowGraph subCfg = createSubCFG(cfg, "Body subgraph of loop " + region, region);
         subCfg.removeBasicBlock(subCfg.getExitBlock());
         subCfg.setExitBlock(tailBlock);
         subCfg.removeEdge(backEdge);
@@ -210,7 +209,7 @@ public class RegionAnalysis {
                     LOGGER.debug("Found if then break region {}", region);
                     region.setParentType(ParentType.IF_THEN_BREAK);
                     ifRegion.setChildType(ChildType.IF);
-                    
+
                     // propagate to children
                     if (!checkRegion(cfg, ifRegion)) {
                         throw new ABCDException("Cannot find type of if region "
@@ -444,8 +443,7 @@ public class RegionAnalysis {
         }
 
         // build control flow subgraph
-        ControlFlowGraph subCfg = createSubCFG(cfg, region);
-        subCfg.setName("Try subgraph of region " + region);
+        ControlFlowGraph subCfg = createSubCFG(cfg, "Try subgraph of region " + region, region);
 
         // remove handlers basic blocks
         for (Region handlerRegion : handlerRegions) {
