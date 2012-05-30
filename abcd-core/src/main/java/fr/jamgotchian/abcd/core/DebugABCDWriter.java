@@ -70,11 +70,15 @@ public class DebugABCDWriter extends DefaultABCDWriter {
         this.debugDir = debugDir;
     }
 
+    private String getBaseName(ControlFlowGraph cfg) {
+        return debugDir.getPath() + File.separator + cfg.getName().replace(' ', '_');
+    }
+
     @Override
     public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bytecodeRenderer) {
         assert cfg != null;
 
-        String baseName = debugDir.getPath() + File.separator + cfg.getName();
+        String baseName = getBaseName(cfg);
 
         try {
             Writer writer = new FileWriter(baseName + "_RAWCFG.dot");
@@ -99,7 +103,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     public void writeCFG(ControlFlowGraph cfg, boolean failure) {
         assert cfg != null;
 
-        String baseName = debugDir.getPath() + File.separator + cfg.getName();
+        String baseName = getBaseName(cfg);
 
         try {
             Writer writer = new FileWriter(baseName + "_DFST.dot");
@@ -153,7 +157,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     public void writeRPST(RPST rpst, int level) {
         assert rpst != null;
 
-        String baseName = debugDir.getPath() + File.separator + rpst.getCfg().getName();
+        String baseName = getBaseName(rpst.getCfg());
 
         try {
             Writer writer = new FileWriter(baseName + "_RPST_" + level + ".dot");
