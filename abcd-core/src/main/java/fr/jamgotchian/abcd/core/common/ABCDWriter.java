@@ -21,6 +21,7 @@ import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.RPST;
+import java.util.List;
 
 /**
  *
@@ -32,7 +33,7 @@ public interface ABCDWriter {
 
     void writeCFG(ControlFlowGraph cfg, boolean failure);
 
-    void writeRPST(RPST rpst, int level);
+    void writeRPST(ControlFlowGraph cfg, List<RPST> rpsts);
 
     void writeAST(CompilationUnit compilUnit);
 }

@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -47,6 +48,25 @@ public class RPST {
     public RPST(ControlFlowGraph cfg, Region rootRegion) {
         this.cfg = cfg;
         this.rootRegion = rootRegion;
+    }
+
+    public RPST(RPST other) {
+        cfg = other.cfg;
+        Map<Region, Region> mapping = new HashMap<Region, Region>();
+        deepCopy(other.rootRegion, mapping);
+        rootRegion = mapping.get(other.rootRegion);
+    }
+
+    private void deepCopy(Region region, Map<Region, Region> mapping) {
+        Region clone = new Region(region.getEntry(), region.getExit(), region.getParent(),
+                                  region.getParentType(), region.getChildType(), region.getData());
+        if (region.getParent() != null) {
+            clone.setParent(mapping.get(region.getParent()));
+        }
+        mapping.put(region, clone);
+        for (Region child : region.getChildren()) {
+            deepCopy(child, mapping);
+        }
     }
 
     public ControlFlowGraph getCfg() {
@@ -118,11 +138,12 @@ public class RPST {
         }
     }
 
-    private void exportRegion(Writer writer, Region region, int indentLevel) throws IOException {
+    private void exportRegion(Writer writer, int index, Region region, int indentLevel) throws IOException {
         if (region.isBasicBlock()) {
             BasicBlock bb = region.getEntry();
             writeSpace(writer, indentLevel);
             writer.append(Integer.toString(System.identityHashCode(bb)))
+                    .append(Integer.toString(index))
                     .append(" ");
             Map<String, String> attrs = RANGE_GRAPHIZ_RENDERER.getAttributes(bb);
             GraphvizUtil.writeAttributes(writer, attrs);
@@ -142,7 +163,7 @@ public class RPST {
                         .append(" ").append(region.toString()).append("\";\n");
             }
             for (Region child : region.getChildren()) {
-                exportRegion(writer, child, indentLevel+1);
+                exportRegion(writer, index, child, indentLevel+1);
             }
             writeSpace(writer, indentLevel);
             writer.append("}\n");
@@ -151,15 +172,29 @@ public class RPST {
 
     public void export(Writer writer) throws IOException {
         writer.append("digraph ").append("RPST").append(" {\n");
-        writer.append("  subgraph cluster_title").append(" {\n");
+        exportSubgraph(writer, 0);
+        writer.append("}\n");
+    }
+
+    public static void export(List<RPST> rpsts, Writer writer) throws IOException {
+        writer.append("digraph ").append("RPST").append(" {\n");
+        for (int index = 0; index < rpsts.size(); index++) {
+            rpsts.get(index).exportSubgraph(writer, index);
+        }
+        writer.append("}\n");
+    }
+
+    public void exportSubgraph(Writer writer, int index) throws IOException {
+        writer.append("  subgraph cluster_title_").append(Integer.toString(index)).append(" {\n");
         writer.append("    fontsize=\"18\";\n");
         writer.append("    labeljust=\"left\";\n");
         writer.append("    label=\"").append(cfg.getName()).append("\";\n");
-        exportRegion(writer, rootRegion, 2);
+        exportRegion(writer, index, rootRegion, 2);
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             if (bb.getRegion() == null) {
                 writer.append("    ")
                         .append(Integer.toString(System.identityHashCode(bb)))
+                        .append(Integer.toString(index))
                         .append(" ");
                 Map<String, String> attrs = RANGE_GRAPHIZ_RENDERER.getAttributes(bb);
                 GraphvizUtil.writeAttributes(writer, attrs);
@@ -171,13 +206,14 @@ public class RPST {
             BasicBlock target = cfg.getEdgeTarget(edge);
             writer.append("    ")
                     .append(Integer.toString(System.identityHashCode(source)))
+                    .append(Integer.toString(index))
                     .append(" -> ")
-                    .append(Integer.toString(System.identityHashCode(target)));
+                    .append(Integer.toString(System.identityHashCode(target)))
+                    .append(Integer.toString(index));
             GraphvizUtil.writeAttributes(writer, EDGE_GRAPHVIZ_RENDERER.getAttributes(edge));
             writer.append("\n");
         }
         writer.append("  }\n");
-        writer.append("}\n");
     }
 
     public void export(String fileName) {

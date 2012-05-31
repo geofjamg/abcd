@@ -35,7 +35,7 @@ public class RegionAnalysis {
 
     private final ABCDWriter writer;
 
-    private int level;
+    private final List<RPST> rpsts = new ArrayList<RPST>();
 
     public RegionAnalysis(ControlFlowGraph cfg0, ABCDWriter writer) {
         this.cfg0 = cfg0;
@@ -534,13 +534,13 @@ public class RegionAnalysis {
             }
         }
 
+        rpsts.add(0, new RPST(rpst));
+
         return rpst;
     }
 
     private RPST checkGraph(ControlFlowGraph cfg) {
         LOGGER.debug("Check {}", cfg.getName());
-
-        int currentLevel = level++;
 
         cfg.updateDominatorInfo();
 
@@ -583,13 +583,11 @@ public class RegionAnalysis {
             rpst = checkRegions(cfg);
         }
 
-        writer.writeRPST(rpst, currentLevel);
-
         return rpst;
     }
 
     public RPST analyse() {
-        level = 0;
+        rpsts.clear();
 
         cfg0.removeCriticalEdges();
 
@@ -597,6 +595,8 @@ public class RegionAnalysis {
         cfg.setName("Main graph");
 
         RPST rpst = checkGraph(cfg);
+
+        writer.writeRPST(cfg0, rpsts);
 
         return rpst;
     }

@@ -44,11 +44,18 @@ public class Region {
 
     private Object data;
 
-    public Region(BasicBlock entry, BasicBlock exit, ParentType parentType) {
+    public Region(BasicBlock entry, BasicBlock exit, Region parent, ParentType parentType,
+                  ChildType childType, Object data) {
         this.entry = entry;
         this.exit = exit;
+        this.parent = parent;
         this.parentType = parentType;
-        childType = ChildType.UNDEFINED;
+        this.childType = childType;
+        this.data = data;
+    }
+
+    public Region(BasicBlock entry, BasicBlock exit, ParentType parentType) {
+        this(entry, exit, null, parentType, ChildType.UNDEFINED, null);
     }
 
     public BasicBlock getEntry() {

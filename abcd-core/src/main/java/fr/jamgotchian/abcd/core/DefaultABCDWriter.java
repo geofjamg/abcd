@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +69,7 @@ public class DefaultABCDWriter implements ABCDWriter {
     }
 
     @Override
-    public void writeRPST(RPST rpst, int level) {
+    public void writeRPST(ControlFlowGraph cfg, List<RPST> rpsts) {
     }
 
     @Override

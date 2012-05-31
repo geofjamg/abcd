@@ -29,6 +29,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 
 /**
  *
@@ -154,20 +155,20 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     }
 
     @Override
-    public void writeRPST(RPST rpst, int level) {
-        assert rpst != null;
+    public void writeRPST(ControlFlowGraph cfg, List<RPST> rpsts) {
+        if (rpsts.size() > 0) {
+            String baseName = getBaseName(cfg);
 
-        String baseName = getBaseName(rpst.getCfg());
-
-        try {
-            Writer writer = new FileWriter(baseName + "_RPST_" + level + ".dot");
             try {
-                rpst.export(writer);
-            } finally {
-                writer.close();
+                Writer writer = new FileWriter(baseName + "_RPST.dot");
+                try {
+                    RPST.export(rpsts, writer);
+                } finally {
+                    writer.close();
+                }
+            } catch (IOException e) {
+                LOGGER.error(e.toString(), e);
             }
-        } catch (IOException e) {
-            LOGGER.error(e.toString(), e);
         }
     }
 }
