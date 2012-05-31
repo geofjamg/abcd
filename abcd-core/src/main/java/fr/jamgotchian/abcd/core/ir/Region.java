@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.ir;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -108,6 +109,16 @@ public class Region {
             return null;
         } else {
             return children.iterator().next();
+        }
+    }
+
+    public Region getSecondChild() {
+        if (children.size() < 2) {
+            return null;
+        } else {
+            Iterator<Region> it = children.iterator();
+            it.next();
+            return it.next();
         }
     }
 

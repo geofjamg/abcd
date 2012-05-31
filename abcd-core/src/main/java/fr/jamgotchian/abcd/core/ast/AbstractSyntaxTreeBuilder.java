@@ -43,6 +43,7 @@ import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement;
 import fr.jamgotchian.abcd.core.ast.stmt.TryCatchFinallyStatement.CatchClause;
 import fr.jamgotchian.abcd.core.ast.stmt.WhileStatement;
 import fr.jamgotchian.abcd.core.ast.util.ExpressionInverter;
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.ir.IRInstSeq;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
@@ -634,6 +635,15 @@ public class AbstractSyntaxTreeBuilder {
                 break;
             }
 
+            case IF_THEN_BREAK: {
+                buildAST(region.getFirstChild(ChildType.IF), blockStmt);
+                IfStatement ifStmt = (IfStatement) blockStmt.getLast();
+                BlockStatement thenBlockStmt = new BlockStatement();
+                thenBlockStmt.add(new BreakStatement());
+                ifStmt.setThen(thenBlockStmt);
+                break;
+            }
+
             case BREAK_LABEL: {
                 BlockStatement bodyBlockStmt = new BlockStatement();
                 buildAST(region.getFirstChild(), bodyBlockStmt);
@@ -736,6 +746,9 @@ public class AbstractSyntaxTreeBuilder {
 
                 break;
             }
+
+            default:
+                throw new ABCDException();
         }
     }
 }

@@ -168,9 +168,15 @@ public class RegionAnalysis {
 
         Region rootRegion = subRpst.getRootRegion();
         Region bodyRegion = rootRegion.getFirstChild();
-        bodyRegion.setChildType(ChildType.LOOP_BODY);
+        Region exitRegion = rootRegion.getSecondChild();
+        Region loopRegion = new Region(bodyRegion.getEntry(), exitRegion.getExit(), ParentType.SEQUENCE);
+        bodyRegion.setChildType(ChildType.FIRST);
+        exitRegion.setChildType(ChildType.SECOND);
+        loopRegion.addChild(bodyRegion);
+        loopRegion.addChild(exitRegion);
+        loopRegion.setChildType(ChildType.LOOP_BODY);
         region.removeChildren();
-        region.addChild(bodyRegion);
+        region.addChild(loopRegion);
 
         return true;
     }
