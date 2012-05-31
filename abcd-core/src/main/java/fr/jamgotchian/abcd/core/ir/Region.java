@@ -145,7 +145,7 @@ public class Region {
         return children.size();
     }
 
-    public void addChild(Region child) {
+    private void addChild(Region child) {
         children.add(child);
     }
 

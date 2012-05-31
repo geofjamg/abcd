@@ -19,7 +19,6 @@ package fr.jamgotchian.abcd.core.ir;
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
-import static fr.jamgotchian.abcd.core.util.console.ConsoleUtil.*;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,11 +171,11 @@ public class RegionAnalysis {
         Region loopRegion = new Region(bodyRegion.getEntry(), exitRegion.getExit(), ParentType.SEQUENCE);
         bodyRegion.setChildType(ChildType.FIRST);
         exitRegion.setChildType(ChildType.SECOND);
-        loopRegion.addChild(bodyRegion);
-        loopRegion.addChild(exitRegion);
+        bodyRegion.setParent(loopRegion);
+        exitRegion.setParent(loopRegion);
         loopRegion.setChildType(ChildType.LOOP_BODY);
         region.removeChildren();
-        region.addChild(loopRegion);
+        loopRegion.setParent(region);
 
         return true;
     }
@@ -468,14 +467,14 @@ public class RegionAnalysis {
         Region rootRegion = subRpst.getRootRegion();
         Region tryRegion = rootRegion.getEntryChild();
         tryRegion.setChildType(ChildType.TRY);
-        region.addChild(tryRegion);
+        tryRegion.setParent(region);
         for (Region handlerRegion : handlerRegions) {
             if (finallyRegion != null && handlerRegion.equals(finallyRegion)) {
                 handlerRegion.setChildType(ChildType.FINALLY);
             } else {
                 handlerRegion.setChildType(ChildType.CATCH);
             }
-            region.addChild(handlerRegion);
+            handlerRegion.setParent(region);
         }
         // insert inlined finally regions
         for (Region child : tryRegion.getSubRegions()) {
