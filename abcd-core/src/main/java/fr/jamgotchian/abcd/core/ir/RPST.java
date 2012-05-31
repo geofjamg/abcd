@@ -122,8 +122,7 @@ public class RPST {
         if (region.isBasicBlock()) {
             BasicBlock bb = region.getEntry();
             writeSpace(writer, indentLevel);
-            writer.append("  ")
-                    .append(Integer.toString(System.identityHashCode(bb)))
+            writer.append(Integer.toString(System.identityHashCode(bb)))
                     .append(" ");
             Map<String, String> attrs = RANGE_GRAPHIZ_RENDERER.getAttributes(bb);
             GraphvizUtil.writeAttributes(writer, attrs);
@@ -152,10 +151,14 @@ public class RPST {
 
     public void export(Writer writer) throws IOException {
         writer.append("digraph ").append("RPST").append(" {\n");
-        exportRegion(writer, rootRegion, 1);
+        writer.append("  subgraph cluster_title").append(" {\n");
+        writer.append("    fontsize=\"18\";\n");
+        writer.append("    labeljust=\"left\";\n");
+        writer.append("    label=\"").append(cfg.getName()).append("\";\n");
+        exportRegion(writer, rootRegion, 2);
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             if (bb.getRegion() == null) {
-                writer.append("  ")
+                writer.append("    ")
                         .append(Integer.toString(System.identityHashCode(bb)))
                         .append(" ");
                 Map<String, String> attrs = RANGE_GRAPHIZ_RENDERER.getAttributes(bb);
@@ -166,13 +169,14 @@ public class RPST {
         for (Edge edge : cfg.getEdges()) {
             BasicBlock source = cfg.getEdgeSource(edge);
             BasicBlock target = cfg.getEdgeTarget(edge);
-            writer.append("  ")
+            writer.append("    ")
                     .append(Integer.toString(System.identityHashCode(source)))
                     .append(" -> ")
                     .append(Integer.toString(System.identityHashCode(target)));
             GraphvizUtil.writeAttributes(writer, EDGE_GRAPHVIZ_RENDERER.getAttributes(edge));
             writer.append("\n");
         }
+        writer.append("  }\n");
         writer.append("}\n");
     }
 
