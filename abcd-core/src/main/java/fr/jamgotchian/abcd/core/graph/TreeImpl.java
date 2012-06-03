@@ -197,7 +197,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     @Override
-    public void setParent(N node, N newParent) {
+    public void setNewParent(N node, N newParent) {
         if (node.equals(root)) {
             throw new ABCDException("Can't change parent of root node");
         }

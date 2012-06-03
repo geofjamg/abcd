@@ -103,7 +103,7 @@ public class TreeImplTest {
      *                      n5  n6
      */
     @Test
-    public void testSetParent() {
+    public void testSetNewParent() {
         Vertex n1 = new Vertex("n", 1);
         Vertex n2 = new Vertex("n", 2);
         Vertex n3 = new Vertex("n", 3);
@@ -124,7 +124,7 @@ public class TreeImplTest {
         tree.addNode(n4, n5, e45);
         tree.addNode(n4, n6, e46);
         tree.addNode(n3, n7, e37);
-        tree.setParent(n4, n3);
+        tree.setNewParent(n4, n3);
         assertTrue(tree.getNodes().size() == 7);
         assertTrue(Collections3.equals(tree.getNodes(), Arrays.asList(n1, n2, n3, n4, n5, n6, n7)));
         assertTrue(Collections3.equals(tree.getChildren(n2), Arrays.asList(n3)));
