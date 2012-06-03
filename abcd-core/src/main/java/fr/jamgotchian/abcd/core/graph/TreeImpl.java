@@ -383,6 +383,28 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     @Override
+    public void removeNode(N node) {
+        if (node.equals(root)) {
+            throw new ABCDException("Can't remove root node");
+        }
+        Neighbors<N,E> neighbors = nodes.get(node);
+        if (neighbors == null) {
+            throw new ABCDException("Node " + node + " not found");
+        }
+        E edge = neighbors.getIncomingEdge();
+        N parent = neighbors.getParentNode();
+        Neighbors<N,E> parentNeighbors = nodes.get(parent);
+        parentNeighbors.getChildren().clear();
+        parentNeighbors.getChildren().putAll(neighbors.getChildren());
+        for (Map.Entry<N, E> child : neighbors.getChildren().entrySet()) {
+            Neighbors<N,E> childNeighbors = nodes.get(child.getKey());
+            childNeighbors.setParentNode(parent);
+        }
+        nodes.remove(node);
+        edges.remove(edge);
+    }
+
+    @Override
     public String getClusterID() {
         return Integer.toString(System.identityHashCode(this));
     }

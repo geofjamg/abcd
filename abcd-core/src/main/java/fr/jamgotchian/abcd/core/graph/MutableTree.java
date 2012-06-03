@@ -27,4 +27,6 @@ public interface MutableTree<N, E> extends Tree<N, E> {
 
     void setNewParent(N node, N newParent);
 
+    void removeNode(N node);
+
 }
