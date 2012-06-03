@@ -102,6 +102,11 @@ public class Trees {
         }
 
         @Override
+        public Set<N> getChildren(N node, Filter<N> filter) {
+            return delegate.getChildren(node, filter);
+        }
+
+        @Override
         public int getChildrenCount(N node) {
             return delegate.getChildrenCount(node);
         }
