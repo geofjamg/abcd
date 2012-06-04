@@ -30,9 +30,9 @@ import java.util.Set;
  */
 public class Region {
 
-    private BasicBlock entry;
+    private final BasicBlock entry;
 
-    private BasicBlock exit;
+    private final BasicBlock exit;
 
     private Region parent;
 
@@ -64,14 +64,6 @@ public class Region {
 
     public BasicBlock getExit() {
         return exit;
-    }
-
-    public void setEntry(BasicBlock entry) {
-        this.entry = entry;
-    }
-
-    public void setExit(BasicBlock exit) {
-        this.exit = exit;
     }
 
     public Region getParent() {
