@@ -258,4 +258,50 @@ public class TreeImplTest {
         assertTrue(Collections3.equals(tree.getChildren(n2), Arrays.asList(n3)));
     }
 
+
+    /**
+     *     n1                 n1
+     *     |                  |
+     *     n2          =>     n2
+     *   /  \                /  \
+     *  n3   n4             n3   n8
+     *  |   / \             |    |
+     *  n7 n5  n6           n7   n4
+     *                          / \
+     *                         n5  n6
+     */
+    @Test
+    public void testInsertNode() {
+        Vertex n1 = new Vertex("n", 1);
+        Vertex n2 = new Vertex("n", 2);
+        Vertex n3 = new Vertex("n", 3);
+        Vertex n4 = new Vertex("n", 4);
+        Vertex n5 = new Vertex("n", 5);
+        Vertex n6 = new Vertex("n", 6);
+        Vertex n7 = new Vertex("n", 7);
+        Vertex n8 = new Vertex("n", 8);
+        String e12 = "e12";
+        String e23 = "e23";
+        String e24 = "e24";
+        String e45 = "e45";
+        String e46 = "e46";
+        String e37 = "e37";
+        String eNew = "eNew";
+        MutableTree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        tree.addNode(n1, n2, e12);
+        tree.addNode(n2, n3, e23);
+        tree.addNode(n2, n4, e24);
+        tree.addNode(n4, n5, e45);
+        tree.addNode(n4, n6, e46);
+        tree.addNode(n3, n7, e37);
+        tree.insertNode(n8, n4, eNew);
+        assertTrue(tree.getNodes().size() == 8);
+        assertTrue(Collections3.equals(tree.getNodes(), Arrays.asList(n1, n2, n3, n4, n5, n6, n7, n8)));
+        assertTrue(tree.getParent(n8).equals(n2));
+        assertTrue(Collections3.equals(tree.getChildren(n2), Arrays.asList(n3, n8)));
+        System.out.println(tree.getParent(n4));
+        assertTrue(tree.getParent(n4).equals(n8));
+        assertTrue(Collections3.equals(tree.getChildren(n8), Arrays.asList(n4)));
+    }
+
 }

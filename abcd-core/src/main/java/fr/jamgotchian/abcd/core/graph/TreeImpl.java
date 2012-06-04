@@ -149,12 +149,38 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         if (edges.containsKey(edge)) {
             throw new ABCDException("Edge " + edge + " already present");
         }
-        Neighbors<N,E> parentsNeighbors = nodes.get(parent);
-        if (parentsNeighbors == null) {
+        Neighbors<N,E> parentNeighbors = nodes.get(parent);
+        if (parentNeighbors == null) {
             throw new ABCDException("Parent node " + parent + " not found");
         }
-        parentsNeighbors.getChildren().put(node, edge);
+        parentNeighbors.getChildren().put(node, edge);
         nodes.put(node, new Neighbors<N, E>(parent, edge));
+        edges.put(edge, new Connection<N>(parent, node));
+    }
+
+    @Override
+    public void insertNode(N node, N child, E edge) {
+        if (child.equals(root)) {
+            throw new ABCDException("Can't insert node before root");
+        }
+        if (nodes.containsKey(node)) {
+            throw new ABCDException("Node " + node + " already present");
+        }
+        if (edges.containsKey(edge)) {
+            throw new ABCDException("Edge " + edge + " already present");
+        }
+        Neighbors<N,E> childNeighbors = nodes.get(child);
+        if (child == null) {
+            throw new ABCDException("Child " + child + " not found");
+        }
+        N parent = childNeighbors.getParentNode();
+        Neighbors<N,E> parentNeighbors = nodes.get(parent);
+        parentNeighbors.getChildren().remove(child);
+        parentNeighbors.getChildren().put(node, edge);
+        Neighbors<N, E> neighbors = new Neighbors<N, E>(parent, edge);
+        neighbors.getChildren().put(child, childNeighbors.getIncomingEdge());
+        childNeighbors.setParentNode(node);
+        nodes.put(node, neighbors);
         edges.put(edge, new Connection<N>(parent, node));
     }
 
