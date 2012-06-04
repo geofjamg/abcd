@@ -185,6 +185,24 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     @Override
+    public void addTree(Tree<N, E> tree, N parent, E edge) {
+        if (!nodes.containsKey(parent)) {
+            throw new ABCDException("Parent node " + parent + " not found");
+        }
+        addNode(parent, tree.getRoot(), edge);
+        for (N child : tree.getChildren(tree.getRoot())) {
+            addTree2(tree, child, tree.getRoot());
+        }
+    }
+
+    private void addTree2(Tree<N, E> tree, N node, N parent) {
+        addNode(parent, node, tree.getIncomingEdge(node));
+        for (N child : tree.getChildren(node)) {
+            addTree2(tree, child, node);
+        }
+    }
+
+    @Override
     public boolean containsNode(N node) {
         return nodes.containsKey(node);
     }

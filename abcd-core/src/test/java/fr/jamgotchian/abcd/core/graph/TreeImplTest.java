@@ -258,7 +258,6 @@ public class TreeImplTest {
         assertTrue(Collections3.equals(tree.getChildren(n2), Arrays.asList(n3)));
     }
 
-
     /**
      *     n1                 n1
      *     |                  |
@@ -299,9 +298,50 @@ public class TreeImplTest {
         assertTrue(Collections3.equals(tree.getNodes(), Arrays.asList(n1, n2, n3, n4, n5, n6, n7, n8)));
         assertTrue(tree.getParent(n8).equals(n2));
         assertTrue(Collections3.equals(tree.getChildren(n2), Arrays.asList(n3, n8)));
-        System.out.println(tree.getParent(n4));
         assertTrue(tree.getParent(n4).equals(n8));
         assertTrue(Collections3.equals(tree.getChildren(n8), Arrays.asList(n4)));
+    }
+
+    /**
+     *     n1                 n1
+     *     |                  |
+     *     n2          =>     n2
+     *                        |
+     *     +                  n3
+     *                       /  \
+     *     n3               n4   n5
+     *    /  \
+     *   n4   n5
+     *
+     */
+    @Test
+    public void testAddTree() {
+        Vertex n1 = new Vertex("n", 1);
+        Vertex n2 = new Vertex("n", 2);
+        String e12 = "e12";
+        MutableTree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        tree.addNode(n1, n2, e12);
+
+        Vertex n3 = new Vertex("n", 3);
+        Vertex n4 = new Vertex("n", 4);
+        Vertex n5 = new Vertex("n", 5);
+        String e34 = "e34";
+        String e35 = "e35";
+        MutableTree<Vertex, String> tree2 = new TreeImpl<Vertex, String>(n3);
+        tree2.addNode(n3, n4, e34);
+        tree2.addNode(n3, n5, e35);
+
+        String e23 = "e23";
+        tree.addTree(tree2, n2, e23);
+
+        assertTrue(tree.getNodes().size() == 5);
+        assertTrue(Collections3.equals(tree.getNodes(), Arrays.asList(n1, n2, n3, n4, n5)));
+        assertTrue(tree.getParent(n3).equals(n2));
+        assertTrue(tree.getParent(n4).equals(n3));
+        assertTrue(tree.getParent(n5).equals(n3));
+        assertTrue(Collections3.equals(tree.getChildren(n2), Arrays.asList(n3)));
+        assertTrue(Collections3.equals(tree.getChildren(n3), Arrays.asList(n4, n5)));
+        assertTrue(tree.getIncomingEdge(n3).equals(e23));
     }
 
 }
