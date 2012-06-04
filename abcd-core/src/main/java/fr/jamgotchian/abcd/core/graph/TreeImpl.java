@@ -394,7 +394,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         E edge = neighbors.getIncomingEdge();
         N parent = neighbors.getParentNode();
         Neighbors<N,E> parentNeighbors = nodes.get(parent);
-        parentNeighbors.getChildren().clear();
+        parentNeighbors.getChildren().remove(node);
         parentNeighbors.getChildren().putAll(neighbors.getChildren());
         for (Map.Entry<N, E> child : neighbors.getChildren().entrySet()) {
             Neighbors<N,E> childNeighbors = nodes.get(child.getKey());
@@ -402,6 +402,13 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         }
         nodes.remove(node);
         edges.remove(edge);
+    }
+
+    @Override
+    public void removeSubtree(N subtreeRoot) {
+        for (N node : getSubTree(subtreeRoot).getNodesPostOrder()) {
+            removeNode(node);
+        }
     }
 
     @Override

@@ -29,4 +29,6 @@ public interface MutableTree<N, E> extends Tree<N, E> {
 
     void removeNode(N node);
 
+    void removeSubtree(N subtreeRoot);
+
 }
