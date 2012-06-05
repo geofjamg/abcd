@@ -107,6 +107,16 @@ public class Trees {
         }
 
         @Override
+        public N getFirstChild(N node) {
+            return delegate.getFirstChild(node);
+        }
+
+        @Override
+        public N getFirstChild(N node, Filter<N> filter) {
+            return delegate.getFirstChild(node, filter);
+        }
+
+        @Override
         public int getChildrenCount(N node) {
             return delegate.getChildrenCount(node);
         }

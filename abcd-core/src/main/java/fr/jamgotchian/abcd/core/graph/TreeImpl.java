@@ -283,6 +283,25 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     @Override
+    public N getFirstChild(N node) {
+        if (getChildrenCount(node) == 0) {
+            return null;
+        } else {
+            return getChildren(node).iterator().next();
+        }
+    }
+
+    @Override
+    public N getFirstChild(N node, Filter<N> filter) {
+        for (N child : getChildren(node)) {
+            if (filter.accept(child)) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public int getChildrenCount(N node) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
