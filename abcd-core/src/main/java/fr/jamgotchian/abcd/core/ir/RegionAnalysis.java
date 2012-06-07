@@ -42,15 +42,16 @@ public class RegionAnalysis {
         this.writer = writer;
     }
 
-    private static ControlFlowGraph createSubCFG(ControlFlowGraph cfg, String name, Region region) {
+    private static ControlFlowGraph createSubCFG(RPST rpst, String name, Region region) {
         if (region.getEntry() == null
                 || region.getExit() == null
                 || region.getEntry().equals(region.getExit())) {
             throw new ABCDException("Cannot create subgraph from region " + region);
         }
+        ControlFlowGraph cfg = rpst.getCfg();
         ControlFlowGraph subCfg
                 = new ControlFlowGraph(name, region.getEntry(), region.getExit());
-        for (BasicBlock bb : region.getBasicBlocks()) {
+        for (BasicBlock bb : rpst.getBasicBlocks(region)) {
             if (!bb.equals(region.getEntry()) && !bb.equals(region.getExit())) {
                 subCfg.addBasicBlock(bb);
             }
@@ -66,16 +67,16 @@ public class RegionAnalysis {
         return subCfg;
     }
 
-    private boolean checkTrivialRegion(ControlFlowGraph cfg, Region region) {
+    private boolean checkTrivialRegion(RPST rpst, Region region) {
         LOGGER.trace("Check trivial region {}", region);
-        if (region.getChildCount() == 1) {
-            Region child = region.getFirstChild();
+        if (rpst.getChildCount(region) == 1) {
+            Region child = rpst.getFirstChild(region);
             if (child.getEntry().getType() != BasicBlockType.JUMP_IF) {
                 LOGGER.debug("Found trivial region {}", region);
                 region.setParentType(ParentType.TRIVIAL);
 
                 // propagate to children
-                if (!checkRegion(cfg, child)) {
+                if (!checkRegion(rpst, child)) {
                     throw new ABCDException("Cannot find type of region "
                             + child);
                 }
@@ -85,12 +86,12 @@ public class RegionAnalysis {
         return false;
     }
 
-    private boolean checkSequenceRegion(ControlFlowGraph cfg, Region region) {
+    private boolean checkSequenceRegion(RPST rpst, Region region) {
         LOGGER.trace("Check sequence region {}", region);
-        if (region.getChildCount() != 2) {
+        if (rpst.getChildCount(region) != 2) {
             return false;
         }
-        Iterator<Region> it = region.getChildren().iterator();
+        Iterator<Region> it = rpst.getChildren(region).iterator();
         Region child1 = it.next();
         Region child2 = it.next();
         Region firstRegion = null;
@@ -111,11 +112,11 @@ public class RegionAnalysis {
             secondRegion.setChildType(ChildType.SECOND);
 
             // propagate to children
-            if (!checkRegion(cfg, firstRegion)) {
+            if (!checkRegion(rpst, firstRegion)) {
                 throw new ABCDException("Cannot find type of first region "
                             + firstRegion);
             }
-            if (!checkRegion(cfg, secondRegion)) {
+            if (!checkRegion(rpst, secondRegion)) {
                 throw new ABCDException("Cannot find type of second region "
                             + secondRegion);
             }
@@ -125,16 +126,16 @@ public class RegionAnalysis {
         return false;
     }
 
-    private boolean checkWhileLoopRegion(ControlFlowGraph cfg, Region region) {
+    private boolean checkWhileLoopRegion(RPST rpst, Region region) {
         LOGGER.trace("Check while loop region {}", region);
         // a loop region must have 2 incomings edges, the region entry edge
         // and the loop back edge
-        if (cfg.getPredecessorCountOf(region.getEntry()) != 2) {
+        if (rpst.getCfg().getPredecessorCountOf(region.getEntry()) != 2) {
             return false;
         }
         // check that one of the 2 incoming edges is a back edge
         Edge backEdge = null;
-        for (Edge e : cfg.getIncomingEdgesOf(region.getEntry())) {
+        for (Edge e : rpst.getCfg().getIncomingEdgesOf(region.getEntry())) {
             if (e.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
                 backEdge = e;
             } else if (e.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
@@ -145,8 +146,8 @@ public class RegionAnalysis {
             return false;
         }
         // check that the loop region also contains the tail block
-        BasicBlock tailBlock = cfg.getEdgeSource(backEdge);
-        if (!region.getBasicBlocks().contains(tailBlock)) {
+        BasicBlock tailBlock = rpst.getCfg().getEdgeSource(backEdge);
+        if (!rpst.getBasicBlocks(region).contains(tailBlock)) {
             return false;
         }
 
@@ -157,7 +158,7 @@ public class RegionAnalysis {
         //   - remove exit edges and exit block
         //   - replace the exit block by the tail block
         //   - remove the back edge
-        ControlFlowGraph subCfg = createSubCFG(cfg, "Body subgraph of loop " + region, region);
+        ControlFlowGraph subCfg = createSubCFG(rpst, "Body subgraph of loop " + region, region);
         subCfg.removeBasicBlock(subCfg.getExitBlock());
         subCfg.setExitBlock(tailBlock);
         subCfg.removeEdge(backEdge);
@@ -165,27 +166,20 @@ public class RegionAnalysis {
         // build rpst from control flow subgraph
         RPST subRpst = checkGraph(subCfg);
 
-        Region rootRegion = subRpst.getRootRegion();
-        Region bodyRegion = rootRegion.getFirstChild();
-        Region exitRegion = rootRegion.getSecondChild();
-        Region loopRegion = new Region(bodyRegion.getEntry(), exitRegion.getExit(), ParentType.SEQUENCE);
-        bodyRegion.setChildType(ChildType.FIRST);
-        exitRegion.setChildType(ChildType.SECOND);
-        bodyRegion.setParent(loopRegion);
-        exitRegion.setParent(loopRegion);
-        loopRegion.setChildType(ChildType.LOOP_BODY);
-        region.removeChildren();
-        loopRegion.setParent(region);
+        // replace the subtree
+        subRpst.getRootRegion().setChildType(ChildType.LOOP_BODY);
+        rpst.removeChildren(region);
+        rpst.addRPST(subRpst, region);
 
         return true;
     }
 
-    private boolean checkDoWhileLoopRegion(ControlFlowGraph cfg, Region region) {
+    private boolean checkDoWhileLoopRegion(RPST rpst, Region region) {
         LOGGER.trace("Check do while loop region {}", region);
-        if (region.getChildCount() == 1) {
+        if (rpst.getChildCount(region) == 1) {
             if (region.getEntry().getType() == BasicBlockType.JUMP_IF) {
-                if (cfg.getSuccessorCountOf(region.getEntry()) == 2) {
-                    Region bodyRegion = region.getEntryChild();
+                if (rpst.getCfg().getSuccessorCountOf(region.getEntry()) == 2) {
+                    Region bodyRegion = rpst.getEntryChild(region);
 
                     LOGGER.debug("Found do while loop region {}", region);
 
@@ -193,7 +187,7 @@ public class RegionAnalysis {
                     bodyRegion.setChildType(ChildType.LOOP_BODY);
 
                     // propagate to children
-                    if (!checkRegion(cfg, bodyRegion)) {
+                    if (!checkRegion(rpst, bodyRegion)) {
                         throw new ABCDException("Cannot find type of body region "
                                 + bodyRegion);
                     }
@@ -204,19 +198,19 @@ public class RegionAnalysis {
         return false;
     }
 
-    private boolean checkIfThenBreakRegion(ControlFlowGraph cfg, Region region) {
+    private boolean checkIfThenBreakRegion(RPST rpst, Region region) {
         LOGGER.trace("Check if then break region {}", region);
-        if (region.getChildCount() == 1) {
+        if (rpst.getChildCount(region) == 1) {
             if (region.getEntry().getType() == BasicBlockType.JUMP_IF) {
-                if (cfg.getSuccessorCountOf(region.getEntry()) == 1) {
-                    Region ifRegion = region.getEntryChild();
+                if (rpst.getCfg().getSuccessorCountOf(region.getEntry()) == 1) {
+                    Region ifRegion = rpst.getEntryChild(region);
 
                     LOGGER.debug("Found if then break region {}", region);
                     region.setParentType(ParentType.IF_THEN_BREAK);
                     ifRegion.setChildType(ChildType.IF);
 
                     // propagate to children
-                    if (!checkRegion(cfg, ifRegion)) {
+                    if (!checkRegion(rpst, ifRegion)) {
                         throw new ABCDException("Cannot find type of if region "
                                 + ifRegion);
                     }
@@ -227,12 +221,12 @@ public class RegionAnalysis {
         return false;
     }
 
-    private boolean checkIfThenRegion(ControlFlowGraph cfg, Region region) {
+    private boolean checkIfThenRegion(RPST rpst, Region region) {
         LOGGER.trace("Check if then region {}", region);
-        if (region.getChildCount() == 2) {
+        if (rpst.getChildCount(region) == 2) {
             Region ifRegion = null;
             Region thenRegion = null;
-            for (Region child : region.getChildren()) {
+            for (Region child : rpst.getChildren(region)) {
                 if (child.getEntry().equals(region.getEntry())) {
                     ifRegion = child;
                 } else {
@@ -241,8 +235,8 @@ public class RegionAnalysis {
             }
             if (ifRegion != null && thenRegion != null) {
                 if (Objects.equal(region.getExit(), thenRegion.getExit())) {
-                    Edge thenEdge = cfg.getEdge(ifRegion.getEntry(), thenRegion.getEntry());
-                    Edge elseEdge = cfg.getEdge(ifRegion.getEntry(), region.getExit());
+                    Edge thenEdge = rpst.getCfg().getEdge(ifRegion.getEntry(), thenRegion.getEntry());
+                    Edge elseEdge = rpst.getCfg().getEdge(ifRegion.getEntry(), region.getExit());
                     if (thenEdge != null && elseEdge != null) {
                         ParentType parentType = null;
                         if (Boolean.TRUE.equals(thenEdge.getValue())
@@ -259,11 +253,11 @@ public class RegionAnalysis {
                             thenRegion.setChildType(ChildType.THEN);
 
                             // propagate to children
-                            if (!checkRegion(cfg, ifRegion)) {
+                            if (!checkRegion(rpst, ifRegion)) {
                                 throw new ABCDException("Cannot find type of if region "
                                         + ifRegion);
                             }
-                            if (!checkRegion(cfg, thenRegion)) {
+                            if (!checkRegion(rpst, thenRegion)) {
                                 throw new ABCDException("Cannot find type of then region "
                                         + thenRegion);
                             }
@@ -276,13 +270,13 @@ public class RegionAnalysis {
         return false;
     }
 
-    private boolean checkIfThenElseRegion(ControlFlowGraph cfg, Region region) {
+    private boolean checkIfThenElseRegion(RPST rpst, Region region) {
         LOGGER.trace("Check if then else region {}", region);
-        if (region.getChildCount() == 3) {
+        if (rpst.getChildCount(region) == 3) {
             Region ifRegion = null;
             Region thenOrElseRegion1 = null;
             Region thenOrElseRegion2 = null;
-            for (Region child : region.getChildren()) {
+            for (Region child : rpst.getChildren(region)) {
                 if (child.getEntry().equals(region.getEntry())) {
                     ifRegion = child;
                 } else {
@@ -300,8 +294,8 @@ public class RegionAnalysis {
                 BasicBlock ifBB = ifRegion.getEntry();
                 BasicBlock thenOrElseBB1 = thenOrElseRegion1.getEntry();
                 BasicBlock thenOrElseBB2 = thenOrElseRegion2.getEntry();
-                Edge thenOrElseEdge1 = cfg.getEdge(ifBB, thenOrElseBB1);
-                Edge thenOrElseEdge2 = cfg.getEdge(ifBB, thenOrElseBB2);
+                Edge thenOrElseEdge1 = rpst.getCfg().getEdge(ifBB, thenOrElseBB1);
+                Edge thenOrElseEdge2 = rpst.getCfg().getEdge(ifBB, thenOrElseBB2);
                 if (thenOrElseEdge1 != null && thenOrElseEdge2 != null) {
                     if (Boolean.TRUE.equals(thenOrElseEdge1.getValue())) {
                         thenRegion = thenOrElseRegion1;
@@ -324,15 +318,15 @@ public class RegionAnalysis {
                 elseRegion.setChildType(ChildType.ELSE);
 
                 // propagate to children
-                if (!checkRegion(cfg, ifRegion)) {
+                if (!checkRegion(rpst, ifRegion)) {
                     throw new ABCDException("Cannot find type of if region "
                             + ifRegion);
                 }
-                if (!checkRegion(cfg, thenRegion)) {
+                if (!checkRegion(rpst, thenRegion)) {
                     throw new ABCDException("Cannot find type of then region "
                             + thenRegion);
                 }
-                if (!checkRegion(cfg, elseRegion)) {
+                if (!checkRegion(rpst, elseRegion)) {
                     throw new ABCDException("Cannot find type of else region "
                             + elseRegion);
                 }
@@ -342,14 +336,14 @@ public class RegionAnalysis {
         return false;
     }
 
-    private boolean checkSwitchCaseRegion(ControlFlowGraph cfg, Region region) {
+    private boolean checkSwitchCaseRegion(RPST rpst, Region region) {
         LOGGER.trace("Check switch case region {}", region);
-        if (region.getChildCount() < 2) {
+        if (rpst.getChildCount(region) < 2) {
             return false;
         }
         Region switchRegion = null;
         List<Region> caseRegions = new ArrayList<Region>();
-        for (Region child : region.getChildren()) {
+        for (Region child : rpst.getChildren(region)) {
             if (child.getEntry().equals(region.getEntry())
                     && child.getExit().getType() == BasicBlockType.SWITCH) {
                 switchRegion = child;
@@ -362,7 +356,7 @@ public class RegionAnalysis {
         }
         for (Region caseRegion : caseRegions) {
             Edge incomingEdge
-                    = cfg.getEdge(switchRegion.getExit(), caseRegion.getEntry());
+                    = rpst.getCfg().getEdge(switchRegion.getExit(), caseRegion.getEntry());
             if (incomingEdge == null
                     || !(incomingEdge.getValue() instanceof CaseValues)) {
                 return false;
@@ -372,7 +366,7 @@ public class RegionAnalysis {
             }
             caseRegion.setData(incomingEdge.getValue());
         }
-        Edge emptyCaseEdge = cfg.getEdge(region.getEntry(), region.getExit());
+        Edge emptyCaseEdge = rpst.getCfg().getEdge(region.getEntry(), region.getExit());
         if (emptyCaseEdge != null
                 && emptyCaseEdge.getValue() instanceof CaseValues) {
             // store empty cases info in switch region
@@ -387,12 +381,12 @@ public class RegionAnalysis {
         }
 
         // propagate to children
-        if (!checkRegion(cfg, switchRegion)) {
+        if (!checkRegion(rpst, switchRegion)) {
             throw new ABCDException("Cannot find type of switch region "
                             + switchRegion);
         }
         for (Region caseRegion : caseRegions) {
-            if (!checkRegion(cfg, caseRegion)) {
+            if (!checkRegion(rpst, caseRegion)) {
                 throw new ABCDException("Cannot find type of case region "
                             + caseRegion);
             }
@@ -400,12 +394,12 @@ public class RegionAnalysis {
         return true;
     }
 
-    private boolean checkTryCatchFinallyRegion(ControlFlowGraph cfg, Region region) {
+    private boolean checkTryCatchFinallyRegion(RPST rpst, Region region) {
         LOGGER.trace("Check try catch finally region {}", region);
         Set<Region> handlerRegions = new HashSet<Region>();
         Region finallyRegion = null;
         Set<BasicBlock> handlerEntries = new HashSet<BasicBlock>();
-        for (Region child : region.getChildren()) {
+        for (Region child : rpst.getChildren(region)) {
             // the child region is an exception handler whether its exit is connected
             // to parent region exit and its entry basic block has attribute
             // EXCEPTION_HANDLER_ENTRY
@@ -424,35 +418,35 @@ public class RegionAnalysis {
         // search inlined finally region
         Set<Region> inlinedFinallyRegions = new HashSet<Region>();
         if (finallyRegion != null) {
-            for (Region child : region.getChildren()) {
+            for (Region child : rpst.getChildren(region)) {
                 if (child.equals(finallyRegion)) {
                     continue;
                 }
                 if (child.getExit().equals(region.getExit())) {
-                    if (child.deepEquals(finallyRegion)) {
+                    if (Regions.deepEquals(rpst, child, finallyRegion)) {
                         inlinedFinallyRegions.add(child);
                     }
                 }
             }
         }
         // every other child region should be connected to handlers
-        Set<Region> otherChildren = new HashSet<Region>(region.getChildren());
+        Set<Region> otherChildren = new HashSet<Region>(rpst.getChildren(region));
         otherChildren.removeAll(handlerRegions);
         otherChildren.removeAll(inlinedFinallyRegions);
         for (Region otherChild : otherChildren) {
-            for (BasicBlock bb : otherChild.getBasicBlocks()) {
-                if (!cfg.getExceptionalSuccessorsOf(bb).containsAll(handlerEntries)) {
+            for (BasicBlock bb : rpst.getBasicBlocks(otherChild)) {
+                if (!rpst.getCfg().getExceptionalSuccessorsOf(bb).containsAll(handlerEntries)) {
                     return false;
                 }
             }
         }
 
         // build control flow subgraph
-        ControlFlowGraph subCfg = createSubCFG(cfg, "Try subgraph of region " + region, region);
+        ControlFlowGraph subCfg = createSubCFG(rpst, "Try subgraph of region " + region, region);
 
         // remove handlers basic blocks
         for (Region handlerRegion : handlerRegions) {
-            for (BasicBlock bb : handlerRegion.getBasicBlocks()) {
+            for (BasicBlock bb : rpst.getBasicBlocks(handlerRegion)) {
                 subCfg.removeBasicBlock(bb);
             }
         }
@@ -463,59 +457,60 @@ public class RegionAnalysis {
         LOGGER.debug("Found try catch finally region {}", region);
 
         region.setParentType(ParentType.TRY_CATCH_FINALLY);
-        region.removeChildren();
+        for (Region child : new ArrayList<Region>(rpst.getChildren(region))) {
+            if (!handlerRegions.contains(child)) {
+                rpst.removeSubtree(child);
+            }
+        }
         Region rootRegion = subRpst.getRootRegion();
-        Region tryRegion = rootRegion.getEntryChild();
+        Region tryRegion = subRpst.getEntryChild(rootRegion);
         tryRegion.setChildType(ChildType.TRY);
-        tryRegion.setParent(region);
+        rpst.addRPST(subRpst, tryRegion, region);
         for (Region handlerRegion : handlerRegions) {
             if (finallyRegion != null && handlerRegion.equals(finallyRegion)) {
                 handlerRegion.setChildType(ChildType.FINALLY);
             } else {
                 handlerRegion.setChildType(ChildType.CATCH);
             }
-            handlerRegion.setParent(region);
         }
         // insert inlined finally regions
-        for (Region child : tryRegion.getSubRegions()) {
+        for (Region child : rpst.getSubRegions(tryRegion)) {
             for (Region inlinedFinallyRegion : inlinedFinallyRegions) {
                 if (child.getEntry().equals(inlinedFinallyRegion.getEntry())
                         && child.getExit().equals(inlinedFinallyRegion.getExit())) {
-                    child.insertParent(new Region(child.getEntry(),
-                                                  child.getExit(),
-                                                  ParentType.INLINED_FINALLY));
+                    rpst.insertRegion(new Region(child.getEntry(),
+                                                 child.getExit(),
+                                                 ParentType.INLINED_FINALLY),
+                                      child);
                     break;
                 }
             }
         }
 
         // propagate to children
-        if (!checkRegion(cfg, tryRegion)) {
-            throw new ABCDException("Cannot find type of try region "
-                            + tryRegion);
-        }
         for (Region handlerRegion : handlerRegions) {
-            if (!checkRegion(cfg, handlerRegion)) {
+            if (!checkRegion(rpst, handlerRegion)) {
                 throw new ABCDException("Cannot find type of handler region "
                             + handlerRegion);
             }
         }
+
         return true;
     }
 
-    private boolean checkRegion(ControlFlowGraph cfg, Region region) {
+    private boolean checkRegion(RPST rpst, Region region) {
         if (region.getParentType() != ParentType.UNDEFINED) {
             return true;
         }
-        if (!(checkIfThenElseRegion(cfg, region)
-                || checkIfThenRegion(cfg, region)
-                || checkSwitchCaseRegion(cfg, region)
-                || checkSequenceRegion(cfg, region)
-                || checkWhileLoopRegion(cfg, region)
-                || checkDoWhileLoopRegion(cfg, region)
-                || checkTrivialRegion(cfg, region)
-                || checkIfThenBreakRegion(cfg, region)
-                || checkTryCatchFinallyRegion(cfg, region))) {
+        if (!(checkIfThenElseRegion(rpst, region)
+                || checkIfThenRegion(rpst, region)
+                || checkSwitchCaseRegion(rpst, region)
+                || checkSequenceRegion(rpst, region)
+                || checkWhileLoopRegion(rpst, region)
+                || checkDoWhileLoopRegion(rpst, region)
+                || checkTrivialRegion(rpst, region)
+                || checkIfThenBreakRegion(rpst, region)
+                || checkTryCatchFinallyRegion(rpst, region))) {
             return false;
         } else {
             return true;
@@ -527,14 +522,14 @@ public class RegionAnalysis {
         RPST rpst = new RPSTBuilder(cfg).build();
 
         Region root = rpst.getRootRegion();
-        for (Region child : root.getChildren()) {
-            if (!checkRegion(cfg, child)) {
+        for (Region child : rpst.getChildren(root)) {
+            if (!checkRegion(rpst, child)) {
                 throw new ABCDException("Cannot find type of top level region "
                         + child);
             }
         }
 
-        rpsts.add(0, new RPST(rpst));
+//        rpsts.add(0, new RPST(rpst));
 
         return rpst;
     }
@@ -567,7 +562,7 @@ public class RegionAnalysis {
                     // empty
                 }
                 if (bb != null) {
-                    Region region = bb.getRegion().getParent();
+                    Region region = rpst.getParent(bb.getRegion());
                     BasicBlock successor = region.getExit();
                     LOGGER.trace("Found successor for {} : {}", otherExit, successor);
                     cfg.addEdge(otherExit, successor).addAttribute(EdgeAttribute.FAKE_EDGE);

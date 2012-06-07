@@ -16,14 +16,21 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.graph.Filter;
 import fr.jamgotchian.abcd.core.graph.GraphvizUtil;
+import fr.jamgotchian.abcd.core.graph.MutableTree;
+import fr.jamgotchian.abcd.core.graph.Tree;
+import fr.jamgotchian.abcd.core.graph.Trees;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,73 +50,144 @@ public class RPST {
 
     private ControlFlowGraph cfg;
 
-    private Region rootRegion;
+    private MutableTree<Region, Object> tree;
 
     public RPST(ControlFlowGraph cfg, Region rootRegion) {
         this.cfg = cfg;
-        this.rootRegion = rootRegion;
-    }
-
-    public RPST(RPST other) {
-        cfg = other.cfg;
-        Map<Region, Region> mapping = new HashMap<Region, Region>();
-        deepCopy(other.rootRegion, mapping);
-        rootRegion = mapping.get(other.rootRegion);
-    }
-
-    private void deepCopy(Region region, Map<Region, Region> mapping) {
-        Region clone = new Region(region.getEntry(), region.getExit(), region.getParent(),
-                                  region.getParentType(), region.getChildType(), region.getData());
-        if (region.getParent() != null) {
-            clone.setParent(mapping.get(region.getParent()));
-        }
-        mapping.put(region, clone);
-        for (Region child : region.getChildren()) {
-            deepCopy(child, mapping);
-        }
+        this.tree = Trees.newTree(rootRegion);
     }
 
     public ControlFlowGraph getCfg() {
         return cfg;
     }
 
-    public void setCfg(ControlFlowGraph cfg) {
-        this.cfg = cfg;
+    public Tree<Region, Object> getTree() {
+        return Trees.unmodifiableTree(tree);
     }
 
     public Region getRootRegion() {
-        return rootRegion;
+        return tree.getRoot();
     }
 
-    private void visitRegionPostOrder(Region region, List<Region> regionsPostOrder) {
-        for (Region child : region.getChildren()) {
-            visitRegionPostOrder(child, regionsPostOrder);
+    public Region getParent(Region region) {
+        return tree.getParent(region);
+    }
+
+    public void setNewParent(Region region, Region newParent) {
+        tree.setNewParent(region, newParent);
+    }
+
+    public void addRegion(Region region, Region parent) {
+        tree.addNode(parent, region, new Object());
+    }
+
+    public void insertRegion(Region region, Region child) {
+        tree.insertNode(region, child, new Object());
+        region.setChildType(child.getChildType());
+        child.setChildType(ChildType.UNDEFINED);
+    }
+
+    public void addRPST(RPST rpst, Region parent) {
+        tree.addTree(rpst.getTree(), parent, new Object());
+    }
+
+    public void addRPST(RPST rpst, Region root, Region parent) {
+        tree.addTree(rpst.getTree().getSubTree(root), parent, new Object());
+    }
+
+    public Set<Region> getChildren(Region region) {
+        return tree.getChildren(region);
+    }
+
+    public Region getEntryChild(final Region region) {
+        return tree.getFirstChild(region, new Filter<Region>() {
+            @Override
+            public boolean accept(Region child) {
+                return child.getEntry().equals(region.getEntry());
+            }
+        });
+    }
+
+    public Region getFirstChild(Region region) {
+        return tree.getFirstChild(region);
+    }
+
+    public Region getSecondChild(Region region) {
+        if (getChildCount(region) < 2) {
+            return null;
+        } else {
+            Iterator<Region> it = getChildren(region).iterator();
+            it.next();
+            return it.next();
         }
-        regionsPostOrder.add(region);
+    }
+
+    public Region getFirstChild(Region region, final ChildType childType) {
+        return tree.getFirstChild(region, new Filter<Region>() {
+            @Override
+            public boolean accept(Region child) {
+                return child.getChildType() == childType;
+            }
+        });
+    }
+
+    public Collection<Region> getChildren(Region region, final ChildType childType) {
+        return tree.getChildren(region, new Filter<Region>() {
+            @Override
+            public boolean accept(Region child) {
+                return child.getChildType() == childType;
+            }
+        });
+    }
+
+    public int getChildCount(Region region) {
+        return tree.getChildrenCount(region);
+    }
+
+    public void removeRegion(Region region) {
+        tree.removeNode(region);
+    }
+
+    public void removeSubtree(Region subtreeRootRegion) {
+        tree.removeSubtree(subtreeRootRegion);
+    }
+
+    public void removeChildren(Region region) {
+        for (Region child : new ArrayList<Region>(tree.getChildren(region))) {
+            tree.removeSubtree(child);
+        }
+    }
+
+    public List<Region> getSubRegions(Region region) {
+        return tree.getSubTree(region).getNodesPreOrder();
     }
 
     public List<Region> getRegionsPostOrder() {
-        List<Region> regionsPostOrder = new ArrayList<Region>();
-        visitRegionPostOrder(rootRegion, regionsPostOrder);
-        return regionsPostOrder;
-    }
-
-    private void visitRegionPreOrder(Region region, List<Region> regionsPreOrder) {
-        regionsPreOrder.add(region);
-        for (Region child : region.getChildren()) {
-            visitRegionPreOrder(child, regionsPreOrder);
-        }
+        return tree.getNodesPostOrder();
     }
 
     public List<Region> getRegionsPreOrder() {
-        List<Region> regionsPreOrder = new ArrayList<Region>();
-        visitRegionPreOrder(rootRegion, regionsPreOrder);
-        return regionsPreOrder;
+        return tree.getNodesPreOrder();
+    }
+
+    public Set<BasicBlock> getBasicBlocks(Region region) {
+        Set<BasicBlock> bbs = new LinkedHashSet<BasicBlock>();
+        addBasicBlocks(region, bbs);
+        return bbs;
+    }
+
+    private void addBasicBlocks(Region region, Set<BasicBlock> bbs) {
+        if (region.getEntry() != null) {
+            bbs.add(region.getEntry());
+        }
+        for (Region child : getChildren(region)) {
+            addBasicBlocks(child, bbs);
+        }
     }
 
     public void print(Appendable out) {
         try {
-            print(out, rootRegion, 0);
+            print(out, getRootRegion(), 0);
         } catch (IOException e) {
             LOGGER.error(e.toString(), e);
         }
@@ -127,7 +205,7 @@ public class RPST {
         printSpace(out, indentLevel+1);
         out.append("+").append(region.getParentType().toString()).append(" ")
                 .append(region.toString()).append("\n");
-        for (Region child : region.getChildren()) {
+        for (Region child : getChildren(region)) {
             print(out, child, indentLevel+2);
         }
     }
@@ -162,7 +240,7 @@ public class RPST {
                 writer.append("label=\"").append(region.getParentType().toString())
                         .append(" ").append(region.toString()).append("\";\n");
             }
-            for (Region child : region.getChildren()) {
+            for (Region child : getChildren(region)) {
                 exportRegion(writer, index, child, indentLevel+1);
             }
             writeSpace(writer, indentLevel);
@@ -189,7 +267,7 @@ public class RPST {
         writer.append("    fontsize=\"18\";\n");
         writer.append("    labeljust=\"left\";\n");
         writer.append("    label=\"").append(cfg.getName()).append("\";\n");
-        exportRegion(writer, index, rootRegion, 2);
+        exportRegion(writer, index, getRootRegion(), 2);
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             if (bb.getRegion() == null) {
                 writer.append("    ")

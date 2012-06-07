@@ -16,14 +16,6 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -34,28 +26,17 @@ public class Region {
 
     private final BasicBlock exit;
 
-    private Region parent;
-
-    private final Set<Region> children = new LinkedHashSet<Region>();
-
     private ParentType parentType;
 
     private ChildType childType;
 
     private Object data;
 
-    public Region(BasicBlock entry, BasicBlock exit, Region parent, ParentType parentType,
-                  ChildType childType, Object data) {
+    public Region(BasicBlock entry, BasicBlock exit,ParentType parentType) {
         this.entry = entry;
         this.exit = exit;
-        this.parent = parent;
         this.parentType = parentType;
-        this.childType = childType;
-        this.data = data;
-    }
-
-    public Region(BasicBlock entry, BasicBlock exit, ParentType parentType) {
-        this(entry, exit, null, parentType, ChildType.UNDEFINED, null);
+        this.childType = ChildType.UNDEFINED;
     }
 
     public BasicBlock getEntry() {
@@ -64,111 +45,6 @@ public class Region {
 
     public BasicBlock getExit() {
         return exit;
-    }
-
-    public Region getParent() {
-        return parent;
-    }
-
-    public void setParent(Region parent) {
-        if (this.parent != null) {
-            this.parent.children.remove(this);
-        }
-        this.parent = parent;
-        if (parent != null) {
-            parent.addChild(this);
-        }
-    }
-
-    public void insertParent(Region parent) {
-        Region oldParent = this.parent;
-        setParent(parent);
-        if (oldParent != null) {
-            parent.setParent(oldParent);
-            parent.setChildType(childType);
-            childType = ChildType.UNDEFINED;
-        }
-    }
-
-    public Set<Region> getChildren() {
-        return children;
-    }
-
-    public Region getEntryChild() {
-        for (Region child : children) {
-            if (child.getEntry().equals(entry)) {
-                return child;
-            }
-        }
-        throw new IllegalStateException("Should not happen");
-    }
-
-    public Region getFirstChild() {
-        if (children.isEmpty()) {
-            return null;
-        } else {
-            return children.iterator().next();
-        }
-    }
-
-    public Region getSecondChild() {
-        if (children.size() < 2) {
-            return null;
-        } else {
-            Iterator<Region> it = children.iterator();
-            it.next();
-            return it.next();
-        }
-    }
-
-    public Region getFirstChild(ChildType childType) {
-        for (Region child : children) {
-            if (child.getChildType() == childType) {
-                return child;
-            }
-        }
-        return null;
-    }
-
-    public Collection<Region> getChildren(ChildType childType) {
-        List<Region> children2 = new ArrayList<Region>();
-        for (Region child : children) {
-            if (child.getChildType() == childType) {
-                children2.add(child);
-            }
-        }
-        return children2;
-    }
-
-    public int getChildCount() {
-        return children.size();
-    }
-
-    private void addChild(Region child) {
-        children.add(child);
-    }
-
-    public void removeChildren() {
-        for (Region child : new ArrayList<Region>(children)) {
-            child.setParent(null);
-        }
-    }
-
-    public boolean hasChild() {
-        return children.size() > 0;
-    }
-
-    private void getSubRegion(Set<Region> regions) {
-        regions.addAll(children);
-        for (Region child : children) {
-            child.getSubRegion(regions);
-        }
-    }
-
-    public Set<Region> getSubRegions() {
-        Set<Region> regions = new HashSet<Region>();
-        getSubRegion(regions);
-        return regions;
     }
 
     public ParentType getParentType() {
@@ -191,66 +67,12 @@ public class Region {
         return parentType == ParentType.BASIC_BLOCK;
     }
 
-    public Set<BasicBlock> getBasicBlocks() {
-        Set<BasicBlock> bbs = new LinkedHashSet<BasicBlock>();
-        addBasicBlocks(bbs);
-        return bbs;
-    }
-
-    private void addBasicBlocks(Set<BasicBlock> bbs) {
-        if (entry != null) {
-            bbs.add(entry);
-        }
-        for (Region child : children) {
-            child.addBasicBlocks(bbs);
-        }
-    }
-
     public Object getData() {
         return data;
     }
 
     public void setData(Object data) {
         this.data = data;
-    }
-
-    public boolean deepEquals(Region other) {
-        return deepEquals(other, new VariableMapping());
-    }
-
-    private boolean deepEquals(Region other, VariableMapping mapping) {
-        if (parentType == other.getParentType()
-                && childType == other.getChildType()) {
-            if (childType == ChildType.CATCH || childType == ChildType.FINALLY) {
-                ExceptionHandlerInfo info = (ExceptionHandlerInfo) entry.getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY);
-                ExceptionHandlerInfo otherInfo = (ExceptionHandlerInfo) other.getEntry().getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY);
-                mapping.defEqual(info.getVariable(), otherInfo.getVariable());
-            }
-            if (isBasicBlock()) {
-                BasicBlock bb = entry;
-                BasicBlock otherBb = other.getEntry();
-                return IRInstComparator.equal(bb.getInstructions(),
-                                              otherBb.getInstructions(),
-                                              mapping);
-            } else {
-                if (getChildCount() == other.getChildCount()) {
-                    for (Region child : children) {
-                        boolean found = false;
-                        for (Region otherChild : other.getChildren()) {
-                            if (child.deepEquals(otherChild, mapping)) {
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     @Override

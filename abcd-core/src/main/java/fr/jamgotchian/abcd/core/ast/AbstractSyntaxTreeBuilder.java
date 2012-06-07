@@ -82,6 +82,7 @@ import fr.jamgotchian.abcd.core.ir.ParentType;
 import fr.jamgotchian.abcd.core.ir.PhiInst;
 import fr.jamgotchian.abcd.core.ir.Region;
 import fr.jamgotchian.abcd.core.ir.ReturnInst;
+import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.ir.SetArrayInst;
 import fr.jamgotchian.abcd.core.ir.SetFieldInst;
 import fr.jamgotchian.abcd.core.ir.SetStaticFieldInst;
@@ -117,7 +118,7 @@ public class AbstractSyntaxTreeBuilder {
 
     private final ControlFlowGraph cfg;
 
-    private final Region rootRegion;
+    private final RPST rpst;
 
     private final BlockStatement methodBody;
 
@@ -560,10 +561,10 @@ public class AbstractSyntaxTreeBuilder {
         }
     }
 
-    public AbstractSyntaxTreeBuilder(ControlFlowGraph cfg, Region rootRegion,
+    public AbstractSyntaxTreeBuilder(ControlFlowGraph cfg, RPST rpst,
                                      BlockStatement methodBody, List<Variable> argVars) {
         this.cfg = cfg;
-        this.rootRegion = rootRegion;
+        this.rpst = rpst;
         this.methodBody = methodBody;
         expressions = new HashMap<VariableID, Expression>();
         for (Variable argVar : argVars) {
@@ -573,7 +574,7 @@ public class AbstractSyntaxTreeBuilder {
 
     public void build() {
         this.liveVariables = new LiveVariablesAnalysis(cfg).analyse();
-        buildAST(rootRegion, methodBody);
+        buildAST(rpst.getRootRegion(), methodBody);
     }
 
     private void buildAST(Region region, BlockStatement blockStmt) {
@@ -581,11 +582,13 @@ public class AbstractSyntaxTreeBuilder {
 
         switch (region.getParentType()) {
             case ROOT:
-                buildAST(region.getEntryChild(), blockStmt);
+                for (Region child : rpst.getChildren(region)) {
+                    buildAST(child, blockStmt);
+                }
                 break;
 
             case TRIVIAL:
-                buildAST(region.getFirstChild(), blockStmt);
+                buildAST(rpst.getFirstChild(region), blockStmt);
                 break;
 
             case BASIC_BLOCK: {
@@ -598,20 +601,20 @@ public class AbstractSyntaxTreeBuilder {
             }
 
             case SEQUENCE:
-                buildAST(region.getFirstChild(ChildType.FIRST), blockStmt);
-                buildAST(region.getFirstChild(ChildType.SECOND), blockStmt);
+                buildAST(rpst.getFirstChild(region, ChildType.FIRST), blockStmt);
+                buildAST(rpst.getFirstChild(region, ChildType.SECOND), blockStmt);
                 break;
 
             case IF_THEN_ELSE: {
-                buildAST(region.getFirstChild(ChildType.IF), blockStmt);
+                buildAST(rpst.getFirstChild(region, ChildType.IF), blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
                 ifStmt.invertCondition();
                 BlockStatement thenBlockStmt = new BlockStatement();
                 ifStmt.setThen(thenBlockStmt);
                 BlockStatement elseBlockStmt = new BlockStatement();
                 ifStmt.setElse(elseBlockStmt);
-                buildAST(region.getFirstChild(ChildType.ELSE), elseBlockStmt);
-                buildAST(region.getFirstChild(ChildType.THEN), thenBlockStmt);
+                buildAST(rpst.getFirstChild(region, ChildType.ELSE), elseBlockStmt);
+                buildAST(rpst.getFirstChild(region, ChildType.THEN), thenBlockStmt);
                 if (ifStmt.getThen().isEmpty() && ifStmt.getElse().isEmpty()) {
                     ifStmt.remove();
                 }
@@ -620,14 +623,14 @@ public class AbstractSyntaxTreeBuilder {
 
             case IF_THEN:
             case IF_NOT_THEN: {
-                buildAST(region.getFirstChild(ChildType.IF), blockStmt);
+                buildAST(rpst.getFirstChild(region, ChildType.IF), blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
                 if (region.getParentType() == ParentType.IF_NOT_THEN) {
                     ifStmt.invertCondition();
                 }
                 BlockStatement thenBlockStmt = new BlockStatement();
                 ifStmt.setThen(thenBlockStmt);
-                Region thenRegion = region.getFirstChild(ChildType.THEN);
+                Region thenRegion = rpst.getFirstChild(region, ChildType.THEN);
                 buildAST(thenRegion, thenBlockStmt);
                 if (ifStmt.getThen().isEmpty()) {
                     ifStmt.remove();
@@ -636,7 +639,7 @@ public class AbstractSyntaxTreeBuilder {
             }
 
             case IF_THEN_BREAK: {
-                buildAST(region.getFirstChild(ChildType.IF), blockStmt);
+                buildAST(rpst.getFirstChild(region, ChildType.IF), blockStmt);
                 IfStatement ifStmt = (IfStatement) blockStmt.getLast();
                 BlockStatement thenBlockStmt = new BlockStatement();
                 thenBlockStmt.add(new BreakStatement());
@@ -646,7 +649,7 @@ public class AbstractSyntaxTreeBuilder {
 
             case BREAK_LABEL: {
                 BlockStatement bodyBlockStmt = new BlockStatement();
-                buildAST(region.getFirstChild(), bodyBlockStmt);
+                buildAST(rpst.getFirstChild(region), bodyBlockStmt);
 
                 blockStmt.add(new LabeledStatement("L" + region.getData(), bodyBlockStmt));
 
@@ -655,7 +658,7 @@ public class AbstractSyntaxTreeBuilder {
 
             case WHILE_LOOP: {
                 BlockStatement bodyBlockStmt = new BlockStatement();
-                buildAST(region.getFirstChild(ChildType.LOOP_BODY), bodyBlockStmt);
+                buildAST(rpst.getFirstChild(region, ChildType.LOOP_BODY), bodyBlockStmt);
                 Expression condition = Expressions.newBooleanExpr(true);
                 blockStmt.add(new WhileStatement(condition, bodyBlockStmt));
                 break;
@@ -663,7 +666,7 @@ public class AbstractSyntaxTreeBuilder {
 
             case DO_WHILE_LOOP: {
                 BlockStatement bodyBlockStmt = new BlockStatement();
-                buildAST(region.getFirstChild(), bodyBlockStmt);
+                buildAST(rpst.getFirstChild(region), bodyBlockStmt);
                 IfStatement ifStmt = (IfStatement) bodyBlockStmt.getLast();
                 ifStmt.remove();
                 blockStmt.add(new DoWhileStatement(bodyBlockStmt, ifStmt.getCondition()));
@@ -671,13 +674,13 @@ public class AbstractSyntaxTreeBuilder {
             }
 
             case SWITCH_CASE: {
-                Region switchRegion = region.getFirstChild(ChildType.SWITCH);
+                Region switchRegion = rpst.getFirstChild(region, ChildType.SWITCH);
                 buildAST(switchRegion, blockStmt);
                 SwitchCaseStatement switchStmt
                         = (SwitchCaseStatement) blockStmt.getLast();
 
                 Map<CaseValues, Region> caseRegions = new TreeMap<CaseValues, Region>();
-                for (Region caseRegion : region.getChildren(ChildType.CASE)) {
+                for (Region caseRegion : rpst.getChildren(region, ChildType.CASE)) {
                     CaseValues values = (CaseValues) caseRegion.getData();
                     caseRegions.put(values, caseRegion);
                 }
@@ -717,12 +720,12 @@ public class AbstractSyntaxTreeBuilder {
 
             case TRY_CATCH_FINALLY: {
                 BlockStatement tryBlockStmt = new BlockStatement();
-                buildAST(region.getFirstChild(ChildType.TRY), tryBlockStmt);
+                buildAST(rpst.getFirstChild(region, ChildType.TRY), tryBlockStmt);
 
                 List<CatchClause> catchClauses = new ArrayList<CatchClause>();
                 BlockStatement finallyBlockStmt = null;
 
-                for (Region catchRegion : region.getChildren(ChildType.CATCH)) {
+                for (Region catchRegion : rpst.getChildren(region, ChildType.CATCH)) {
                     ExceptionHandlerInfo info
                             = (ExceptionHandlerInfo) catchRegion.getEntry().getProperty(EXCEPTION_HANDLER_ENTRY);
                     Variable excVar = info.getVariable();
@@ -734,7 +737,7 @@ public class AbstractSyntaxTreeBuilder {
                     VariableExpression excVarExpr = Expressions.newVarExpr(excVar);
                     catchClauses.add(new CatchClause(catchBlockStmt, excVarExpr));
                 }
-                Region finallyRegion = region.getFirstChild(ChildType.FINALLY);
+                Region finallyRegion = rpst.getFirstChild(region, ChildType.FINALLY);
                 if (finallyRegion != null) {
                     finallyBlockStmt = new BlockStatement();
                     buildAST(finallyRegion, finallyBlockStmt);

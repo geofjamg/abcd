@@ -31,7 +31,6 @@ import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
 import fr.jamgotchian.abcd.core.bytecode.ABCDDataSource;
 import fr.jamgotchian.abcd.core.bytecode.ClassFactory;
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDPreferences;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
@@ -43,7 +42,6 @@ import fr.jamgotchian.abcd.core.ir.ExceptionTable;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
 import fr.jamgotchian.abcd.core.ir.VariableFactory;
 import fr.jamgotchian.abcd.core.ir.RPST;
-import fr.jamgotchian.abcd.core.ir.Region;
 import fr.jamgotchian.abcd.core.ir.RegionAnalysis;
 import fr.jamgotchian.abcd.core.ir.SimpleVariableNameProviderFactory;
 import fr.jamgotchian.abcd.core.ir.VariableNameProviderFactory;
@@ -188,8 +186,7 @@ public class ABCDContext {
                 LOGGER.debug(ConsoleUtil.formatTitledSeparator("Build AST of {}", '='),
                         methodSignature);
 
-                Region rootRegion = rpst.getRootRegion();
-                new AbstractSyntaxTreeBuilder(cfg, rootRegion, method.getBody(),
+                new AbstractSyntaxTreeBuilder(cfg, rpst, method.getBody(),
                                               method.getArguments())
                         .build();
 

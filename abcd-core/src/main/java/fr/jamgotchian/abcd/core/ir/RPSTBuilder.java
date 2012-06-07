@@ -19,14 +19,7 @@ package fr.jamgotchian.abcd.core.ir;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.util.Sets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,9 +39,30 @@ public class RPSTBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RPSTBuilder.class);
 
+    private static class RPSTRegion {
+
+        private final BasicBlock entry;
+
+        private final BasicBlock exit;
+
+        private RPSTRegion parent;
+
+        private final Set<RPSTRegion> children = new LinkedHashSet<RPSTRegion>();
+
+        private RPSTRegion(BasicBlock entry, BasicBlock exit) {
+            this.entry = entry;
+            this.exit = exit;
+        }
+
+        @Override
+        public String toString() {
+            return "(" + entry + ", " + exit + ")";
+        }
+    }
+
     private final ControlFlowGraph cfg;
 
-    private final Map<BasicBlock, Region> bb2region = new HashMap<BasicBlock, Region>();
+    private final Map<BasicBlock, RPSTRegion> bb2region = new HashMap<BasicBlock, RPSTRegion>();
 
     public RPSTBuilder(ControlFlowGraph cfg) {
         this.cfg = cfg;
@@ -117,9 +131,9 @@ public class RPSTBuilder {
         }
     }
 
-    private Region createRegion(BasicBlock entry, BasicBlock exit) {
+    private RPSTRegion createRegion(BasicBlock entry, BasicBlock exit) {
         assert entry != null && exit != null;
-        Region newRegion = new Region(entry, exit, ParentType.UNDEFINED);
+        RPSTRegion newRegion = new RPSTRegion(entry, exit);
         if (!bb2region.containsKey(entry)) {
             bb2region.put(entry, newRegion);
         }
@@ -130,16 +144,15 @@ public class RPSTBuilder {
     private void detectRegionsWithEntry(BasicBlock entry, Map<BasicBlock, BasicBlock> shortCut) {
         assert  entry != null;
         BasicBlock exit = entry;
-        Region lastRegion = null;
+        RPSTRegion lastRegion = null;
         BasicBlock lastExit = entry;
         while ((exit = getNextPostDom(exit, shortCut)) != null) {
             if (isRegion(entry, exit)) {
-                Region newRegion = createRegion(entry, exit);
+                RPSTRegion newRegion = createRegion(entry, exit);
                 if (lastRegion != null) {
-                    lastRegion.setParent(newRegion);
-                     LOGGER.trace("Parent of region {} is {}", lastRegion, newRegion);
+                    lastRegion.parent = newRegion;
+                    LOGGER.trace("Parent of region {} is {}", lastRegion, newRegion);
                 } else {
-                    entry.setRegion(newRegion);
                     LOGGER.trace("Parent of BB {} is {}", entry, newRegion);
                 }
                 lastRegion = newRegion;
@@ -161,26 +174,25 @@ public class RPSTBuilder {
         }
     }
 
-    private Region getTopMostParent(Region region) {
-        while (region.getParent() != null) {
-            region = region.getParent();
+    private RPSTRegion getTopMostParent(RPSTRegion region) {
+        while (region.parent != null) {
+            region = region.parent;
         }
         return region;
     }
 
-    private void buildRegionTree(BasicBlock bb, Region region) {
-        while (bb.equals(region.getExit())) {
-            region = region.getParent();
+    private void buildRegionTree(BasicBlock bb, RPSTRegion region) {
+        while (bb.equals(region.exit)) {
+            region = region.parent;
         }
-        Region newRegion = bb2region.get(bb);
+        RPSTRegion newRegion = bb2region.get(bb);
         if (newRegion != null) {
-            Region topMostParent = getTopMostParent(newRegion);
+            RPSTRegion topMostParent = getTopMostParent(newRegion);
             LOGGER.trace("Parent of region {} is {}", topMostParent, region);
-            topMostParent.setParent(region);
+            topMostParent.parent = region;
             region = newRegion;
         } else {
             LOGGER.trace("Parent of BB {} is {}", bb, region);
-            bb.setRegion(region);
             bb2region.put(bb, region);
         }
         for (BasicBlock c : getDomInfo().getDominatorsTree().getChildren(bb)) {
@@ -191,17 +203,17 @@ public class RPSTBuilder {
     /**
      * Test if two canonical regions could be merge in one non canonical region.
      */
-    private boolean isNonCanonicalRegion(Region region1, Region region2) {
+    private boolean isNonCanonicalRegion(RPST rpst, Region region1, Region region2) {
         if (!region1.getExit().equals(region2.getEntry())) {
             return false;
         }
-        if (region2.getChildCount() == 0) {
+        if (rpst.getChildCount(region2) == 0) {
             return false;
         }
         // basic blocks of merged region
         Set<BasicBlock> basicBlocks = new HashSet<BasicBlock>();
-        basicBlocks.addAll(region1.getBasicBlocks());
-        basicBlocks.addAll(region2.getBasicBlocks());
+        basicBlocks.addAll(rpst.getBasicBlocks(region1));
+        basicBlocks.addAll(rpst.getBasicBlocks(region2));
         basicBlocks.add(region2.getExit());
         if (!basicBlocks.containsAll(cfg.getSuccessorsOf(region1.getExit()))) {
             return false;
@@ -212,15 +224,15 @@ public class RPSTBuilder {
         return true;
     }
 
-    private void findNonCanonicalRegions(Region region) {
-        Set<Region> childrenBefore = new HashSet<Region>(region.getChildren());
-        if (region.getChildCount() > 1) {
+    private void findNonCanonicalRegions(RPST rpst, Region region) {
+        Set<Region> childrenBefore = new HashSet<Region>(rpst.getChildren(region));
+        if (rpst.getChildCount(region) > 1) {
             boolean found = true;
             while (found) {
                 found = false;
 
                 // children ordered by dominance
-                List<Region> children = new ArrayList<Region>(region.getChildren());
+                List<Region> children = new ArrayList<Region>(rpst.getChildren(region));
                 Collections.sort(children, new Comparator<Region>() {
                     @Override
                     public int compare(Region region1, Region region2) {
@@ -231,14 +243,14 @@ public class RPSTBuilder {
                 for (Region child1 : children) {
                     for (Region child2 : children) {
                         if (!child1.equals(child2)) {
-                            if (isNonCanonicalRegion(child1, child2)) {
+                            if (isNonCanonicalRegion(rpst, child1, child2)) {
                                 Region newRegion = new Region(child1.getEntry(),
                                                               child2.getExit(),
                                                               ParentType.UNDEFINED);
                                 LOGGER.debug("New non canonical region {}", newRegion);
-                                child1.setParent(newRegion);
-                                child2.setParent(newRegion);
-                                newRegion.setParent(region);
+                                rpst.addRegion(newRegion, region);
+                                rpst.setNewParent(child1, newRegion);
+                                rpst.setNewParent(child2, newRegion);
                                 found = true;
                                 break;
                             }
@@ -251,7 +263,16 @@ public class RPSTBuilder {
             }
         }
         for (Region child : childrenBefore) {
-            findNonCanonicalRegions(child);
+            findNonCanonicalRegions(rpst, child);
+        }
+    }
+
+    private void a(RPSTRegion r, Region r2, RPST rpst, Map<RPSTRegion, Region> mapR) {
+        mapR.put(r, r2);
+        for (RPSTRegion c : r.children) {
+            Region c2 = new Region(c.entry, c.exit, ParentType.UNDEFINED);
+            rpst.addRegion(c2, r2);
+            a(c, c2, rpst, mapR);
         }
     }
 
@@ -266,20 +287,39 @@ public class RPSTBuilder {
         detectRegions(shortCut);
 
         // build tree of canonical regions
-        Region rootRegion = new Region(cfg.getEntryBlock(), null, ParentType.ROOT);
-        buildRegionTree(cfg.getEntryBlock(), rootRegion);
+        RPSTRegion root = new RPSTRegion(cfg.getEntryBlock(), null);
+        buildRegionTree(cfg.getEntryBlock(), root);
+
+        // build children
+        for (RPSTRegion r : bb2region.values()) {
+            for(RPSTRegion r2 = r; r2 != null; r2 = r2.parent) {
+                if (r2.parent != null) {
+                    r2.parent.children.add(r2);
+                }
+            }
+        }
+
+        RPST rpst = new RPST(cfg, new Region(cfg.getEntryBlock(), null, ParentType.ROOT));
+        Map<RPSTRegion, Region> mapR = new HashMap<RPSTRegion, Region>();
+        a(root, rpst.getRootRegion(), rpst, mapR);
+        for (Map.Entry<BasicBlock, RPSTRegion> entry : bb2region.entrySet()) {
+            BasicBlock bb = entry.getKey();
+            RPSTRegion r = entry.getValue();
+            Region r2 = mapR.get(r);
+            bb.setRegion(r2);
+        }
 
         // insert dummy region for each basic block
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             Region oldParent = bb.getRegion();
             Region newParent = new Region(bb, bb, ParentType.BASIC_BLOCK);
             bb.setRegion(newParent);
-            newParent.setParent(oldParent);
+            rpst.addRegion(newParent, oldParent);
         }
 
         // add non canonical region to the tree
-        findNonCanonicalRegions(rootRegion);
+        findNonCanonicalRegions(rpst, rpst.getRootRegion());
 
-        return new RPST(cfg, rootRegion);
+        return rpst;
     }
 }
