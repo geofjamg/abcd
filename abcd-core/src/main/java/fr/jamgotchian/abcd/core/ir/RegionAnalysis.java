@@ -478,9 +478,9 @@ public class RegionAnalysis {
             for (Region inlinedFinallyRegion : inlinedFinallyRegions) {
                 if (child.getEntry().equals(inlinedFinallyRegion.getEntry())
                         && child.getExit().equals(inlinedFinallyRegion.getExit())) {
-                    rpst.insertRegion(new Region(child.getEntry(),
-                                                 child.getExit(),
-                                                 ParentType.INLINED_FINALLY),
+                    rpst.insertRegion(new RegionImpl(child.getEntry(),
+                                                     child.getExit(),
+                                                     ParentType.INLINED_FINALLY),
                                       child);
                     break;
                 }

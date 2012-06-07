@@ -244,7 +244,7 @@ public class RPSTBuilder {
                     for (Region child2 : children) {
                         if (!child1.equals(child2)) {
                             if (isNonCanonicalRegion(rpst, child1, child2)) {
-                                Region newRegion = new Region(child1.getEntry(),
+                                Region newRegion = new RegionImpl(child1.getEntry(),
                                                               child2.getExit(),
                                                               ParentType.UNDEFINED);
                                 LOGGER.debug("New non canonical region {}", newRegion);
@@ -270,7 +270,7 @@ public class RPSTBuilder {
     private void a(RPSTRegion r, Region r2, RPST rpst, Map<RPSTRegion, Region> mapR) {
         mapR.put(r, r2);
         for (RPSTRegion c : r.children) {
-            Region c2 = new Region(c.entry, c.exit, ParentType.UNDEFINED);
+            Region c2 = new RegionImpl(c.entry, c.exit, ParentType.UNDEFINED);
             rpst.addRegion(c2, r2);
             a(c, c2, rpst, mapR);
         }
@@ -299,7 +299,7 @@ public class RPSTBuilder {
             }
         }
 
-        RPST rpst = new RPST(cfg, new Region(cfg.getEntryBlock(), null, ParentType.ROOT));
+        RPST rpst = new RPST(cfg, new RegionImpl(cfg.getEntryBlock(), null, ParentType.ROOT));
         Map<RPSTRegion, Region> mapR = new HashMap<RPSTRegion, Region>();
         a(root, rpst.getRootRegion(), rpst, mapR);
         for (Map.Entry<BasicBlock, RPSTRegion> entry : bb2region.entrySet()) {
@@ -312,7 +312,7 @@ public class RPSTBuilder {
         // insert dummy region for each basic block
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             Region oldParent = bb.getRegion();
-            Region newParent = new Region(bb, bb, ParentType.BASIC_BLOCK);
+            Region newParent = new RegionImpl(bb, bb, ParentType.BASIC_BLOCK);
             bb.setRegion(newParent);
             rpst.addRegion(newParent, oldParent);
         }

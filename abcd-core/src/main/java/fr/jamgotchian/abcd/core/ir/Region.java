@@ -20,63 +20,23 @@ package fr.jamgotchian.abcd.core.ir;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Region {
+public interface Region {
 
-    private final BasicBlock entry;
+    BasicBlock getEntry();
 
-    private final BasicBlock exit;
+    BasicBlock getExit();
 
-    private ParentType parentType;
+    ParentType getParentType();
 
-    private ChildType childType;
+    void setParentType(ParentType parentType);
 
-    private Object data;
+    ChildType getChildType();
 
-    public Region(BasicBlock entry, BasicBlock exit,ParentType parentType) {
-        this.entry = entry;
-        this.exit = exit;
-        this.parentType = parentType;
-        this.childType = ChildType.UNDEFINED;
-    }
+    void setChildType(ChildType childType);
 
-    public BasicBlock getEntry() {
-        return entry;
-    }
+    boolean isBasicBlock();
 
-    public BasicBlock getExit() {
-        return exit;
-    }
+    Object getData();
 
-    public ParentType getParentType() {
-        return parentType;
-    }
-
-    public void setParentType(ParentType parentType) {
-        this.parentType = parentType;
-    }
-
-    public ChildType getChildType() {
-        return childType;
-    }
-
-    public void setChildType(ChildType childType) {
-        this.childType = childType;
-    }
-
-    public boolean isBasicBlock() {
-        return parentType == ParentType.BASIC_BLOCK;
-    }
-
-    public Object getData() {
-        return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
-    }
-
-    @Override
-    public String toString() {
-        return "(" + entry + ", " + exit + ")";
-    }
+    void setData(Object data);
 }
