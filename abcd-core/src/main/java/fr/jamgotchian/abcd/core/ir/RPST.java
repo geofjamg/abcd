@@ -222,7 +222,7 @@ public class RPST {
 
     private void exportRegion(Writer writer, int index, Region region, int indentLevel) throws IOException {
         if (region.getParentType() == ParentType.BASIC_BLOCK) {
-            BasicBlock bb = region.getEntry();
+            BasicBlock bb = (BasicBlock) region;
             writeSpace(writer, indentLevel);
             writer.append(Integer.toString(System.identityHashCode(bb)))
                     .append(Integer.toString(index))
@@ -232,7 +232,8 @@ public class RPST {
             writeSpace(writer, indentLevel);
             writer.append("\n");
         } else {
-            String clusterName = "cluster_" + Integer.toString(System.identityHashCode(region));
+            String clusterName = "cluster_" + Integer.toString(System.identityHashCode(region))
+                    + Integer.toString(index);
             writeSpace(writer, indentLevel);
             writer.append("subgraph ").append(clusterName).append(" {\n");
             writeSpace(writer, indentLevel+1);

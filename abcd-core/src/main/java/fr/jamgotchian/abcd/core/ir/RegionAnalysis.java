@@ -529,7 +529,7 @@ public class RegionAnalysis {
             }
         }
 
-//        rpsts.add(0, new RPST(rpst));
+        rpsts.add(0, rpst);
 
         return rpst;
     }
