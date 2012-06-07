@@ -581,7 +581,6 @@ public class ControlFlowGraph {
         Set<BasicBlock> toRemove = new HashSet<BasicBlock>(graph.getVertices());
         toRemove.removeAll(tree.getNodes());
         for (BasicBlock bb : toRemove) {
-            bb.setRegion(null);
             graph.removeVertex(bb);
             LOGGER.debug("Remove dangling BB {}", bb);
         }

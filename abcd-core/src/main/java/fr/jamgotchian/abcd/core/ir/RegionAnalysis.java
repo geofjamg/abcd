@@ -557,12 +557,12 @@ public class RegionAnalysis {
                 LOGGER.trace("Search for {} successor", otherExit);
                 BasicBlock bb;
                 for (bb = otherExit;
-                        bb != null && bb.getRegion() == null;
+                        bb != null && !rpst.containsRegion(bb);
                         bb = cfg.getDominatorInfo().getImmediateDominatorOf(bb)) {
                     // empty
                 }
                 if (bb != null) {
-                    Region region = rpst.getParent(bb.getRegion());
+                    Region region = rpst.getParent(rpst.getParent(bb));
                     BasicBlock successor = region.getExit();
                     LOGGER.trace("Found successor for {} : {}", otherExit, successor);
                     cfg.addEdge(otherExit, successor).addAttribute(EdgeAttribute.FAKE_EDGE);

@@ -69,6 +69,10 @@ public class RPST {
         return tree.getRoot();
     }
 
+    public boolean containsRegion(Region region) {
+        return tree.containsNode(region);
+    }
+
     public Region getParent(Region region) {
         return tree.getParent(region);
     }
@@ -177,8 +181,8 @@ public class RPST {
     }
 
     private void addBasicBlocks(Region region, Set<BasicBlock> bbs) {
-        if (region.getEntry() != null) {
-            bbs.add(region.getEntry());
+        if (region.getParentType() == ParentType.BASIC_BLOCK) {
+            bbs.add((BasicBlock) region);
         }
         for (Region child : getChildren(region)) {
             addBasicBlocks(child, bbs);
@@ -217,7 +221,7 @@ public class RPST {
     }
 
     private void exportRegion(Writer writer, int index, Region region, int indentLevel) throws IOException {
-        if (region.isBasicBlock()) {
+        if (region.getParentType() == ParentType.BASIC_BLOCK) {
             BasicBlock bb = region.getEntry();
             writeSpace(writer, indentLevel);
             writer.append(Integer.toString(System.identityHashCode(bb)))
@@ -269,7 +273,7 @@ public class RPST {
         writer.append("    label=\"").append(cfg.getName()).append("\";\n");
         exportRegion(writer, index, getRootRegion(), 2);
         for (BasicBlock bb : cfg.getBasicBlocks()) {
-            if (bb.getRegion() == null) {
+            if (!tree.containsNode(bb)) {
                 writer.append("    ")
                         .append(Integer.toString(System.identityHashCode(bb)))
                         .append(Integer.toString(index))

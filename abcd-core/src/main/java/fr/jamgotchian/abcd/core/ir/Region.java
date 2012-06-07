@@ -34,8 +34,6 @@ public interface Region {
 
     void setChildType(ChildType childType);
 
-    boolean isBasicBlock();
-
     Object getData();
 
     void setData(Object data);

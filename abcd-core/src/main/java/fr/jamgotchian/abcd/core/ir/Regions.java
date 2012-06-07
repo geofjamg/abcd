@@ -37,7 +37,7 @@ public class Regions {
                 ExceptionHandlerInfo otherInfo = (ExceptionHandlerInfo) region2.getEntry().getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY);
                 mapping.defEqual(info.getVariable(), otherInfo.getVariable());
             }
-            if (region1.isBasicBlock()) {
+            if (region1.getParentType() == ParentType.BASIC_BLOCK) {
                 BasicBlock bb = region1.getEntry();
                 BasicBlock otherBb = region2.getEntry();
                 return IRInstComparator.equal(bb.getInstructions(),

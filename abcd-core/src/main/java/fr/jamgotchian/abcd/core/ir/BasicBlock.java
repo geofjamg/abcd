@@ -25,7 +25,7 @@ import java.util.Map;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface BasicBlock extends Orderable {
+public interface BasicBlock extends Orderable, Region {
 
     Range getRange();
 
@@ -52,10 +52,6 @@ public interface BasicBlock extends Orderable {
     VariableRegisters getOutputRegisters();
 
     void setOutputRegisters(VariableRegisters outputRegisters);
-
-    Region getRegion();
-
-    void setRegion(Region region);
 
     void putProperty(BasicBlockPropertyName name, Object value);
 

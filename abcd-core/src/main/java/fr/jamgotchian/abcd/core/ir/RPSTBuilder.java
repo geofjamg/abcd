@@ -277,11 +277,6 @@ public class RPSTBuilder {
     }
 
     public RPST build() {
-        // reset basic blocks parent
-        for (BasicBlock bb : cfg.getBasicBlocks()) {
-            bb.setRegion(null);
-        }
-
         // find canonical regions
         Map<BasicBlock, BasicBlock> shortCut = new HashMap<BasicBlock, BasicBlock>();
         detectRegions(shortCut);
@@ -306,15 +301,7 @@ public class RPSTBuilder {
             BasicBlock bb = entry.getKey();
             RPSTRegion r = entry.getValue();
             Region r2 = mapR.get(r);
-            bb.setRegion(r2);
-        }
-
-        // insert dummy region for each basic block
-        for (BasicBlock bb : cfg.getBasicBlocks()) {
-            Region oldParent = bb.getRegion();
-            Region newParent = new RegionImpl(bb, bb, ParentType.BASIC_BLOCK);
-            bb.setRegion(newParent);
-            rpst.addRegion(newParent, oldParent);
+            rpst.addRegion(bb, r2);
         }
 
         // add non canonical region to the tree

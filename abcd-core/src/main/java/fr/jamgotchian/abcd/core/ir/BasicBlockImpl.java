@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
 import java.util.EnumMap;
@@ -44,15 +45,18 @@ public class BasicBlockImpl implements BasicBlock {
 
     private VariableRegisters outputRegisters;
 
-    private Region region;
-
     private Map<BasicBlockPropertyName, Object> properties;
+
+    private ChildType childType;
+
+    private Object data;
 
     public BasicBlockImpl(Range range, BasicBlockType type) {
         this.range = range;
         this.type = type;
         order = -1;
         properties = new EnumMap<BasicBlockPropertyName, Object>(BasicBlockPropertyName.class);
+        childType = ChildType.UNDEFINED;
     }
 
     public BasicBlockImpl(int firstInstn, int lastInstn, BasicBlockType type) {
@@ -143,16 +147,6 @@ public class BasicBlockImpl implements BasicBlock {
     }
 
     @Override
-    public Region getRegion() {
-        return region;
-    }
-
-    @Override
-    public void setRegion(Region region) {
-        this.region = region;
-    }
-
-    @Override
     public void putProperty(BasicBlockPropertyName name, Object value) {
         properties.put(name, value);
     }
@@ -175,6 +169,46 @@ public class BasicBlockImpl implements BasicBlock {
     @Override
     public void putProperties(Map<BasicBlockPropertyName, Object> properties) {
         this.properties.putAll(properties);
+    }
+
+    @Override
+    public BasicBlock getEntry() {
+        return this;
+    }
+
+    @Override
+    public BasicBlock getExit() {
+        return this;
+    }
+
+    @Override
+    public ParentType getParentType() {
+        return ParentType.BASIC_BLOCK;
+    }
+
+    @Override
+    public void setParentType(ParentType parentType) {
+        throw new ABCDException("Cannot set parent type for a basic block region");
+    }
+
+    @Override
+    public ChildType getChildType() {
+        return childType;
+    }
+
+    @Override
+    public void setChildType(ChildType childType) {
+        this.childType = childType;
+    }
+
+    @Override
+    public Object getData() {
+        return data;
+    }
+
+    @Override
+    public void setData(Object data) {
+        this.data = data;
     }
 
     @Override

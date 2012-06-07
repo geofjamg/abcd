@@ -70,11 +70,6 @@ public class RegionImpl implements Region {
     }
 
     @Override
-    public boolean isBasicBlock() {
-        return parentType == ParentType.BASIC_BLOCK;
-    }
-
-    @Override
     public Object getData() {
         return data;
     }
