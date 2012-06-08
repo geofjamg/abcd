@@ -168,7 +168,8 @@ public class RPSTBuilder {
         }
     }
 
-    private void detectRegions(Map<BasicBlock, BasicBlock> shortCut) {
+    private void detectRegions() {
+        Map<BasicBlock, BasicBlock> shortCut = new HashMap<BasicBlock, BasicBlock>();
         for (BasicBlock bb : getDomInfo().getDominatorsTree().getNodesPostOrder()) {
             detectRegionsWithEntry(bb, shortCut);
         }
@@ -278,8 +279,7 @@ public class RPSTBuilder {
 
     public RPST build() {
         // find canonical regions
-        Map<BasicBlock, BasicBlock> shortCut = new HashMap<BasicBlock, BasicBlock>();
-        detectRegions(shortCut);
+        detectRegions();
 
         // build tree of canonical regions
         RPSTRegion root = new RPSTRegion(cfg.getEntryBlock(), null);
