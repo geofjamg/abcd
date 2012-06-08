@@ -521,15 +521,17 @@ public class RegionAnalysis {
         // build refined program structure tree
         RPST rpst = new RPSTBuilder(cfg).build();
 
-        Region root = rpst.getRootRegion();
-        for (Region child : rpst.getChildren(root)) {
-            if (!checkRegion(rpst, child)) {
-                throw new ABCDException("Cannot find type of top level region "
-                        + child);
+        try {
+            Region root = rpst.getRootRegion();
+            for (Region child : rpst.getChildren(root)) {
+                if (!checkRegion(rpst, child)) {
+                    throw new ABCDException("Cannot find type of top level region "
+                            + child);
+                }
             }
+        } finally {
+            rpsts.add(0, rpst);
         }
-
-        rpsts.add(0, rpst);
 
         return rpst;
     }
@@ -589,9 +591,12 @@ public class RegionAnalysis {
         ControlFlowGraph cfg = new ControlFlowGraph(cfg0);
         cfg.setName("Main graph");
 
-        RPST rpst = checkGraph(cfg);
-
-        writer.writeRPST(cfg0, rpsts);
+        RPST rpst;
+        try {
+            rpst = checkGraph(cfg);
+        } finally {
+            writer.writeRPST(cfg0, rpsts);
+        }
 
         return rpst;
     }
