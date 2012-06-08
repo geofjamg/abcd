@@ -212,9 +212,7 @@ public class JavaBytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder
                             break;
 
                         case ATHROW:
-                            if (ABCDPreferences.UNKNOWN_TARGET_EDGE_TEST) {
-                                analyseThrowInst(currentInstIdx);
-                            }
+                            analyseThrowInst(currentInstIdx);
                             break;
                     }
                     break;

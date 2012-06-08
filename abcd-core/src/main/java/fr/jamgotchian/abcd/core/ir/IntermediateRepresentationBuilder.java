@@ -204,31 +204,6 @@ public class IntermediateRepresentationBuilder {
         }
     }
 
-    private void addFakeEdges() {
-        for (BasicBlock bb : cfg.getBasicBlocks()) {
-            if (bb.equals(cfg.getEntryBlock()) || bb.equals(cfg.getExitBlock())) {
-                continue;
-            }
-            IRInstSeq insts = bb.getInstructions();
-            if (insts == null) {
-                throw new ABCDException("insts == null");
-            }
-            if (cfg.getSuccessorCountOf(bb) == 0
-                    && insts.getLast() instanceof ThrowInst) {
-                Edge fakeEdge = cfg.addEdge(bb, cfg.getExitBlock());
-                fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                LOGGER.trace("Add fake edge {}", cfg.toString(fakeEdge));
-            }
-        }
-        for (NaturalLoop loop : cfg.getNaturalLoops().values()) {
-            if (loop.isInfinite()) {
-                Edge fakeEdge = cfg.addEdge(loop.getHead(), cfg.getExitBlock());
-                fakeEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
-                LOGGER.trace("Add fake edge {}", cfg.toString(fakeEdge));
-            }
-        }
-    }
-
     private void assignNameToVariables() {
         VariableNameProvider nameProvider = nameProviderFactory.create(cfg);
 
@@ -313,12 +288,6 @@ public class IntermediateRepresentationBuilder {
             if (cfg.removeUnnecessaryBlock()) {
                 cfg.updateDominatorInfo();
                 cfg.updateLoopInfo();
-            }
-
-            // add fake edges to be able to compute post dominance in case of infinite
-            // loops et throw instructions
-            if (!ABCDPreferences.UNKNOWN_TARGET_EDGE_TEST) {
-                addFakeEdges();
             }
 
 //            cfg.updatePostDominatorInfo();

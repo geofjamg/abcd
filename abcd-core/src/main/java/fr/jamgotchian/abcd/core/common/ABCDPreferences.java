@@ -22,8 +22,6 @@ package fr.jamgotchian.abcd.core.common;
  */
 public interface ABCDPreferences {
 
-    public static final boolean UNKNOWN_TARGET_EDGE_TEST = true;
-
     boolean isUseLocalVariableTable();
 
     void setUseLocalVariableTable(boolean useLocalVariableTable);
