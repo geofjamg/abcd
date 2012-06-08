@@ -68,13 +68,15 @@ public class SSAFormConverterTest {
         BasicBlock bb5 = newBasicBlock(5, 2);
         BasicBlock bb6 = newBasicBlock(6, 1);
         BasicBlock bb7 = newBasicBlock(7, 8);
-        ControlFlowGraph graph = new ControlFlowGraph("test", bb0, bb7);
+        BasicBlock bb8 = newBasicBlock(8, 9);
+        ControlFlowGraph graph = new ControlFlowGraph("test", bb0, bb8);
         graph.addBasicBlock(bb1);
         graph.addBasicBlock(bb2);
         graph.addBasicBlock(bb3);
         graph.addBasicBlock(bb4);
         graph.addBasicBlock(bb5);
         graph.addBasicBlock(bb6);
+        graph.addBasicBlock(bb7);
         Edge e01 = graph.addEdge(bb0, bb1);
         Edge e12 = graph.addEdge(bb1, bb2);
         Edge e13 = graph.addEdge(bb1, bb3);
@@ -85,6 +87,7 @@ public class SSAFormConverterTest {
         Edge e56 = graph.addEdge(bb5, bb6);
         Edge e67 = graph.addEdge(bb6, bb7);
         Edge e71 = graph.addEdge(bb7, bb1);
+        Edge e78 = graph.addEdge(bb7, bb8);
         graph.updateDominatorInfo();
         graph.updatePostDominatorInfo();
         graph.updateLoopInfo();

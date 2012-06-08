@@ -30,6 +30,7 @@ import fr.jamgotchian.abcd.core.graph.Matrix;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
 import fr.jamgotchian.abcd.core.graph.EdgeFactory;
+import fr.jamgotchian.abcd.core.graph.VertexFactory;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
 import fr.jamgotchian.abcd.core.util.RangeMap;
@@ -89,6 +90,8 @@ public class ControlFlowGraph {
     private ExceptionTable exceptionTable;
 
     private static final EdgeFactory<Edge> EDGE_FACTORY = new EdgeFactoryImpl();
+
+    private static final VertexFactory<BasicBlock> BASIC_BLOCK_FACTORY = new EmptyBasicBlockFactory();
 
     public ControlFlowGraph(String name, int instructionCount) {
         this(name, new BasicBlockImpl(Integer.MIN_VALUE, -1, BasicBlockType.ENTRY),
@@ -169,7 +172,7 @@ public class ControlFlowGraph {
     }
 
     public void updatePostDominatorInfo() {
-        postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY);
+        postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY, BASIC_BLOCK_FACTORY);
     }
 
     public DominatorInfo<BasicBlock, Edge> getDominatorInfo() {

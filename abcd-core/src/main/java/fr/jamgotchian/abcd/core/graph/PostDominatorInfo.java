@@ -20,6 +20,7 @@ package fr.jamgotchian.abcd.core.graph;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,7 +42,13 @@ public class PostDominatorInfo<N, E> {
 
     private final N exitNode;
 
-    private final EdgeFactory<E> factory;
+    private final EdgeFactory<E> edgeFactory;
+
+    private final VertexFactory<N> nodeFactory;
+
+    private DirectedGraph<N, E> singleExitGraph;
+
+    private N uniqueExitNode;
 
     private Map<N, Set<N>> postDominatorsOf;
 
@@ -51,17 +58,20 @@ public class PostDominatorInfo<N, E> {
 
     private Map<N, Set<E>> postDominanceFrontierOf;
 
-    public static <N, E> PostDominatorInfo<N, E>
-            create(DirectedGraph<N, E> graph, N exitNode, EdgeFactory<E> factory) {
-        PostDominatorInfo<N, E> domInfo = new PostDominatorInfo<N, E>(graph, exitNode, factory);
+    public static <N, E> PostDominatorInfo<N, E> create(DirectedGraph<N, E> graph,
+            N exitNode, EdgeFactory<E> edgeFactory, VertexFactory<N> nodeFactory) {
+        PostDominatorInfo<N, E> domInfo
+                = new PostDominatorInfo<N, E>(graph, exitNode, edgeFactory, nodeFactory);
         domInfo.update();
         return domInfo;
     }
 
-    private PostDominatorInfo(DirectedGraph<N, E> graph, N exitNode, EdgeFactory<E> factory) {
+    private PostDominatorInfo(DirectedGraph<N, E> graph, N exitNode,
+            EdgeFactory<E> edgeFactory, VertexFactory<N> nodeFactory) {
         this.graph = graph;
         this.exitNode = exitNode;
-        this.factory = factory;
+        this.edgeFactory = edgeFactory;
+        this.nodeFactory = nodeFactory;
     }
 
     public Set<N> getPostDominatorsOf(N n) {
@@ -79,7 +89,7 @@ public class PostDominatorInfo<N, E> {
     public Set<N> getPostDominanceFrontierOf2(N n) {
         Set<N> frontier = new HashSet<N>();
         for (E e : postDominanceFrontierOf.get(n)) {
-            frontier.add(graph.getEdgeSource(e));
+            frontier.add(singleExitGraph.getEdgeSource(e));
         }
         return frontier;
     }
@@ -103,7 +113,7 @@ public class PostDominatorInfo<N, E> {
         immediatePostDominator = new HashMap<N, N>();
         for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
             N n = entry.getKey();
-            if (!n.equals(exitNode)) {
+            if (!n.equals(uniqueExitNode)) {
                 Set<N> postDominators = entry.getValue();
                 boolean found = false;
                 for (N pd : postDominators) {
@@ -127,13 +137,13 @@ public class PostDominatorInfo<N, E> {
     private void computePostDominanceFrontier() {
         postDominanceFrontierOf = new HashMap<N, Set<E>>();
 
-        for (N x : graph.getVertices()) {
+        for (N x : singleExitGraph.getVertices()) {
             postDominanceFrontierOf.put(x, new HashSet<E>());
             for (N y : postDominatorsTree.getSubTree(x).getNodes()) {
-                for (N z : graph.getPredecessorsOf(y)) {
+                for (N z : singleExitGraph.getPredecessorsOf(y)) {
                     if (!z.equals(x)) {
                         if (!strictlyPostDominates(x, z)) {
-                            E zy = graph.getEdge(z, y);
+                            E zy = singleExitGraph.getEdge(z, y);
                             postDominanceFrontierOf.get(x).add(zy);
                         }
                     }
@@ -141,54 +151,46 @@ public class PostDominatorInfo<N, E> {
             }
 
             LOGGER.trace("Post dominance frontier of {} : {}",
-                    x, graph.toString(postDominanceFrontierOf.get(x)));
+                    x, singleExitGraph.toString(postDominanceFrontierOf.get(x)));
        }
     }
 
     public void update() {
         LOGGER.debug("Update post dominator info");
 
+        int exitCount = graph.getExits().size();
+        if (exitCount == 1) {
+            singleExitGraph = graph;
+            uniqueExitNode = exitNode;
+        } else if (exitCount > 1) {
+            LOGGER.trace("Multi exits graph, create a virtual exit node");
+            MutableDirectedGraph<N, E> newGraph = DirectedGraphs.newDirectedGraph(graph);
+            uniqueExitNode = nodeFactory.createVertex();
+            newGraph.addVertex(uniqueExitNode);
+            for (N n : newGraph.getExits()) {
+                newGraph.addEdge(n, uniqueExitNode, edgeFactory.createEdge());
+            }
+            singleExitGraph = newGraph;
+        } else {
+            throw new ABCDException("Cannot compute post dominator infos with a "
+                    + exitCount + " exit(s) graph");
+        }
+
         // find post-dominators
-        postDominatorsOf = new PostDominatorsFinder<N, E>(graph, exitNode).analyse();
+        postDominatorsOf = new PostDominatorsFinder<N, E>(singleExitGraph, uniqueExitNode).analyse();
         for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
             LOGGER.trace("Post-dominators of {} : {}", entry.getKey(), entry.getValue());
-        }
-
-        // check that exit node post dominate every other nodes
-        Set<N> notPostDominatedByExit = new HashSet<N>();
-        for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
-            if (!entry.getValue().contains(exitNode)) {
-                notPostDominatedByExit.add(entry.getKey());
-            }
-        }
-        if (notPostDominatedByExit.size() > 0) {
-            LOGGER.warn("Exit node do not post-dominate every other nodes : {}",
-                    notPostDominatedByExit);
-        }
-
-        // check that there is not post domination cycle (example : node A post
-        // dominate node B and node B post dominate node A
-        for (Map.Entry<N, Set<N>> entry : postDominatorsOf.entrySet()) {
-            N node = entry.getKey();
-            for (N node2 : entry.getValue()) {
-                if (!node.equals(node2)) {
-                    if (postDominatorsOf.get(node2).contains(node)) {
-                        LOGGER.warn("Detect post dominance cycle : {} <-> {}", node, node2);
-
-                    }
-                }
-            }
         }
 
         computeImmediatePostDominators();
 
         // build post-dominators tree
-        postDominatorsTree = Trees.newTree(exitNode);
+        postDominatorsTree = Trees.newTree(uniqueExitNode);
         Multimap<N, N> children = HashMultimap.create();
         for (Map.Entry<N, N> entry : immediatePostDominator.entrySet()) {
             children.put(entry.getValue(), entry.getKey());
         }
-        DominatorInfo.buildTree(exitNode, postDominatorsTree, children, factory);
+        DominatorInfo.buildTree(uniqueExitNode, postDominatorsTree, children, edgeFactory);
         LOGGER.trace("Post dominators tree :\n{}", Trees.toString(postDominatorsTree));
 
         // compute post dominance frontier
