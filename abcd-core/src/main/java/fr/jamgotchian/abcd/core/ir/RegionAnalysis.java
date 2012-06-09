@@ -168,9 +168,16 @@ public class RegionAnalysis {
         RPST subRpst = checkGraph(subCfg, "Body subgraph of loop " + region);
 
         // replace the subtree
-        subRpst.getRootRegion().setChildType(ChildType.LOOP_BODY);
+        Region bodyRegion1 = subRpst.getChildWithEntry(subRpst.getRootRegion(), subCfg.getEntryBlock());
+        Region bodyRegion2 = subRpst.getChildWithEntry(subRpst.getRootRegion(), subCfg.getExitBlock());
+        Region bodyRegion = new RegionImpl(region.getEntry(), region.getExit(), ParentType.SEQUENCE);
+        bodyRegion1.setChildType(ChildType.FIRST);
+        bodyRegion2.setChildType(ChildType.SECOND);
+        bodyRegion.setChildType(ChildType.LOOP_BODY);
         rpst.removeChildren(region);
-        rpst.addRPST(subRpst, region);
+        rpst.addRegion(bodyRegion, region);
+        rpst.addRPST(subRpst, bodyRegion1, bodyRegion);
+        rpst.addRPST(subRpst, bodyRegion2, bodyRegion);
 
         return true;
     }
@@ -529,13 +536,14 @@ public class RegionAnalysis {
     }
 
     private RPST checkGraph(ControlFlowGraph cfg, String recordTitle) {
-        LOGGER.debug("Check {}", recordTitle);
+        LOGGER.debug("@@@ Check {}", recordTitle);
 
         cfg.updateDominatorInfo();
 
         RPST smoothRpst = null;
 
         Record record = new Record(recordTitle);
+        flightRecorder.getRecords().add(record);
 
         List<BasicBlock> otherExits = cfg.getOtherExits();
         if (otherExits.isEmpty()) {
@@ -550,7 +558,7 @@ public class RegionAnalysis {
             LOGGER.debug("Control flow is abrupt => remove dangling branches");
 
             record.setAbruptCfg(cfg);
-            
+
             ControlFlowGraph prunedCfg = new ControlFlowGraph(cfg);
             prunedCfg.removeDanglingBlocks();
             prunedCfg.updateDominatorInfo();
@@ -596,8 +604,6 @@ public class RegionAnalysis {
         }
 
         record.setSmoothRpst(smoothRpst);
-
-        flightRecorder.getRecords().add(record);
 
         return smoothRpst;
     }

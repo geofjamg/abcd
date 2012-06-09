@@ -91,10 +91,6 @@ public class RPST {
         child.setChildType(ChildType.UNDEFINED);
     }
 
-    public void addRPST(RPST rpst, Region parent) {
-        tree.addTree(rpst.getTree(), parent, new Object());
-    }
-
     public void addRPST(RPST rpst, Region root, Region parent) {
         tree.addTree(rpst.getTree().getSubTree(root), parent, new Object());
     }
@@ -104,26 +100,20 @@ public class RPST {
     }
 
     public Region getEntryChild(final Region region) {
+        return getChildWithEntry(region, region.getEntry());
+    }
+
+    public Region getChildWithEntry(Region region, final BasicBlock entry) {
         return tree.getFirstChild(region, new Filter<Region>() {
             @Override
             public boolean accept(Region child) {
-                return child.getEntry().equals(region.getEntry());
+                return child.getEntry().equals(entry);
             }
         });
     }
 
     public Region getFirstChild(Region region) {
         return tree.getFirstChild(region);
-    }
-
-    public Region getSecondChild(Region region) {
-        if (getChildCount(region) < 2) {
-            return null;
-        } else {
-            Iterator<Region> it = getChildren(region).iterator();
-            it.next();
-            return it.next();
-        }
     }
 
     public Region getFirstChild(Region region, final ChildType childType) {
