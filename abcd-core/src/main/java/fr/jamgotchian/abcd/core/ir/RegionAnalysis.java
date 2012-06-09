@@ -552,6 +552,8 @@ public class RegionAnalysis {
             record.setSmoothCfg(cfg);
 
             smoothRpst = new RPSTBuilder(cfg).build();
+            record.setSmoothRpst(smoothRpst);
+
             checkRegions(smoothRpst);
 
         } else {
@@ -568,9 +570,9 @@ public class RegionAnalysis {
             record.setPrunedCfg(prunedCfg);
 
             RPST prunedRpst = new RPSTBuilder(prunedCfg).build();
-            checkRegions(prunedRpst);
-
             record.setPrunedRpst(prunedRpst);
+
+            checkRegions(prunedRpst);
 
             if (otherExits.size() > 0) {
 
@@ -599,11 +601,11 @@ public class RegionAnalysis {
                 LOGGER.debug("Re-check regions...");
 
                 smoothRpst = new RPSTBuilder(smoothCfg).build();
+                record.setSmoothRpst(smoothRpst);
+
                 checkRegions(smoothRpst);
             }
         }
-
-        record.setSmoothRpst(smoothRpst);
 
         return smoothRpst;
     }
