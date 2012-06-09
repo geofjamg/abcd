@@ -17,16 +17,16 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.graph.Filter;
-import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
 import fr.jamgotchian.abcd.core.graph.MutableTree;
+import fr.jamgotchian.abcd.core.graph.NoTextGraphvizRenderer;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
+import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,11 +42,22 @@ public class RPST {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RPST.class);
 
+    public enum ExportType {
+        GRAPH,
+        TREE
+    }
+
     private static final EdgeGraphvizRenderer EDGE_GRAPHVIZ_RENDERER
             = new EdgeGraphvizRenderer(true);
 
     private static final RangeGraphvizRenderer RANGE_GRAPHIZ_RENDERER
             = new RangeGraphvizRenderer();
+
+    private static final RegionGraphvizRenderer REGION_GRAPHIZ_RENDERER
+            = new RegionGraphvizRenderer();
+
+    private static final NoTextGraphvizRenderer OBJECT_GRAPHIZ_RENDERER
+            = new NoTextGraphvizRenderer();
 
     private ControlFlowGraph cfg;
 
@@ -231,7 +242,7 @@ public class RPST {
         }
     }
 
-    public void exportPane(Writer writer, String title, int paneId, int indentLevel) throws IOException {
+    private void exportGraph(Writer writer, String title, int paneId, int indentLevel) throws IOException {
         writeIndent(writer, indentLevel);
         writer.append("subgraph cluster_title_").append(Integer.toString(paneId)).append(" {\n");
         writeIndent(writer, indentLevel+1);
@@ -275,21 +286,37 @@ public class RPST {
         writer.append("}\n");
     }
 
-    public void export(Writer writer, String title) throws IOException {
+    public void exportPane(Writer writer, ExportType type, String title, int paneId, int indentLevel) throws IOException {
+        switch (type) {
+            case GRAPH:
+                exportGraph(writer, title, paneId, indentLevel);
+                break;
+
+            case TREE:
+                tree.exportPane(writer, title, paneId, indentLevel,
+                        REGION_GRAPHIZ_RENDERER, OBJECT_GRAPHIZ_RENDERER);
+                break;
+
+            default:
+                throw new InternalError();
+        }
+    }
+
+    public void export(Writer writer, ExportType type, String title) throws IOException {
         writer.append("digraph RPST {\n");
-        exportPane(writer, title, 0, 1);
+        exportPane(writer, type, title, 0, 1);
         writer.append("}\n");
     }
 
-    public void export(Writer writer) throws IOException {
-        export(writer, cfg.getName());
+    public void export(Writer writer, ExportType type) throws IOException {
+        export(writer, type, cfg.getName());
     }
 
-    public void export(String fileName) {
+    public void export(String fileName, ExportType type) {
         Writer writer = null;
         try {
             writer = new FileWriter(fileName);
-            export(writer);
+            export(writer, type);
         } catch (IOException e) {
             LOGGER.error(e.toString(), e);
         } finally {

@@ -18,6 +18,7 @@ package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.util.Counter;
 import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
+import fr.jamgotchian.abcd.core.ir.RPST.ExportType;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -108,13 +109,19 @@ public class RPSTFlightRecorder {
                 prunedCfg.exportPane(writer, "Pruned CFG", paneId.getCountAndIncrement(), 3);
             }
             if (prunedRpst != null) {
-                prunedRpst.exportPane(writer, "Pruned RPST", paneId.getCountAndIncrement(), 3);
+                prunedRpst.exportPane(writer, ExportType.GRAPH, "Pruned RPST graph view",
+                                      paneId.getCountAndIncrement(), 3);
+                prunedRpst.exportPane(writer, ExportType.TREE, "Pruned RPST control tree view",
+                                      paneId.getCountAndIncrement(), 3);
             }
             if (smoothCfg != null) {
                 smoothCfg.exportPane(writer, "Smooth CFG", paneId.getCountAndIncrement(), 3);
             }
             if (smoothRpst != null) {
-                smoothRpst.exportPane(writer, "Smooth RPST", paneId.getCountAndIncrement(), 3);
+                smoothRpst.exportPane(writer, ExportType.GRAPH, "Smooth RPST graph view",
+                                      paneId.getCountAndIncrement(), 3);
+                smoothRpst.exportPane(writer, ExportType.TREE, "Smooth RPST control tree view",
+                                      paneId.getCountAndIncrement(), 3);
             }
             writeIndent(writer, 2);
             writer.append("}\n");
