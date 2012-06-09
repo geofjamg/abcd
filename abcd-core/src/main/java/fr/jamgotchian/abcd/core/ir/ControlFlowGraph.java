@@ -147,10 +147,6 @@ public class ControlFlowGraph {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public DirectedGraph<BasicBlock, Edge> getGraph() {
         return DirectedGraphs.unmodifiableDirectedGraph(graph);
     }
@@ -803,15 +799,30 @@ public class ControlFlowGraph {
         return merged;
     }
 
+    public void exportPane(Writer writer, String title, int paneId, int indentLevel) throws IOException {
+        graph.exportPane(writer, title, paneId, indentLevel, RANGE_GRAPHVIZ_RENDERER,
+                         EDGE_GRAPHVIZ_RENDERER);
+    }
+
     public void export(Writer writer,
                        GraphvizRenderer<BasicBlock> bbRenderer,
                        GraphvizRenderer<Edge> edgeRenderer) throws IOException {
-        graph.export(writer, name, bbRenderer, edgeRenderer);
+        export(writer, name, bbRenderer, edgeRenderer);
+    }
+
+    public void export(Writer writer, String title,
+                       GraphvizRenderer<BasicBlock> bbRenderer,
+                       GraphvizRenderer<Edge> edgeRenderer) throws IOException {
+        graph.export(writer, title, bbRenderer, edgeRenderer);
+    }
+
+    public void export(Writer writer, String title) throws IOException {
+        graph.export(writer, title, RANGE_GRAPHVIZ_RENDERER,
+                     EDGE_GRAPHVIZ_RENDERER);
     }
 
     public void export(Writer writer) throws IOException {
-        graph.export(writer, name, RANGE_GRAPHVIZ_RENDERER,
-                     EDGE_GRAPHVIZ_RENDERER);
+        export(writer, name);
     }
 
     public void export(String fileName) {
@@ -837,14 +848,6 @@ public class ControlFlowGraph {
                      EDGE_GRAPHVIZ_RENDERER);
     }
 
-    public String toString(Collection<Edge> edges) {
-        return graph.toString(edges);
-    }
-
-    public String toString(Edge edge) {
-        return graph.toString(edge);
-    }
-
     public LocalVariableTable getLocalVariableTable() {
         return localVariableTable;
     }
@@ -859,6 +862,14 @@ public class ControlFlowGraph {
 
     public void setExceptionTable(ExceptionTable exceptionTable) {
         this.exceptionTable = exceptionTable;
+    }
+
+    public String toString(Collection<Edge> edges) {
+        return graph.toString(edges);
+    }
+
+    public String toString(Edge edge) {
+        return graph.toString(edge);
     }
 
     @Override

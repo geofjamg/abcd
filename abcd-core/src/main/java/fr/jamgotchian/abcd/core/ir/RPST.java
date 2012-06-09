@@ -17,7 +17,7 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.graph.Filter;
-import fr.jamgotchian.abcd.core.graph.GraphvizUtil;
+import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
 import fr.jamgotchian.abcd.core.graph.MutableTree;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
@@ -197,16 +197,10 @@ public class RPST {
         }
     }
 
-    private void printSpace(Appendable out, int indentLevel) throws IOException {
-        for (int i = 0 ; i < indentLevel; i++) {
-            out.append("    ");
-        }
-    }
-
     public void print(Appendable out, Region region, int indentLevel) throws IOException {
-        printSpace(out, indentLevel);
+        writeIndent(out, indentLevel);
         out.append(region.getChildType().toString()).append("\n");
-        printSpace(out, indentLevel+1);
+        writeIndent(out, indentLevel+1);
         out.append("+").append(region.getParentType().toString()).append(" ")
                 .append(region.toString()).append("\n");
         for (Region child : getChildren(region)) {
@@ -214,89 +208,91 @@ public class RPST {
         }
     }
 
-    private void writeSpace(Writer writer, int indentLevel) throws IOException {
-        for (int i = 0 ; i < indentLevel; i++) {
-            writer.append("  ");
-        }
-    }
-
-    private void exportRegion(Writer writer, int index, Region region, int indentLevel) throws IOException {
+    private void exportRegion(Writer writer, int paneId, Region region, int indentLevel) throws IOException {
         if (region.getParentType() == ParentType.BASIC_BLOCK) {
             BasicBlock bb = (BasicBlock) region;
-            writeSpace(writer, indentLevel);
+            writeIndent(writer, indentLevel);
             writer.append(Integer.toString(System.identityHashCode(bb)))
-                    .append(Integer.toString(index))
+                    .append(Integer.toString(paneId))
                     .append(" ");
             Map<String, String> attrs = RANGE_GRAPHIZ_RENDERER.getAttributes(bb);
-            GraphvizUtil.writeAttributes(writer, attrs);
-            writeSpace(writer, indentLevel);
+            writeAttributes(writer, attrs);
+            writeIndent(writer, indentLevel);
             writer.append("\n");
         } else {
             String clusterName = "cluster_" + Integer.toString(System.identityHashCode(region))
-                    + Integer.toString(index);
-            writeSpace(writer, indentLevel);
+                    + Integer.toString(paneId);
+            writeIndent(writer, indentLevel);
             writer.append("subgraph ").append(clusterName).append(" {\n");
-            writeSpace(writer, indentLevel+1);
+            writeIndent(writer, indentLevel+1);
             writer.append("fontsize=\"10\";\n");
-            writeSpace(writer, indentLevel+1);
+            writeIndent(writer, indentLevel+1);
             writer.append("labeljust=\"left\";\n");
             if (region.getParentType() != null) {
-                writeSpace(writer, indentLevel+1);
+                writeIndent(writer, indentLevel+1);
                 writer.append("label=\"").append(region.getParentType().toString())
                         .append(" ").append(region.toString()).append("\";\n");
             }
             for (Region child : getChildren(region)) {
-                exportRegion(writer, index, child, indentLevel+1);
+                exportRegion(writer, paneId, child, indentLevel+1);
             }
-            writeSpace(writer, indentLevel);
+            writeIndent(writer, indentLevel);
             writer.append("}\n");
         }
     }
 
-    public void export(Writer writer) throws IOException {
-        writer.append("digraph ").append("RPST").append(" {\n");
-        exportSubgraph(writer, 0);
-        writer.append("}\n");
-    }
+    public void exportPane(Writer writer, String title, int paneId, int indentLevel) throws IOException {
+        writeIndent(writer, indentLevel);
+        writer.append("subgraph cluster_title_").append(Integer.toString(paneId)).append(" {\n");
+        writeIndent(writer, indentLevel+1);
+        writer.append("fontsize=\"18\";\n");
+        writeIndent(writer, indentLevel+1);
+        writer.append("labeljust=\"left\";\n");
+        writeIndent(writer, indentLevel+1);
+        writer.append("label=\"").append(title).append("\";\n");
 
-    public static void export(List<RPST> rpsts, Writer writer) throws IOException {
-        writer.append("digraph ").append("RPST").append(" {\n");
-        for (int index = 0; index < rpsts.size(); index++) {
-            rpsts.get(index).exportSubgraph(writer, index);
-        }
-        writer.append("}\n");
-    }
+        // export regions recursively
+        exportRegion(writer, paneId, getRootRegion(), indentLevel+1);
 
-    public void exportSubgraph(Writer writer, int index) throws IOException {
-        writer.append("  subgraph cluster_title_").append(Integer.toString(index)).append(" {\n");
-        writer.append("    fontsize=\"18\";\n");
-        writer.append("    labeljust=\"left\";\n");
-        writer.append("    label=\"").append(cfg.getName()).append("\";\n");
-        exportRegion(writer, index, getRootRegion(), 2);
+        // then export isolated basic blocks
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             if (!tree.containsNode(bb)) {
-                writer.append("    ")
-                        .append(Integer.toString(System.identityHashCode(bb)))
-                        .append(Integer.toString(index))
+                writeIndent(writer, indentLevel+1);
+                writer.append(Integer.toString(System.identityHashCode(bb)))
+                        .append(Integer.toString(paneId))
                         .append(" ");
                 Map<String, String> attrs = RANGE_GRAPHIZ_RENDERER.getAttributes(bb);
-                GraphvizUtil.writeAttributes(writer, attrs);
+                writeAttributes(writer, attrs);
                 writer.append("\n");
             }
         }
+
+        // and finally export edges
         for (Edge edge : cfg.getEdges()) {
             BasicBlock source = cfg.getEdgeSource(edge);
             BasicBlock target = cfg.getEdgeTarget(edge);
-            writer.append("    ")
-                    .append(Integer.toString(System.identityHashCode(source)))
-                    .append(Integer.toString(index))
+            writeIndent(writer, indentLevel+1);
+            writer.append(Integer.toString(System.identityHashCode(source)))
+                    .append(Integer.toString(paneId))
                     .append(" -> ")
                     .append(Integer.toString(System.identityHashCode(target)))
-                    .append(Integer.toString(index));
-            GraphvizUtil.writeAttributes(writer, EDGE_GRAPHVIZ_RENDERER.getAttributes(edge));
+                    .append(Integer.toString(paneId));
+            writeAttributes(writer, EDGE_GRAPHVIZ_RENDERER.getAttributes(edge));
             writer.append("\n");
         }
-        writer.append("  }\n");
+
+        writeIndent(writer, indentLevel);
+        writer.append("}\n");
+    }
+
+    public void export(Writer writer, String title) throws IOException {
+        writer.append("digraph RPST {\n");
+        exportPane(writer, title, 0, 1);
+        writer.append("}\n");
+    }
+
+    public void export(Writer writer) throws IOException {
+        export(writer, cfg.getName());
     }
 
     public void export(String fileName) {

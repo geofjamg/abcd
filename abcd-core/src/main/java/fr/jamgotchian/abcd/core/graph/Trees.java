@@ -157,40 +157,33 @@ public class Trees {
         }
 
         @Override
-        public String getClusterID() {
-            return delegate.getClusterID();
+        public void exportPane(Writer writer, String title, int paneId, int indentLevel,
+                               GraphvizRenderer<N> nodeRenderer, GraphvizRenderer<E> edgeRenderer) throws IOException {
+            delegate.exportPane(writer, title, paneId, indentLevel, nodeRenderer, edgeRenderer);
         }
 
         @Override
-        public void export(String fileName, String name,
-                           GraphvizRenderer<N> nodeRenderer,
-                           GraphvizRenderer<E> edgeRenderer) {
-            delegate.export(fileName, name, nodeRenderer, edgeRenderer);
-        }
-
-        @Override
-        public void export(String fileName, String name) {
-            delegate.export(fileName, name);
-        }
-
-        @Override
-        public void export(Writer writer, String name) throws IOException {
-            delegate.export(writer, name);
-        }
-
-        @Override
-        public void export(Writer writer, String name,
+        public void export(Writer writer, String title,
                            GraphvizRenderer<N> nodeRenderer,
                            GraphvizRenderer<E> edgeRenderer) throws IOException {
-            delegate.export(writer, name, nodeRenderer, edgeRenderer);
+            delegate.export(writer, title, nodeRenderer, edgeRenderer);
         }
 
         @Override
-        public void export(Writer writer, String name,
+        public void export(Writer writer, String title) throws IOException {
+            delegate.export(writer, title);
+        }
+
+        @Override
+        public void export(String fileName, String title,
                            GraphvizRenderer<N> nodeRenderer,
-                           GraphvizRenderer<E> edgeRenderer,
-                           boolean isSubgraph) throws IOException {
-            delegate.export(writer, name, nodeRenderer, edgeRenderer, isSubgraph);
+                           GraphvizRenderer<E> edgeRenderer) {
+            delegate.export(fileName, title, nodeRenderer, edgeRenderer);
+        }
+
+        @Override
+        public void export(String fileName, String title) {
+            delegate.export(fileName, title);
         }
     }
 

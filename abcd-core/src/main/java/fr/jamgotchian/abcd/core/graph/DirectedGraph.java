@@ -27,7 +27,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface DirectedGraph<V, E> extends GraphvizDigraph<V, E> {
+public interface DirectedGraph<V, E> {
 
     boolean containsEdge(V source, V target);
 
@@ -81,11 +81,14 @@ public interface DirectedGraph<V, E> extends GraphvizDigraph<V, E> {
 
     Tree<V, E> getReversePostOrderDFST(V root, boolean invert);
 
-    void export(Writer writer, String name,
-                GraphvizRenderer<V> vertexRenderer,
+    void exportPane(Writer writer, String title, int paneId, int indentLevel,
+                    GraphvizRenderer<V> vertexRenderer,
+                    GraphvizRenderer<E> edgeRenderer) throws IOException;
+
+    void export(Writer writer, String title, GraphvizRenderer<V> vertexRenderer,
                 GraphvizRenderer<E> edgeRenderer) throws IOException;
 
-    void export(Writer writer, String name) throws IOException;
+    void export(Writer writer, String title) throws IOException;
 
     String toString(Collection<E> edges);
 

@@ -35,4 +35,8 @@ public class Counter {
     public void increment() {
         count++;
     }
+
+    public int getCountAndIncrement() {
+        return count++;
+    }
 }

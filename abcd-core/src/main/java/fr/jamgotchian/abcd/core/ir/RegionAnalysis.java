@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.ir;
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
+import fr.jamgotchian.abcd.core.ir.RPSTFlightRecorder.Record;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,14 +36,14 @@ public class RegionAnalysis {
 
     private final ABCDWriter writer;
 
-    private final List<RPST> rpsts = new ArrayList<RPST>();
+    private RPSTFlightRecorder flightRecorder;
 
     public RegionAnalysis(ControlFlowGraph cfg0, ABCDWriter writer) {
         this.cfg0 = cfg0;
         this.writer = writer;
     }
 
-    private static ControlFlowGraph createSubCFG(RPST rpst, String name, Region region) {
+    private static ControlFlowGraph createSubCFG(RPST rpst, Region region) {
         if (region.getEntry() == null
                 || region.getExit() == null
                 || region.getEntry().equals(region.getExit())) {
@@ -50,7 +51,7 @@ public class RegionAnalysis {
         }
         ControlFlowGraph cfg = rpst.getCfg();
         ControlFlowGraph subCfg
-                = new ControlFlowGraph(name, region.getEntry(), region.getExit());
+                = new ControlFlowGraph("Subgraph of " + cfg.getName(), region.getEntry(), region.getExit());
         for (BasicBlock bb : rpst.getBasicBlocks(region)) {
             if (!bb.equals(region.getEntry()) && !bb.equals(region.getExit())) {
                 subCfg.addBasicBlock(bb);
@@ -158,13 +159,13 @@ public class RegionAnalysis {
         //   - remove exit edges and exit block
         //   - replace the exit block by the tail block
         //   - remove the back edge
-        ControlFlowGraph subCfg = createSubCFG(rpst, "Body subgraph of loop " + region, region);
+        ControlFlowGraph subCfg = createSubCFG(rpst, region);
         subCfg.removeBasicBlock(subCfg.getExitBlock());
         subCfg.setExitBlock(tailBlock);
         subCfg.removeEdge(backEdge);
 
         // build rpst from control flow subgraph
-        RPST subRpst = checkGraph(subCfg);
+        RPST subRpst = checkGraph(subCfg, "Body subgraph of loop " + region);
 
         // replace the subtree
         subRpst.getRootRegion().setChildType(ChildType.LOOP_BODY);
@@ -442,7 +443,7 @@ public class RegionAnalysis {
         }
 
         // build control flow subgraph
-        ControlFlowGraph subCfg = createSubCFG(rpst, "Try subgraph of region " + region, region);
+        ControlFlowGraph subCfg = createSubCFG(rpst, region);
 
         // remove handlers basic blocks
         for (Region handlerRegion : handlerRegions) {
@@ -452,7 +453,7 @@ public class RegionAnalysis {
         }
 
         // build rpst from control flow subgraph
-        RPST subRpst = checkGraph(subCfg);
+        RPST subRpst = checkGraph(subCfg, "Try subgraph of region " + region);
 
         LOGGER.debug("Found try catch finally region {}", region);
 
@@ -517,85 +518,102 @@ public class RegionAnalysis {
         }
     }
 
-    private RPST checkRegions(ControlFlowGraph cfg) {
-        // build refined program structure tree
-        RPST rpst = new RPSTBuilder(cfg).build();
-
-        try {
-            Region root = rpst.getRootRegion();
-            for (Region child : rpst.getChildren(root)) {
-                if (!checkRegion(rpst, child)) {
-                    throw new ABCDException("Cannot find type of top level region "
-                            + child);
-                }
+    private void checkRegions(RPST rpst) {
+        Region root = rpst.getRootRegion();
+        for (Region child : rpst.getChildren(root)) {
+            if (!checkRegion(rpst, child)) {
+                throw new ABCDException("Cannot find type of top level region "
+                        + child);
             }
-        } finally {
-            rpsts.add(0, rpst);
         }
-
-        return rpst;
     }
 
-    private RPST checkGraph(ControlFlowGraph cfg) {
-        LOGGER.debug("Check {}", cfg.getName());
+    private RPST checkGraph(ControlFlowGraph cfg, String recordTitle) {
+        LOGGER.debug("Check {}", recordTitle);
 
         cfg.updateDominatorInfo();
 
-        ControlFlowGraph cleanCfg = new ControlFlowGraph(cfg);
-        List<BasicBlock> otherExits = cleanCfg.getOtherExits();
-        cleanCfg.removeDanglingBlocks();
-        cleanCfg.updateDominatorInfo();
-        cleanCfg.updatePostDominatorInfo();
-        cleanCfg.updateLoopInfo();
+        RPST smoothRpst = null;
 
-        if (otherExits.size() > 0) {
-            LOGGER.debug("!!! Dangling branches detected, check region on modified subgraph");
-        }
+        Record record = new Record(recordTitle);
 
-        RPST rpst = checkRegions(cleanCfg);
-
-        if (otherExits.size() > 0) {
-            for (BasicBlock otherExit : otherExits) {
-                LOGGER.trace("Search for {} successor", otherExit);
-                BasicBlock bb;
-                for (bb = otherExit;
-                        bb != null && !rpst.containsRegion(bb);
-                        bb = cfg.getDominatorInfo().getImmediateDominatorOf(bb)) {
-                    // empty
-                }
-                if (bb != null) {
-                    Region region = rpst.getParent(rpst.getParent(bb));
-                    BasicBlock successor = region.getExit();
-                    LOGGER.trace("Found successor for {} : {}", otherExit, successor);
-                    cfg.addEdge(otherExit, successor).addAttribute(EdgeAttribute.FAKE_EDGE);
-                }
-            }
-
-            cfg.updateDominatorInfo();
+        List<BasicBlock> otherExits = cfg.getOtherExits();
+        if (otherExits.isEmpty()) {
             cfg.updatePostDominatorInfo();
             cfg.updateLoopInfo();
+            record.setSmoothCfg(cfg);
 
-            LOGGER.debug("Re-check regions...");
+            smoothRpst = new RPSTBuilder(cfg).build();
+            checkRegions(smoothRpst);
 
-            rpst = checkRegions(cfg);
+        } else {
+            LOGGER.debug("Control flow is abrupt => remove dangling branches");
+
+            record.setAbruptCfg(cfg);
+            
+            ControlFlowGraph prunedCfg = new ControlFlowGraph(cfg);
+            prunedCfg.removeDanglingBlocks();
+            prunedCfg.updateDominatorInfo();
+            prunedCfg.updatePostDominatorInfo();
+            prunedCfg.updateLoopInfo();
+
+            record.setPrunedCfg(prunedCfg);
+
+            RPST prunedRpst = new RPSTBuilder(prunedCfg).build();
+            checkRegions(prunedRpst);
+
+            record.setPrunedRpst(prunedRpst);
+
+            if (otherExits.size() > 0) {
+
+                ControlFlowGraph smoothCfg = new ControlFlowGraph(cfg);
+
+                for (BasicBlock otherExit : otherExits) {
+                    LOGGER.trace("Search for {} successor", otherExit);
+                    BasicBlock bb;
+                    for (bb = otherExit;
+                            bb != null && !prunedRpst.containsRegion(bb);
+                            bb = cfg.getDominatorInfo().getImmediateDominatorOf(bb)) {
+                        // empty
+                    }
+                    if (bb != null) {
+                        Region region = prunedRpst.getParent(prunedRpst.getParent(bb));
+                        BasicBlock successor = region.getExit();
+                        LOGGER.trace("Found successor for {} : {}", otherExit, successor);
+                        smoothCfg.addEdge(otherExit, successor).addAttribute(EdgeAttribute.FAKE_EDGE);
+                    }
+                }
+
+                smoothCfg.updateDominatorInfo();
+                smoothCfg.updatePostDominatorInfo();
+                smoothCfg.updateLoopInfo();
+
+                LOGGER.debug("Re-check regions...");
+
+                smoothRpst = new RPSTBuilder(smoothCfg).build();
+                checkRegions(smoothRpst);
+            }
         }
 
-        return rpst;
+        record.setSmoothRpst(smoothRpst);
+
+        flightRecorder.getRecords().add(record);
+
+        return smoothRpst;
     }
 
     public RPST analyse() {
-        rpsts.clear();
+        flightRecorder = new RPSTFlightRecorder(cfg0.getName());
 
         cfg0.removeCriticalEdges();
 
         ControlFlowGraph cfg = new ControlFlowGraph(cfg0);
-        cfg.setName("Main graph");
 
         RPST rpst;
         try {
-            rpst = checkGraph(cfg);
+            rpst = checkGraph(cfg, "Main graph");
         } finally {
-            writer.writeRPST(cfg0, rpsts);
+            writer.writeRPST(flightRecorder);
         }
 
         return rpst;

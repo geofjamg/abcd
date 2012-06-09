@@ -22,14 +22,13 @@ import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.RangeGraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.EdgeGraphvizRenderer;
-import fr.jamgotchian.abcd.core.ir.RPST;
+import fr.jamgotchian.abcd.core.ir.RPSTFlightRecorder;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.List;
 
 /**
  *
@@ -71,15 +70,15 @@ public class DebugABCDWriter extends DefaultABCDWriter {
         this.debugDir = debugDir;
     }
 
-    private String getBaseName(ControlFlowGraph cfg) {
-        return debugDir.getPath() + File.separator + cfg.getName().replace(' ', '_');
+    private String getBaseName(String name) {
+        return debugDir.getPath() + File.separator + name.replace(' ', '_');
     }
 
     @Override
     public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bytecodeRenderer) {
         assert cfg != null;
 
-        String baseName = getBaseName(cfg);
+        String baseName = getBaseName(cfg.getName());
 
         try {
             Writer writer = new FileWriter(baseName + "_RAWCFG.dot");
@@ -104,7 +103,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     public void writeCFG(ControlFlowGraph cfg, boolean failure) {
         assert cfg != null;
 
-        String baseName = getBaseName(cfg);
+        String baseName = getBaseName(cfg.getName());
 
         try {
             Writer writer = new FileWriter(baseName + "_DFST.dot");
@@ -155,20 +154,18 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     }
 
     @Override
-    public void writeRPST(ControlFlowGraph cfg, List<RPST> rpsts) {
-        if (rpsts.size() > 0) {
-            String baseName = getBaseName(cfg);
+    public void writeRPST(RPSTFlightRecorder flightRecorder) {
+        String baseName = getBaseName(flightRecorder.getName());
 
+        try {
+            Writer writer = new FileWriter(baseName + "_RPST.dot");
             try {
-                Writer writer = new FileWriter(baseName + "_RPST.dot");
-                try {
-                    RPST.export(rpsts, writer);
-                } finally {
-                    writer.close();
-                }
-            } catch (IOException e) {
-                LOGGER.error(e.toString(), e);
+                flightRecorder.export(writer);
+            } finally {
+                writer.close();
             }
+        } catch (IOException e) {
+            LOGGER.error(e.toString(), e);
         }
     }
 }

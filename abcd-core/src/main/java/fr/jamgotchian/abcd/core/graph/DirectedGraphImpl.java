@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.graph;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -436,87 +437,6 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         return dfst;
     }
 
-    @Override
-    public String toString(E edge) {
-        return getEdgeSource(edge) + "->" + getEdgeTarget(edge);
-    }
-
-    @Override
-    public String toString(Collection<E> edges) {
-        StringBuilder builder = new StringBuilder("[");
-        for (Iterator<E> it = edges.iterator(); it.hasNext();) {
-            builder.append(toString(it.next()));
-            if (it.hasNext()) {
-                builder.append(", ");
-            }
-        }
-        builder.append("]");
-        return builder.toString();
-    }
-
-    @Override
-    public String getClusterID() {
-        return Integer.toString(System.identityHashCode(this));
-    }
-
-    @Override
-    public void export(Writer writer, String name) throws IOException {
-        export(writer, name, VERTEX_GRAPHVIZ_RENDERER, EDGE_GRAPHVIZ_RENDERER);
-    }
-
-    @Override
-    public void export(Writer writer, String name,
-                       GraphvizRenderer<V> vertexRenderer,
-                       GraphvizRenderer<E> edgeRenderer) throws IOException {
-        export(writer, name, vertexRenderer, edgeRenderer, false);
-    }
-
-    @Override
-    public void export(Writer writer, String name,
-                       GraphvizRenderer<V> vertexRenderer,
-                       GraphvizRenderer<E> edgeRenderer,
-                       boolean isSubgraph) throws IOException {
-        if (isSubgraph) {
-            String clusterName = GraphvizUtil.getClusterID(this);
-            writer.append("subgraph ").append(clusterName).append(" {\n");
-            writer.append("label=\"").append(name).append("\";\n");
-        } else {
-            writer.append("digraph \"").append(name).append("\" {\n");
-            writer.append("  subgraph cluster_title").append(" {\n");
-            writer.append("    fontsize=\"18\";\n");
-            writer.append("    labeljust=\"left\";\n");
-            writer.append("    label=\"").append(name).append("\";\n");
-        }
-        for (V node : getVertices()) {
-            if (node instanceof GraphvizDigraph) {
-                @SuppressWarnings("unchecked")
-                GraphvizDigraph<V, E> subgraph = ((GraphvizDigraph<V, E>) node);
-                subgraph.export(writer, node.toString(), vertexRenderer,
-                                  edgeRenderer, true);
-            } else {
-                writer.append("    ")
-                        .append(GraphvizUtil.getSimpleVertexID(this, node))
-                        .append(" ");
-                GraphvizUtil.writeAttributes(writer, vertexRenderer.getAttributes(node));
-                writer.append("\n");
-            }
-        }
-        for (E edge : getEdges()) {
-            V source = getEdgeSource(edge);
-            V target = getEdgeTarget(edge);
-            writer.append("    ")
-                    .append(GraphvizUtil.getVertexID(this, source))
-                    .append(" -> ")
-                    .append(GraphvizUtil.getVertexID(this, target));
-            GraphvizUtil.writeAttributes(writer, edgeRenderer.getAttributes(edge));
-            writer.append("\n");
-        }
-        if (!isSubgraph) {
-            writer.append("  }\n");
-        }
-        writer.append("}\n");
-    }
-
     private void visitNeighbors(V current, Set<V> neighbors) {
         neighbors.add(current);
         for (V successor : getSuccessorsOf(current)) {
@@ -573,4 +493,76 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
         return exits;
     }
+
+    @Override
+    public String toString(E edge) {
+        return getEdgeSource(edge) + "->" + getEdgeTarget(edge);
+    }
+
+    @Override
+    public String toString(Collection<E> edges) {
+        StringBuilder builder = new StringBuilder("[");
+        for (Iterator<E> it = edges.iterator(); it.hasNext();) {
+            builder.append(toString(it.next()));
+            if (it.hasNext()) {
+                builder.append(", ");
+            }
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+
+    @Override
+    public void export(Writer writer, String title) throws IOException {
+        export(writer, title, VERTEX_GRAPHVIZ_RENDERER, EDGE_GRAPHVIZ_RENDERER);
+    }
+
+    @Override
+    public void export(Writer writer, String title,
+                       GraphvizRenderer<V> vertexRenderer,
+                       GraphvizRenderer<E> edgeRenderer) throws IOException {
+        writer.append("digraph G {\n");
+        exportPane(writer, title, 0, 1, vertexRenderer, edgeRenderer);
+        writer.append("}\n");
+    }
+
+    @Override
+    public void exportPane(Writer writer, String title, int paneId, int indentLevel,
+                           GraphvizRenderer<V> vertexRenderer,
+                           GraphvizRenderer<E> edgeRenderer) throws IOException {
+        writeIndent(writer, indentLevel);
+        writer.append("subgraph cluster_title_").append(Integer.toString(paneId)).append(" {\n");
+        writeIndent(writer, indentLevel+1);
+        writer.append("fontsize=\"18\";\n");
+        writeIndent(writer, indentLevel+1);
+        writer.append("labeljust=\"left\";\n");
+        writeIndent(writer, indentLevel+1);
+        writer.append("label=\"").append(title).append("\";\n");
+
+        for (V node : getVertices()) {
+            writeIndent(writer, indentLevel);
+            writer.append(Integer.toString(System.identityHashCode(node)))
+                    .append(Integer.toString(paneId))
+                    .append(" ");
+            writeAttributes(writer, vertexRenderer.getAttributes(node));
+            writer.append("\n");
+        }
+
+        for (E edge : getEdges()) {
+            V source = getEdgeSource(edge);
+            V target = getEdgeTarget(edge);
+            writeIndent(writer, indentLevel);
+            writer.append(Integer.toString(System.identityHashCode(source)))
+                    .append(Integer.toString(paneId))
+                    .append(" -> ")
+                    .append(Integer.toString(System.identityHashCode(target)))
+                    .append(Integer.toString(paneId));
+            writeAttributes(writer, edgeRenderer.getAttributes(edge));
+            writer.append("\n");
+        }
+
+        writeIndent(writer, indentLevel);
+        writer.append("}\n");
+    }
+
 }

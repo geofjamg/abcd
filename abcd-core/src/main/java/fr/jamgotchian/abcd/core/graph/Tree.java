@@ -28,7 +28,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface Tree<N, E> extends Iterable<N>, GraphvizDigraph<N, E> {
+public interface Tree<N, E> extends Iterable<N> {
 
     boolean containsNode(N node);
 
@@ -74,15 +74,19 @@ public interface Tree<N, E> extends Iterable<N>, GraphvizDigraph<N, E> {
 
     N getFirstCommonAncestor(Collection<N> nodes);
 
-    void export(Writer writer, String name,
+    void exportPane(Writer writer, String title, int paneId, int indentLevel,
+                           GraphvizRenderer<N> nodeRenderer,
+                           GraphvizRenderer<E> edgeRenderer) throws IOException;
+
+    void export(Writer writer, String title,
                 GraphvizRenderer<N> nodeRenderer,
                 GraphvizRenderer<E> edgeRenderer) throws IOException;
 
     void export(Writer writer, String name) throws IOException;
 
-    void export(String fileName, String name,
+    void export(String fileName, String title,
                 GraphvizRenderer<N> nodeRenderer,
                 GraphvizRenderer<E> edgeRenderer);
 
-    void export(String fileName, String name);
+    void export(String fileName, String title);
 }

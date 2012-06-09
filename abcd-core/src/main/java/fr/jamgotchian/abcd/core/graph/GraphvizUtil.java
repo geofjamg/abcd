@@ -30,22 +30,10 @@ public class GraphvizUtil {
     private GraphvizUtil() {
     }
 
-    @SuppressWarnings("unchecked")
-    public static <V, E> String getVertexID(GraphvizDigraph<V, E> subgraph, V vertex) {
-        if (vertex instanceof GraphvizDigraph) {
-            return getClusterID((GraphvizDigraph<V, E>) vertex);
-        } else {
-            return getSimpleVertexID(subgraph, vertex);
+    public static void writeIndent(Appendable out, int indentLevel) throws IOException {
+        for (int i = 0 ; i < indentLevel; i++) {
+            out.append("    ");
         }
-    }
-
-    public static <V, E> String getClusterID(GraphvizDigraph<V, E> subgraph) {
-        return "cluster_" + subgraph.getClusterID();
-    }
-
-    public static <V, E> String getSimpleVertexID(GraphvizDigraph<V, E> subgraph, V vertex) {
-        return Integer.toString(System.identityHashCode(subgraph))
-                + Integer.toString(System.identityHashCode(vertex));
     }
 
     public static <V, E> void writeAttributes(Writer writer, Map<String, String> attributes) throws IOException {

@@ -63,28 +63,21 @@ public class DirectedGraphs {
         }
 
         @Override
-        public String getClusterID() {
-            return delegate.getClusterID();
+        public void export(Writer writer, String title) throws IOException {
+            delegate.export(writer, title);
         }
 
         @Override
-        public void export(Writer writer, String name,
+        public void export(Writer writer, String title,
                            GraphvizRenderer<V> nodeRenderer,
                            GraphvizRenderer<E> edgeRenderer) throws IOException {
-            delegate.export(writer, name, nodeRenderer, edgeRenderer);
+            delegate.export(writer, title, nodeRenderer, edgeRenderer);
         }
 
         @Override
-        public void export(Writer writer, String name,
-                           GraphvizRenderer<V> vertexRenderer,
-                           GraphvizRenderer<E> edgeRenderer,
-                           boolean isSubgraph) throws IOException {
-            delegate.export(writer, name, vertexRenderer, edgeRenderer, isSubgraph);
-        }
-
-        @Override
-        public void export(Writer writer, String name) throws IOException {
-            delegate.export(writer, name);
+        public void exportPane(Writer writer, String title, int paneId, int indentLevel,
+                               GraphvizRenderer<V> vertexRenderer, GraphvizRenderer<E> edgeRenderer) throws IOException {
+            delegate.exportPane(writer, title, paneId, indentLevel, vertexRenderer, edgeRenderer);
         }
 
         @Override
@@ -419,28 +412,21 @@ public class DirectedGraphs {
         }
 
         @Override
-        public String getClusterID() {
-            return delegate.getClusterID();
+        public void export(Writer writer, String title) throws IOException {
+            delegate.export(writer, title);
         }
 
         @Override
-        public void export(Writer writer, String name) throws IOException {
-            delegate.export(writer, name);
-        }
-
-        @Override
-        public void export(Writer writer, String name,
+        public void export(Writer writer, String title,
                            GraphvizRenderer<V> vertexRenderer,
                            GraphvizRenderer<E> edgeRenderer) throws IOException {
-            delegate.export(writer, name, vertexRenderer, edgeRenderer);
+            delegate.export(writer, title, vertexRenderer, edgeRenderer);
         }
 
         @Override
-        public void export(Writer writer, String name,
-                           GraphvizRenderer<V> vertexRenderer,
-                           GraphvizRenderer<E> edgeRenderer,
-                           boolean isSubgraph) throws IOException {
-            delegate.export(writer, name, vertexRenderer, edgeRenderer, isSubgraph);
+        public void exportPane(Writer writer, String title, int paneId, int indentLevel,
+                               GraphvizRenderer<V> vertexRenderer, GraphvizRenderer<E> edgeRenderer) throws IOException {
+            delegate.exportPane(writer, title, paneId, indentLevel, vertexRenderer, edgeRenderer);
         }
     }
 

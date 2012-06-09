@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.graph;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
+import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -475,18 +476,67 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     @Override
-    public String getClusterID() {
-        return Integer.toString(System.identityHashCode(this));
+    public void exportPane(Writer writer, String title, int paneId, int indentLevel,
+                           GraphvizRenderer<N> nodeRenderer,
+                           GraphvizRenderer<E> edgeRenderer) throws IOException {
+        writeIndent(writer, indentLevel);
+        writer.append("subgraph cluster_title_").append(Integer.toString(paneId)).append(" {\n");
+        writeIndent(writer, indentLevel+1);
+        writer.append("fontsize=\"18\";\n");
+        writeIndent(writer, indentLevel+1);
+        writer.append("labeljust=\"left\";\n");
+        writeIndent(writer, indentLevel+1);
+        writer.append("label=\"").append(title).append("\";\n");
+
+        for (N node : getNodes()) {
+            writeIndent(writer, indentLevel+1);
+            writer.append(Integer.toString(System.identityHashCode(node)))
+                    .append(Integer.toString(paneId))
+                    .append(" ");
+            writeAttributes(writer, nodeRenderer.getAttributes(node));
+            writer.append("\n");
+        }
+
+        for (E edge : getEdges()) {
+            N source = getEdgeSource(edge);
+            N target = getEdgeTarget(edge);
+            writeIndent(writer, indentLevel+1);
+            writer.append(Integer.toString(System.identityHashCode(source)))
+                    .append(Integer.toString(paneId))
+                    .append(" -> ")
+                    .append(Integer.toString(System.identityHashCode(target)))
+                    .append(Integer.toString(paneId));
+            writeAttributes(writer, edgeRenderer.getAttributes(edge));
+            writer.append("\n");
+        }
+
+        writeIndent(writer, indentLevel);
+        writer.append("}\n");
     }
 
     @Override
-    public void export(String fileName, String name,
+    public void export(Writer writer, String title,
+                       GraphvizRenderer<N> nodeRenderer,
+                       GraphvizRenderer<E> edgeRenderer) throws IOException {
+        writer.append("digraph T").append(" {\n");
+        exportPane(writer, title, 0, 1, nodeRenderer, edgeRenderer);
+        writer.append("}\n");
+
+    }
+
+    @Override
+    public void export(Writer writer, String title) throws IOException {
+        export(writer, title, NODE_GRAPHVIZ_RENDERER, EDGE_GRAPHVIZ_RENDERER);
+    }
+
+    @Override
+    public void export(String fileName, String title,
                        GraphvizRenderer<N> nodeRenderer,
                        GraphvizRenderer<E> edgeRenderer) {
         Writer writer = null;
         try {
             writer = new FileWriter(fileName);
-            export(writer, name, nodeRenderer, edgeRenderer);
+            export(writer, title, nodeRenderer, edgeRenderer);
         } catch (IOException e) {
             LOGGER.error(e.toString(), e);
         } finally {
@@ -501,11 +551,11 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     @Override
-    public void export(String fileName, String name) {
+    public void export(String fileName, String title) {
         Writer writer = null;
         try {
             writer = new FileWriter(fileName);
-            export(writer, name);
+            export(writer, title);
         } catch (IOException e) {
             LOGGER.error(e.toString(), e);
         } finally {
@@ -517,57 +567,6 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
                 }
             }
         }
-    }
-
-    @Override
-    public void export(Writer writer, String name) throws IOException {
-        export(writer, name, NODE_GRAPHVIZ_RENDERER, EDGE_GRAPHVIZ_RENDERER);
-    }
-
-    @Override
-    public void export(Writer writer, String name,
-                       GraphvizRenderer<N> nodeRenderer,
-                       GraphvizRenderer<E> edgeRenderer) throws IOException {
-        export(writer, name, nodeRenderer, edgeRenderer, false);
-    }
-
-    @Override
-    public void export(Writer writer, String name,
-                       GraphvizRenderer<N> nodeRenderer,
-                       GraphvizRenderer<E> edgeRenderer,
-                       boolean isSubgraph) throws IOException {
-        if (isSubgraph) {
-            String clusterName = GraphvizUtil.getClusterID(this);
-            writer.append("subgraph ").append(clusterName).append(" {\n");
-            writer.append("label=\"").append(name).append("\";\n");
-        } else {
-            writer.append("digraph ").append(name).append(" {\n");
-        }
-        for (N node : getNodes()) {
-            if (node instanceof GraphvizDigraph) {
-                @SuppressWarnings("unchecked")
-                GraphvizDigraph<N, E> subgraph = ((GraphvizDigraph<N, E>) node);
-                subgraph.export(writer, node.toString(), nodeRenderer,
-                                  edgeRenderer, true);
-            } else {
-                writer.append("  ")
-                        .append(GraphvizUtil.getSimpleVertexID(this, node))
-                        .append(" ");
-                GraphvizUtil.writeAttributes(writer, nodeRenderer.getAttributes(node));
-                writer.append("\n");
-            }
-        }
-        for (E edge : getEdges()) {
-            N source = getEdgeSource(edge);
-            N target = getEdgeTarget(edge);
-            writer.append("  ")
-                    .append(GraphvizUtil.getVertexID(this, source))
-                    .append(" -> ")
-                    .append(GraphvizUtil.getVertexID(this, target));
-            GraphvizUtil.writeAttributes(writer, edgeRenderer.getAttributes(edge));
-            writer.append("\n");
-        }
-        writer.append("}\n");
     }
 
 }
