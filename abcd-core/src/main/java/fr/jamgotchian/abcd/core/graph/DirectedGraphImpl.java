@@ -540,7 +540,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         writer.append("label=\"").append(title).append("\";\n");
 
         for (V node : getVertices()) {
-            writeIndent(writer, indentLevel);
+            writeIndent(writer, indentLevel+1);
             writer.append(Integer.toString(System.identityHashCode(node)))
                     .append(Integer.toString(paneId))
                     .append(" ");
@@ -551,7 +551,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         for (E edge : getEdges()) {
             V source = getEdgeSource(edge);
             V target = getEdgeTarget(edge);
-            writeIndent(writer, indentLevel);
+            writeIndent(writer, indentLevel+1);
             writer.append(Integer.toString(System.identityHashCode(source)))
                     .append(Integer.toString(paneId))
                     .append(" -> ")
