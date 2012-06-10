@@ -22,6 +22,7 @@ import fr.jamgotchian.abcd.core.ir.RPST.ExportType;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -44,7 +45,7 @@ public class RPSTFlightRecorder {
 
         private RPST smoothRpst;
 
-        public Record(String name) {
+        private Record(String name) {
             this.name = name;
         }
 
@@ -140,8 +141,14 @@ public class RPSTFlightRecorder {
         return name;
     }
 
+    public Record newRecord(String name) {
+        Record record = new Record(name);
+        records.add(record);
+        return record;
+    }
+
     public List<Record> getRecords() {
-        return records;
+        return Collections.unmodifiableList(records);
     }
 
     public void export(Writer writer) throws IOException {

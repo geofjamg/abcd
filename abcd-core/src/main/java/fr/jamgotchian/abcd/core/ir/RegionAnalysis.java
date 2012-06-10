@@ -542,8 +542,7 @@ public class RegionAnalysis {
 
         RPST smoothRpst = null;
 
-        Record record = new Record(recordTitle);
-        flightRecorder.getRecords().add(record);
+        Record record = flightRecorder.newRecord(recordTitle);
 
         List<BasicBlock> otherExits = cfg.getOtherExits();
         if (otherExits.isEmpty()) {
