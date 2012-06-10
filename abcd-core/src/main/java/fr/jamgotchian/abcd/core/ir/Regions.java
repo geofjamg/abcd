@@ -16,6 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import static fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName.*;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
@@ -25,30 +27,31 @@ public class Regions {
     private Regions() {
     }
 
-    public static boolean deepEquals(RPST rpst, Region region1, Region region2) {
-        return deepEquals(rpst, region1, region2, new VariableMapping());
+    public static boolean deepEquals(RPST rpst1, Region region1, RPST rpst2, Region region2) {
+        return deepEquals(rpst1, region1, rpst2, region2, new VariableMapping());
     }
 
-    private static boolean deepEquals(RPST rpst, Region region1, Region region2, VariableMapping mapping) {
+    private static boolean deepEquals(RPST rpst1, Region region1, RPST rpst2, Region region2, VariableMapping mapping) {
         if (region1.getParentType() == region2.getParentType()
                 && region1.getChildType() == region2.getChildType()) {
-            if (region1.getChildType() == ChildType.CATCH || region1.getChildType() == ChildType.FINALLY) {
-                ExceptionHandlerInfo info = (ExceptionHandlerInfo) region1.getEntry().getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY);
-                ExceptionHandlerInfo otherInfo = (ExceptionHandlerInfo) region2.getEntry().getProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY);
-                mapping.defEqual(info.getVariable(), otherInfo.getVariable());
+            if (region1.getChildType() == ChildType.CATCH
+                    || region1.getChildType() == ChildType.FINALLY) {
+                ExceptionHandlerInfo info1 = (ExceptionHandlerInfo) region1.getEntry().getProperty(EXCEPTION_HANDLER_ENTRY);
+                ExceptionHandlerInfo info2 = (ExceptionHandlerInfo) region2.getEntry().getProperty(EXCEPTION_HANDLER_ENTRY);
+                mapping.defEqual(info1.getVariable(), info2.getVariable());
             }
             if (region1.getParentType() == ParentType.BASIC_BLOCK) {
-                BasicBlock bb = region1.getEntry();
-                BasicBlock otherBb = region2.getEntry();
-                return IRInstComparator.equal(bb.getInstructions(),
-                                              otherBb.getInstructions(),
+                BasicBlock bb1 = region1.getEntry();
+                BasicBlock bb2 = region2.getEntry();
+                return IRInstComparator.equal(bb1.getInstructions(),
+                                              bb2.getInstructions(),
                                               mapping);
             } else {
-                if (rpst.getChildCount(region1) == rpst.getChildCount(region2)) {
-                    for (Region child : rpst.getChildren(region1)) {
+                if (rpst1.getChildCount(region1) == rpst2.getChildCount(region2)) {
+                    for (Region child1 : rpst1.getChildren(region1)) {
                         boolean found = false;
-                        for (Region otherChild : rpst.getChildren(region2)) {
-                            if (deepEquals(rpst, child, otherChild, mapping)) {
+                        for (Region child2 : rpst2.getChildren(region2)) {
+                            if (deepEquals(rpst1, child1, rpst2, child2, mapping)) {
                                 found = true;
                                 break;
                             }

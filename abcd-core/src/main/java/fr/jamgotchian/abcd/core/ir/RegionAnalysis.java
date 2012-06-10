@@ -431,7 +431,7 @@ public class RegionAnalysis {
                     continue;
                 }
                 if (child.getExit().equals(region.getExit())) {
-                    if (Regions.deepEquals(rpst, child, finallyRegion)) {
+                    if (Regions.deepEquals(rpst, child, rpst, finallyRegion)) {
                         inlinedFinallyRegions.add(child);
                     }
                 }
