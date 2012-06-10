@@ -242,15 +242,18 @@ public class RPST {
         }
     }
 
-    private void exportGraph(Writer writer, String title, int paneId, int indentLevel) throws IOException {
+    private void exportGraph(Writer writer, String title, boolean error, int paneId, int indentLevel) throws IOException {
         writeIndent(writer, indentLevel);
         writer.append("subgraph cluster_title_").append(Integer.toString(paneId)).append(" {\n");
+        writeIndent(writer, indentLevel+1);
+        writer.append("color=\"").append(error ? "red" : "black").append("\";\n");
         writeIndent(writer, indentLevel+1);
         writer.append("fontsize=\"18\";\n");
         writeIndent(writer, indentLevel+1);
         writer.append("labeljust=\"left\";\n");
         writeIndent(writer, indentLevel+1);
-        writer.append("label=\"").append(title).append("\";\n");
+        writer.append("label=<<font color=\"").append(error ? "red" : "black")
+                .append("\">").append(title).append("</font>>;\n");
 
         // export regions recursively
         exportRegion(writer, paneId, getRootRegion(), indentLevel+1);
@@ -287,9 +290,16 @@ public class RPST {
     }
 
     public void exportPane(Writer writer, ExportType type, String title, int paneId, int indentLevel) throws IOException {
+        boolean error = false;
+        for (Region region : tree.getNodes()) {
+            if (region.getParentType() == ParentType.UNDEFINED) {
+                error = true;
+                break;
+            }
+        }
         switch (type) {
             case GRAPH:
-                exportGraph(writer, title, paneId, indentLevel);
+                exportGraph(writer, title, error, paneId, indentLevel);
                 break;
 
             case TREE:
