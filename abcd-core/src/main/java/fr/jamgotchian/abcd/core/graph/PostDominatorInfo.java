@@ -44,7 +44,7 @@ public class PostDominatorInfo<N, E> {
 
     private final EdgeFactory<E> edgeFactory;
 
-    private final VertexFactory<N> nodeFactory;
+    private final VertexFactory<N> virtualExitNodeFactory;
 
     private DirectedGraph<N, E> singleExitGraph;
 
@@ -58,20 +58,21 @@ public class PostDominatorInfo<N, E> {
 
     private Map<N, Set<E>> postDominanceFrontierOf;
 
-    public static <N, E> PostDominatorInfo<N, E> create(DirectedGraph<N, E> graph,
-            N exitNode, EdgeFactory<E> edgeFactory, VertexFactory<N> nodeFactory) {
+    public static <N, E> PostDominatorInfo<N, E>
+            create(DirectedGraph<N, E> graph, N exitNode, EdgeFactory<E> edgeFactory,
+                   VertexFactory<N> virtualExitNodeFactory) {
         PostDominatorInfo<N, E> domInfo
-                = new PostDominatorInfo<N, E>(graph, exitNode, edgeFactory, nodeFactory);
+                = new PostDominatorInfo<N, E>(graph, exitNode, edgeFactory, virtualExitNodeFactory);
         domInfo.update();
         return domInfo;
     }
 
     private PostDominatorInfo(DirectedGraph<N, E> graph, N exitNode,
-            EdgeFactory<E> edgeFactory, VertexFactory<N> nodeFactory) {
+            EdgeFactory<E> edgeFactory, VertexFactory<N> virtualExitNodeFactory) {
         this.graph = graph;
         this.exitNode = exitNode;
         this.edgeFactory = edgeFactory;
-        this.nodeFactory = nodeFactory;
+        this.virtualExitNodeFactory = virtualExitNodeFactory;
     }
 
     public Set<N> getPostDominatorsOf(N n) {
@@ -165,7 +166,7 @@ public class PostDominatorInfo<N, E> {
         } else if (exitCount > 1) {
             LOGGER.trace("Multi exits graph, create a virtual exit node");
             MutableDirectedGraph<N, E> newGraph = DirectedGraphs.newDirectedGraph(graph);
-            uniqueExitNode = nodeFactory.createVertex();
+            uniqueExitNode = virtualExitNodeFactory.createVertex();
             newGraph.addVertex(uniqueExitNode);
             for (N n : newGraph.getExits()) {
                 newGraph.addEdge(n, uniqueExitNode, edgeFactory.createEdge());

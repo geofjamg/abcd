@@ -55,7 +55,7 @@ public class JavaBytecodeWriter extends JavaBytecodeVisitor {
 
     public static String toText(InsnList instructions, LabelManager labelManager) {
         StringWriter writer = new StringWriter();
-        BasicBlock bb = new BasicBlockImpl(0, instructions.size()-1, null);
+        BasicBlock bb = BasicBlockImpl.createRange(0, instructions.size()-1, null);
         new JavaBytecodeWriter(new TextCodeWriter(writer)).visit(instructions, bb, labelManager);
         return writer.toString();
     }
@@ -68,7 +68,7 @@ public class JavaBytecodeWriter extends JavaBytecodeVisitor {
 
     public static String toHTML(InsnList instructions, LabelManager labelManager) {
         StringWriter writer = new StringWriter();
-        BasicBlock bb = new BasicBlockImpl(0, instructions.size()-1, null);
+        BasicBlock bb = BasicBlockImpl.createRange(0, instructions.size()-1, null);
         new JavaBytecodeWriter(new HTMLCodeWriter(writer)).visit(instructions, bb, labelManager);
         return writer.toString();
     }

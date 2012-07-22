@@ -33,6 +33,8 @@ public class BasicBlockImpl implements BasicBlock {
 
     private BasicBlockType type;
 
+    private final Object label;
+
     private int order;
 
     private IRInstSeq instructions;
@@ -51,24 +53,34 @@ public class BasicBlockImpl implements BasicBlock {
 
     private Object data;
 
-    public BasicBlockImpl(Range range, BasicBlockType type) {
+    public static BasicBlock createRange(int firstInstn, int lastInstn, BasicBlockType type) {
+        Range range = new RangeImpl(firstInstn, lastInstn);
+        return new BasicBlockImpl(range, type, range);
+    }
+
+    public static BasicBlock createEmpty() {
+        return new BasicBlockImpl(null, BasicBlockType.EMPTY, "[]");
+    }
+
+    public static BasicBlock createEntry() {
+        return new BasicBlockImpl(new RangeImpl(Integer.MIN_VALUE, -1), BasicBlockType.ENTRY, BasicBlockType.ENTRY);
+    }
+
+    public static BasicBlock createExit() {
+        return new BasicBlockImpl(null, BasicBlockType.EXIT, BasicBlockType.EXIT);
+    }
+
+    public static BasicBlock createVirtualExit() {
+        return new BasicBlockImpl(null, BasicBlockType.VIRTUAL_EXIT, BasicBlockType.VIRTUAL_EXIT);
+    }
+
+    protected BasicBlockImpl(Range range, BasicBlockType type, Object label) {
         this.range = range;
         this.type = type;
+        this.label = label;
         order = -1;
         properties = new EnumMap<BasicBlockPropertyName, Object>(BasicBlockPropertyName.class);
         childType = ChildType.UNDEFINED;
-    }
-
-    public BasicBlockImpl(int firstInstn, int lastInstn, BasicBlockType type) {
-        this(new RangeImpl(firstInstn, lastInstn), type);
-    }
-
-    public BasicBlockImpl(BasicBlockType type) {
-        this(null, type);
-    }
-
-    public BasicBlockImpl() {
-        this(null, null);
     }
 
     @Override
@@ -213,13 +225,6 @@ public class BasicBlockImpl implements BasicBlock {
 
     @Override
     public String toString() {
-        if (type != null) {
-            switch (type) {
-                case ENTRY:
-                case EXIT:
-                    return type.name();
-            }
-        }
-        return range == null ? "[]" : range.toString();
+        return label.toString();
     }
 }

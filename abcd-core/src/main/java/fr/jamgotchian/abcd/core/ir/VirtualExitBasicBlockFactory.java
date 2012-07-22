@@ -22,11 +22,11 @@ import fr.jamgotchian.abcd.core.graph.VertexFactory;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class EmptyBasicBlockFactory implements VertexFactory<BasicBlock> {
+public class VirtualExitBasicBlockFactory implements VertexFactory<BasicBlock> {
 
     @Override
     public BasicBlock createVertex() {
-        return BasicBlockImpl.createEmpty();
+        return BasicBlockImpl.createVirtualExit();
     }
 
 }

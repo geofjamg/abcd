@@ -91,13 +91,13 @@ public class ControlFlowGraph {
 
     private static final EdgeFactory<Edge> EDGE_FACTORY = new EdgeFactoryImpl();
 
-    private static final VertexFactory<BasicBlock> BASIC_BLOCK_FACTORY = new EmptyBasicBlockFactory();
+    private static final VertexFactory<BasicBlock> VIRTUAL_EXIT_FACTORY
+            = new VirtualExitBasicBlockFactory();
 
     public ControlFlowGraph(String name, int instructionCount) {
-        this(name, new BasicBlockImpl(Integer.MIN_VALUE, -1, BasicBlockType.ENTRY),
-                new BasicBlockImpl(BasicBlockType.EXIT));
+        this(name, BasicBlockImpl.createEntry(),  BasicBlockImpl.createExit());
         if (instructionCount > 0 ) {
-            BasicBlock instnBlock = new BasicBlockImpl(0, instructionCount-1, null);
+            BasicBlock instnBlock = BasicBlockImpl.createRange(0, instructionCount-1, null);
             addBasicBlock(instnBlock);
             addEdge(entryBlock, instnBlock);
         } else {
@@ -106,7 +106,7 @@ public class ControlFlowGraph {
     }
 
     public ControlFlowGraph(String name, BasicBlock entryBlock) {
-        this(name, entryBlock, new BasicBlockImpl(BasicBlockType.EXIT));
+        this(name, entryBlock, BasicBlockImpl.createExit());
     }
 
     public ControlFlowGraph(String name, BasicBlock entryBlock, BasicBlock exitBlock) {
@@ -125,8 +125,7 @@ public class ControlFlowGraph {
     }
 
     public ControlFlowGraph(String name) {
-        this(name, new BasicBlockImpl(BasicBlockType.ENTRY),
-                new BasicBlockImpl(BasicBlockType.EXIT));
+        this(name, BasicBlockImpl.createEntry(), BasicBlockImpl.createExit());
     }
 
     public ControlFlowGraph(ControlFlowGraph other) {
@@ -168,7 +167,7 @@ public class ControlFlowGraph {
     }
 
     public void updatePostDominatorInfo() {
-        postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY, BASIC_BLOCK_FACTORY);
+        postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY, VIRTUAL_EXIT_FACTORY);
     }
 
     public DominatorInfo<BasicBlock, Edge> getDominatorInfo() {
@@ -263,7 +262,7 @@ public class ControlFlowGraph {
                 resizeBasicBlock(blockBefore, index - 1);
 
                 // create the block after the split
-                blockAfter = new BasicBlockImpl(index, last, blockBefore.getType());
+                blockAfter = BasicBlockImpl.createRange(index, last, blockBefore.getType());
                 graph.splitVertex(blockBefore, blockAfter);
                 basicBlocks.put(blockAfter.getRange(), blockAfter);
 
@@ -614,7 +613,7 @@ public class ControlFlowGraph {
             BasicBlock source = graph.getEdgeSource(criticalEdge);
             BasicBlock target = graph.getEdgeTarget(criticalEdge);
             removeEdge(criticalEdge);
-            BasicBlock emptyBlock = new BasicBlockImpl(BasicBlockType.EMPTY);
+            BasicBlock emptyBlock = BasicBlockImpl.createEmpty();
             emptyBlock.setInstructions(new IRInstSeq());
             graph.addVertex(emptyBlock);
             addEdge(source, emptyBlock, criticalEdge);
@@ -784,7 +783,7 @@ public class ControlFlowGraph {
             Collection<NaturalLoop> naturalLoopsWithSameHeader = entry.getValue();
             if (naturalLoopsWithSameHeader.size() > 1) {
                 LOGGER.trace("Merge natural loops {}", naturalLoopsWithSameHeader);
-                BasicBlock empty = new BasicBlockImpl(BasicBlockType.EMPTY);
+                BasicBlock empty = BasicBlockImpl.createEmpty();
                 addBasicBlock(empty);
                 addEdge(empty, head).addAttribute(EdgeAttribute.LOOP_BACK_EDGE);
                 for (NaturalLoop nl : naturalLoopsWithSameHeader) {

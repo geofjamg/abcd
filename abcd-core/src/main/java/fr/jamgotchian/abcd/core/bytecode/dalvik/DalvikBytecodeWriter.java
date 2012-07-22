@@ -60,7 +60,7 @@ public class DalvikBytecodeWriter extends DalvikBytecodeVisitor {
 
     public static String toText(Instruction[] instructions, CodeAddressManager addressManager) {
         StringWriter writer = new StringWriter();
-        BasicBlock bb = new BasicBlockImpl(0, instructions.length-1, null);
+        BasicBlock bb = BasicBlockImpl.createRange(0, instructions.length-1, null);
         new DalvikBytecodeWriter(new TextCodeWriter(writer))
                 .visit(instructions, bb, addressManager);
         return writer.toString();

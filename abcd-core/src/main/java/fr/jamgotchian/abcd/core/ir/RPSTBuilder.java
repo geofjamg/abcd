@@ -124,11 +124,16 @@ public class RPSTBuilder {
 
     private BasicBlock getNextPostDom(BasicBlock bb, Map<BasicBlock, BasicBlock> shortCut) {
         BasicBlock bb2 = shortCut.get(bb);
+        BasicBlock postDom;
         if (bb2 == null) {
-            return getPostDomInfo().getImmediatePostDominatorOf(bb);
+            postDom = getPostDomInfo().getImmediatePostDominatorOf(bb);
         } else {
-            return getPostDomInfo().getImmediatePostDominatorOf(bb2);
+            postDom = getPostDomInfo().getImmediatePostDominatorOf(bb2);
         }
+        if (postDom != null && postDom.getType() == BasicBlockType.VIRTUAL_EXIT) {
+            return null;
+        }
+        return postDom;
     }
 
     private RPSTRegion createRegion(BasicBlock entry, BasicBlock exit) {

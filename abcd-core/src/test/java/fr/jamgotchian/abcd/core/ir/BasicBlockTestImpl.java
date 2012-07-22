@@ -26,6 +26,7 @@ public class BasicBlockTestImpl extends BasicBlockImpl {
     private String name;
 
     public BasicBlockTestImpl(String name) {
+        super(null, null, name);
         this.name = name;
     }
 
