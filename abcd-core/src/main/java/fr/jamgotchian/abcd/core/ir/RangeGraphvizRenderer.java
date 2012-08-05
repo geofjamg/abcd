@@ -56,6 +56,12 @@ public class RangeGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
                     attrs.put("color", "orange");
                     attrs.put("style", "filled");
                     break;
+
+                case GOTO:
+                    attrs.put("shape", "invhouse");
+                    attrs.put("color", "green");
+                    attrs.put("style", "filled");
+                    break;
             }
         }
         attrs.put("label", "\"" + bb + "\"");
