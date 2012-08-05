@@ -86,22 +86,41 @@ public class RPSTBuilder {
     }
 
     private boolean isRegion(BasicBlock entry, BasicBlock exit) {
+        // 2 cases
+        //   Entry does not dominates Exit
+        //   Entry dominates Exit
         if (!getDomInfo().dominates(entry, exit)) {
+            // Exit has to be the only element in the dominance frontier of Entry.
+            // In this case the only edges leaving the region end at Exit
             if (!Sets.isSubset(getDomInfo().getDominanceFrontierOf2(entry),
                                Collections.singleton(exit))) {
                 return false;
             }
         } else {
+            // Only basic blocks that are part of the dominance frontier of Exit
+            // are allowed to be element of the dominance frontier of Entry
             if (!Sets.isSubset(getDomInfo().getDominanceFrontierOf2(entry),
                                com.google.common.collect.Sets.union(getDomInfo().getDominanceFrontierOf2(exit),
                                           Collections.singleton(entry)))) {
                 return false;
             }
+            // Basic blocks of the dominance frontier of Entry can only be reached
+            // from Entry through a path passing Exit. To show this the isCommonDomFrontier
+            // function is used. isCommonDomFrontier ( BB, Entry, Exit) checks if there exists a path
+            // from Entry to BB that does not pass Exit. This is done by checking
+            // for every predecessor of BB, that if it is dominated by Entry it is
+            // also dominated by Exit.
             for (BasicBlock bb : getDomInfo().getDominanceFrontierOf2(entry)) {
                 if (!isCommonDomFrontier(bb, entry, exit)) {
                     return false;
                 }
             }
+            // It has still to be shown that there are no edges entering the region.
+            // As all basic blocks are dominated by Entry the only case where edges
+            // enter the region is if Exit is dominated by Entry and has back edges
+            // pointing into the region. These back edges will point to basic blocks
+            // dominated by Entry but not by Exit. So the dominance frontier of Exit
+            // is not allowed to contain any basic blocks that are dominated by Entry
             for (BasicBlock bb : getDomInfo().getDominanceFrontierOf2(exit)) {
                 if (getDomInfo().strictlyDominates(entry, bb)) {
                     return false;
@@ -279,6 +298,18 @@ public class RPSTBuilder {
             Region c2 = new RegionImpl(c.entry, c.exit, ParentType.UNDEFINED);
             rpst.addRegion(c2, r2);
             a(c, c2, rpst, mapR);
+        }
+    }
+
+    private void printAllRegions() {
+        for (BasicBlock bb1 : cfg.getBasicBlocks()) {
+            for (BasicBlock bb2 : cfg.getBasicBlocks()) {
+                if (!bb1.equals(bb2) && getDomInfo().dominates(bb1, bb2)) {
+                    if (isRegion(bb1, bb2)) {
+                        LOGGER.debug("REGION {},{}", bb1, bb2);
+                    }
+                }
+            }
         }
     }
 
