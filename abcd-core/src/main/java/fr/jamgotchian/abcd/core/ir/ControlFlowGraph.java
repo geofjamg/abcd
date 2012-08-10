@@ -91,9 +91,6 @@ public class ControlFlowGraph {
 
     private static final EdgeFactory<Edge> EDGE_FACTORY = new EdgeFactoryImpl();
 
-    private static final VertexFactory<BasicBlock> VIRTUAL_EXIT_FACTORY
-            = new VirtualExitBasicBlockFactory();
-
     public ControlFlowGraph(String name, int instructionCount) {
         this(name, BasicBlockImpl.createEntry(),  BasicBlockImpl.createExit());
         if (instructionCount > 0 ) {
@@ -167,7 +164,7 @@ public class ControlFlowGraph {
     }
 
     public void updatePostDominatorInfo() {
-        postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY, VIRTUAL_EXIT_FACTORY);
+        postDominatorInfo = PostDominatorInfo.create(graph, exitBlock, EDGE_FACTORY);
     }
 
     public DominatorInfo<BasicBlock, Edge> getDominatorInfo() {

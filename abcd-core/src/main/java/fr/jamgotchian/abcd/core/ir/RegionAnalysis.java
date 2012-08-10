@@ -160,8 +160,18 @@ public class RegionAnalysis {
         //   - replace the exit block by the tail block
         //   - remove the back edge
         ControlFlowGraph subCfg = createSubCFG(rpst, region);
+        for (Edge exitEdge : new ArrayList<Edge>(subCfg.getIncomingEdgesOf(subCfg.getExitBlock()))) {
+            BasicBlock source = subCfg.getEdgeSource(exitEdge);
+            BasicBlock stop = BasicBlockImpl.createStop();
+            subCfg.addBasicBlock(stop);
+            subCfg.removeEdge(exitEdge);
+            subCfg.addEdge(source, stop, exitEdge);
+        }
         subCfg.removeBasicBlock(subCfg.getExitBlock());
-        subCfg.setExitBlock(tailBlock);
+        BasicBlock exit = BasicBlockImpl.createExit();
+        subCfg.addBasicBlock(exit);
+        subCfg.addEdge(tailBlock, exit);
+        subCfg.setExitBlock(exit);
         subCfg.removeEdge(backEdge);
 
         // build rpst from control flow subgraph
@@ -538,75 +548,19 @@ public class RegionAnalysis {
     private RPST checkGraph(ControlFlowGraph cfg, String recordTitle) {
         LOGGER.debug("@@@ Check {}", recordTitle);
 
-        cfg.updateDominatorInfo();
-
-        RPST smoothRpst = null;
-
         Record record = flightRecorder.newRecord(recordTitle);
 
-        List<BasicBlock> otherExits = cfg.getOtherExits();
-        if (otherExits.isEmpty()) {
-            cfg.updatePostDominatorInfo();
-            cfg.updateLoopInfo();
-            record.setSmoothCfg(cfg);
+        cfg.updateDominatorInfo();
+        cfg.updatePostDominatorInfo();
+        cfg.updateLoopInfo();
+        record.setSmoothCfg(cfg);
 
-            smoothRpst = new RPSTBuilder(cfg).build();
-            record.setSmoothRpst(smoothRpst);
+        RPST rpst = new RPSTBuilder(cfg).build();
+        record.setSmoothRpst(rpst);
 
-            checkRegions(smoothRpst);
+        checkRegions(rpst);
 
-        } else {
-            LOGGER.debug("Control flow is abrupt => remove dangling branches");
-
-            record.setAbruptCfg(cfg);
-
-            ControlFlowGraph prunedCfg = new ControlFlowGraph(cfg);
-            prunedCfg.removeDanglingBlocks();
-            prunedCfg.updateDominatorInfo();
-            prunedCfg.updatePostDominatorInfo();
-            prunedCfg.updateLoopInfo();
-
-            record.setPrunedCfg(prunedCfg);
-
-            RPST prunedRpst = new RPSTBuilder(prunedCfg).build();
-            record.setPrunedRpst(prunedRpst);
-
-            checkRegions(prunedRpst);
-
-            if (otherExits.size() > 0) {
-
-                ControlFlowGraph smoothCfg = new ControlFlowGraph(cfg);
-
-                for (BasicBlock otherExit : otherExits) {
-                    LOGGER.trace("Search for {} successor", otherExit);
-                    BasicBlock bb;
-                    for (bb = otherExit;
-                            bb != null && !prunedRpst.containsRegion(bb);
-                            bb = cfg.getDominatorInfo().getImmediateDominatorOf(bb)) {
-                        // empty
-                    }
-                    if (bb != null) {
-                        Region region = prunedRpst.getParent(prunedRpst.getParent(bb));
-                        BasicBlock successor = region.getExit();
-                        LOGGER.trace("Found successor for {} : {}", otherExit, successor);
-                        smoothCfg.addEdge(otherExit, successor).addAttribute(EdgeAttribute.FAKE_EDGE);
-                    }
-                }
-
-                smoothCfg.updateDominatorInfo();
-                smoothCfg.updatePostDominatorInfo();
-                smoothCfg.updateLoopInfo();
-
-                LOGGER.debug("Re-check regions...");
-
-                smoothRpst = new RPSTBuilder(smoothCfg).build();
-                record.setSmoothRpst(smoothRpst);
-
-                checkRegions(smoothRpst);
-            }
-        }
-
-        return smoothRpst;
+        return rpst;
     }
 
     public RPST analyse() {

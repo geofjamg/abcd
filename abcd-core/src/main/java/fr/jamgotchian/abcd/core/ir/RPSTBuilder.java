@@ -141,18 +141,9 @@ public class RPSTBuilder {
         }
     }
 
-    private BasicBlock getNextPostDom(BasicBlock bb, Map<BasicBlock, BasicBlock> shortCut) {
+    private Collection<BasicBlock> getNextPostDom(BasicBlock bb, Map<BasicBlock, BasicBlock> shortCut) {
         BasicBlock bb2 = shortCut.get(bb);
-        BasicBlock postDom;
-        if (bb2 == null) {
-            postDom = getPostDomInfo().getImmediatePostDominatorOf(bb);
-        } else {
-            postDom = getPostDomInfo().getImmediatePostDominatorOf(bb2);
-        }
-        if (postDom != null && postDom.getType() == BasicBlockType.VIRTUAL_EXIT) {
-            return null;
-        }
-        return postDom;
+        return getPostDomInfo().getMultiExitsImmediatePostDominatorOf(bb2 == null ? bb : bb2);
     }
 
     private RPSTRegion createRegion(BasicBlock entry, BasicBlock exit) {
@@ -168,22 +159,26 @@ public class RPSTBuilder {
     private void detectRegionsWithEntry(BasicBlock entry, Map<BasicBlock, BasicBlock> shortCut) {
         assert  entry != null;
         BasicBlock exit = entry;
+        Collection<BasicBlock> exits;
         RPSTRegion lastRegion = null;
         BasicBlock lastExit = entry;
-        while ((exit = getNextPostDom(exit, shortCut)) != null) {
-            if (isRegion(entry, exit)) {
-                RPSTRegion newRegion = createRegion(entry, exit);
-                if (lastRegion != null) {
-                    lastRegion.parent = newRegion;
-                    LOGGER.trace("Parent of region {} is {}", lastRegion, newRegion);
-                } else {
-                    LOGGER.trace("Parent of BB {} is {}", entry, newRegion);
+        while ((exits = getNextPostDom(exit, shortCut)).size() > 0) {
+            for (BasicBlock a : exits) {
+                exit = a;
+                if (isRegion(entry, exit)) {
+                    RPSTRegion newRegion = createRegion(entry, exit);
+                    if (lastRegion != null) {
+                        lastRegion.parent = newRegion;
+                        LOGGER.trace("Parent of region {} is {}", lastRegion, newRegion);
+                    } else {
+                        LOGGER.trace("Parent of BB {} is {}", entry, newRegion);
+                    }
+                    lastRegion = newRegion;
+                    lastExit = exit;
                 }
-                lastRegion = newRegion;
-                lastExit = exit;
-            }
-            if (!getDomInfo().dominates(entry, exit)) {
-                break;
+                if (!getDomInfo().dominates(entry, exit)) {
+                    break;
+                }
             }
         }
 

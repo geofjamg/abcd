@@ -24,10 +24,10 @@ package fr.jamgotchian.abcd.core.ir;
 public enum BasicBlockType {
     ENTRY,
     EXIT,
-    VIRTUAL_EXIT,
     JUMP_IF,
     SWITCH,
     GOTO,
     RETURN,
-    EMPTY
+    EMPTY,
+    STOP
 }

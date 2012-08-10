@@ -206,6 +206,9 @@ public abstract class ControlFlowGraphBuilder {
         if (remainingBlock != null) {
             cfg.removeEdge(throwBlock, remainingBlock);
         }
+        BasicBlock stopBlock = BasicBlockImpl.createStop();
+        cfg.addBasicBlock(stopBlock);
+        cfg.addEdge(throwBlock, stopBlock);
 
         LOGGER.debug("  Throw : current={}", throwBlock);
     }

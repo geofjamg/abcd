@@ -29,7 +29,7 @@ import java.util.Set;
 class PostDominatorsFinder<N ,E> extends BackwardDataFlowAnalysis<N, E, Set<N>>  {
 
     PostDominatorsFinder(DirectedGraph<N, E> graph, N exitNode) {
-        super("Post-dominators", graph, exitNode);
+        super("Post-dominators", DirectedGraphs.getSingleExitGraph(graph, exitNode), exitNode);
     }
 
     @Override

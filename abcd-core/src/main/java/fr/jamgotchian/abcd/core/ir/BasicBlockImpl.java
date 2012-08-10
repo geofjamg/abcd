@@ -70,8 +70,8 @@ public class BasicBlockImpl implements BasicBlock {
         return new BasicBlockImpl(null, BasicBlockType.EXIT, BasicBlockType.EXIT);
     }
 
-    public static BasicBlock createVirtualExit() {
-        return new BasicBlockImpl(null, BasicBlockType.VIRTUAL_EXIT, BasicBlockType.VIRTUAL_EXIT);
+    public static BasicBlock createStop() {
+        return new BasicBlockImpl(null, BasicBlockType.STOP, BasicBlockType.STOP);
     }
 
     protected BasicBlockImpl(Range range, BasicBlockType type, Object label) {
