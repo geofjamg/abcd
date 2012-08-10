@@ -148,14 +148,6 @@ public class DominatorInfo<N, E> {
        }
     }
 
-    static <N, E> void buildTree(N parent, MutableTree<N, E> tree,
-                                 Multimap<N, N> children, EdgeFactory<E> factory) {
-        for (N child : children.get(parent)) {
-            tree.addNode(parent, child, factory.createEdge());
-            buildTree(child, tree, children, factory);
-        }
-    }
-
     public void update() {
         LOGGER.debug("Update dominator info");
 
@@ -169,12 +161,7 @@ public class DominatorInfo<N, E> {
         computeImmediateDominators();
 
         // build dominators tree
-        dominatorsTree = Trees.newTree(entryNode);
-        Multimap<N, N> children = HashMultimap.create();
-        for (Map.Entry<N, N> entry : immediateDominator.entrySet()) {
-            children.put(entry.getValue(), entry.getKey());
-        }
-        buildTree(entryNode, dominatorsTree, children, factory);
+        dominatorsTree = Trees.newTree(entryNode, immediateDominator, factory);
         LOGGER.trace("Dominators tree :\n{}", Trees.toString(dominatorsTree));
 
         // compute dominance frontier
