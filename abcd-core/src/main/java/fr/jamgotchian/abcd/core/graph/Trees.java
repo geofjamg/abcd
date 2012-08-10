@@ -17,11 +17,14 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -189,6 +192,24 @@ public class Trees {
 
     public static <N, E> MutableTree<N, E> newTree(N root) {
         return new TreeImpl<N, E>(root);
+    }
+
+    private static <N, E> void buildTree(N parent, MutableTree<N, E> tree,
+                                          Multimap<N, N> children, EdgeFactory<E> factory) {
+        for (N child : children.get(parent)) {
+            tree.addNode(parent, child, factory.createEdge());
+            buildTree(child, tree, children, factory);
+        }
+    }
+
+    public static <N, E> MutableTree<N, E> newTree(N root, Map<N, N> parents, EdgeFactory<E> factory) {
+        MutableTree<N, E> tree = Trees.newTree(root);
+        Multimap<N, N> children = HashMultimap.create();
+        for (Map.Entry<N, N> entry : parents.entrySet()) {
+            children.put(entry.getValue(), entry.getKey());
+        }
+        buildTree(root, tree, children, factory);
+        return tree;
     }
 
     public static <N, E> Tree<N, E> unmodifiableTree(Tree<N, E> tree) {
