@@ -156,34 +156,43 @@ public class RPSTBuilder {
         return newRegion;
     }
 
+    private class DetectionContext {
+
+        private RPSTRegion lastRegion;
+
+        private BasicBlock lastExit;
+
+    }
+
     private void detectRegionsWithEntry(BasicBlock entry, Map<BasicBlock, BasicBlock> shortCut) {
         assert  entry != null;
-        BasicBlock exit = entry;
-        Collection<BasicBlock> exits;
-        RPSTRegion lastRegion = null;
-        BasicBlock lastExit = entry;
-        while ((exits = getNextPostDom(exit, shortCut)).size() > 0) {
-            for (BasicBlock a : exits) {
-                exit = a;
-                if (isRegion(entry, exit)) {
-                    RPSTRegion newRegion = createRegion(entry, exit);
-                    if (lastRegion != null) {
-                        lastRegion.parent = newRegion;
-                        LOGGER.trace("Parent of region {} is {}", lastRegion, newRegion);
-                    } else {
-                        LOGGER.trace("Parent of BB {} is {}", entry, newRegion);
-                    }
-                    lastRegion = newRegion;
-                    lastExit = exit;
-                }
-                if (!getDomInfo().dominates(entry, exit)) {
-                    break;
-                }
-            }
+        DetectionContext context = new DetectionContext();
+        context.lastRegion = null;
+        context.lastExit = entry;
+        for (BasicBlock exit : getNextPostDom(entry, shortCut)) {
+            detectRegionsWithEntry(entry, exit, shortCut, context);
         }
+        if (!context.lastExit.equals(entry)) {
+            insertShortCut(entry, context.lastExit, shortCut);
+        }
+    }
 
-        if (!lastExit.equals(entry)) {
-            insertShortCut(entry, lastExit, shortCut);
+    private void detectRegionsWithEntry(BasicBlock entry, BasicBlock exit, Map<BasicBlock, BasicBlock> shortCut, DetectionContext context) {
+        if (isRegion(entry, exit)) {
+            RPSTRegion newRegion = createRegion(entry, exit);
+            if (context.lastRegion != null) {
+                context.lastRegion.parent = newRegion;
+                LOGGER.trace("Parent of region {} is {}", context.lastRegion, newRegion);
+            } else {
+                LOGGER.trace("Parent of BB {} is {}", entry, newRegion);
+            }
+            context.lastRegion = newRegion;
+            context.lastExit = exit;
+        }
+        if (getDomInfo().dominates(entry, exit)) {
+            for (BasicBlock exit2 : getNextPostDom(exit, shortCut)) {
+                detectRegionsWithEntry(entry, exit2, shortCut, context);
+            }
         }
     }
 
