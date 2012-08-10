@@ -162,18 +162,25 @@ public class RPSTBuilder {
 
         private BasicBlock lastExit;
 
+        private DetectionContext(RPSTRegion lastRegion, BasicBlock lastExit) {
+            this.lastRegion = lastRegion;
+            this.lastExit = lastExit;
+        }
+
+        private DetectionContext(DetectionContext other) {
+            lastRegion = other.lastRegion;
+            lastExit = other.lastExit;
+        }
     }
 
     private void detectRegionsWithEntry(BasicBlock entry, Map<BasicBlock, BasicBlock> shortCut) {
         assert  entry != null;
-        DetectionContext context = new DetectionContext();
-        context.lastRegion = null;
-        context.lastExit = entry;
         for (BasicBlock exit : getNextPostDom(entry, shortCut)) {
+            DetectionContext context = new DetectionContext(null, entry);
             detectRegionsWithEntry(entry, exit, shortCut, context);
-        }
-        if (!context.lastExit.equals(entry)) {
-            insertShortCut(entry, context.lastExit, shortCut);
+            if (!context.lastExit.equals(entry)) {
+                insertShortCut(entry, context.lastExit, shortCut);
+            }
         }
     }
 
@@ -191,7 +198,7 @@ public class RPSTBuilder {
         }
         if (getDomInfo().dominates(entry, exit)) {
             for (BasicBlock exit2 : getNextPostDom(exit, shortCut)) {
-                detectRegionsWithEntry(entry, exit2, shortCut, context);
+                detectRegionsWithEntry(entry, exit2, shortCut, new DetectionContext(context));
             }
         }
     }
