@@ -182,9 +182,6 @@ public class PostDominatorInfo<N, E> {
             for (N otherExitNode : otherExitNodes) {
                 Map<N, Set<N>> otherPostDominators
                         = new PostDominatorsFinder<N, E>(graph, otherExitNode).analyse();
-        for (Map.Entry<N, Set<N>> entry : otherPostDominators.entrySet()) {
-            LOGGER.trace("pouet {} : {}", entry.getKey(), entry.getValue());
-        }
                 Map<N, N> otherImmediatePostDominator
                         = computeImmediatePostDominators(otherPostDominators, otherExitNode);
                 LOGGER.trace("Immediate post dominators for exit {}:{}",
