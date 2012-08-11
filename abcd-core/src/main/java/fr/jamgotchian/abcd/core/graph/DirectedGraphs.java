@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -435,6 +436,23 @@ public class DirectedGraphs {
 
     public static <V, E> MutableDirectedGraph<V, E> newDirectedGraph() {
         return new DirectedGraphImpl<V, E>();
+    }
+
+    public static <V, E> MutableDirectedGraph<V, E> newDirectedGraph(Map<V, Set<V>> sources, EdgeFactory<E> factory) {
+        MutableDirectedGraph<V, E> graph = newDirectedGraph();
+        for (Map.Entry<V, Set<V>> entry : sources.entrySet()) {
+            V t = entry.getKey();
+            for (V s : entry.getValue()) {
+                if (!graph.containsVertex(s)) {
+                    graph.addVertex(s);
+                }
+                if (!graph.containsVertex(t)) {
+                    graph.addVertex(t);
+                }
+                graph.addEdge(s, t, factory.createEdge());
+            }
+        }
+        return graph;
     }
 
     public static <V, E> MutableDirectedGraph<V, E> newDirectedGraph(DirectedGraph<V, E> other) {
