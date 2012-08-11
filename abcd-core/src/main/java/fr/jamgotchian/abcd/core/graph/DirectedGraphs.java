@@ -67,6 +67,11 @@ public class DirectedGraphs {
         }
 
         @Override
+        public void export(String fileName, String title) {
+            delegate.export(fileName, title);
+        }
+
+        @Override
         public void export(Writer writer, String title) throws IOException {
             delegate.export(writer, title);
         }
@@ -413,6 +418,11 @@ public class DirectedGraphs {
         @Override
         public Set<V> getExits() {
             return delegate.getExits();
+        }
+
+        @Override
+        public void export(String fileName, String title) {
+            delegate.export(fileName, title);
         }
 
         @Override

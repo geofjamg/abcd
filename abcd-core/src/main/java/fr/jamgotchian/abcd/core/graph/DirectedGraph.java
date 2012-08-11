@@ -90,6 +90,8 @@ public interface DirectedGraph<V, E> {
 
     void export(Writer writer, String title) throws IOException;
 
+    void export(String fileName, String title);
+
     String toString(Collection<E> edges);
 
     String toString(E edge);

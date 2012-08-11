@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.graph;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -30,12 +31,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DirectedGraphImpl.class);
 
     private final GraphvizRenderer<V> VERTEX_GRAPHVIZ_RENDERER
             = new DefaultGraphvizRenderer<V>();
@@ -510,6 +515,25 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         }
         builder.append("]");
         return builder.toString();
+    }
+
+    @Override
+    public void export(String fileName, String title) {
+        Writer writer = null;
+        try {
+            writer = new FileWriter(fileName);
+            export(writer, title);
+        } catch (IOException e) {
+            LOGGER.error(e.toString(), e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    LOGGER.error(e.toString(), e);
+                }
+            }
+        }
     }
 
     @Override
