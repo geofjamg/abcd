@@ -553,27 +553,6 @@ public class ControlFlowGraph {
         return toRemove.size() > 0;
     }
 
-    public List<BasicBlock> getOtherExits() {
-        List<BasicBlock> otherExits = new ArrayList<BasicBlock>();
-        for (BasicBlock bb : getBasicBlocks()) {
-            if (!bb.equals(exitBlock) && getSuccessorCountOf(bb) == 0) {
-                otherExits.add(bb);
-            }
-        }
-        return otherExits;
-    }
-
-    public boolean removeDanglingBlocks() {
-        Tree<BasicBlock, Edge> tree = graph.getReversePostOrderDFST(exitBlock, true);
-        Set<BasicBlock> toRemove = new HashSet<BasicBlock>(graph.getVertices());
-        toRemove.removeAll(tree.getNodes());
-        for (BasicBlock bb : toRemove) {
-            graph.removeVertex(bb);
-            LOGGER.debug("Remove dangling BB {}", bb);
-        }
-        return toRemove.size() > 0;
-    }
-
     /**
      * Remove critical edges. A critical edge is an edge which is neither the
      * only edge leaving its source block, nor the only edge entering its
