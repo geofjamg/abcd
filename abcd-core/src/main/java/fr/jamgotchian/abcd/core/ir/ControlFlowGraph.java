@@ -91,21 +91,6 @@ public class ControlFlowGraph {
 
     private static final EdgeFactory<Edge> EDGE_FACTORY = new EdgeFactoryImpl();
 
-    public ControlFlowGraph(String name, int instructionCount) {
-        this(name, BasicBlockImpl.createEntry(),  BasicBlockImpl.createExit());
-        if (instructionCount > 0 ) {
-            BasicBlock instnBlock = BasicBlockImpl.createRange(0, instructionCount-1, null);
-            addBasicBlock(instnBlock);
-            addEdge(entryBlock, instnBlock);
-        } else {
-            addEdge(entryBlock, exitBlock);
-        }
-    }
-
-    public ControlFlowGraph(String name, BasicBlock entryBlock) {
-        this(name, entryBlock, BasicBlockImpl.createExit());
-    }
-
     public ControlFlowGraph(String name, BasicBlock entryBlock, BasicBlock exitBlock) {
         if (name == null) {
             throw new IllegalArgumentException("name == null");
@@ -121,8 +106,15 @@ public class ControlFlowGraph {
         addBasicBlock(exitBlock);
     }
 
-    public ControlFlowGraph(String name) {
+    public ControlFlowGraph(String name, int instructionCount) {
         this(name, BasicBlockImpl.createEntry(), BasicBlockImpl.createExit());
+        if (instructionCount > 0 ) {
+            BasicBlock instnBlock = BasicBlockImpl.createRange(0, instructionCount-1, null);
+            addBasicBlock(instnBlock);
+            addEdge(entryBlock, instnBlock);
+        } else {
+            addEdge(entryBlock, exitBlock);
+        }
     }
 
     public ControlFlowGraph(ControlFlowGraph other) {

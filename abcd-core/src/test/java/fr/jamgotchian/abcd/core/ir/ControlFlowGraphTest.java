@@ -80,7 +80,7 @@ public class ControlFlowGraphTest {
         BasicBlock b8 = new BasicBlockTestImpl("8");
         BasicBlock b9 = new BasicBlockTestImpl("9");
         BasicBlock b10 = new BasicBlockTestImpl("10");
-        ControlFlowGraph graph = new ControlFlowGraph("Test", b1);
+        ControlFlowGraph graph = new ControlFlowGraph("Test", b1, b10);
         graph.addBasicBlock(b2);
         graph.addBasicBlock(b3);
         graph.addBasicBlock(b4);
@@ -89,7 +89,6 @@ public class ControlFlowGraphTest {
         graph.addBasicBlock(b7);
         graph.addBasicBlock(b8);
         graph.addBasicBlock(b9);
-        graph.addBasicBlock(b10);
         graph.addEdge(b1, b3);
         graph.addEdge(b1, b2);
         graph.addEdge(b2, b3);
@@ -137,9 +136,8 @@ public class ControlFlowGraphTest {
         BasicBlock b1 = new BasicBlockTestImpl("1");
         BasicBlock b2 = new BasicBlockTestImpl("2");
         BasicBlock b3 = new BasicBlockTestImpl("3");
-        ControlFlowGraph graph = new ControlFlowGraph("Test", b1);
+        ControlFlowGraph graph = new ControlFlowGraph("Test", b1, b3);
         graph.addBasicBlock(b2);
-        graph.addBasicBlock(b3);
         graph.addEdge(b1, b2);
         graph.addEdge(b1, b3);
         graph.addEdge(b2, b3);
@@ -178,13 +176,12 @@ public class ControlFlowGraphTest {
         BasicBlock b5 = new BasicBlockTestImpl("5");
         BasicBlock b6 = new BasicBlockTestImpl("6");
         BasicBlock b7 = new BasicBlockTestImpl("7");
-        ControlFlowGraph graph = new ControlFlowGraph("Test", b1);
+        ControlFlowGraph graph = new ControlFlowGraph("Test", b1, b7);
         graph.addBasicBlock(b2);
         graph.addBasicBlock(b3);
         graph.addBasicBlock(b4);
         graph.addBasicBlock(b5);
         graph.addBasicBlock(b6);
-        graph.addBasicBlock(b7);
         graph.addEdge(b1, b2);
         graph.addEdge(b2, b3);
         graph.addEdge(b2, b4);
@@ -236,7 +233,7 @@ public class ControlFlowGraphTest {
         BasicBlock b12 = new BasicBlockTestImpl("12");
         BasicBlock b13 = new BasicBlockTestImpl("13");
         BasicBlock b14 = new BasicBlockTestImpl("14");
-        ControlFlowGraph graph = new ControlFlowGraph("Test", b1);
+        ControlFlowGraph graph = new ControlFlowGraph("Test", b1, b14);
         graph.addBasicBlock(b2);
         graph.addBasicBlock(b3);
         graph.addBasicBlock(b4);
@@ -249,7 +246,6 @@ public class ControlFlowGraphTest {
         graph.addBasicBlock(b11);
         graph.addBasicBlock(b12);
         graph.addBasicBlock(b13);
-        graph.addBasicBlock(b14);
         graph.addEdge(b1, b2);
         graph.addEdge(b2, b13);
         graph.addEdge(b2, b3);
