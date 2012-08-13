@@ -790,7 +790,10 @@ public class ControlFlowGraph {
                             } else {
                                 target = nl.getTail();
                             }
-                            addEdge(bb, target).addAttribute(EdgeAttribute.FAKE_EDGE);
+                            Edge e = addEdge(bb, target);
+                            e.addAttribute(EdgeAttribute.FAKE_EDGE);
+                            LOGGER.debug("Ensure single exit graph by adding edge "
+                                    + graph.toString(e));
                         }
                         break;
                 }
