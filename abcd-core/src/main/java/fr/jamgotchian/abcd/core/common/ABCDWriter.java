@@ -20,7 +20,7 @@ import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.ir.RPSTFlightRecorder;
+import fr.jamgotchian.abcd.core.ir.RPSTLogger;
 
 /**
  *
@@ -32,7 +32,7 @@ public interface ABCDWriter {
 
     void writeCFG(ControlFlowGraph cfg, boolean failure);
 
-    void writeRPST(RPSTFlightRecorder flightRecorder);
+    void writeRPST(RPSTLogger logger);
 
     void writeAST(CompilationUnit compilUnit);
 }

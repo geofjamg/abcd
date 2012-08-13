@@ -19,7 +19,7 @@ package fr.jamgotchian.abcd.core.ir;
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
-import fr.jamgotchian.abcd.core.ir.RPSTFlightRecorder.Record;
+import fr.jamgotchian.abcd.core.ir.RPSTLogger.Log;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class RegionAnalysis {
 
     private final ABCDWriter writer;
 
-    private RPSTFlightRecorder flightRecorder;
+    private RPSTLogger rpstLogger;
 
     public RegionAnalysis(ControlFlowGraph cfg0, ABCDWriter writer) {
         this.cfg0 = cfg0;
@@ -518,20 +518,21 @@ public class RegionAnalysis {
         }
     }
 
-    private RPST checkGraph(ControlFlowGraph cfg, String recordTitle) {
-        LOGGER.debug("@@@ Check {}", recordTitle);
+    private RPST checkGraph(ControlFlowGraph cfg, String logTitle) {
+        LOGGER.debug("@@@ Check {}", logTitle);
 
-        Record record = flightRecorder.newRecord(recordTitle);
+        Log log = rpstLogger.newLog(logTitle);
 
         cfg.updateDominatorInfo();
         cfg.updateLoopInfo();
         cfg.ensureSingleExit();
         cfg.updatePostDominatorInfo();
 
-        record.setSmoothCfg(cfg);
+        log.setCfg(cfg);
 
         RPST rpst = new RPSTBuilder(cfg).build();
-        record.setSmoothRpst(rpst);
+        
+        log.setRpst(rpst);
 
         checkRegions(rpst);
 
@@ -539,7 +540,7 @@ public class RegionAnalysis {
     }
 
     public RPST analyse() {
-        flightRecorder = new RPSTFlightRecorder(cfg0.getName());
+        rpstLogger = new RPSTLogger(cfg0.getName());
 
         cfg0.removeCriticalEdges();
 
@@ -549,7 +550,7 @@ public class RegionAnalysis {
         try {
             rpst = checkGraph(cfg, "Main graph");
         } finally {
-            writer.writeRPST(flightRecorder);
+            writer.writeRPST(rpstLogger);
         }
 
         return rpst;

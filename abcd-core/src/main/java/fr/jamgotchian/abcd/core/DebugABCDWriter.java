@@ -22,7 +22,7 @@ import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.RangeGraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.EdgeGraphvizRenderer;
-import fr.jamgotchian.abcd.core.ir.RPSTFlightRecorder;
+import fr.jamgotchian.abcd.core.ir.RPSTLogger;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import java.io.File;
 import java.io.FileWriter;
@@ -154,13 +154,13 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     }
 
     @Override
-    public void writeRPST(RPSTFlightRecorder flightRecorder) {
-        String baseName = getBaseName(flightRecorder.getName());
+    public void writeRPST(RPSTLogger logger) {
+        String baseName = getBaseName(logger.getName());
 
         try {
             Writer writer = new FileWriter(baseName + "_RPST.dot");
             try {
-                flightRecorder.export(writer);
+                logger.export(writer);
             } finally {
                 writer.close();
             }

@@ -27,7 +27,7 @@ import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.code.TextCodeWriter;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDPreferences;
-import fr.jamgotchian.abcd.core.ir.RPSTFlightRecorder;
+import fr.jamgotchian.abcd.core.ir.RPSTLogger;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -70,7 +70,7 @@ public class DefaultABCDWriter implements ABCDWriter {
     }
 
     @Override
-    public void writeRPST(RPSTFlightRecorder flightRecorder) {
+    public void writeRPST(RPSTLogger logger) {
     }
 
     @Override

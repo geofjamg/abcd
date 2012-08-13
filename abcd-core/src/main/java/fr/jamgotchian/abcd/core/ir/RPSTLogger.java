@@ -29,23 +29,17 @@ import java.util.List;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class RPSTFlightRecorder {
+public class RPSTLogger {
 
-    public static class Record {
+    public static class Log {
 
         private final String name;
 
-        private ControlFlowGraph abruptCfg;
+        private ControlFlowGraph cfg;
 
-        private ControlFlowGraph prunedCfg;
+        private RPST rpst;
 
-        private RPST prunedRpst;
-
-        private ControlFlowGraph smoothCfg;
-
-        private RPST smoothRpst;
-
-        private Record(String name) {
+        private Log(String name) {
             this.name = name;
         }
 
@@ -53,44 +47,20 @@ public class RPSTFlightRecorder {
             return name;
         }
 
-        public ControlFlowGraph getAbruptCfg() {
-            return abruptCfg;
+        public ControlFlowGraph getCfg() {
+            return cfg;
         }
 
-        public void setAbruptCfg(ControlFlowGraph abruptCfg) {
-            this.abruptCfg = abruptCfg;
+        public void setCfg(ControlFlowGraph cfg) {
+            this.cfg = cfg;
         }
 
-        public ControlFlowGraph getPrunedCfg() {
-            return prunedCfg;
+        public RPST getRpst() {
+            return rpst;
         }
 
-        public void setPrunedCfg(ControlFlowGraph prunedCfg) {
-            this.prunedCfg = prunedCfg;
-        }
-
-        public RPST getPrunedRpst() {
-            return prunedRpst;
-        }
-
-        public void setPrunedRpst(RPST prunedRpst) {
-            this.prunedRpst = prunedRpst;
-        }
-
-        public ControlFlowGraph getSmoothCfg() {
-            return smoothCfg;
-        }
-
-        public void setSmoothCfg(ControlFlowGraph smoothCfg) {
-            this.smoothCfg = smoothCfg;
-        }
-
-        public RPST getSmoothRpst() {
-            return smoothRpst;
-        }
-
-        public void setSmoothRpst(RPST smoothRpst) {
-            this.smoothRpst = smoothRpst;
+        public void setRpst(RPST rpst) {
+            this.rpst = rpst;
         }
 
         public void export(Writer writer, Counter paneId) throws IOException {
@@ -103,25 +73,13 @@ public class RPSTFlightRecorder {
             writer.append("labeljust=\"left\";\n");
             writeIndent(writer, 3);
             writer.append("label=\"").append(name).append("\";\n");
-            if (abruptCfg != null) {
-                abruptCfg.exportPane(writer, "Abrupt CFG", paneId.getCountAndIncrement(), 3);
+            if (cfg != null) {
+                cfg.exportPane(writer, "CFG", paneId.getCountAndIncrement(), 3);
             }
-            if (prunedCfg != null) {
-                prunedCfg.exportPane(writer, "Pruned CFG", paneId.getCountAndIncrement(), 3);
-            }
-            if (prunedRpst != null) {
-                prunedRpst.exportPane(writer, ExportType.GRAPH, "Pruned RPST graph view",
+            if (rpst != null) {
+                rpst.exportPane(writer, ExportType.GRAPH, "RPST graph view",
                                       paneId.getCountAndIncrement(), 3);
-                prunedRpst.exportPane(writer, ExportType.TREE, "Pruned RPST control tree view",
-                                      paneId.getCountAndIncrement(), 3);
-            }
-            if (smoothCfg != null) {
-                smoothCfg.exportPane(writer, "Smooth CFG", paneId.getCountAndIncrement(), 3);
-            }
-            if (smoothRpst != null) {
-                smoothRpst.exportPane(writer, ExportType.GRAPH, "Smooth RPST graph view",
-                                      paneId.getCountAndIncrement(), 3);
-                smoothRpst.exportPane(writer, ExportType.TREE, "Smooth RPST control tree view",
+                rpst.exportPane(writer, ExportType.TREE, "RPST control tree view",
                                       paneId.getCountAndIncrement(), 3);
             }
             writeIndent(writer, 2);
@@ -131,9 +89,9 @@ public class RPSTFlightRecorder {
 
     private final String name;
 
-    private final List<Record> records = new ArrayList<Record>();
+    private final List<Log> logs = new ArrayList<Log>();
 
-    public RPSTFlightRecorder(String name) {
+    public RPSTLogger(String name) {
         this.name = name;
     }
 
@@ -141,14 +99,14 @@ public class RPSTFlightRecorder {
         return name;
     }
 
-    public Record newRecord(String name) {
-        Record record = new Record(name);
-        records.add(record);
-        return record;
+    public Log newLog(String name) {
+        Log log = new Log(name);
+        logs.add(log);
+        return log;
     }
 
-    public List<Record> getRecords() {
-        return Collections.unmodifiableList(records);
+    public List<Log> getLogs() {
+        return Collections.unmodifiableList(logs);
     }
 
     public void export(Writer writer) throws IOException {
@@ -166,8 +124,8 @@ public class RPSTFlightRecorder {
         writeIndent(writer, 2);
         writer.append("label=\"").append(name).append("\";\n");
 
-        for (Record record : records) {
-            record.export(writer, paneId);
+        for (Log log : logs) {
+            log.export(writer, paneId);
         }
 
         writeIndent(writer, 1);
