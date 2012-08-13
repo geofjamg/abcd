@@ -593,7 +593,7 @@ public class AbstractSyntaxTreeBuilder {
 
             case BASIC_BLOCK: {
                 BasicBlock bb = region.getEntry();
-                if (bb.getType() != BasicBlockType.EMPTY) {
+                if (bb.getInstructions() != null) {
                     RegionIRInstVisitor visitor = new RegionIRInstVisitor();
                     bb.getInstructions().accept(visitor, blockStmt);
                 }

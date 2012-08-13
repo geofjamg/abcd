@@ -28,6 +28,7 @@ public enum BasicBlockType {
     SWITCH,
     GOTO,
     RETURN,
-    EMPTY,
-    STOP
+    THROW,
+    BREAK,
+    EMPTY
 }

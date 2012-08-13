@@ -290,6 +290,7 @@ public class IntermediateRepresentationBuilder {
                 cfg.updateLoopInfo();
             }
 
+            cfg.ensureSingleExit();
             cfg.updatePostDominatorInfo();
 
             // collapse shortcut operators (&&, ||)

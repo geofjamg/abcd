@@ -17,15 +17,12 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.util.Collections3;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -48,8 +45,6 @@ public class PostDominatorInfo<N, E> {
     private Map<N, Set<N>> postDominators;
 
     private Map<N, N> immediatePostDominator;
-
-    private Map<N, Set<N>> multiExitsImmediatePostDominator;
 
     private MutableTree<N, E> postDominatorsTree;
 
@@ -100,10 +95,6 @@ public class PostDominatorInfo<N, E> {
 
     public N getImmediatePostDominatorOf(N n) {
         return immediatePostDominator.get(n);
-    }
-
-    public Set<N> getMultiExitsImmediatePostDominatorOf(N n) {
-        return multiExitsImmediatePostDominator.get(n);
     }
 
     private static <N> Map<N, N> computeImmediatePostDominators(Map<N, Set<N>> postDominators, N exitNode) {
@@ -158,6 +149,15 @@ public class PostDominatorInfo<N, E> {
     public void update() {
         LOGGER.debug("Update post dominator info");
 
+        Set<N> exits = graph.getExits();
+        if (exits.size() != 1) {
+            throw new ABCDException("Graph should be single exit");
+        } else {
+            if (exits.iterator().next() != exitNode) {
+                throw new ABCDException("Exit node is inconsistent");
+            }
+        }
+
         // find post-dominators
         postDominators = new PostDominatorsFinder<N, E>(graph, exitNode).analyse();
         for (Map.Entry<N, Set<N>> entry : postDominators.entrySet()) {
@@ -167,32 +167,6 @@ public class PostDominatorInfo<N, E> {
         // compute immediate post dominators
         immediatePostDominator = computeImmediatePostDominators(postDominators, exitNode);
         LOGGER.trace("Immediate post dominators {}", immediatePostDominator);
-
-        // immediate post dominators for multi exits graph
-        multiExitsImmediatePostDominator = new HashMap<N, Set<N>>();
-        for (N n : graph.getVertices()) {
-            multiExitsImmediatePostDominator.put(n, new LinkedHashSet<N>());
-        }
-        for (Map.Entry<N, N> entry : immediatePostDominator.entrySet()) {
-            multiExitsImmediatePostDominator.get(entry.getKey()).add(entry.getValue());
-        }
-        Set<N> otherExitNodes = new HashSet<N>(graph.getExits());
-        otherExitNodes.remove(exitNode);
-        if (otherExitNodes.size() > 0) {
-            for (N otherExitNode : otherExitNodes) {
-                Map<N, Set<N>> otherPostDominators
-                        = new PostDominatorsFinder<N, E>(graph, otherExitNode).analyse();
-                Map<N, N> otherImmediatePostDominator
-                        = computeImmediatePostDominators(otherPostDominators, otherExitNode);
-                LOGGER.trace("Immediate post dominators for exit {}:{}",
-                        otherExitNode, otherImmediatePostDominator);
-
-                for (Map.Entry<N, N> entry : otherImmediatePostDominator.entrySet()) {
-                    multiExitsImmediatePostDominator.get(entry.getKey()).add(entry.getValue());
-                }
-            }
-        }
-        LOGGER.trace("Multi exits immediate post dominators {}", multiExitsImmediatePostDominator);
 
         // build post-dominators tree
         postDominatorsTree = Trees.newTree(exitNode, immediatePostDominator, edgeFactory);

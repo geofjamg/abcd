@@ -141,9 +141,9 @@ public class RPSTBuilder {
         }
     }
 
-    private Collection<BasicBlock> getNextPostDom(BasicBlock bb, Map<BasicBlock, BasicBlock> shortCut) {
+    private BasicBlock getNextPostDom(BasicBlock bb, Map<BasicBlock, BasicBlock> shortCut) {
         BasicBlock bb2 = shortCut.get(bb);
-        return getPostDomInfo().getMultiExitsImmediatePostDominatorOf(bb2 == null ? bb : bb2);
+        return getPostDomInfo().getImmediatePostDominatorOf(bb2 == null ? bb : bb2);
     }
 
     private RPSTRegion createRegion(BasicBlock entry, BasicBlock exit) {
@@ -175,7 +175,8 @@ public class RPSTBuilder {
 
     private void detectRegionsWithEntry(BasicBlock entry, Map<BasicBlock, BasicBlock> shortCut) {
         assert  entry != null;
-        for (BasicBlock exit : getNextPostDom(entry, shortCut)) {
+        BasicBlock exit = getNextPostDom(entry, shortCut);
+        if (exit != null) {
             DetectionContext context = new DetectionContext(null, entry);
             detectRegionsWithEntry(entry, exit, shortCut, context);
             if (!context.lastExit.equals(entry)) {
@@ -197,7 +198,8 @@ public class RPSTBuilder {
             context.lastExit = exit;
         }
         if (getDomInfo().dominates(entry, exit)) {
-            for (BasicBlock exit2 : getNextPostDom(exit, shortCut)) {
+            BasicBlock exit2 = getNextPostDom(exit, shortCut);
+            if (exit2 != null) {
                 detectRegionsWithEntry(entry, exit2, shortCut, new DetectionContext(context));
             }
         }

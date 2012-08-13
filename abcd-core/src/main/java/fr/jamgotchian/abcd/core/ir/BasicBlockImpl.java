@@ -70,8 +70,8 @@ public class BasicBlockImpl implements BasicBlock {
         return new BasicBlockImpl(null, BasicBlockType.EXIT, BasicBlockType.EXIT);
     }
 
-    public static BasicBlock createStop() {
-        return new BasicBlockImpl(null, BasicBlockType.STOP, BasicBlockType.STOP);
+    public static BasicBlock createBreak() {
+        return new BasicBlockImpl(null, BasicBlockType.BREAK, BasicBlockType.BREAK);
     }
 
     protected BasicBlockImpl(Range range, BasicBlockType type, Object label) {

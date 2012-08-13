@@ -34,7 +34,6 @@ public class RangeGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
             switch (bb.getType()) {
                 case ENTRY:
                 case EXIT:
-                case STOP:
                     attrs.put("shape", "ellipse");
                     attrs.put("color", "lightgrey");
                     attrs.put("style", "filled");
@@ -61,6 +60,18 @@ public class RangeGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
                 case GOTO:
                     attrs.put("shape", "invhouse");
                     attrs.put("color", "green");
+                    attrs.put("style", "filled");
+                    break;
+
+                case THROW:
+                    attrs.put("shape", "invhouse");
+                    attrs.put("color", "pink");
+                    attrs.put("style", "filled");
+                    break;
+
+                case BREAK:
+                    attrs.put("shape", "invhouse");
+                    attrs.put("color", "purple");
                     attrs.put("style", "filled");
                     break;
             }

@@ -765,6 +765,39 @@ public class ControlFlowGraph {
         return merged;
     }
 
+    public NaturalLoop getInnermostEnclosingLoop(BasicBlock bb) {
+        Tree<BasicBlock, Edge> domTree = dominatorInfo.getDominatorsTree();
+        for (BasicBlock currentBB = bb; currentBB != null; currentBB = domTree.getParent(currentBB)) {
+            Collection<NaturalLoop> nls = naturalLoops.get(currentBB);
+            if (nls.size() > 0) {
+                return nls.iterator().next();
+            }
+        }
+        return null;
+    }
+
+    public void ensureSingleExit() {
+        for (BasicBlock bb : getBasicBlocks()) {
+            if (bb.getType() != null) {
+                switch (bb.getType()) {
+                    case THROW:
+                    case BREAK:
+                        if (getNormalSuccessorCountOf(bb) == 0) {
+                            NaturalLoop nl = getInnermostEnclosingLoop(bb);
+                            BasicBlock target;
+                            if (nl == null) {
+                                target = exitBlock;
+                            } else {
+                                target = nl.getTail();
+                            }
+                            addEdge(bb, target).addAttribute(EdgeAttribute.FAKE_EDGE);
+                        }
+                        break;
+                }
+            }
+        }
+    }
+
     public void exportPane(Writer writer, String title, int paneId, int indentLevel) throws IOException {
         graph.exportPane(writer, title, paneId, indentLevel, RANGE_GRAPHVIZ_RENDERER,
                          EDGE_GRAPHVIZ_RENDERER);

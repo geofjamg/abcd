@@ -202,13 +202,11 @@ public abstract class ControlFlowGraphBuilder {
     protected void analyseThrowInst(int currentInstIdx) {
         BasicBlockSplit throwSplitResult = cfg.splitBasicBlockAt(currentInstIdx + 1);
         BasicBlock throwBlock = throwSplitResult.getBlockBefore();
+        throwBlock.setType(BasicBlockType.THROW);
         BasicBlock remainingBlock = throwSplitResult.getBlockAfter();
         if (remainingBlock != null) {
             cfg.removeEdge(throwBlock, remainingBlock);
         }
-        BasicBlock stopBlock = BasicBlockImpl.createStop();
-        cfg.addBasicBlock(stopBlock);
-        cfg.addEdge(throwBlock, stopBlock);
 
         LOGGER.debug("  Throw : current={}", throwBlock);
     }

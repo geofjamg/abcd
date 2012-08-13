@@ -162,16 +162,13 @@ public class RegionAnalysis {
         ControlFlowGraph subCfg = createSubCFG(rpst, region);
         for (Edge exitEdge : new ArrayList<Edge>(subCfg.getIncomingEdgesOf(subCfg.getExitBlock()))) {
             BasicBlock source = subCfg.getEdgeSource(exitEdge);
-            BasicBlock stop = BasicBlockImpl.createStop();
-            subCfg.addBasicBlock(stop);
+            BasicBlock _break = BasicBlockImpl.createBreak();
+            subCfg.addBasicBlock(_break);
             subCfg.removeEdge(exitEdge);
-            subCfg.addEdge(source, stop, exitEdge);
+            subCfg.addEdge(source, _break, exitEdge);
         }
         subCfg.removeBasicBlock(subCfg.getExitBlock());
-        BasicBlock exit = BasicBlockImpl.createExit();
-        subCfg.addBasicBlock(exit);
-        subCfg.addEdge(tailBlock, exit);
-        subCfg.setExitBlock(exit);
+        subCfg.setExitBlock(tailBlock);
         subCfg.removeEdge(backEdge);
 
         // build rpst from control flow subgraph
@@ -208,29 +205,6 @@ public class RegionAnalysis {
                     if (!checkRegion(rpst, bodyRegion)) {
                         throw new ABCDException("Cannot find type of body region "
                                 + bodyRegion);
-                    }
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean checkIfThenBreakRegion(RPST rpst, Region region) {
-        LOGGER.trace("Check if then break region {}", region);
-        if (rpst.getChildCount(region) == 1) {
-            if (region.getEntry().getType() == BasicBlockType.JUMP_IF) {
-                if (rpst.getCfg().getSuccessorCountOf(region.getEntry()) == 1) {
-                    Region ifRegion = rpst.getEntryChild(region);
-
-                    LOGGER.debug("Found if then break region {}", region);
-                    region.setParentType(ParentType.IF_THEN_BREAK);
-                    ifRegion.setChildType(ChildType.IF);
-
-                    // propagate to children
-                    if (!checkRegion(rpst, ifRegion)) {
-                        throw new ABCDException("Cannot find type of if region "
-                                + ifRegion);
                     }
                     return true;
                 }
@@ -527,7 +501,6 @@ public class RegionAnalysis {
                 || checkWhileLoopRegion(rpst, region)
                 || checkDoWhileLoopRegion(rpst, region)
                 || checkTrivialRegion(rpst, region)
-                || checkIfThenBreakRegion(rpst, region)
                 || checkTryCatchFinallyRegion(rpst, region))) {
             return false;
         } else {
@@ -551,8 +524,10 @@ public class RegionAnalysis {
         Record record = flightRecorder.newRecord(recordTitle);
 
         cfg.updateDominatorInfo();
-        cfg.updatePostDominatorInfo();
         cfg.updateLoopInfo();
+        cfg.ensureSingleExit();
+        cfg.updatePostDominatorInfo();
+
         record.setSmoothCfg(cfg);
 
         RPST rpst = new RPSTBuilder(cfg).build();
