@@ -770,6 +770,9 @@ public class ControlFlowGraph {
         for (BasicBlock currentBB = bb; currentBB != null; currentBB = domTree.getParent(currentBB)) {
             Collection<NaturalLoop> nls = naturalLoops.get(currentBB);
             if (nls.size() > 0) {
+                if (nls.size() > 1) {
+                    throw new ABCDException("Natural loops should have been merged");
+                }
                 return nls.iterator().next();
             }
         }
