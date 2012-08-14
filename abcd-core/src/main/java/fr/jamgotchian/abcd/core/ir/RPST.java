@@ -123,6 +123,15 @@ public class RPST {
         });
     }
 
+    public Collection<Region> getChildrenWithExit(Region region, final BasicBlock exit) {
+        return tree.getChildren(region, new Filter<Region>() {
+            @Override
+            public boolean accept(Region child) {
+                return child.getExit().equals(exit);
+            }
+        });
+    }
+
     public Region getFirstChild(Region region) {
         return tree.getFirstChild(region);
     }

@@ -490,6 +490,64 @@ public class RegionAnalysis {
         return true;
     }
 
+    private boolean checkBrealLabelRegion(RPST rpst, Region region) {
+        LOGGER.trace("Check break label region {}", region);
+        Collection<Region> exitChildren = rpst.getChildrenWithExit(region, region.getExit());
+        Set<Region> joinRegions = new HashSet<Region>();
+        for (Region exitChild : exitChildren) {
+            if (rpst.getCfg().getPredecessorCountOf(exitChild.getEntry()) > 1) {
+                joinRegions.add(exitChild);
+            }
+        }
+        if (joinRegions.size() != 1) {
+            return false;
+        }
+        Region joinRegion = joinRegions.iterator().next();
+        BasicBlock joinBlock = joinRegion.getEntry();
+        ControlFlowGraph subCfg = createSubCFG(rpst, region);
+        BasicBlock newExit = BasicBlockImpl.createExit();
+        subCfg.addBasicBlock(newExit);
+        for (Edge joinEdge : new ArrayList<Edge>(subCfg.getIncomingEdgesOf(joinBlock))) {
+            BasicBlock source = subCfg.getEdgeSource(joinEdge);
+            subCfg.removeEdge(joinEdge);
+            subCfg.addEdge(source, newExit, joinEdge);
+        }
+        for (BasicBlock bb : rpst.getBasicBlocks(joinRegion)) {
+            subCfg.removeBasicBlock(bb);
+        }
+        for (Edge exitEdge : new ArrayList<Edge>(subCfg.getIncomingEdgesOf(subCfg.getExitBlock()))) {
+            BasicBlock source = subCfg.getEdgeSource(exitEdge);
+            subCfg.removeEdge(exitEdge);
+            subCfg.addEdge(source, newExit, exitEdge);
+            exitEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
+        }
+        subCfg.removeBasicBlock(subCfg.getExitBlock());
+        subCfg.setExitBlock(newExit);
+
+        RPST subRpst = checkGraph(subCfg, "Break label subgraph of region " + region);
+
+        LOGGER.debug("Found break label region {}", region);
+
+        region.setParentType(ParentType.BREAK_LABEL);
+        Region rootRegion = subRpst.getRootRegion();
+        Region forkRegion = subRpst.getEntryChild(rootRegion);
+        forkRegion.setChildType(ChildType.FIRST);
+        joinRegion.setChildType(ChildType.SECOND);
+        for (Region child : new ArrayList<Region>(rpst.getChildren(region))) {
+            if (!child.equals(joinRegion)) {
+                rpst.removeSubtree(child);
+            }
+        }
+        rpst.addRPST(subRpst, forkRegion, region);
+
+        if (!checkRegion(rpst, joinRegion)) {
+            throw new ABCDException("Cannot find type of join region "
+                        + joinRegion);
+        }
+
+        return true;
+    }
+
     private boolean checkRegion(RPST rpst, Region region) {
         if (region.getParentType() != ParentType.UNDEFINED) {
             return true;
@@ -501,7 +559,8 @@ public class RegionAnalysis {
                 || checkWhileLoopRegion(rpst, region)
                 || checkDoWhileLoopRegion(rpst, region)
                 || checkTrivialRegion(rpst, region)
-                || checkTryCatchFinallyRegion(rpst, region))) {
+                || checkTryCatchFinallyRegion(rpst, region)
+                || checkBrealLabelRegion(rpst, region))) {
             return false;
         } else {
             return true;
@@ -531,7 +590,7 @@ public class RegionAnalysis {
         log.setCfg(cfg);
 
         RPST rpst = new RPSTBuilder(cfg).build();
-        
+
         log.setRpst(rpst);
 
         checkRegions(rpst);

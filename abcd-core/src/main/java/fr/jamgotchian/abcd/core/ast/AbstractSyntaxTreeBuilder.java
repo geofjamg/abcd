@@ -638,21 +638,11 @@ public class AbstractSyntaxTreeBuilder {
                 break;
             }
 
-            case IF_THEN_BREAK: {
-                buildAST(rpst.getFirstChild(region, ChildType.IF), blockStmt);
-                IfStatement ifStmt = (IfStatement) blockStmt.getLast();
-                BlockStatement thenBlockStmt = new BlockStatement();
-                thenBlockStmt.add(new BreakStatement());
-                ifStmt.setThen(thenBlockStmt);
-                break;
-            }
-
             case BREAK_LABEL: {
-                BlockStatement bodyBlockStmt = new BlockStatement();
-                buildAST(rpst.getFirstChild(region), bodyBlockStmt);
-
-                blockStmt.add(new LabeledStatement("L" + region.getData(), bodyBlockStmt));
-
+                BlockStatement labelBlockStmt = new BlockStatement();
+                buildAST(rpst.getFirstChild(region, ChildType.FIRST), labelBlockStmt);
+                buildAST(rpst.getFirstChild(region, ChildType.SECOND), labelBlockStmt);
+                blockStmt.add(new LabeledStatement("LABEL", labelBlockStmt));
                 break;
             }
 

@@ -34,6 +34,5 @@ public enum ParentType {
     BREAK_LABEL,
     TRY_CATCH_FINALLY,
     INLINED_FINALLY,
-    SWITCH_CASE,
-    IF_THEN_BREAK
+    SWITCH_CASE
 }
