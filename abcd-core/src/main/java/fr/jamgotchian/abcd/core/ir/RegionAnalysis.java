@@ -495,7 +495,7 @@ public class RegionAnalysis {
         Collection<Region> exitChildren = rpst.getChildrenWithExit(region, region.getExit());
         Set<Region> joinRegions = new HashSet<Region>();
         for (Region exitChild : exitChildren) {
-            if (rpst.getCfg().getPredecessorCountOf(exitChild.getEntry()) > 1) {
+            if (rpst.getCfg().getNormalPredecessorCountOf(exitChild.getEntry()) > 1) {
                 joinRegions.add(exitChild);
             }
         }
