@@ -467,6 +467,16 @@ public class ControlFlowGraph {
         return successors;
     }
 
+    public int getExceptionalSuccessorCount(BasicBlock block) {
+        int count = 0;
+        for (Edge e : graph.getOutgoingEdgesOf(block)) {
+            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public int getSuccessorCountOf(BasicBlock block) {
         return graph.getSuccessorCountOf(block);
     }
