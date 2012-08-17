@@ -490,7 +490,7 @@ public class RegionAnalysis {
         return true;
     }
 
-    private boolean checkBrealLabelRegion(RPST rpst, Region region) {
+    private boolean checkBreakLabelRegion(RPST rpst, Region region) {
         LOGGER.trace("Check break label region {}", region);
         Collection<Region> exitChildren = rpst.getChildrenWithExit(region, region.getExit());
         Set<Region> joinRegions = new HashSet<Region>();
@@ -560,7 +560,7 @@ public class RegionAnalysis {
                 || checkDoWhileLoopRegion(rpst, region)
                 || checkTrivialRegion(rpst, region)
                 || checkTryCatchFinallyRegion(rpst, region)
-                || checkBrealLabelRegion(rpst, region))) {
+                || checkBreakLabelRegion(rpst, region))) {
             return false;
         } else {
             return true;
