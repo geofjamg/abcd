@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.ir;
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
+import static fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName.*;
 import fr.jamgotchian.abcd.core.ir.RPSTLogger.Log;
 import java.util.*;
 import org.slf4j.Logger;
@@ -388,35 +389,57 @@ public class RegionAnalysis {
 
     private boolean checkTryCatchFinallyRegion(RPST rpst, Region region) {
         LOGGER.trace("Check try catch finally region {}", region);
+        Set<Region> exitRegions = rpst.getChildrenWithExit(region, region.getExit());
         Set<Region> handlerRegions = new HashSet<Region>();
-        Region finallyRegion = null;
         Set<BasicBlock> handlerEntries = new HashSet<BasicBlock>();
-        for (Region child : rpst.getChildren(region)) {
+        Set<Region> finallyRegions = new HashSet<Region>();
+        Set<Region> normalExitRegions = new HashSet<Region>(exitRegions);
+        for (Region exitRegion : exitRegions) {
             // the child region is an exception handler whether its exit is connected
             // to parent region exit and its entry basic block has attribute
             // EXCEPTION_HANDLER_ENTRY
-            if (child.getExit().equals(region.getExit())
-                    && child.getEntry().hasProperty(BasicBlockPropertyName.EXCEPTION_HANDLER_ENTRY)) {
-                handlerRegions.add(child);
-                handlerEntries.add(child.getEntry());
-                if (child.getEntry().hasProperty(BasicBlockPropertyName.FINALLY_ENTRY)) {
-                    finallyRegion = child;
+            if (exitRegion.getEntry().hasProperty(EXCEPTION_HANDLER_ENTRY)) {
+                handlerRegions.add(exitRegion);
+                handlerEntries.add(exitRegion.getEntry());
+                if (exitRegion.getEntry().hasProperty(FINALLY_ENTRY)) {
+                    finallyRegions.add(exitRegion);
                 }
+            } else {
+                normalExitRegions.add(exitRegion);
             }
         }
         if (handlerRegions.isEmpty()) {
             return false;
         }
+        if (finallyRegions.size() > 1) {
+            throw new ABCDException("Try catch finally region with multiple finally");
+        }
+        Region finallyRegion = null;
+        if (finallyRegions.size() == 1) {
+            finallyRegion = finallyRegions.iterator().next();
+        }
+        // find child regions types (including handlers)
+        for (Region child : exitRegions) {
+            if (!checkRegion(rpst, child)) {
+                throw new ABCDException("Cannot find type of try catch child region "
+                            + child);
+            }
+        }
+
         // search inlined finally region
         Set<Region> inlinedFinallyRegions = new HashSet<Region>();
         if (finallyRegion != null) {
-            for (Region child : rpst.getChildren(region)) {
-                if (child.equals(finallyRegion)) {
-                    continue;
-                }
-                if (child.getExit().equals(region.getExit())) {
-                    if (Regions.deepEquals(rpst, child, rpst, finallyRegion)) {
-                        inlinedFinallyRegions.add(child);
+            for (Region exitRegion : normalExitRegions) {
+                if (Regions.deepEquals(rpst, exitRegion, rpst, finallyRegion)) {
+                    inlinedFinallyRegions.add(exitRegion);
+                } else {
+                    if (exitRegion.getParentType() == ParentType.SEQUENCE) {
+                        Region grandChild1 = rpst.getFirstChild(exitRegion, ChildType.FIRST);
+                        Region grandChild2 = rpst.getFirstChild(exitRegion, ChildType.SECOND);
+                        if (grandChild2.getEntry().getType() == BasicBlockType.BREAK
+                                && Regions.deepEquals(rpst, grandChild1, rpst, finallyRegion)) {
+                            inlinedFinallyRegions.add(exitRegion);
+                        }
                     }
                 }
             }
@@ -476,14 +499,6 @@ public class RegionAnalysis {
                                       child);
                     break;
                 }
-            }
-        }
-
-        // propagate to children
-        for (Region handlerRegion : handlerRegions) {
-            if (!checkRegion(rpst, handlerRegion)) {
-                throw new ABCDException("Cannot find type of handler region "
-                            + handlerRegion);
             }
         }
 
