@@ -171,7 +171,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             throw new ABCDException("Edge " + edge + " already present");
         }
         Neighbors<N,E> childNeighbors = nodes.get(child);
-        if (child == null) {
+        if (childNeighbors == null) {
             throw new ABCDException("Child " + child + " not found");
         }
         N parent = childNeighbors.getParentNode();

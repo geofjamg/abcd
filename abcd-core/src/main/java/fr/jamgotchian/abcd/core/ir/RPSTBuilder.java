@@ -156,7 +156,7 @@ public class RPSTBuilder {
         return newRegion;
     }
 
-    private class DetectionContext {
+    private static class DetectionContext {
 
         private RPSTRegion lastRegion;
 
