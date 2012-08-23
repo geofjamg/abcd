@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.graph.Filter;
+import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.graph.MutableTree;
 import fr.jamgotchian.abcd.core.graph.NoTextGraphvizRenderer;
 import fr.jamgotchian.abcd.core.graph.Tree;
@@ -27,6 +28,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +61,17 @@ public class RPST {
 
     private static final NoTextGraphvizRenderer OBJECT_GRAPHIZ_RENDERER
             = new NoTextGraphvizRenderer();
+
+    private final GraphvizRenderer<Object> childTypeGraphvizRenderer = new GraphvizRenderer<Object>() {
+        @Override
+        public Map<String, String> getAttributes(Object object) {
+            Region child = tree.getEdgeTarget(object);
+            Map<String, String> attrs = new HashMap<String, String>(2);
+            attrs.put("fontsize", "11");
+            attrs.put("label", "\"" + child.getChildType() + "\"");
+            return attrs;
+        }
+    };
 
     private ControlFlowGraph cfg;
 
@@ -123,6 +137,10 @@ public class RPST {
         });
     }
 
+    public Set<Region> getChildren(Region region, Filter<Region> filter) {
+        return tree.getChildren(region, filter);
+    }
+
     public Set<Region> getChildrenWithExit(Region region, final BasicBlock exit) {
         return tree.getChildren(region, new Filter<Region>() {
             @Override
@@ -172,8 +190,18 @@ public class RPST {
         }
     }
 
-    public List<Region> getSubRegions(Region region) {
-        return tree.getSubTree(region).getNodesPreOrder();
+    public List<Region> getSubTreeRegions(Region subTreeRoot) {
+        return tree.getSubTree(subTreeRoot).getNodesPreOrder();
+    }
+
+    public Set<Region> getSubTreeRegions(Region subTreeRoot, Filter<Region> filter) {
+        Set<Region> regions = new HashSet<Region>();
+        for (Region region : tree.getSubTree(subTreeRoot).getNodes()) {
+            if (filter.accept(region)) {
+                regions.add(region);
+            }
+        }
+        return regions;
     }
 
     public List<Region> getRegionsPostOrder() {
@@ -313,7 +341,7 @@ public class RPST {
 
             case TREE:
                 tree.exportPane(writer, title, paneId, indentLevel,
-                        REGION_GRAPHIZ_RENDERER, OBJECT_GRAPHIZ_RENDERER);
+                        REGION_GRAPHIZ_RENDERER, childTypeGraphvizRenderer);
                 break;
 
             default:

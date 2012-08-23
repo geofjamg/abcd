@@ -703,11 +703,6 @@ public class AbstractSyntaxTreeBuilder {
                 break;
             }
 
-            case INLINED_FINALLY: {
-                // do nothing
-                break;
-            }
-
             case TRY_CATCH_FINALLY: {
                 BlockStatement tryBlockStmt = new BlockStatement();
                 buildAST(rpst.getFirstChild(region, ChildType.TRY), tryBlockStmt);

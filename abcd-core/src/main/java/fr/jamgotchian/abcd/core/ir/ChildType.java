@@ -31,6 +31,7 @@ public enum ChildType {
     TRY,
     CATCH,
     FINALLY,
+    INLINED,
     SWITCH,
     CASE
 }

@@ -19,6 +19,7 @@ package fr.jamgotchian.abcd.core.ir;
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDWriter;
+import fr.jamgotchian.abcd.core.graph.Filter;
 import static fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName.*;
 import fr.jamgotchian.abcd.core.ir.RPSTLogger.Log;
 import java.util.*;
@@ -387,6 +388,218 @@ public class RegionAnalysis {
         return true;
     }
 
+    private boolean checkTryFinallyRegion(final RPST rpst, final Region region) {
+        LOGGER.trace("Check try finally region {}", region);
+
+        final ControlFlowGraph cfg = rpst.getCfg();
+
+        //
+        // find finally region
+        //
+        Set<Region> finallyRegions = rpst.getChildren(region, new Filter<Region>() {
+            @Override
+            public boolean accept(Region r) {
+                return r.getEntry().hasProperty(FINALLY_ENTRY)
+                        && r.getExit() == region.getExit();
+            }
+        });
+        if (finallyRegions.size() != 1) {
+            return false;
+        }
+        final Region finallyRegion = finallyRegions.iterator().next();
+        LOGGER.info("finallyRegion=" + finallyRegion.toString());
+
+        //
+        // find try regions
+        //
+        Set<Region> tryRegions = rpst.getChildren(region, new Filter<Region>() {
+            @Override
+            public boolean accept(Region r) {
+                if (r == finallyRegion) {
+                    return false;
+                }
+                for (BasicBlock bb : rpst.getBasicBlocks(r)) {
+                    if (!cfg.getExceptionalSuccessorsOf(bb).contains(finallyRegion.getEntry())) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+        if (tryRegions.isEmpty()) {
+            return false;
+        }
+        LOGGER.info("tryRegions=" + tryRegions.toString());
+
+        //
+        // find try blocks
+        //
+        Set<BasicBlock> tryBlocks = new HashSet<BasicBlock>();
+        for (Region tryRegion : tryRegions) {
+            tryBlocks.addAll(rpst.getBasicBlocks(tryRegion));
+        }
+
+        LOGGER.info("tryBlocks=" + tryBlocks.toString());
+
+        //
+        // find try exit blocks
+        //
+        final Set<BasicBlock> tryExitBlocks = new HashSet<BasicBlock>();
+        final Set<Edge> tryExitEdges = new HashSet<Edge>();
+        for (BasicBlock tryBlock : tryBlocks) {
+            for (Edge e : cfg.getNormalOutgoingEdgesOf(tryBlock)) {
+                if (!e.hasAttribute(EdgeAttribute.THROW_FAKE_EDGE)) {
+                    BasicBlock t = cfg.getEdgeTarget(e);
+                    if (!tryBlocks.contains(t)) {
+                        tryExitEdges.add(e);
+                        tryExitBlocks.add(t);
+                    }
+                }
+            }
+        }
+        if (tryExitBlocks.isEmpty()) {
+            return false;
+        }
+        LOGGER.info("tryExitEdges=" + cfg.toString(tryExitEdges));
+        LOGGER.info("tryExitBlocks=" + tryExitBlocks.toString());
+
+        //
+        // type children
+        //
+        for (Region child : rpst.getChildren(region)) {
+            if (!checkRegion(rpst, child)) {
+                throw new ABCDException("Cannot find type of try catch child region "
+                            + child);
+            }
+        }
+
+        //
+        // find inlined regions
+        //
+        Set<Region> inlinedRegions = rpst.getSubTreeRegions(region, new Filter<Region>() {
+            @Override
+            public boolean accept(Region r) {
+                return tryExitBlocks.contains(r.getEntry())
+                        && Regions.deepEquals(rpst, r, rpst, finallyRegion);
+            }
+        });
+        LOGGER.info("inlinedRegions=" + inlinedRegions.toString());
+        if (inlinedRegions.size() != tryExitBlocks.size()) {
+            return false;
+        }
+
+        //
+        // find main exit region and break regions
+        //
+        Set<Region> breakExitRegions = new HashSet<Region>();
+        Region mainExitRegion = null;
+        Region mainInlinedRegion = null;
+        for (final Region inlinedRegion : inlinedRegions) {
+            if (inlinedRegion.getExit() != region.getExit()) {
+                Set<Region> exitRegions = rpst.getSubTreeRegions(region, new Filter<Region>() {
+                    @Override
+                    public boolean accept(Region r) {
+                        return inlinedRegion.getExit() == r.getEntry()
+                                && r.getExit() == region.getExit();
+                    }
+                });
+                if (exitRegions.size() != 1) {
+                    return false;
+                }
+                Region exitRegion = exitRegions.iterator().next();
+                if (exitRegion.getEntry().getType() == BasicBlockType.BREAK) {
+                    breakExitRegions.add(exitRegion);
+                } else {
+                    if (mainExitRegion != null) {
+                        return false;
+                    }
+                    mainExitRegion = exitRegion;
+                    mainInlinedRegion = inlinedRegion;
+                }
+            }
+        }
+        LOGGER.info("breakExitRegions=" + breakExitRegions.toString());
+        LOGGER.info("mainExitRegion=" + mainExitRegion);
+        LOGGER.info("mainInlinedRegion=" + mainInlinedRegion);
+
+        // build control flow subgraph
+        ControlFlowGraph subCfg = createSubCFG(rpst, region);
+
+        if (mainExitRegion != null) {
+            subCfg.removeBasicBlock(subCfg.getExitBlock());
+            subCfg.setExitBlock(mainExitRegion.getEntry());
+        }
+
+        for (Edge e : tryExitEdges) {
+            BasicBlock s = subCfg.getEdgeSource(e);
+            subCfg.removeEdge(e);
+            subCfg.addEdge(s, subCfg.getExitBlock(), e);
+        }
+
+        // remove finally basic blocks
+        List<Region> toRemove = new ArrayList<Region>();
+        toRemove.add(finallyRegion); // remove finally region
+        toRemove.addAll(inlinedRegions); // remove inlined regions
+        toRemove.addAll(breakExitRegions); // remove break exit regions
+        for (Region r : toRemove) {
+            for (BasicBlock bb : rpst.getBasicBlocks(r)) {
+                subCfg.removeBasicBlock(bb);
+            }
+        }
+        if (mainExitRegion != null) {
+            for (BasicBlock bb : rpst.getBasicBlocks(mainExitRegion)) {
+                if (bb != mainExitRegion.getEntry()) {
+                    subCfg.removeBasicBlock(bb);
+                }
+            }
+        }
+
+        // build rpst from control flow subgraph
+        RPST subRpst = checkGraph(subCfg, "Try subgraph of region " + region);
+
+        LOGGER.debug("Found try finally region {}", region);
+
+        RPST tmpRpst = new RPST(cfg, new RegionImpl(null, null, ParentType.ROOT));
+        Region tryFinallyRegion = new RegionImpl(region.getEntry(), region.getExit(), ParentType.TRY_CATCH_FINALLY);
+        tmpRpst.addRegion(tryFinallyRegion, tmpRpst.getRootRegion());
+
+        tmpRpst.addRPST(rpst, finallyRegion, tryFinallyRegion);
+        finallyRegion.setChildType(ChildType.FINALLY);
+
+        for (Region inlinedRegion : inlinedRegions) {
+            tmpRpst.addRPST(rpst, inlinedRegion, tryFinallyRegion);
+            inlinedRegion.setChildType(ChildType.INLINED);
+        }
+        for (Region breakExitRegion : breakExitRegions) {
+            tmpRpst.addRPST(rpst, breakExitRegion, tryFinallyRegion);
+            breakExitRegion.setChildType(ChildType.INLINED);
+        }
+
+        Region rootRegion = subRpst.getRootRegion();
+        Region tryRegion = subRpst.getEntryChild(rootRegion);
+        tryRegion.setChildType(ChildType.TRY);
+        tmpRpst.addRPST(subRpst, tryRegion, tryFinallyRegion);
+
+        if (mainExitRegion != null) {
+            tmpRpst.addRPST(rpst, mainExitRegion, tmpRpst.getRootRegion());
+        }
+
+        rpst.removeChildren(region);
+
+        if (mainExitRegion == null) {
+            region.setParentType(ParentType.TRIVIAL);
+            rpst.addRPST(tmpRpst, tmpRpst.getRootRegion(), region);
+        } else {
+            region.setParentType(ParentType.SEQUENCE);
+            rpst.addRPST(tmpRpst, tryFinallyRegion, region);
+            tryFinallyRegion.setChildType(ChildType.FIRST);
+            rpst.addRPST(tmpRpst, mainExitRegion, region);
+            mainExitRegion.setChildType(ChildType.SECOND);
+        }
+
+        return true;
+    }
+
     private boolean checkTryCatchFinallyRegion(RPST rpst, Region region) {
         LOGGER.trace("Check try catch finally region {}", region);
         Set<Region> exitRegions = rpst.getChildrenWithExit(region, region.getExit());
@@ -489,7 +702,7 @@ public class RegionAnalysis {
             }
         }
         // insert inlined finally regions
-        for (Region child : rpst.getSubRegions(tryRegion)) {
+        for (Region child : rpst.getSubTreeRegions(tryRegion)) {
             for (Region inlinedFinallyRegion : inlinedFinallyRegions) {
                 if (child.getEntry().equals(inlinedFinallyRegion.getEntry())
                         && child.getExit().equals(inlinedFinallyRegion.getExit())) {
@@ -534,7 +747,7 @@ public class RegionAnalysis {
             BasicBlock source = subCfg.getEdgeSource(exitEdge);
             subCfg.removeEdge(exitEdge);
             subCfg.addEdge(source, newExit, exitEdge);
-            exitEdge.addAttribute(EdgeAttribute.FAKE_EDGE);
+            exitEdge.addAttribute(EdgeAttribute.BREAK_FAKE_EDGE);
         }
         subCfg.removeBasicBlock(subCfg.getExitBlock());
         subCfg.setExitBlock(newExit);
@@ -574,7 +787,7 @@ public class RegionAnalysis {
                 || checkWhileLoopRegion(rpst, region)
                 || checkDoWhileLoopRegion(rpst, region)
                 || checkTrivialRegion(rpst, region)
-                || checkTryCatchFinallyRegion(rpst, region)
+                || checkTryFinallyRegion(rpst, region)
                 || checkBreakLabelRegion(rpst, region))) {
             return false;
         } else {

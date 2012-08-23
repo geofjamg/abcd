@@ -26,6 +26,7 @@ import java.util.Map;
  */
 public class RangeGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
 
+    @Override
     public Map<String, String> getAttributes(BasicBlock bb) {
         Map<String, String> attrs = new HashMap<String, String>(4);
         attrs.put("shape", "box");

@@ -457,6 +457,15 @@ public class ControlFlowGraph {
         return successors;
     }
 
+    public BasicBlock getFirstExceptionalSuccessorsOf(BasicBlock block) {
+        for (Edge e : graph.getOutgoingEdgesOf(block)) {
+            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
+                return graph.getEdgeTarget(e);
+            }
+        }
+        return null;
+    }
+
     public Collection<BasicBlock> getExceptionalSuccessorsOf(BasicBlock block) {
         List<BasicBlock> successors = new ArrayList<BasicBlock>();
         for (Edge e : graph.getOutgoingEdgesOf(block)) {
@@ -577,8 +586,8 @@ public class ControlFlowGraph {
         for (Edge e : graph.getEdges()) {
             BasicBlock source = graph.getEdgeSource(e);
             BasicBlock target = graph.getEdgeTarget(e);
-            if (graph.getSuccessorCountOf(source) > 1
-                    && graph.getPredecessorCountOf(target) > 1
+            if (getNormalSuccessorCountOf(source) > 1
+                    && getNormalPredecessorCountOf(target) > 1
                     && !e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
                 criticalEdges.add(e);
             }
@@ -789,26 +798,32 @@ public class ControlFlowGraph {
         return null;
     }
 
+    private void addFakeEdge(BasicBlock bb, EdgeAttribute edgeAttr) {
+        NaturalLoop nl = getInnermostEnclosingLoop(bb);
+        BasicBlock target;
+        if (nl == null) {
+            target = exitBlock;
+        } else {
+            target = nl.getTail();
+        }
+        Edge e = addEdge(bb, target);
+        e.addAttribute(edgeAttr);
+        LOGGER.debug("Ensure single exit graph by adding fake edge "
+                + graph.toString(e));
+    }
+
     public void ensureSingleExit() {
         for (BasicBlock bb : getBasicBlocks()) {
-            if (bb.getType() != null) {
-                switch (bb.getType()) {
-                    case THROW:
-                    case BREAK:
-                        if (getNormalSuccessorCountOf(bb) == 0) {
-                            NaturalLoop nl = getInnermostEnclosingLoop(bb);
-                            BasicBlock target;
-                            if (nl == null) {
-                                target = exitBlock;
-                            } else {
-                                target = nl.getTail();
-                            }
-                            Edge e = addEdge(bb, target);
-                            e.addAttribute(EdgeAttribute.FAKE_EDGE);
-                            LOGGER.debug("Ensure single exit graph by adding edge "
-                                    + graph.toString(e));
-                        }
-                        break;
+            if (getNormalSuccessorCountOf(bb) == 0) {
+                if (bb.getType() != null) {
+                    switch (bb.getType()) {
+                        case THROW:
+                            addFakeEdge(bb, EdgeAttribute.THROW_FAKE_EDGE);
+                            break;
+                        case BREAK:
+                            addFakeEdge(bb, EdgeAttribute.BREAK_FAKE_EDGE);
+                            break;
+                    }
                 }
             }
         }

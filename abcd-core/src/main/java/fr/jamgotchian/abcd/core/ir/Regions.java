@@ -32,8 +32,7 @@ public class Regions {
     }
 
     private static boolean deepEquals(RPST rpst1, Region region1, RPST rpst2, Region region2, VariableMapping mapping) {
-        if (region1.getParentType() == region2.getParentType()
-                && region1.getChildType() == region2.getChildType()) {
+        if (region1.getParentType() == region2.getParentType()) {
             if (region1.getChildType() == ChildType.CATCH
                     || region1.getChildType() == ChildType.FINALLY) {
                 ExceptionHandlerInfo info1 = (ExceptionHandlerInfo) region1.getEntry().getProperty(EXCEPTION_HANDLER_ENTRY);

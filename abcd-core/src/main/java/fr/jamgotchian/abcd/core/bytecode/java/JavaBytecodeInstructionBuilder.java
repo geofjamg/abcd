@@ -728,7 +728,8 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
                     break;
 
                 case RETURN:
-                    bb.getInstructions().add(instFactory.newReturn());
+                    // TODO
+//                    bb.getInstructions().add(instFactory.newReturn());
                     break;
 
                 case ARRAYLENGTH: {

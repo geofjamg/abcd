@@ -32,11 +32,12 @@ public class VariableMapping {
             = new HashMap<VariableID, VariableID>();
 
     public boolean defEqual(Variable var1, Variable var2) {
-        if (mapping.containsKey(var1.getID())
-                || mapping.containsKey(var2.getID())) {
-            throw new IllegalStateException("Variables " + var1 + " or " + var2
-                    + " already defined");
-        }
+        // TODO
+//        if (mapping.containsKey(var1.getID())
+//                || mapping.containsKey(var2.getID())) {
+//            throw new IllegalStateException("Variables " + var1 + " or " + var2
+//                    + " already defined");
+//        }
         mapping.put(var1.getID(), var2.getID());
         mapping.put(var2.getID(), var1.getID());
         return true;
