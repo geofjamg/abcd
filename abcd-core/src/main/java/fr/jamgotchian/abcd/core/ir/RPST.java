@@ -59,9 +59,6 @@ public class RPST {
     private static final RegionGraphvizRenderer REGION_GRAPHIZ_RENDERER
             = new RegionGraphvizRenderer();
 
-    private static final NoTextGraphvizRenderer OBJECT_GRAPHIZ_RENDERER
-            = new NoTextGraphvizRenderer();
-
     private final GraphvizRenderer<Object> childTypeGraphvizRenderer = new GraphvizRenderer<Object>() {
         @Override
         public Map<String, String> getAttributes(Object object) {
