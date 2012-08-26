@@ -19,8 +19,6 @@ package fr.jamgotchian.abcd.core.ir;
 import fr.jamgotchian.abcd.core.graph.Filter;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.graph.MutableTree;
-import fr.jamgotchian.abcd.core.graph.NoTextGraphvizRenderer;
-import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
 import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
 import java.io.FileWriter;
@@ -83,10 +81,6 @@ public class RPST {
         return cfg;
     }
 
-    public Tree<Region, Object> getTree() {
-        return Trees.unmodifiableTree(tree);
-    }
-
     public Region getRootRegion() {
         return tree.getRoot();
     }
@@ -114,7 +108,7 @@ public class RPST {
     }
 
     public void addRPST(RPST rpst, Region root, Region parent) {
-        tree.addTree(rpst.getTree().getSubTree(root), parent, new Object());
+        tree.addTree(rpst.tree.getSubTree(root), parent, new Object());
     }
 
     public Set<Region> getChildren(Region region) {
