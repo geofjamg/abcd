@@ -58,6 +58,7 @@ public class TextCodeWriter extends CodeWriter {
         return this;
     }
 
+    @Override
     public CodeWriter writeLt() {
         try {
             writer.append("<");
@@ -67,6 +68,7 @@ public class TextCodeWriter extends CodeWriter {
         return this;
     }
 
+    @Override
     public CodeWriter writeGt() {
         try {
             writer.append(">");
@@ -76,6 +78,7 @@ public class TextCodeWriter extends CodeWriter {
         return this;
     }
 
+    @Override
     public CodeWriter writeAmpersand() {
         try {
             writer.append("&");

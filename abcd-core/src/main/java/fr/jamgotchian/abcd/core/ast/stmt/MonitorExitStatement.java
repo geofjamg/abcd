@@ -24,13 +24,13 @@ import fr.jamgotchian.abcd.core.ast.expr.Expression;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class MonitorExitStatement extends AbstractStatement {
-    
+
     private final Expression objectRef;
 
     public MonitorExitStatement(Expression objectRef) {
         if (objectRef == null) {
             throw new IllegalArgumentException("objectRef == null");
-        }        
+        }
         this.objectRef = objectRef;
     }
 
@@ -38,6 +38,7 @@ public class MonitorExitStatement extends AbstractStatement {
         return objectRef;
     }
 
+    @Override
     public <R, A> R accept(StatementVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

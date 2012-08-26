@@ -22,76 +22,93 @@ package fr.jamgotchian.abcd.core.ast.expr;
  */
 public class ExpressionVisitorAdapter<R, A> implements ExpressionVisitor<R, A> {
 
+    @Override
     public R visit(IntegerLiteralExpression expr, A arg) {
         return null;
     }
 
+    @Override
     public R visit(LongLiteralExpression expr, A arg) {
         return null;
     }
 
+    @Override
     public R visit(ByteLiteralExpression expr, A arg) {
         return null;
     }
 
+    @Override
     public R visit(ShortLiteralExpression expr, A arg) {
         return null;
     }
 
+    @Override
     public R visit(BooleanLiteralExpression expr, A arg) {
         return null;
     }
 
+    @Override
     public R visit(FloatLiteralExpression expr, A arg) {
         return null;
     }
 
+    @Override
     public R visit(DoubleLiteralExpression expr, A arg) {
         return null;
     }
 
+    @Override
     public R visit(StringLiteralExpression expr, A arg) {
         return null;
     }
 
+    @Override
     public R visit(NullLiteralExpression expr, A arg) {
         return null;
     }
 
+    @Override
     public R visit(ClassLiteralExpression expr, A arg) {
         return null;
     }
 
+    @Override
     public R visit(VariableExpression expr, A arg) {
         return null;
     }
 
+    @Override
     public R visit(UnaryExpression expr, A arg) {
         expr.getExpr().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(BinaryExpression expr, A arg) {
         expr.getLeft().accept(this, arg);
         expr.getRight().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(AssignExpression expr, A arg) {
         expr.getTarget().accept(this, arg);
         expr.getValue().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(TypeExpression expr, A arg) {
         return null;
     }
 
+    @Override
     public R visit(FieldAccess expr, A arg) {
         expr.getScope().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(MethodCall expr, A arg) {
         expr.getScope().accept(this, arg);
         for (Expression expr2 : expr.getArguments()) {
@@ -100,6 +117,7 @@ public class ExpressionVisitorAdapter<R, A> implements ExpressionVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(ConditionalExpression expr, A arg) {
         expr.getCondition().accept(this, arg);
         expr.getThen().accept(this, arg);
@@ -107,6 +125,7 @@ public class ExpressionVisitorAdapter<R, A> implements ExpressionVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(ObjectCreationExpression expr, A arg) {
         for (Expression expr2 : expr.getArguments()) {
             expr2.accept(this, arg);
@@ -114,6 +133,7 @@ public class ExpressionVisitorAdapter<R, A> implements ExpressionVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(ArrayCreationExpression expr, A arg) {
         for (Expression expr2 : expr.getArrayLengthExprs()) {
             expr2.accept(this, arg);
@@ -124,22 +144,26 @@ public class ExpressionVisitorAdapter<R, A> implements ExpressionVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(ArrayLength expr, A arg) {
         expr.getArrayRef().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(CastExpression expr, A arg) {
         expr.getExpr().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(ArrayAccess expr, A arg) {
         expr.getArrayRef().accept(this, arg);
         expr.getArrayIndexExpr().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(ChoiceExpression expr, A arg) {
         for (Expression expr2 : expr.getChoices()) {
             expr2.accept(this, arg);

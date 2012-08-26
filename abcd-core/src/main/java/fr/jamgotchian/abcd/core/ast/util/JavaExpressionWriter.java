@@ -58,6 +58,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
         this.writer = writer;
     }
 
+    @Override
     public Void visit(AssignExpression expr, Void arg) {
         expr.getTarget().accept(this, arg);
         writer.writeSpace();
@@ -90,6 +91,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(UnaryExpression expr, Void arg) {
         switch (expr.getOperator()) {
             case MINUS:
@@ -132,6 +134,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(BinaryExpression expr, Void arg) {
         int depth = expr.getDepth();
         if (depth > 0) {
@@ -237,22 +240,26 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(VariableExpression expr, Void arg) {
         writer.write(expr.getVariable().getName());
         return null;
     }
 
+    @Override
     public Void visit(TypeExpression expr, Void arg) {
         writer.write(expr.getType());
         return null;
     }
 
+    @Override
     public Void visit(FieldAccess expr, Void arg) {
         expr.getScope().accept(this, arg);
         writer.write(".").write(expr.getFieldName());
         return null;
     }
 
+    @Override
     public Void visit(MethodCall expr, Void arg) {
         if (expr.getScope() != null) {
             expr.getScope().accept(this, arg);
@@ -270,6 +277,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(ConditionalExpression expr, Void arg) {
         writer.write("(");
         expr.getCondition().accept(this, arg);
@@ -281,6 +289,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(ObjectCreationExpression expr, Void arg) {
         writer.writeKeyword("new").writeSpace().write(expr.getType()).write("(");
         if (expr.getArguments() != null) {
@@ -296,6 +305,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(ArrayCreationExpression expr, Void arg) {
         if (expr.getInitValues() != null) {
             writer.write("{");
@@ -317,12 +327,14 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(ArrayLength expr, Void arg) {
         expr.getArrayRef().accept(this, arg);
         writer.write(".length");
         return null;
     }
 
+    @Override
     public Void visit(CastExpression expr, Void arg) {
         writer.write("((").write(expr.getType()).write(")").writeSpace();
         expr.getExpr().accept(this, arg);
@@ -330,6 +342,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(ArrayAccess expr, Void arg) {
         expr.getArrayRef().accept(this, arg);
         writer.write("[");
@@ -338,6 +351,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(ChoiceExpression choiceExpr, Void arg) {
         if (choiceExpr.getChoices().size() == 1) {
             choiceExpr.getChoices().iterator().next().accept(this, arg);
@@ -355,51 +369,61 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(IntegerLiteralExpression expr, Void arg) {
         writer.write(expr.getValue());
         return null;
     }
 
+    @Override
     public Void visit(LongLiteralExpression expr, Void arg) {
         writer.write(expr.getValue()).write("L");
         return null;
     }
 
+    @Override
     public Void visit(ByteLiteralExpression expr, Void arg) {
         writer.write(expr.getValue());
         return null;
     }
 
+    @Override
     public Void visit(ShortLiteralExpression expr, Void arg) {
         writer.write(expr.getValue());
         return null;
     }
 
+    @Override
     public Void visit(BooleanLiteralExpression expr, Void arg) {
         writer.write(expr.getValue());
         return null;
     }
 
+    @Override
     public Void visit(FloatLiteralExpression expr, Void arg) {
         writer.write(expr.getValue()).write("f");
         return null;
     }
 
+    @Override
     public Void visit(DoubleLiteralExpression expr, Void arg) {
         writer.write(expr.getValue()).write("d");
         return null;
     }
 
+    @Override
     public Void visit(StringLiteralExpression expr, Void arg) {
         writer.writeQuotedString(expr.getValue().toString());
         return null;
     }
 
+    @Override
     public Void visit(NullLiteralExpression expr, Void arg) {
         writer.write("null");
         return null;
     }
 
+    @Override
     public Void visit(ClassLiteralExpression expr, Void arg) {
         writer.write(expr.getClassName()).write(".class");
         return null;

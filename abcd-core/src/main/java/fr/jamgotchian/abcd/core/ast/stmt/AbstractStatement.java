@@ -32,42 +32,51 @@ public abstract class AbstractStatement implements Statement {
     AbstractStatement() {
     }
 
+    @Override
     public void setBlock(BlockStatement block) {
         this.block = block;
     }
 
+    @Override
     public BlockStatement getBlock() {
         return block;
     }
 
+    @Override
     public Statement getNext() {
         return next;
     }
 
+    @Override
     public void setNext(Statement next) {
         this.next = next;
     }
 
+    @Override
     public Statement getPrevious() {
         return previous;
     }
 
+    @Override
     public void setPrevious(Statement previous) {
         this.previous = previous;
     }
 
+    @Override
     public void remove() {
         if (block != null) {
             block.remove(this);
         }
     }
 
+    @Override
     public void insertBefore(Statement stmt) {
         if (block != null) {
             block.insertBefore(this, stmt);
         }
     }
 
+    @Override
     public void insertAfter(Statement stmt) {
         if (block != null) {
             block.insertAfter(this, stmt);
@@ -79,6 +88,7 @@ public abstract class AbstractStatement implements Statement {
         return block.getFirst() == this;
     }
 
+    @Override
     public boolean isLast() {
         assert block != null;
         return block.getLast() == this;

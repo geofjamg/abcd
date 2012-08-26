@@ -101,6 +101,7 @@ public class DalvikBytecodeClassFactory implements ClassFactory {
         return _class;
     }
 
+    @Override
     public Collection<MethodFactory> createMethodFactories() {
         List<MethodFactory> factories = new ArrayList<MethodFactory>();
         for (EncodedMethod encodedMethod  : item.getClassData().getDirectMethods()) {

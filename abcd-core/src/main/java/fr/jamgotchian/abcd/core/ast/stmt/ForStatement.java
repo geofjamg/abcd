@@ -26,9 +26,9 @@ import fr.jamgotchian.abcd.core.ast.expr.Expression;
 public class ForStatement extends AbstractStatement {
 
     private final Expression init;
-    
+
     private final Expression condition;
-    
+
     private final Expression update;
 
     private final BlockStatement body;
@@ -76,6 +76,7 @@ public class ForStatement extends AbstractStatement {
         body.setBlock(block);
     }
 
+    @Override
     public <R, A> R accept(StatementVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

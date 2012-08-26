@@ -73,6 +73,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(IntegerLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof IntegerLiteralExpression) {
             return ((IntegerLiteralExpression) expr2).getValue() == expr1.getValue();
@@ -81,6 +82,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(LongLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof LongLiteralExpression) {
             return ((LongLiteralExpression) expr2).getValue() == expr1.getValue();
@@ -89,6 +91,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(ByteLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof ByteLiteralExpression) {
             return ((ByteLiteralExpression) expr2).getValue() == expr1.getValue();
@@ -97,6 +100,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(ShortLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof ShortLiteralExpression) {
             return ((ShortLiteralExpression) expr2).getValue() == expr1.getValue();
@@ -105,6 +109,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(BooleanLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof BooleanLiteralExpression) {
             return ((BooleanLiteralExpression) expr2).getValue() == expr1.getValue();
@@ -113,6 +118,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(FloatLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof FloatLiteralExpression) {
             return ((FloatLiteralExpression) expr2).getValue() == expr1.getValue();
@@ -120,6 +126,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
             return Boolean.FALSE;
         }
     }
+    @Override
     public Boolean visit(DoubleLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof DoubleLiteralExpression) {
             return ((DoubleLiteralExpression) expr2).getValue() == expr1.getValue();
@@ -128,6 +135,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(StringLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof StringLiteralExpression) {
             return ((StringLiteralExpression) expr2).getValue().equals(expr1.getValue());
@@ -136,10 +144,12 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(NullLiteralExpression expr1, Expression expr2) {
         return (expr2 instanceof NullLiteralExpression ? Boolean.TRUE : Boolean.FALSE);
     }
 
+    @Override
     public Boolean visit(ClassLiteralExpression expr1, Expression expr2) {
         if (expr2 instanceof ClassLiteralExpression) {
             return ((ClassLiteralExpression) expr2).getClassName().equals(expr1.getClassName());
@@ -148,6 +158,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(VariableExpression expr1, Expression expr2) {
         if (expr2 instanceof VariableExpression) {
             return ((VariableExpression) expr2).getVariable().equals(expr1.getVariable());
@@ -156,6 +167,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(UnaryExpression expr1, Expression expr2) {
         if (expr2 instanceof UnaryExpression) {
             return expr1.getOperator() == ((UnaryExpression) expr2).getOperator()
@@ -165,6 +177,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(BinaryExpression expr1, Expression expr2) {
         if (expr2 instanceof BinaryExpression) {
             return expr1.getOperator() == ((BinaryExpression) expr2).getOperator()
@@ -175,6 +188,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(AssignExpression expr1, Expression expr2) {
         if (expr2 instanceof AssignExpression) {
             return expr1.getOperator() == ((AssignExpression) expr2).getOperator()
@@ -185,6 +199,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(TypeExpression expr1, Expression expr2) {
         if (expr2 instanceof TypeExpression) {
             return ((TypeExpression) expr2).getType().equals(expr1.getType());
@@ -193,6 +208,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(FieldAccess expr1, Expression expr2) {
         if (expr2 instanceof FieldAccess) {
             return expr1.getScope().accept(this, ((FieldAccess) expr2).getScope())
@@ -202,6 +218,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(MethodCall expr1, Expression expr2) {
         if (expr2 instanceof MethodCall) {
             if (!expr1.getMethodName().equals(((MethodCall) expr2).getMethodName())
@@ -223,6 +240,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(ConditionalExpression expr1, Expression expr2) {
         if (expr2 instanceof ConditionalExpression) {
             return expr1.getCondition().accept(this, ((ConditionalExpression) expr2).getCondition())
@@ -233,6 +251,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(ObjectCreationExpression expr1, Expression expr2) {
         if (expr2 instanceof ObjectCreationExpression) {
             if (!expr1.getType().equals(((ObjectCreationExpression) expr2).getType())
@@ -253,6 +272,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(ArrayCreationExpression expr1, Expression expr2) {
         if (expr2 instanceof ArrayCreationExpression) {
             if (!expr1.getType().equals(((ArrayCreationExpression) expr2).getType())
@@ -278,6 +298,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(ArrayLength expr1, Expression expr2) {
         if (expr2 instanceof ArrayLength) {
             return expr1.getArrayRef().accept(this, ((ArrayLength) expr2).getArrayRef());
@@ -286,6 +307,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(CastExpression expr1, Expression expr2) {
         if (expr2 instanceof CastExpression) {
             return expr1.getExpr().accept(this, ((CastExpression) expr2).getExpr())
@@ -295,6 +317,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(ArrayAccess expr1, Expression expr2) {
         if (expr2 instanceof ArrayAccess) {
             return expr1.getArrayRef().accept(this, ((ArrayAccess) expr2).getArrayRef())
@@ -304,6 +327,7 @@ public class ExpressionEqualityChecker implements ExpressionVisitor<Boolean, Exp
         }
     }
 
+    @Override
     public Boolean visit(ChoiceExpression exprChoice1, Expression otherExpr) {
         if (otherExpr instanceof ChoiceExpression) {
             ChoiceExpression exprChoice2 = (ChoiceExpression) otherExpr;

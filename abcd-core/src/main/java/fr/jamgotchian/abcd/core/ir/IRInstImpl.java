@@ -24,10 +24,12 @@ public abstract class IRInstImpl implements IRInst {
 
     private boolean ignored;
 
+    @Override
     public boolean isIgnored() {
         return ignored;
     }
 
+    @Override
     public void setIgnored(boolean ignored) {
         this.ignored = ignored;
     }

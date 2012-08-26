@@ -35,6 +35,7 @@ public class VariableExpression extends AbstractExpression {
         return variable;
     }
 
+    @Override
     public <R, A> R accept(ExpressionVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

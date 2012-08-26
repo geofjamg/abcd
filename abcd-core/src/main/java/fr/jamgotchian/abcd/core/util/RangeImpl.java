@@ -37,14 +37,17 @@ public class RangeImpl implements Range, Comparable<RangeImpl> {
         this.last = last;
     }
 
+    @Override
     public int getFirst() {
         return first;
     }
 
+    @Override
     public int getLast() {
         return last;
     }
 
+    @Override
     public void setLast(int last) {
         this.last = last;
     }
@@ -57,35 +60,43 @@ public class RangeImpl implements Range, Comparable<RangeImpl> {
 
         private int index = Math.max(first, 0);
 
+        @Override
         public boolean hasNext() {
             return index <= last;
         }
 
+        @Override
         public Integer next() {
             return index++;
         }
 
+        @Override
         public void remove() {
             throw new ABCDException("Can't remove instruction");
         }
     }
 
+    @Override
     public Iterator<Integer> iterator() {
         return new RangeIterator();
     }
 
+    @Override
     public boolean contains(int instn) {
         return instn >= first && instn <= last;
     }
 
+    @Override
     public boolean contains(int first, int last) {
         return this.first <= first && this.last >= last;
     }
 
+    @Override
     public boolean contains(Range other) {
         return contains(other.getFirst(), other.getLast());
     }
 
+    @Override
     public int size() {
         if (first < 0 || last < 0) {
             return 0;
@@ -110,6 +121,7 @@ public class RangeImpl implements Range, Comparable<RangeImpl> {
         return first + last;
     }
 
+    @Override
     public int compareTo(RangeImpl other) {
         if (first == other.first) {
             return last - other.last;

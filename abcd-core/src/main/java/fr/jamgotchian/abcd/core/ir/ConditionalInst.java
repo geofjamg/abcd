@@ -51,10 +51,12 @@ public class ConditionalInst extends DefInst {
         return _else;
     }
 
+    @Override
     public Set<Variable> getUses() {
         return Sets.newHashSet(cond, then, _else);
     }
 
+    @Override
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

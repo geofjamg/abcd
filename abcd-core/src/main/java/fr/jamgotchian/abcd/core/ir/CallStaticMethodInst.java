@@ -45,10 +45,12 @@ public class CallStaticMethodInst extends CallableInst {
         return scope;
     }
 
+    @Override
     public MethodSignature getSignature() {
         return signature;
     }
 
+    @Override
     public List<Variable> getArguments() {
         return arguments;
     }
@@ -57,10 +59,12 @@ public class CallStaticMethodInst extends CallableInst {
         return arguments.size();
     }
 
+    @Override
     public Set<Variable> getUses() {
         return new HashSet<Variable>(arguments);
     }
 
+    @Override
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

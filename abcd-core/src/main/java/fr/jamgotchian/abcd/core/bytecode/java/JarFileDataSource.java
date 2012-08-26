@@ -38,6 +38,7 @@ public class JarFileDataSource implements ABCDDataSource {
         this.jarFile = jarFile;
     }
 
+    @Override
     public Collection<ClassFactory> createClassFactories() throws IOException {
         List<ClassFactory> factories = new ArrayList<ClassFactory>();
         for (JarEntry entry : Collections.list(jarFile.entries())) {

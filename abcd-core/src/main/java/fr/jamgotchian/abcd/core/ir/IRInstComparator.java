@@ -39,13 +39,16 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
         this.mapping = mapping;
     }
 
+    @Override
     public Boolean visit(IRInstSeq seq, IRInst arg) {
         IRInstSeq seqC = seq.copyIf(new Predicate<IRInst>() {
+            @Override
             public boolean apply(IRInst inst) {
                 return !inst.isIgnored();
             }
         });
         IRInstSeq otherSeqC = otherSeq.copyIf(new Predicate<IRInst>() {
+            @Override
             public boolean apply(IRInst inst) {
                 return !inst.isIgnored();
             }
@@ -63,6 +66,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ArrayLengthInst inst, IRInst arg) {
         if (!(arg instanceof ArrayLengthInst)) {
             return Boolean.FALSE;
@@ -72,6 +76,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.useEqual(inst.getArray(), inst2.getArray());
     }
 
+    @Override
     public Boolean visit(AssignConstInst inst, IRInst arg) {
         if (!(arg instanceof AssignConstInst)) {
             return Boolean.FALSE;
@@ -81,6 +86,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && inst.getConst().equals(inst2.getConst());
     }
 
+    @Override
     public Boolean visit(AssignVarInst inst, IRInst arg) {
         if (!(arg instanceof AssignVarInst)) {
             return Boolean.FALSE;
@@ -90,6 +96,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.useEqual(inst.getValue(), inst2.getValue());
     }
 
+    @Override
     public Boolean visit(BinaryInst inst, IRInst arg) {
         if (!(arg instanceof BinaryInst)) {
             return Boolean.FALSE;
@@ -101,6 +108,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && inst.getOperator() == inst2.getOperator();
     }
 
+    @Override
     public Boolean visit(CallMethodInst inst, IRInst arg) {
         if (!(arg instanceof CallMethodInst)) {
             return Boolean.FALSE;
@@ -112,6 +120,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.usesEqual(inst.getArguments(), inst2.getArguments());
     }
 
+    @Override
     public Boolean visit(CallStaticMethodInst inst, IRInst arg) {
         if (!(arg instanceof CallStaticMethodInst)) {
             return Boolean.FALSE;
@@ -123,6 +132,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.usesEqual(inst.getArguments(), inst2.getArguments());
     }
 
+    @Override
     public Boolean visit(CastInst inst, IRInst arg) {
         if (!(arg instanceof CastInst)) {
             return Boolean.FALSE;
@@ -133,6 +143,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.useEqual(inst.getVar(), inst2.getVar());
     }
 
+    @Override
     public Boolean visit(ConditionalInst inst, IRInst arg) {
         if (!(arg instanceof ConditionalInst)) {
             return Boolean.FALSE;
@@ -144,6 +155,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.useEqual(inst.getElse(), inst2.getElse());
     }
 
+    @Override
     public Boolean visit(GetArrayInst inst, IRInst arg) {
         if (!(arg instanceof GetArrayInst)) {
             return Boolean.FALSE;
@@ -154,6 +166,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.useEqual(inst.getIndex(), inst2.getIndex());
     }
 
+    @Override
     public Boolean visit(SetArrayInst inst, IRInst arg) {
         if (!(arg instanceof SetArrayInst)) {
             return Boolean.FALSE;
@@ -164,6 +177,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.useEqual(inst.getValue(), inst2.getValue());
     }
 
+    @Override
     public Boolean visit(GetFieldInst inst, IRInst arg) {
         if (!(arg instanceof GetFieldInst)) {
             return Boolean.FALSE;
@@ -174,6 +188,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && inst.getFieldName().equals(inst2.getFieldName());
     }
 
+    @Override
     public Boolean visit(SetFieldInst inst, IRInst arg) {
         if (!(arg instanceof SetFieldInst)) {
             return Boolean.FALSE;
@@ -184,6 +199,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.useEqual(inst.getValue(), inst2.getValue());
     }
 
+    @Override
     public Boolean visit(JumpIfInst inst, IRInst arg) {
         if (!(arg instanceof JumpIfInst)) {
             return Boolean.FALSE;
@@ -192,6 +208,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
         return mapping.useEqual(inst.getCond(), inst2.getCond());
     }
 
+    @Override
     public Boolean visit(InstanceOfInst inst, IRInst arg) {
         if (!(arg instanceof InstanceOfInst)) {
             return Boolean.FALSE;
@@ -202,6 +219,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.useEqual(inst.getVar(), inst2.getVar());
     }
 
+    @Override
     public Boolean visit(MonitorEnterInst inst, IRInst arg) {
         if (!(arg instanceof MonitorEnterInst)) {
             return Boolean.FALSE;
@@ -210,6 +228,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
         return mapping.useEqual(inst.getObj(), inst2.getObj());
     }
 
+    @Override
     public Boolean visit(MonitorExitInst inst, IRInst arg) {
         if (!(arg instanceof MonitorExitInst)) {
             return Boolean.FALSE;
@@ -218,6 +237,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
         return mapping.useEqual(inst.getObj(), inst2.getObj());
     }
 
+    @Override
     public Boolean visit(NewArrayInst inst, IRInst arg) {
         if (!(arg instanceof NewArrayInst)) {
             return Boolean.FALSE;
@@ -228,6 +248,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.usesEqual(inst.getDimensions(), inst2.getDimensions());
     }
 
+    @Override
     public Boolean visit(NewObjectInst inst, IRInst arg) {
         if (!(arg instanceof NewObjectInst)) {
             return Boolean.FALSE;
@@ -238,6 +259,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.usesEqual(inst.getArguments(), inst2.getArguments());
     }
 
+    @Override
     public Boolean visit(ReturnInst inst, IRInst arg) {
         if (!(arg instanceof ReturnInst)) {
             return Boolean.FALSE;
@@ -246,6 +268,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
         return mapping.useEqual(inst.getVar(), inst2.getVar());
     }
 
+    @Override
     public Boolean visit(SwitchInst inst, IRInst arg) {
         if (!(arg instanceof SwitchInst)) {
             return Boolean.FALSE;
@@ -254,6 +277,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
         return mapping.useEqual(inst.getIndex(), inst2.getIndex());
     }
 
+    @Override
     public Boolean visit(ThrowInst inst, IRInst arg) {
         if (!(arg instanceof ThrowInst)) {
             return Boolean.FALSE;
@@ -262,6 +286,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
         return mapping.useEqual(inst.getVar(), inst2.getVar());
     }
 
+    @Override
     public Boolean visit(UnaryInst inst, IRInst arg) {
         if (!(arg instanceof UnaryInst)) {
             return Boolean.FALSE;
@@ -272,6 +297,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.useEqual(inst.getVar(), inst2.getVar());
     }
 
+    @Override
     public Boolean visit(ChoiceInst inst, IRInst arg) {
         if (!(arg instanceof ChoiceInst)) {
             return Boolean.FALSE;
@@ -281,10 +307,12 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && mapping.usesEqual(inst.getChoices(), inst2.getChoices());
     }
 
+    @Override
     public Boolean visit(PhiInst inst, IRInst arg) {
         throw new ABCDException("Should not have Phi instruction during finally uninlining");
     }
 
+    @Override
     public Boolean visit(GetStaticFieldInst inst, IRInst arg) {
         if (!(arg instanceof GetStaticFieldInst)) {
             return Boolean.FALSE;
@@ -295,6 +323,7 @@ public class IRInstComparator implements IRInstVisitor<Boolean, IRInst> {
                 && inst.getFieldName().equals(inst2.getFieldName());
     }
 
+    @Override
     public Boolean visit(SetStaticFieldInst inst, IRInst arg) {
         if (!(arg instanceof SetStaticFieldInst)) {
             return Boolean.FALSE;

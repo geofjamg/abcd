@@ -76,6 +76,7 @@ public class CaseValues implements Comparable<CaseValues> {
        return values.hashCode();
     }
 
+    @Override
     public int compareTo(CaseValues o) {
         String first = values.first();
         String otherFirst = o.values.first();

@@ -22,6 +22,7 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public class EmptyIRInstVisitor<R, A> implements IRInstVisitor<R, A> {
 
+    @Override
     public R visit(IRInstSeq seq, A arg) {
         for (IRInst inst : seq) {
             inst.accept(this, arg);
@@ -29,106 +30,132 @@ public class EmptyIRInstVisitor<R, A> implements IRInstVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(ArrayLengthInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(AssignConstInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(AssignVarInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(BinaryInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(CallMethodInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(CallStaticMethodInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(CastInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(ConditionalInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(GetArrayInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(SetArrayInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(GetFieldInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(SetFieldInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(JumpIfInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(InstanceOfInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(MonitorEnterInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(MonitorExitInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(NewArrayInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(NewObjectInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(ReturnInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(SwitchInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(ThrowInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(UnaryInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(ChoiceInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(PhiInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(GetStaticFieldInst inst, A arg) {
         return null;
     }
 
+    @Override
     public R visit(SetStaticFieldInst inst, A arg) {
         return null;
     }

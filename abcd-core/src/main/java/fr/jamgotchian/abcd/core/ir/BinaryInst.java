@@ -51,10 +51,12 @@ public class BinaryInst extends DefInst {
         return right;
     }
 
+    @Override
     public Set<Variable> getUses() {
         return Sets.newHashSet(left, right);
     }
 
+    @Override
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

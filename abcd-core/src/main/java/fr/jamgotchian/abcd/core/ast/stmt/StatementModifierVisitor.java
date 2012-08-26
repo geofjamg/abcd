@@ -29,6 +29,7 @@ import java.util.List;
  */
 public class StatementModifierVisitor implements StatementVisitor<Collection<Statement>, Void> {
 
+    @Override
     public Collection<Statement> visit(BlockStatement block, Void arg) {
         boolean change = true;
         while (change) {
@@ -49,22 +50,27 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(ReturnStatement stmt, Void arg) {
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(LocalVariableDeclarationStatement stmt, Void arg) {
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(ExpressionStatement stmt, Void arg) {
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(CommentStatement stmt, Void arg) {
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(IfStatement stmt, Void arg) {
         stmt.getThen().accept(this, arg);
         if (stmt.getElse() != null) {
@@ -73,6 +79,7 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(TryCatchFinallyStatement stmt, Void arg) {
         stmt.getTry().accept(this, arg);
         for (CatchClause _catch : stmt.getCatchs()) {
@@ -84,29 +91,35 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(BreakStatement stmt, Void arg) {
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(WhileStatement stmt, Void arg) {
         stmt.getBody().accept(this, arg);
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(DoWhileStatement stmt, Void arg) {
         stmt.getBody().accept(this, arg);
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(ForStatement stmt, Void arg) {
         stmt.getBody().accept(this, arg);
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(ThrowStatement stmt, Void arg) {
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(SwitchCaseStatement stmt, Void arg) {
         for (CaseStatement _case : stmt.getCases()) {
             for (Statement stmt2 : _case.getStmts()) {
@@ -116,19 +129,23 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(LabeledStatement stmt, Void arg) {
         stmt.getStmt().accept(this, arg);
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(MonitorEnterStatement stmt, Void arg) {
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(MonitorExitStatement stmt, Void arg) {
         return null;
     }
 
+    @Override
     public Collection<Statement> visit(SynchronizedStatement stmt, Void arg) {
         return null;
     }

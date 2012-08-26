@@ -26,6 +26,7 @@ import java.util.Map;
  */
 public class IRGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
 
+    @Override
     public Map<String, String> getAttributes(BasicBlock bb) {
         Map<String, String> attrs = new HashMap<String, String>(3);
         attrs.put("shape", "box");

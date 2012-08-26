@@ -24,6 +24,7 @@ import java.io.Writer;
  */
 public class DOTHTMLLikeCodeWriterFactory implements CodeWriterFactory {
 
+    @Override
     public CodeWriter create(Writer writer) {
         return new DOTHTMLLikeCodeWriter(writer);
     }

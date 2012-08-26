@@ -24,6 +24,7 @@ import fr.jamgotchian.abcd.core.graph.EdgeFactory;
  */
 public class EdgeFactoryImpl implements EdgeFactory<Edge> {
 
+    @Override
     public Edge createEdge() {
         return new EdgeImpl();
     }

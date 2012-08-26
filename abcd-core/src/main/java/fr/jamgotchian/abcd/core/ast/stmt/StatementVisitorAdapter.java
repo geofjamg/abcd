@@ -32,6 +32,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         this.exprVisitor = exprVisitor;
     }
 
+    @Override
     public R visit(BlockStatement block, A arg) {
         for (Statement stmt : block) {
             stmt.accept(this, arg);
@@ -39,6 +40,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(ReturnStatement stmt, A arg) {
         if (exprVisitor != null) {
             if (stmt.getExpression() != null) {
@@ -48,6 +50,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(LocalVariableDeclarationStatement stmt, A arg) {
         if (exprVisitor != null) {
             if (stmt.getInitExpr() != null) {
@@ -57,6 +60,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(ExpressionStatement stmt, A arg) {
         if (exprVisitor != null) {
             if (stmt.getExpression() != null) {
@@ -66,10 +70,12 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(CommentStatement stmt, A arg) {
         return null;
     }
 
+    @Override
     public R visit(IfStatement stmt, A arg) {
         if (exprVisitor != null) {
             stmt.getCondition().accept(exprVisitor, null);
@@ -81,6 +87,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(TryCatchFinallyStatement stmt, A arg) {
         stmt.getTry().accept(this, arg);
         for (CatchClause _catch : stmt.getCatchs()) {
@@ -92,10 +99,12 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(BreakStatement stmt, A arg) {
         return null;
     }
 
+    @Override
     public R visit(WhileStatement stmt, A arg) {
         if (exprVisitor != null) {
             stmt.getCondition().accept(exprVisitor, null);
@@ -104,6 +113,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(DoWhileStatement stmt, A arg) {
         stmt.getBody().accept(this, arg);
         if (exprVisitor != null) {
@@ -112,6 +122,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(ForStatement stmt, A arg) {
         if (exprVisitor != null) {
             if (stmt.getInit() != null) {
@@ -128,6 +139,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(ThrowStatement stmt, A arg) {
         if (exprVisitor != null) {
             stmt.getObjectRef().accept(exprVisitor, null);
@@ -135,6 +147,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(SwitchCaseStatement stmt, A arg) {
         if (exprVisitor != null) {
             stmt.getIndex().accept(exprVisitor, null);
@@ -147,11 +160,13 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(LabeledStatement stmt, A arg) {
         stmt.getStmt().accept(this, arg);
         return null;
     }
 
+    @Override
     public R visit(MonitorEnterStatement stmt, A arg) {
         if (exprVisitor != null) {
             stmt.getObjectRef().accept(exprVisitor, null);
@@ -159,6 +174,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(MonitorExitStatement stmt, A arg) {
         if (exprVisitor != null) {
             stmt.getObjectRef().accept(exprVisitor, null);
@@ -166,6 +182,7 @@ public class StatementVisitorAdapter<R, A> implements StatementVisitor<R, A> {
         return null;
     }
 
+    @Override
     public R visit(SynchronizedStatement stmt, A arg) {
         if (exprVisitor != null) {
             stmt.getExpression().accept(exprVisitor, null);

@@ -25,6 +25,7 @@ import java.util.Map;
  */
 public class DefaultGraphvizRenderer<O> implements GraphvizRenderer<O> {
 
+    @Override
     public Map<String, String> getAttributes(O object) {
         Map<String, String> attrs = new HashMap<String, String>();
         attrs.put("color", "black");

@@ -36,12 +36,14 @@ public class ChoiceInst extends DefInst {
         return choices;
     }
 
+    @Override
     public Set<Variable> getUses() {
         Set<Variable> uses = new HashSet<Variable>(choices.size());
         uses.addAll(choices);
         return uses;
     }
 
+    @Override
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

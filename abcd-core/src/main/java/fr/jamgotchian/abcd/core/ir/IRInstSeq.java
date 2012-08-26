@@ -117,6 +117,7 @@ public class IRInstSeq implements Iterable<IRInst> {
         }
     }
 
+    @Override
     public Iterator<IRInst> iterator() {
         return insts.iterator();
     }

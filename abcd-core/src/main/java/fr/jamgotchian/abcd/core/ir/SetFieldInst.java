@@ -57,10 +57,12 @@ public class SetFieldInst extends IRInstImpl {
         return value;
     }
 
+    @Override
     public Set<Variable> getUses() {
         return Sets.newHashSet(object, value);
     }
 
+    @Override
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

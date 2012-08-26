@@ -63,11 +63,13 @@ public class BlockStatement extends AbstractStatement
         return first.equals(last);
     }
 
+    @Override
     public Iterator<Statement> iterator() {
         return new Iterator<Statement>() {
 
             private Statement stmt;
 
+            @Override
             public boolean hasNext() {
                 if (stmt == null) {
                     return first != null;
@@ -76,6 +78,7 @@ public class BlockStatement extends AbstractStatement
                 }
             }
 
+            @Override
             public Statement next() {
                 if (stmt == null) {
                     stmt = first;
@@ -85,6 +88,7 @@ public class BlockStatement extends AbstractStatement
                 return stmt;
             }
 
+            @Override
             public void remove() {
                 if (stmt != null) {
                     stmt.remove();
@@ -187,6 +191,7 @@ public class BlockStatement extends AbstractStatement
         return depth;
     }
 
+    @Override
     public <R, A> R accept(StatementVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

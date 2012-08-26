@@ -36,10 +36,12 @@ public class AssignConstInst extends DefInst {
         return _const;
     }
 
+    @Override
     public Set<Variable> getUses() {
         return Collections.emptySet();
     }
 
+    @Override
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

@@ -76,6 +76,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         }
     }
 
+    @Override
     public Boolean visit(BlockStatement block, Statement arg) {
         if (arg instanceof BlockStatement) {
             BlockStatement block2 = (BlockStatement) arg;
@@ -97,6 +98,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(ReturnStatement stmt, Statement arg) {
         if (arg instanceof ReturnStatement) {
             ReturnStatement stmt2 = (ReturnStatement) arg;
@@ -105,6 +107,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(LocalVariableDeclarationStatement stmt, Statement arg) {
         if (arg instanceof LocalVariableDeclarationStatement) {
             LocalVariableDeclarationStatement stmt2 = (LocalVariableDeclarationStatement) arg;
@@ -114,6 +117,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(ExpressionStatement stmt, Statement arg) {
         if (arg instanceof ExpressionStatement) {
             ExpressionStatement stmt2 = (ExpressionStatement) arg;
@@ -122,10 +126,12 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(CommentStatement stmt, Statement arg) {
         throw new IllegalStateException();
     }
 
+    @Override
     public Boolean visit(IfStatement stmt, Statement arg) {
         if (arg instanceof IfStatement) {
             IfStatement stmt2 = (IfStatement) arg;
@@ -140,6 +146,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(TryCatchFinallyStatement stmt, Statement arg) {
         if (arg instanceof TryCatchFinallyStatement) {
             TryCatchFinallyStatement stmt2 = (TryCatchFinallyStatement) arg;
@@ -168,10 +175,12 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(BreakStatement stmt, Statement arg) {
         return arg instanceof BreakStatement ? Boolean.TRUE :  Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(WhileStatement stmt, Statement arg) {
         if (arg instanceof WhileStatement) {
             WhileStatement stmt2 = (WhileStatement) arg;
@@ -183,6 +192,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(DoWhileStatement stmt, Statement arg) {
         if (arg instanceof DoWhileStatement) {
             DoWhileStatement stmt2 = (DoWhileStatement) arg;
@@ -194,6 +204,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(ForStatement stmt, Statement arg) {
         if (arg instanceof ForStatement) {
             ForStatement stmt2 = (ForStatement) arg;
@@ -211,6 +222,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(ThrowStatement stmt, Statement arg) {
         if (arg instanceof ThrowStatement) {
             ThrowStatement stmt2 = (ThrowStatement) arg;
@@ -219,6 +231,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(SwitchCaseStatement stmt, Statement arg) {
         if (arg instanceof SwitchCaseStatement) {
             SwitchCaseStatement stmt2 = (SwitchCaseStatement) arg;
@@ -254,6 +267,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(LabeledStatement stmt, Statement arg) {
         if (arg instanceof LabeledStatement) {
             LabeledStatement stmt2 = (LabeledStatement) arg;
@@ -265,6 +279,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(MonitorEnterStatement stmt, Statement arg) {
         if (arg instanceof MonitorEnterStatement) {
             MonitorEnterStatement stmt2 = (MonitorEnterStatement) arg;
@@ -275,6 +290,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(MonitorExitStatement stmt, Statement arg) {
         if (arg instanceof MonitorExitStatement) {
             MonitorExitStatement stmt2 = (MonitorExitStatement) arg;
@@ -285,6 +301,7 @@ public class StatementEqualityChecker implements StatementVisitor<Boolean, State
         return Boolean.FALSE;
     }
 
+    @Override
     public Boolean visit(SynchronizedStatement stmt, Statement arg) {
         if (arg instanceof SynchronizedStatement) {
             SynchronizedStatement stmt2 = (SynchronizedStatement) arg;

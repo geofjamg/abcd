@@ -112,6 +112,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         this.writer = writer;
     }
 
+    @Override
     public Void visit(IRInstSeq insts, Void arg) {
         for (Iterator<IRInst> it = insts.iterator(); it.hasNext();) {
             IRInst inst = it.next();
@@ -129,18 +130,21 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(ArrayLengthInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .write("arrayLength").writeSpace().write(inst.getArray());
         return null;
     }
 
+    @Override
     public Void visit(AssignVarInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .write(inst.getValue());
         return null;
     }
 
+    @Override
     public Void visit(AssignConstInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace();
         if (inst.getConst() instanceof StringConst) {
@@ -151,6 +155,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(BinaryInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .write(inst.getLeft()).writeSpace();
@@ -245,6 +250,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(CallMethodInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .writeKeyword("call").writeSpace()
@@ -261,6 +267,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(CallStaticMethodInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .writeKeyword("callstatic")
@@ -277,6 +284,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(CastInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .write("(").write(inst.getCastType()).write(")").writeSpace()
@@ -284,6 +292,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(ConditionalInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .write(inst.getCond())
@@ -294,12 +303,14 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(GetArrayInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .write(inst.getArray()).write("[").write(inst.getIndex()).write("]");
         return null;
     }
 
+    @Override
     public Void visit(SetArrayInst inst, Void arg) {
         writer.write(inst.getArray())
               .write("[").write(inst.getIndex()).write("]").writeSpace()
@@ -307,6 +318,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(GetFieldInst inst, Void arg) {
         writer.writeKeyword("getfield").writeSpace()
               .write(inst.getResult()).writeSpace()
@@ -315,6 +327,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(SetFieldInst inst, Void arg) {
         writer.writeKeyword("setfield").writeSpace()
               .write(inst.getObject()).writeSpace()
@@ -323,6 +336,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(GetStaticFieldInst inst, Void arg) {
         writer.writeKeyword("getstaticfield").writeSpace()
               .write(inst.getResult()).writeSpace()
@@ -330,6 +344,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(SetStaticFieldInst inst, Void arg) {
         writer.writeKeyword("setstaticfield").writeSpace()
               .write(inst.getScope()).write(".").write(inst.getFieldName()).writeSpace()
@@ -337,12 +352,14 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(JumpIfInst inst, Void arg) {
         writer.writeKeyword("jumpif").writeSpace()
               .write(inst.getCond());
         return null;
     }
 
+    @Override
     public Void visit(InstanceOfInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .write(inst.getVar()).writeSpace()
@@ -351,18 +368,21 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(MonitorEnterInst inst, Void arg) {
         writer.writeKeyword("monitorenter").writeSpace()
               .write(inst.getObj());
         return null;
     }
 
+    @Override
     public Void visit(MonitorExitInst inst, Void arg) {
         writer.writeKeyword("monitorexit").writeSpace()
               .write(inst.getObj());
         return null;
     }
 
+    @Override
     public Void visit(NewArrayInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .writeKeyword("new").writeSpace().write(inst.getElementType());
@@ -372,6 +392,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(NewObjectInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .writeKeyword("new").writeSpace()
@@ -387,6 +408,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(ReturnInst inst, Void arg) {
         writer.writeKeyword("return");
         if (inst.getVar() != null) {
@@ -395,16 +417,19 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(SwitchInst inst, Void arg) {
         writer.writeKeyword("switch").writeSpace().write(inst.getIndex());
         return null;
     }
 
+    @Override
     public Void visit(ThrowInst inst, Void arg) {
         writer.writeKeyword("throw").writeSpace().write(inst.getVar());
         return null;
     }
 
+    @Override
     public Void visit(UnaryInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace();
         switch (inst.getOperator()) {
@@ -426,6 +451,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(ChoiceInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .writeKeyword("choice").writeSpace();
@@ -439,6 +465,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(PhiInst inst, Void arg) {
         writer.write(inst.getResult()).writeSpace().write("=").writeSpace()
               .writeKeyword("phi ").writeSpace();

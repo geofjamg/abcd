@@ -44,10 +44,12 @@ public class CallMethodInst extends CallableInst {
         return object;
     }
 
+    @Override
     public MethodSignature getSignature() {
         return signature;
     }
 
+    @Override
     public List<Variable> getArguments() {
         return arguments;
     }
@@ -56,6 +58,7 @@ public class CallMethodInst extends CallableInst {
         return arguments.size();
     }
 
+    @Override
     public Set<Variable> getUses() {
         Set<Variable> uses = new HashSet<Variable>(arguments.size()+1);
         uses.add(object);
@@ -63,6 +66,7 @@ public class CallMethodInst extends CallableInst {
         return uses;
     }
 
+    @Override
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

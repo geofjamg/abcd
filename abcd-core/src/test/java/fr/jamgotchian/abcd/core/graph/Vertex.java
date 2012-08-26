@@ -23,14 +23,14 @@ package fr.jamgotchian.abcd.core.graph;
  */
 public class Vertex implements Comparable<Vertex> {
 
-    private String prefix; 
-    
+    private String prefix;
+
     private final int id;
 
     public Vertex(int id) {
         this(null, id);
     }
-    
+
     public Vertex(String prefix, int id) {
         this.prefix = prefix;
         this.id = id;
@@ -58,6 +58,7 @@ public class Vertex implements Comparable<Vertex> {
         return id;
     }
 
+    @Override
     public int compareTo(Vertex o) {
         return id - o.id;
     }

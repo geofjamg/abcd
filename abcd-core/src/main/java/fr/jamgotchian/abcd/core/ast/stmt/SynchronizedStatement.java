@@ -54,6 +54,7 @@ public class SynchronizedStatement extends AbstractStatement {
         return body;
     }
 
+    @Override
     public <R, A> R accept(StatementVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

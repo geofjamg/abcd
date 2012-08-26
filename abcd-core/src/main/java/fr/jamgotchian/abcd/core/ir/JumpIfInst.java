@@ -35,10 +35,12 @@ public class JumpIfInst extends IRInstImpl {
         return cond;
     }
 
+    @Override
     public Set<Variable> getUses() {
         return Collections.singleton(cond);
     }
 
+    @Override
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

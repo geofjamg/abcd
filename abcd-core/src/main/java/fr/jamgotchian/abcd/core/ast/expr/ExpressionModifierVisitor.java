@@ -28,50 +28,62 @@ import java.util.Set;
  */
 public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, Void> {
 
+    @Override
     public Expression visit(IntegerLiteralExpression expr, Void arg) {
         return null;
     }
 
+    @Override
     public Expression visit(LongLiteralExpression expr, Void arg) {
         return null;
     }
 
+    @Override
     public Expression visit(ByteLiteralExpression expr, Void arg) {
         return null;
     }
 
+    @Override
     public Expression visit(ShortLiteralExpression expr, Void arg) {
         return null;
     }
 
+    @Override
     public Expression visit(BooleanLiteralExpression expr, Void arg) {
         return null;
     }
 
+    @Override
     public Expression visit(FloatLiteralExpression expr, Void arg) {
         return null;
     }
 
+    @Override
     public Expression visit(DoubleLiteralExpression expr, Void arg) {
         return null;
     }
 
+    @Override
     public Expression visit(StringLiteralExpression expr, Void arg) {
         return null;
     }
 
+    @Override
     public Expression visit(NullLiteralExpression expr, Void arg) {
         return null;
     }
 
+    @Override
     public Expression visit(ClassLiteralExpression expr, Void arg) {
         return null;
     }
 
+    @Override
     public Expression visit(VariableExpression var, Void arg) {
         return null;
     }
 
+    @Override
     public Expression visit(UnaryExpression expr, Void arg) {
         Expression newExpr = expr.getExpr().accept(this, arg);
         if (newExpr == null) {
@@ -81,6 +93,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         }
     }
 
+    @Override
     public Expression visit(BinaryExpression expr, Void arg) {
         Expression newLeft = expr.getLeft().accept(this, arg);
         Expression newRight = expr.getRight().accept(this, arg);
@@ -93,6 +106,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         }
     }
 
+    @Override
     public Expression visit(AssignExpression expr, Void arg) {
         Expression newtarget = expr.getTarget().accept(this, arg);
         Expression newValue = expr.getValue().accept(this, arg);
@@ -104,10 +118,12 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         }
     }
 
+    @Override
     public Expression visit(TypeExpression expr, Void arg) {
         return null;
     }
 
+    @Override
     public Expression visit(FieldAccess expr, Void arg) {
         Expression newScope = expr.getScope().accept(this, arg);
         if (newScope == null) {
@@ -117,6 +133,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         }
     }
 
+    @Override
     public Expression visit(MethodCall expr, Void arg) {
         Expression newScope = null;
         if (expr.getScope() != null) {
@@ -140,6 +157,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         }
     }
 
+    @Override
     public Expression visit(ConditionalExpression expr, Void arg) {
         Expression newCond = expr.getCondition().accept(this, arg);
         Expression newThen = expr.getThen().accept(this, arg);
@@ -153,6 +171,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         }
     }
 
+    @Override
     public Expression visit(ObjectCreationExpression expr, Void arg) {
         List<Expression> newArguments = new ArrayList<Expression>(expr.getArguments());
         boolean argumentsModified = false;
@@ -170,6 +189,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         }
     }
 
+    @Override
     public Expression visit(ArrayCreationExpression expr, Void arg) {
         List<Expression> newArrayLengthExprs = new ArrayList<Expression>(expr.getArrayLengthExprs());
         boolean lengthModified = false;
@@ -187,6 +207,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         }
     }
 
+    @Override
     public Expression visit(ArrayLength expr, Void arg) {
         Expression newArrayRef = expr.getArrayRef().accept(this, arg);
         if (newArrayRef == null) {
@@ -196,6 +217,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         }
     }
 
+    @Override
     public Expression visit(CastExpression expr, Void arg) {
         Expression newExpr = expr.getExpr().accept(this, arg);
         if (newExpr == null) {
@@ -205,6 +227,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         }
     }
 
+    @Override
     public Expression visit(ArrayAccess expr, Void arg) {
         Expression newArrayRef = expr.getArrayRef().accept(this, arg);
         Expression newArrayIndex = expr.getArrayIndexExpr().accept(this, arg);
@@ -216,6 +239,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         }
     }
 
+    @Override
     public Expression visit(ChoiceExpression choiceExpr, Void arg) {
         Set<Expression> newChoices = new HashSet<Expression>();
         boolean modified = false;

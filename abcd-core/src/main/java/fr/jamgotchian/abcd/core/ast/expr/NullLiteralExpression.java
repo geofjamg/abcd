@@ -24,7 +24,8 @@ public class NullLiteralExpression extends AbstractExpression {
 
     public NullLiteralExpression() {
     }
-    
+
+    @Override
     public <R, A> R accept(ExpressionVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

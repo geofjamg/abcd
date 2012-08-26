@@ -46,6 +46,7 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
         this.stmtVisitor = new JavaStatementWriter(writer);
     }
 
+    @Override
     public Void visit(Class _class, Void arg) {
         for (Modifier mod : _class.getModifiers()) {
             writer.write(mod).writeSpace();
@@ -114,6 +115,7 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(Field field, Void arg) {
         for (Modifier mod : field.getModifiers()) {
             writer.write(mod).writeSpace();
@@ -127,6 +129,7 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
         return null;
     }
 
+    @Override
     public Void visit(Method method, Void _void) {
         for (Modifier mod : method.getModifiers()) {
             writer.write(mod).writeSpace();

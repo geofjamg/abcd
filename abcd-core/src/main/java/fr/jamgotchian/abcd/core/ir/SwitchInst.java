@@ -35,10 +35,12 @@ public class SwitchInst extends IRInstImpl {
         return index;
     }
 
+    @Override
     public Set<Variable> getUses() {
         return Collections.singleton(index);
     }
 
+    @Override
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

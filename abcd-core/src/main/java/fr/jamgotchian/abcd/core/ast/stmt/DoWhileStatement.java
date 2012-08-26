@@ -39,11 +39,12 @@ public class DoWhileStatement extends BodyStatement {
         this.condition = condition;
         this.body = body;
     }
-    
+
     public DoWhileStatement(Expression condition) {
         this(new BlockStatement(), condition);
     }
 
+    @Override
     public BlockStatement getBody() {
         return body;
     }
@@ -58,6 +59,7 @@ public class DoWhileStatement extends BodyStatement {
         body.setBlock(block);
     }
 
+    @Override
     public <R, A> R accept(StatementVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

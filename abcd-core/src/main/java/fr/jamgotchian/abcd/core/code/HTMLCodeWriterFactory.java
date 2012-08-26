@@ -24,6 +24,7 @@ import java.io.Writer;
  */
 public class HTMLCodeWriterFactory implements CodeWriterFactory {
 
+    @Override
     public CodeWriter create(Writer writer) {
         return new HTMLCodeWriter(writer);
     }

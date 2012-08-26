@@ -63,6 +63,7 @@ public class ArrayCreationExpression extends AbstractExpression {
         return initValues;
     }
 
+    @Override
     public <R, A> R accept(ExpressionVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

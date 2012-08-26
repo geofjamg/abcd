@@ -52,10 +52,12 @@ public class GetFieldInst extends DefInst {
         return fieldType;
     }
 
+    @Override
     public Set<Variable> getUses() {
         return Collections.singleton(object);
     }
 
+    @Override
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

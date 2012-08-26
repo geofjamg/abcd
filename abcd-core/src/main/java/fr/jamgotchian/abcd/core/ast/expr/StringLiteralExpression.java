@@ -31,7 +31,8 @@ public class StringLiteralExpression extends AbstractExpression {
     public String getValue() {
         return value;
     }
-    
+
+    @Override
     public <R, A> R accept(ExpressionVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

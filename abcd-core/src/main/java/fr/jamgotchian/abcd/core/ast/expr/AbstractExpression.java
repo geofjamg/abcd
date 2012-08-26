@@ -25,14 +25,17 @@ public abstract class AbstractExpression implements Expression {
 
     private Expression parent;
 
+    @Override
     public Expression getParent() {
         return parent;
     }
 
+    @Override
     public void setParent(Expression parent) {
         this.parent = parent;
     }
 
+    @Override
     public int getDepth() {
         int depth = 0;
         for (Expression expr = parent; expr != null; expr = expr.getParent()) {

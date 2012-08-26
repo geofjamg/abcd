@@ -35,10 +35,12 @@ public class MonitorExitInst extends IRInstImpl {
         return obj;
     }
 
+    @Override
     public Set<Variable> getUses() {
         return Collections.singleton(obj);
     }
 
+    @Override
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

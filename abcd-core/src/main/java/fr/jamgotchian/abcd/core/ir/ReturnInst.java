@@ -39,6 +39,7 @@ public class ReturnInst extends IRInstImpl {
         return var;
     }
 
+    @Override
     public Set<Variable> getUses() {
         if (var == null) {
             return Collections.emptySet();
@@ -47,6 +48,7 @@ public class ReturnInst extends IRInstImpl {
         }
     }
 
+    @Override
     public <R, A> R accept(IRInstVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
     }

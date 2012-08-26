@@ -37,6 +37,7 @@ public class JavaBytecodeGraphvizRenderer implements GraphvizRenderer<BasicBlock
         this.labelManager = labelManager;
     }
 
+    @Override
     public Map<String, String> getAttributes(BasicBlock bb) {
         Map<String, String> attrs = new HashMap<String, String>(3);
         attrs.put("shape", "box");

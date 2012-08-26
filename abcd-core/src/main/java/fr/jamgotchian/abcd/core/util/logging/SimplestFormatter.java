@@ -34,6 +34,7 @@ public class SimplestFormatter extends Formatter {
     public SimplestFormatter() {
     }
 
+    @Override
     public String format(LogRecord record) {
         StringBuilder sb = new StringBuilder();
 

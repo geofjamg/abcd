@@ -154,6 +154,7 @@ public class HTMLCodeWriter extends CodeWriter {
         return this;
     }
 
+    @Override
     public CodeWriter writeLt() {
         try {
             writer.append("&lt;");
@@ -163,6 +164,7 @@ public class HTMLCodeWriter extends CodeWriter {
         return this;
     }
 
+    @Override
     public CodeWriter writeGt() {
         try {
             writer.append("&gt;");
@@ -172,6 +174,7 @@ public class HTMLCodeWriter extends CodeWriter {
         return this;
     }
 
+    @Override
     public CodeWriter writeAmpersand() {
         try {
             writer.append("&amp;");
