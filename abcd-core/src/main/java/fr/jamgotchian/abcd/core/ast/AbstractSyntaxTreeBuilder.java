@@ -51,7 +51,6 @@ import fr.jamgotchian.abcd.core.ir.ArrayLengthInst;
 import fr.jamgotchian.abcd.core.ir.AssignConstInst;
 import fr.jamgotchian.abcd.core.ir.AssignVarInst;
 import static fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName.*;
-import fr.jamgotchian.abcd.core.ir.BasicBlockType;
 import fr.jamgotchian.abcd.core.ir.BinaryInst;
 import fr.jamgotchian.abcd.core.ir.ByteConst;
 import fr.jamgotchian.abcd.core.ir.CallMethodInst;

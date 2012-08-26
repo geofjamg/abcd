@@ -17,8 +17,6 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.Collections;

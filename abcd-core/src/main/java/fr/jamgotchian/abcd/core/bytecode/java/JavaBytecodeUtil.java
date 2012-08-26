@@ -19,7 +19,6 @@ package fr.jamgotchian.abcd.core.bytecode.java;
 
 import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.ast.ClassKind;
-import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.console.ConsoleUtil;
