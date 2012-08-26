@@ -26,7 +26,7 @@ public abstract class DefInst extends IRInstImpl {
 
     private final Variable result;
 
-    public DefInst(int defID, Variable result) {
+    DefInst(int defID, Variable result) {
         this.defID = defID;
         this.result = result;
     }

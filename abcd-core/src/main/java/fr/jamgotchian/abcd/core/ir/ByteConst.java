@@ -26,7 +26,7 @@ public class ByteConst extends ConstImpl {
 
     private final byte value;
 
-    public ByteConst(int ID, byte value) {
+    ByteConst(int ID, byte value) {
         super(ID);
         this.value = value;
     }

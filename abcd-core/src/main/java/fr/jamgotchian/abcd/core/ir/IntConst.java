@@ -26,7 +26,7 @@ public class IntConst extends ConstImpl {
 
     private final int value;
 
-    public IntConst(int ID, int value) {
+    IntConst(int ID, int value) {
         super(ID);
         this.value = value;
     }

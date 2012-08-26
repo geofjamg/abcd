@@ -26,7 +26,7 @@ public class LongConst extends ConstImpl {
 
     private final long value;
 
-    public LongConst(int ID, long value) {
+    LongConst(int ID, long value) {
         super(ID);
         this.value = value;
     }

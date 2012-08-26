@@ -24,7 +24,7 @@ import java.util.List;
  */
 public abstract class CallableInst extends DefInst {
 
-    public CallableInst(int defID, Variable result) {
+    CallableInst(int defID, Variable result) {
         super(defID, result);
     }
 

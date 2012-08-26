@@ -24,7 +24,7 @@ import fr.jamgotchian.abcd.core.type.TypeKind;
  */
 public class NullConst extends ConstImpl {
 
-    public NullConst(int ID) {
+    NullConst(int ID) {
         super(ID);
     }
 

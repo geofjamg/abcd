@@ -26,7 +26,7 @@ public class ShortConst extends ConstImpl {
 
     private final short value;
 
-    public ShortConst(int ID, short value) {
+    ShortConst(int ID, short value) {
         super(ID);
         this.value = value;
     }

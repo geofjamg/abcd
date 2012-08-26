@@ -32,8 +32,8 @@ public class CallMethodInst extends CallableInst {
 
     private final List<Variable> arguments;
 
-    public CallMethodInst(int defID, Variable result, Variable object,
-                          MethodSignature signature, List<Variable> arguments) {
+    CallMethodInst(int defID, Variable result, Variable object,
+                   MethodSignature signature, List<Variable> arguments) {
         super(defID, result);
         this.object = object;
         this.signature = signature;

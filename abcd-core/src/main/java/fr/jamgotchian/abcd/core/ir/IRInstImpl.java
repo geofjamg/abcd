@@ -24,6 +24,9 @@ public abstract class IRInstImpl implements IRInst {
 
     private boolean ignored;
 
+    protected IRInstImpl() {
+    }
+
     @Override
     public boolean isIgnored() {
         return ignored;

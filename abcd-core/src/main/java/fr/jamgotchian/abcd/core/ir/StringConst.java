@@ -26,7 +26,7 @@ public class StringConst extends ConstImpl {
 
     private final String value;
 
-    public StringConst(int ID, String value) {
+    StringConst(int ID, String value) {
         super(ID);
         this.value = value;
     }

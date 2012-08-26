@@ -26,7 +26,7 @@ public class DoubleConst extends ConstImpl {
 
     private final double value;
 
-    public DoubleConst(int ID, double value) {
+    DoubleConst(int ID, double value) {
         super(ID);
         this.value = value;
     }

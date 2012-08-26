@@ -26,7 +26,7 @@ public class FloatConst extends ConstImpl {
 
     private final float value;
 
-    public FloatConst(int ID, float value) {
+    FloatConst(int ID, float value) {
         super(ID);
         this.value = value;
     }

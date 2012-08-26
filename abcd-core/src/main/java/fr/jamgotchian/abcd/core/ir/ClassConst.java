@@ -27,7 +27,7 @@ public class ClassConst extends ConstImpl {
 
     private final ClassName className;
 
-    public ClassConst(int ID, ClassName className) {
+    ClassConst(int ID, ClassName className) {
         super(ID);
         this.className = className;
     }
