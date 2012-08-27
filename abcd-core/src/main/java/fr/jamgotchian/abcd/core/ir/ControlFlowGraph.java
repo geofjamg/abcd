@@ -512,8 +512,8 @@ public class ControlFlowGraph {
         boolean removed = false;
         for (BasicBlock block : new HashSet<BasicBlock>(graph.getVertices())) {
             if (!block.equals(entryBlock) && !block.equals(exitBlock)
-                    && graph.getIncomingEdgesOf(block).isEmpty()
-                    && graph.getOutgoingEdgesOf(block).isEmpty()) {
+                    && graph.getPredecessorCountOf(block) == 0
+                    && graph.getSuccessorCountOf(block) == 0) {
                 graph.removeVertex(block);
                 removed = true;
 
