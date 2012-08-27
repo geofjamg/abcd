@@ -26,6 +26,7 @@ import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.RPST;
+import fr.jamgotchian.abcd.core.ir.RPSTLogger;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -58,7 +59,7 @@ public class NbABCDWriter implements ABCDWriter {
     }
 
     @Override
-    public void writeRPST(RPST rpst, int level) {
+    public void writeRPST(RPSTLogger logger) {
     }
 
     @Override
