@@ -104,7 +104,7 @@
             <type>nbm</type>
         </dependency>
         <dependency>
-            <groupId>fr.jamgotchian.abcd.core</groupId>
+            <groupId>fr.jamgotchian.abcd</groupId>
             <artifactId>abcd-core</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
