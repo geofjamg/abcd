@@ -24,11 +24,14 @@
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.2.1</version>
+                <version>2.2.2</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <descriptors>
+                        <descriptor>src/main/assembly/dir.xml</descriptor>
+                    </descriptors>
                     <archive>
                         <manifest>
                             <mainClass>fr.jamgotchian.abcd.core.Main</mainClass>

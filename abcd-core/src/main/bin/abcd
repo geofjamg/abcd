@@ -1,0 +1,15 @@
+#!/bin/bash
+
+bin=`dirname $0`
+cd $bin
+
+if [ $JAVA_HOME = "" ]; then
+  echo "Error: JAVA_HOME is not set."
+  exit 1
+fi
+
+JAVA=$JAVA_HOME/bin/java
+CLASSPATH=classes:../lib/*
+CLASS=fr.jamgotchian.abcd.core.Main
+
+$JAVA -classpath $CLASSPATH -Djava.util.logging.config.file=../conf/logging.properties $CLASS $@
