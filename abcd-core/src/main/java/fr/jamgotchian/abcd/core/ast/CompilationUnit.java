@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ast;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class CompilationUnit {
     private final Package _package;
 
     private final ImportManager _import;
-    
+
     private final List<Class> classes;
 
     public CompilationUnit(Package _package, ImportManager _import) {
@@ -52,5 +53,10 @@ public class CompilationUnit {
 
     public <R, A> R accept(CompilationUnitVisitor<R, A> visitor, A arg) {
         return visitor.visit(this, arg);
+    }
+
+    public String getFilePath() {
+        return _package.getName().replace('.', File.separatorChar)
+                + File.separator + classes.get(0).getName() + ".java";
     }
 }

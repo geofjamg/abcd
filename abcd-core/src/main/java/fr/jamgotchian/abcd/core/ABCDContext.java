@@ -81,17 +81,23 @@ public class ABCDContext {
         } else {
             nameProviderFactory = new SimpleVariableNameProviderFactory();
         }
+
+        System.out.println("decompiling...");
+
         Summary summary = new Summary();
+        boolean[] error = new boolean[1];
         for (ClassFactory classFactory : dataSrc.createClassFactories()) {
             ImportManager importManager = new ImportManager();
             Class _class = decompileClass(classFactory, importManager,
                                           nameProviderFactory, writer, prefs,
-                                          classLoader, summary);
+                                          classLoader, summary, error);
 
             CompilationUnit compilUnit = new CompilationUnit(_class.getPackage(), importManager);
             compilUnit.getClasses().add(_class);
 
             writer.writeAST(compilUnit);
+
+            System.out.println(compilUnit.getFilePath() + (error[0] ? " ERROR" : ""));
         }
 
         LOGGER.debug(ConsoleUtil.formatTitledSeparator("Summary", '#'));
@@ -105,8 +111,8 @@ public class ABCDContext {
         LOGGER.debug("Number of class partially decompiled : {}",
                 Integer.toString(summary.getNumberOfClassesPartiallyDecompiled()));
         TablePrinter printer = ConsoleUtil.newTablePrinter("Error", "Class", "Method");
-        for (ErrorInfo error : summary.getErrors()) {
-            printer.addRow(error.getMessage(), error.getClassName(), error.getMethodSignature());
+        for (ErrorInfo info : summary.getErrors()) {
+            printer.addRow(info.getMessage(), info.getClassName(), info.getMethodSignature());
         }
         LOGGER.debug("\n{}", printer.toString());
     }
@@ -114,7 +120,8 @@ public class ABCDContext {
     private Class decompileClass(ClassFactory classFactory, ImportManager importManager,
                                  VariableNameProviderFactory nameProviderFactory,
                                  ABCDWriter writer, ABCDPreferences prefs,
-                                 ClassLoader classLoader, Summary summary) throws IOException {
+                                 ClassLoader classLoader, Summary summary,
+                                 boolean[] error) throws IOException {
         Class _class = classFactory.createClass(importManager);
 
         ClassName thisClassName = importManager.newClassName(_class.getQualifiedName());
@@ -123,7 +130,7 @@ public class ABCDContext {
         LOGGER.debug(ConsoleUtil.formatTitledSeparator("Decompile class {}", '#'),
                 _class.getQualifiedName());
 
-        boolean error = false;
+        error[0] = false;
 
         Collection<MethodFactory> methodFactories = classFactory.createMethodFactories();
         for (MethodFactory methodFactory : methodFactories) {
@@ -219,7 +226,7 @@ public class ABCDContext {
                                                                      "Decompilation failed",
                                                                      importManager));
 
-                error = true;
+                error[0] = true;
                 summary.incrNumberOfFailures();
                 summary.addError(new ErrorInfo(_class.getQualifiedName(),
                                                        methodSignature,
@@ -227,7 +234,7 @@ public class ABCDContext {
             }
         }
 
-        if (error) {
+        if (error[0]) {
             summary.incrNumberOfClassesPartiallyDecompiled();
         } else {
             summary.incrNumberOfClassesPerfectlyDecompiled();
