@@ -69,34 +69,6 @@
                     <xmlOutput>true</xmlOutput>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <executable>java</executable>
-                    <arguments>
-                        <argument>-Djava.util.logging.config.file=${basedir}/logging.properties</argument>
-                        <argument>-jar</argument>
-                        <argument>${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar</argument>
-                        <argument>-d</argument>
-                        <argument>/tmp</argument>
-                        <argument>-classdir</argument>
-                        <argument>${project.build.testOutputDirectory}</argument>
-                        <argument>-class</argument>
-                        <argument>fr.jamgotchian.abcd.core.Test</argument>
-                        <argument>-debug</argument>
-                        <argument>${user.home}/dot</argument>
-                    </arguments>
-                </configuration>
-            </plugin>
         </plugins>
         <extensions>
             <extension>
