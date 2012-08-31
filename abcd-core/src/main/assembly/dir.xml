@@ -12,11 +12,6 @@
             <outputDirectory>/bin</outputDirectory>
             <fileMode>755</fileMode>
         </fileSet>
-        <fileSet>
-            <directory>src/main/config</directory>
-            <outputDirectory>/conf</outputDirectory>
-            <fileMode>644</fileMode>
-        </fileSet>
     </fileSets>
     <dependencySets>
         <dependencySet>

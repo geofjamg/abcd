@@ -58,10 +58,10 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
 
     @Override
     public Map<BasicBlock, Set<Variable>> analyse() {
-        LOGGER.debug("Live variables analysis :");
+        LOGGER.trace("Live variables analysis :");
         Map<BasicBlock, Set<Variable>> liveVariables = super.analyse();
         for (Map.Entry<BasicBlock, Set<Variable>> entry : liveVariables.entrySet()) {
-            LOGGER.debug("  {} : {}", entry.getKey(), entry.getValue());
+            LOGGER.trace("  {} : {}", entry.getKey(), entry.getValue());
         }
         return liveVariables;
     }

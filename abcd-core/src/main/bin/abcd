@@ -12,4 +12,4 @@ JAVA=$JAVA_HOME/bin/java
 CLASSPATH=classes:../lib/*
 CLASS=fr.jamgotchian.abcd.core.Main
 
-$JAVA -classpath $CLASSPATH -Djava.util.logging.config.file=../conf/logging.properties $CLASS $@
+$JAVA -classpath $CLASSPATH $CLASS $@
