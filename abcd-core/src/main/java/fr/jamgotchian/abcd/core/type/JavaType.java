@@ -196,7 +196,7 @@ public class JavaType {
             if (qualifiedName) {
                 builder.append(className.getQualifiedName());
             } else {
-                builder.append(className.getName());
+                builder.append(className.getCompilationUnitName());
             }
         }
         for (int i = 0; i < arrayDimension; i++) {

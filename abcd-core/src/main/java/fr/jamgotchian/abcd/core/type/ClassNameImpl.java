@@ -22,14 +22,17 @@ package fr.jamgotchian.abcd.core.type;
  */
 public class ClassNameImpl implements ClassName {
 
-    protected final String qualifiedName;
+    private final String qualifiedName;
 
-    protected final String packageName;
+    private final String packageName;
 
-    protected final String simpleName;
+    private final String simpleName;
 
-    public ClassNameImpl(String qualifiedName) {
+    private final ImportStrategy importStrategy;
+
+    public ClassNameImpl(String qualifiedName, ImportStrategy importStrategy) {
         this.qualifiedName = qualifiedName;
+        this.importStrategy = importStrategy;
         int lastDotIndex = qualifiedName.lastIndexOf('.');
         if (lastDotIndex == -1)  {
             packageName = null;
@@ -56,8 +59,12 @@ public class ClassNameImpl implements ClassName {
     }
 
     @Override
-    public String getName() {
-        return qualifiedName;
+    public String getCompilationUnitName() {
+        if (importStrategy != null) {
+            return importStrategy.getCompilationUnitName(this);
+        } else {
+            return qualifiedName;
+        }
     }
 
     @Override
@@ -75,7 +82,7 @@ public class ClassNameImpl implements ClassName {
 
     @Override
     public String toString() {
-        return getName();
+        return getCompilationUnitName();
     }
 }
 

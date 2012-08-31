@@ -28,5 +28,5 @@ public interface ClassName {
 
     String getQualifiedName();
 
-    String getName();
+    String getCompilationUnitName();
 }

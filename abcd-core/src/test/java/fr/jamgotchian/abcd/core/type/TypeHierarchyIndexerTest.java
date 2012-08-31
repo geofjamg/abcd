@@ -52,7 +52,7 @@ public class TypeHierarchyIndexerTest {
 
     @Test
     public void test2() {
-        JavaType javaLangStringType = JavaType.newRefType(new ClassNameImpl(String.class.getName()));
+        JavaType javaLangStringType = JavaType.newRefType(new ClassNameImpl(String.class.getName(), null));
         indexer.addIndex(javaLangStringType);
         assertTrue(indexer.getFirstIndex() == 0);
         assertTrue(indexer.getLastIndex() == 12);

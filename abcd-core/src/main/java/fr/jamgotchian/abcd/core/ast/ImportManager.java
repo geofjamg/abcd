@@ -17,7 +17,9 @@
 package fr.jamgotchian.abcd.core.ast;
 
 import fr.jamgotchian.abcd.core.type.ClassName;
+import fr.jamgotchian.abcd.core.type.ClassNameImpl;
 import fr.jamgotchian.abcd.core.type.ClassNameManager;
+import fr.jamgotchian.abcd.core.type.ImportStrategy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,7 +30,7 @@ import java.util.Set;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class ImportManager implements ClassNameManager {
+public class ImportManager implements ClassNameManager, ImportStrategy {
 
     private final List<ClassName> classNames = new ArrayList<ClassName>();
 
@@ -37,7 +39,7 @@ public class ImportManager implements ClassNameManager {
 
     @Override
     public ClassName newClassName(String className) {
-        ClassName cn = new ImportableClassName(className, this);
+        ClassName cn = new ClassNameImpl(className, this);
         classNames.add(cn);
         return cn;
     }
@@ -47,7 +49,16 @@ public class ImportManager implements ClassNameManager {
         return classNames;
     }
 
-    public boolean isImported(ClassName className) {
+    @Override
+    public String getCompilationUnitName(ClassName className) {
+        if (className.getPackageName() == null || isImported(className)) {
+            return className.getSimpleName();
+        } else {
+            return className.getQualifiedName();
+        }
+    }
+
+    private boolean isImported(ClassName className) {
         String packageName = className.getPackageName();
         return packageName != null
                 && packageName.startsWith("java.lang");
