@@ -71,7 +71,7 @@ public class JavaClassWriter implements ClassVisitor<Void, Void> {
             default:
                 throw new InternalError();
         }
-        writer.writeSpace().write(_class.getName());
+        writer.writeSpace().write(_class.getName().getSimpleName());
         if (_class.getSuperName() != null
                 && !Object.class.getName().equals(_class.getSuperName().getQualifiedName())) {
             writer.incrIndent();

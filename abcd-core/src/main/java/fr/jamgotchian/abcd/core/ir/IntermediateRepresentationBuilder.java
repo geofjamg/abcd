@@ -27,7 +27,6 @@ import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import static fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName.*;
 import fr.jamgotchian.abcd.core.type.ClassNameManager;
-import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.console.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.console.TablePrinter;
 import java.util.ArrayList;
@@ -61,11 +60,7 @@ public class IntermediateRepresentationBuilder {
 
     private final VariableNameProviderFactory nameProviderFactory;
 
-    private final JavaType thisType;
-
-    private final JavaType methodReturnType;
-
-    private final List<Variable> methodArgs;
+    private final MethodContext methodContext;
 
     private final ABCDWriter writer;
 
@@ -81,9 +76,7 @@ public class IntermediateRepresentationBuilder {
                                              VariableFactory varFactory,
                                              IRInstFactory instFactory,
                                              VariableNameProviderFactory nameProviderFactory,
-                                             JavaType thisType,
-                                             JavaType methodReturnType,
-                                             List<Variable> methodArgs,
+                                             MethodContext methodContext,
                                              ABCDWriter writer,
                                              ABCDPreferences preferences,
                                              ClassLoader classLoader) {
@@ -93,9 +86,7 @@ public class IntermediateRepresentationBuilder {
         this.varFactory = varFactory;
         this.instFactory = instFactory;
         this.nameProviderFactory = nameProviderFactory;
-        this.thisType = thisType;
-        this.methodReturnType = methodReturnType;
-        this.methodArgs = methodArgs;
+        this.methodContext = methodContext;
         this.writer = writer;
         this.preferences = preferences;
         this.classLoader = classLoader;
@@ -209,7 +200,7 @@ public class IntermediateRepresentationBuilder {
 
         Set<Variable> variables = new HashSet<Variable>();
 
-        for (Variable arg : methodArgs) {
+        for (Variable arg : methodContext.getArguments()) {
             arg.setName(nameProvider.getName(arg));
         }
         for (BasicBlock block : cfg.getBasicBlocks()) {
@@ -301,11 +292,11 @@ public class IntermediateRepresentationBuilder {
 //                cfg.updatePostDominatorInfo();
 //                cfg.updateLoopInfo();
 //            }
-
-            // must be done after collapsing shortcut operators because of conditional
-            // instruction with shortcut operators in the condition
+//
+//            // must be done after collapsing shortcut operators because of conditional
+//            // instruction with shortcut operators in the condition
 //            resolveChoiceInst();
-
+//
 //            if (preferences.isAnalyseLocalVariableType()) {
 //                // need to remove critical edges to convert to SSA
 //                if (cfg.removeCriticalEdges()) {
@@ -325,8 +316,7 @@ public class IntermediateRepresentationBuilder {
 //                }
 //
 //                // analyse local variables types
-//                new LocalVariableTypeAnalyser(cfg, thisType, methodReturnType,
-//                                              methodArgs, classNameManager,
+//                new LocalVariableTypeAnalyser(cfg, methodContext, classNameManager,
 //                                              varFactory, classLoader)
 //                        .analyse();
 //            }

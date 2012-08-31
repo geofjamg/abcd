@@ -124,11 +124,8 @@ public class ABCDContext {
                                  boolean[] error) throws IOException {
         Class _class = classFactory.createClass(importManager);
 
-        ClassName thisClassName = importManager.newClassName(_class.getQualifiedName());
-        JavaType thisType = JavaType.newRefType(thisClassName);
-
         LOGGER.debug(ConsoleUtil.formatTitledSeparator("Decompile class {}", '#'),
-                _class.getQualifiedName());
+                _class.getName().getQualifiedName());
 
         error[0] = false;
 
@@ -173,9 +170,7 @@ public class ABCDContext {
                                                             varFactory,
                                                             instFactory,
                                                             nameProviderFactory,
-                                                            thisType,
-                                                            method.getReturnType(),
-                                                            method.getArguments(),
+                                                            method,
                                                             writer,
                                                             prefs,
                                                             classLoader)
@@ -228,7 +223,7 @@ public class ABCDContext {
 
                 error[0] = true;
                 summary.incrNumberOfFailures();
-                summary.addError(new ErrorInfo(_class.getQualifiedName(),
+                summary.addError(new ErrorInfo(_class.getName().getQualifiedName(),
                                                        methodSignature,
                                                        exc.toString()));
             }

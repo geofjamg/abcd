@@ -30,7 +30,6 @@ import fr.jamgotchian.abcd.core.type.TypeKind;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -382,10 +381,10 @@ public class LocalVariableTypeAnalyser {
 
         @Override
         public Void visit(ReturnInst inst, Void arg) {
-            if (methodReturnType != null) {
-                if (methodReturnType.getKind() == TypeKind.PRIMITIVE) {
-                    if (!methodReturnType.equals(JavaType.VOID)) {
-                        addPrimConstraint(inst.getVar(), methodReturnType);
+            if (methodContext.getReturnType() != null) {
+                if (methodContext.getReturnType().getKind() == TypeKind.PRIMITIVE) {
+                    if (!methodContext.getReturnType().equals(JavaType.VOID)) {
+                        addPrimConstraint(inst.getVar(), methodContext.getReturnType());
                     }
                 } else {
                     // TODO
@@ -459,11 +458,7 @@ public class LocalVariableTypeAnalyser {
 
     private final ControlFlowGraph cfg;
 
-    private final JavaType thisType;
-
-    private final JavaType methodReturnType;
-
-    private final List<Variable> methodArgs;
+    private final MethodContext methodContext;
 
     private final ClassNameManager classNameManager;
 
@@ -477,14 +472,11 @@ public class LocalVariableTypeAnalyser {
 
     private final TypeHierarchyIndexer indexer;
 
-    public LocalVariableTypeAnalyser(ControlFlowGraph cfg, JavaType thisType,
-                                     JavaType methodReturnType, List<Variable> methodArgs,
+    public LocalVariableTypeAnalyser(ControlFlowGraph cfg, MethodContext methodContext,
                                      ClassNameManager classNameManager,
                                      VariableFactory varFactory, ClassLoader classLoader) {
         this.cfg = cfg;
-        this.thisType = thisType;
-        this.methodReturnType = methodReturnType;
-        this.methodArgs = methodArgs;
+        this.methodContext = methodContext;
         this.classNameManager = classNameManager;
         this.varFactory = varFactory;
         indexer = new TypeHierarchyIndexer(classLoader);
@@ -551,10 +543,10 @@ public class LocalVariableTypeAnalyser {
     }
 
     private void createIndexes() {
-        if (thisType != null) {
-            indexer.addIndex(thisType);
+        if (methodContext.getThisType() != null) {
+            indexer.addIndex(methodContext.getThisType());
         }
-        for (Variable varArg : methodArgs) {
+        for (Variable varArg : methodContext.getArguments()) {
             indexer.addIndex(varArg.getType());
         }
         indexer.addIndex(JavaType.newRefType(String.class, classNameManager));
@@ -571,12 +563,12 @@ public class LocalVariableTypeAnalyser {
         model = new CPModel();
 
         // this type constraint
-        if (thisType != null) {
-            addRefConstraint(varFactory.create(0), thisType,
+        if (methodContext.getThisType() != null) {
+            addRefConstraint(varFactory.create(0), methodContext.getThisType(),
                              ReferenceConstraintType.SUPER_CLASS_CONSTRAINT);
         }
         // method arguments constraints
-        for (Variable varArg : methodArgs) {
+        for (Variable varArg : methodContext.getArguments()) {
             JavaType varType = varArg.getType();
             if (varType.getKind() == TypeKind.PRIMITIVE) {
                 addPrimConstraint(varArg, varType);

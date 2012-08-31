@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.ast;
 
 import fr.jamgotchian.abcd.core.ast.stmt.BlockStatement;
+import fr.jamgotchian.abcd.core.ir.MethodContext;
 import fr.jamgotchian.abcd.core.ir.Variable;
 import fr.jamgotchian.abcd.core.type.ClassName;
 import fr.jamgotchian.abcd.core.type.JavaType;
@@ -30,7 +31,7 @@ import javax.lang.model.element.Modifier;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class Method {
+public class Method implements MethodContext {
 
     private Class _class;
 
@@ -90,10 +91,17 @@ public class Method {
         return modifiers;
     }
 
+    @Override
+    public JavaType getThisType() {
+        return _class.getThisType();
+    }
+
+    @Override
     public JavaType getReturnType() {
         return returnType;
     }
 
+    @Override
     public List<Variable> getArguments() {
         return arguments;
     }

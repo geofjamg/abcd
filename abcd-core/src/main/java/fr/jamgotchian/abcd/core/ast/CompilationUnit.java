@@ -57,6 +57,6 @@ public class CompilationUnit {
 
     public String getFilePath() {
         return _package.getName().replace('.', File.separatorChar)
-                + File.separator + classes.get(0).getName() + ".java";
+                + File.separator + classes.get(0).getName().getSimpleName() + ".java";
     }
 }

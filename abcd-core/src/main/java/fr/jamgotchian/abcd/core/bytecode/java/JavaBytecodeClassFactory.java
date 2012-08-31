@@ -56,23 +56,12 @@ public class JavaBytecodeClassFactory implements ClassFactory {
 
     @Override
     public Class createClass(ImportManager importManager) {
-        // package
-        String packageName = "";
-        int lastDotIndex = cn.name.lastIndexOf('/');
-        if (lastDotIndex != -1) {
-            packageName = cn.name.substring(0, lastDotIndex).replace('/', '.');
-        }
-        Package _package = new Package(packageName);
 
         // class name
-        String className = cn.name.replace('/', '.');
-        String simpleClassName = null;
-        lastDotIndex = className.lastIndexOf('.');
-        if (lastDotIndex != -1) {
-            simpleClassName = className.substring(lastDotIndex+1);
-        } else { // class is in default package
-            simpleClassName = className;
-        }
+        ClassName className = importManager.newClassName(cn.name.replace('/', '.'));
+
+        // package
+        Package _package = new Package(className.getPackageName());
 
         // super class name
         ClassName superClassName = null;
@@ -93,7 +82,7 @@ public class JavaBytecodeClassFactory implements ClassFactory {
             interfaceNames.add(importManager.newClassName(_interface.replace('/', '.')));
         }
 
-        Class _class = new Class(_package, simpleClassName, superClassName,
+        Class _class = new Class(_package, className, superClassName,
                                  interfaceNames, kind, modifiers);
 
         // fields

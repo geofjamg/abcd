@@ -18,6 +18,7 @@
 package fr.jamgotchian.abcd.core.ast;
 
 import fr.jamgotchian.abcd.core.type.ClassName;
+import fr.jamgotchian.abcd.core.type.JavaType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -31,7 +32,9 @@ public class Class {
 
     private final Package _package;
 
-    private final String name;
+    private final ClassName name;
+
+    private final JavaType thisType;
 
     private final ClassName superName;
 
@@ -47,11 +50,12 @@ public class Class {
 
     private final List<Method> methods;
 
-    public Class(Package _package, String name, ClassName superName,
+    public Class(Package _package, ClassName name, ClassName superName,
                  List<ClassName> interfaces, ClassKind kind,
                  Set<Modifier> modifiers) {
         this._package = _package;
         this.name = name;
+        thisType = JavaType.newRefType(name);
         this.superName = superName;
         this.interfaces = interfaces;
         this.kind = kind;
@@ -65,12 +69,12 @@ public class Class {
         return _package;
     }
 
-    public String getQualifiedName() {
-        return _package.getName() + "." + name;
+    public ClassName getName() {
+        return name;
     }
 
-    public String getName() {
-        return name;
+    public JavaType getThisType() {
+        return thisType;
     }
 
     public ClassName getSuperName() {

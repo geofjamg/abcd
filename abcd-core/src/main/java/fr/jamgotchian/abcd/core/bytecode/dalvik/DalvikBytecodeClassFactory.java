@@ -59,19 +59,8 @@ public class DalvikBytecodeClassFactory implements ClassFactory {
 
     @Override
     public Class createClass(ImportManager importManager) {
-        String className = Type.getType(item.getClassType().getTypeDescriptor())
-                .getClassName();
-        String packageName = null;
-        String simpleClassName = null;
-        int lastDotIndex = className.lastIndexOf('.');
-        if (lastDotIndex != -1) {
-            packageName = className.substring(0, lastDotIndex);
-            simpleClassName = className.substring(lastDotIndex + 1);
-        } else { // class is in default package
-            packageName = "";
-            simpleClassName = className;
-        }
-        Package _package = new Package(packageName);
+        ClassName className = importManager.newClassName(Type.getType(item.getClassType().getTypeDescriptor()).getClassName());
+        Package _package = new Package(className.getPackageName());
         ClassName superClassName = null;
         if (item.getSuperclass() != null) {
             superClassName
@@ -89,7 +78,7 @@ public class DalvikBytecodeClassFactory implements ClassFactory {
             }
         }
 
-        Class _class = new Class(_package, simpleClassName, superClassName,
+        Class _class = new Class(_package, className, superClassName,
                                  interfaceNames, kind, modifiers);
 
         for (EncodedField encodedField : item.getClassData().getInstanceFields()) {
