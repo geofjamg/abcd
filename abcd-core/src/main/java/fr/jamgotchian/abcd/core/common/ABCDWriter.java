@@ -17,8 +17,6 @@
 package fr.jamgotchian.abcd.core.common;
 
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
-import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
-import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.RPSTLogger;
 
@@ -28,7 +26,7 @@ import fr.jamgotchian.abcd.core.ir.RPSTLogger;
  */
 public interface ABCDWriter {
 
-    void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bytecodeRenderer);
+    void writeRawCFG(ControlFlowGraph cfg);
 
     void writeCFG(ControlFlowGraph cfg, boolean failure);
 

@@ -53,7 +53,9 @@ public class RegionAnalysis {
         }
         ControlFlowGraph cfg = rpst.getCfg();
         ControlFlowGraph subCfg
-                = new ControlFlowGraph("Subgraph of " + cfg.getName(), region.getEntry(), region.getExit());
+                = new ControlFlowGraph("Subgraph of " + cfg.getName(),
+                                       region.getEntry(), region.getExit(),
+                                       cfg.getBytecodeRenderer());
         for (BasicBlock bb : rpst.getBasicBlocks(region)) {
             if (!bb.equals(region.getEntry()) && !bb.equals(region.getExit())) {
                 subCfg.addBasicBlock(bb);

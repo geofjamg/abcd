@@ -34,6 +34,33 @@ public abstract class ControlFlowGraphBuilder {
     private static final Logger LOGGER
             = LoggerFactory.getLogger(ControlFlowGraphBuilder.class);
 
+    public static class Result {
+
+        private final ControlFlowGraph cfg;
+
+        private final ExceptionTable exceptionTable;
+
+        private final LocalVariableTable localVarTable;
+
+        public Result(ControlFlowGraph cfg, ExceptionTable exceptionTable, LocalVariableTable localVarTable) {
+            this.cfg = cfg;
+            this.exceptionTable = exceptionTable;
+            this.localVarTable = localVarTable;
+        }
+
+        public ControlFlowGraph getCfg() {
+            return cfg;
+        }
+
+        public ExceptionTable getExceptionTable() {
+            return exceptionTable;
+        }
+
+        public LocalVariableTable getLocalVarTable() {
+            return localVarTable;
+        }
+    }
+
     private final String methodName;
 
     private ControlFlowGraph cfg;
@@ -42,24 +69,22 @@ public abstract class ControlFlowGraphBuilder {
         this.methodName = methodName;
     }
 
-    public ControlFlowGraph build() {
+    public Result build() {
         LOGGER.debug(ConsoleUtil.formatTitledSeparator("Build CFG of {}", '='), methodName);
 
-        cfg = new ControlFlowGraph(methodName, getInstructionCount());
+        cfg = new ControlFlowGraph(methodName, getInstructionCount(), getGraphizRenderer());
 
-        ExceptionTable table = getExceptionTable();
-        cfg.setExceptionTable(getExceptionTable());
-        printExceptionTable(table);
+        ExceptionTable exceptionTable = getExceptionTable();
+        printExceptionTable(exceptionTable);
 
         analyseInstructions();
 
-        analyseExceptionTable(table);
+        analyseExceptionTable(exceptionTable);
 
-        LocalVariableTable table2 = getLocalVariableTable();
-        cfg.setLocalVariableTable(table2);
-        printLocalVariableTable(table2);
+        LocalVariableTable localVarTable = getLocalVariableTable();
+        printLocalVariableTable(localVarTable);
 
-        return cfg;
+        return new Result(cfg, exceptionTable, localVarTable);
     }
 
     protected abstract void analyseInstructions();

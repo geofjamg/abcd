@@ -22,5 +22,5 @@ package fr.jamgotchian.abcd.core.ir;
  */
 public interface VariableNameProviderFactory {
 
-    VariableNameProvider create(ControlFlowGraph cfg);
+    VariableNameProvider create(LocalVariableTable table);
 }

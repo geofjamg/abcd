@@ -20,9 +20,7 @@ import fr.jamgotchian.abcd.core.common.ABCDWriter;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
-import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.code.TextCodeWriter;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDPreferences;
@@ -60,7 +58,7 @@ public class DefaultABCDWriter implements ABCDWriter {
     }
 
     @Override
-    public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bytecodeRenderer) {
+    public void writeRawCFG(ControlFlowGraph cfg) {
     }
 
     @Override

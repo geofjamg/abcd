@@ -18,12 +18,10 @@ package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.ABCDPreferences;
-import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.RangeGraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.EdgeGraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.RPSTLogger;
-import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
@@ -75,7 +73,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     }
 
     @Override
-    public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bytecodeRenderer) {
+    public void writeRawCFG(ControlFlowGraph cfg) {
         assert cfg != null;
 
         String baseName = getBaseName(cfg.getName());
@@ -90,7 +88,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
 
             writer = new FileWriter(baseName + "_BC.dot");
             try {
-                cfg.export(writer, bytecodeRenderer, EDGE_GRAPHVIZ_RENDERER);
+                cfg.exportBytecode(writer);
             } finally {
                 writer.close();
             }

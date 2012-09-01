@@ -40,13 +40,12 @@ import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.DebugInfoVariableNameProviderFactory;
 import fr.jamgotchian.abcd.core.ir.ExceptionTable;
 import fr.jamgotchian.abcd.core.ir.IRInstFactory;
+import fr.jamgotchian.abcd.core.ir.LocalVariableTable;
 import fr.jamgotchian.abcd.core.ir.VariableFactory;
 import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.ir.RegionAnalysis;
 import fr.jamgotchian.abcd.core.ir.SimpleVariableNameProviderFactory;
 import fr.jamgotchian.abcd.core.ir.VariableNameProviderFactory;
-import fr.jamgotchian.abcd.core.type.ClassName;
-import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.util.console.ConsoleUtil;
 import fr.jamgotchian.abcd.core.util.Exceptions;
 import fr.jamgotchian.abcd.core.util.console.TablePrinter;
@@ -145,6 +144,8 @@ public class ABCDContext {
             String methodSignature = method.getSignature();
 
             ControlFlowGraph cfg = null;
+            ExceptionTable exceptionTable = null;
+            LocalVariableTable localVarTable = null;
 
             try {
                 LOGGER.debug("");
@@ -159,22 +160,28 @@ public class ABCDContext {
                 ControlFlowGraphBuilder cfgBuilder
                         = methodFactory.createCFGBuilder(methodSignature);
 
+                // analyse bytecode
+                ControlFlowGraphBuilder.Result result = cfgBuilder.build();
+                cfg = result.getCfg();
+                exceptionTable = result.getExceptionTable();
+                localVarTable = result.getLocalVarTable();
+
                 IRInstFactory instFactory = new IRInstFactory();
 
                 InstructionBuilder instBuilder
                     = methodFactory.createInstBuilder(importManager, varFactory, instFactory);
 
-                cfg = new IntermediateRepresentationBuilder(cfgBuilder,
-                                                            instBuilder,
-                                                            importManager,
-                                                            varFactory,
-                                                            instFactory,
-                                                            nameProviderFactory,
-                                                            method,
-                                                            writer,
-                                                            prefs,
-                                                            classLoader)
-                        .build();
+                new IntermediateRepresentationBuilder(cfg,
+                                                      localVarTable,
+                                                      instBuilder,
+                                                      importManager,
+                                                      varFactory,
+                                                      instFactory,
+                                                      nameProviderFactory,
+                                                      method,
+                                                      writer,
+                                                      prefs,
+                                                      classLoader).build();
 
                 LOGGER.debug(ConsoleUtil.formatTitledSeparator("Analyse regions of {}", '='),
                         methodSignature);
@@ -207,11 +214,10 @@ public class ABCDContext {
                         .append("\n")
                         .append(methodFactory.getBytecodeAsText())
                         .append("\n");
-                if (cfg != null) {
-                    ExceptionTable table = cfg.getExceptionTable();
-                    if (table != null && table.getEntries().size() > 0) {
+                if (exceptionTable != null) {
+                    if (exceptionTable != null && exceptionTable.getEntries().size() > 0) {
                         msg.append("\n");
-                        table.print(msg);
+                        exceptionTable.print(msg);
                         msg.append("\n");
                     }
                 }

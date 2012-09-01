@@ -80,7 +80,7 @@ public class ControlFlowGraphTest {
         BasicBlock b8 = new BasicBlockTestImpl("8");
         BasicBlock b9 = new BasicBlockTestImpl("9");
         BasicBlock b10 = new BasicBlockTestImpl("10");
-        ControlFlowGraph graph = new ControlFlowGraph("Test", b1, b10);
+        ControlFlowGraph graph = new ControlFlowGraph("Test", b1, b10, null);
         graph.addBasicBlock(b2);
         graph.addBasicBlock(b3);
         graph.addBasicBlock(b4);
@@ -136,7 +136,7 @@ public class ControlFlowGraphTest {
         BasicBlock b1 = new BasicBlockTestImpl("1");
         BasicBlock b2 = new BasicBlockTestImpl("2");
         BasicBlock b3 = new BasicBlockTestImpl("3");
-        ControlFlowGraph graph = new ControlFlowGraph("Test", b1, b3);
+        ControlFlowGraph graph = new ControlFlowGraph("Test", b1, b3, null);
         graph.addBasicBlock(b2);
         graph.addEdge(b1, b2);
         graph.addEdge(b1, b3);
@@ -176,7 +176,7 @@ public class ControlFlowGraphTest {
         BasicBlock b5 = new BasicBlockTestImpl("5");
         BasicBlock b6 = new BasicBlockTestImpl("6");
         BasicBlock b7 = new BasicBlockTestImpl("7");
-        ControlFlowGraph graph = new ControlFlowGraph("Test", b1, b7);
+        ControlFlowGraph graph = new ControlFlowGraph("Test", b1, b7, null);
         graph.addBasicBlock(b2);
         graph.addBasicBlock(b3);
         graph.addBasicBlock(b4);
@@ -233,7 +233,7 @@ public class ControlFlowGraphTest {
         BasicBlock b12 = new BasicBlockTestImpl("12");
         BasicBlock b13 = new BasicBlockTestImpl("13");
         BasicBlock b14 = new BasicBlockTestImpl("14");
-        ControlFlowGraph graph = new ControlFlowGraph("Test", b1, b14);
+        ControlFlowGraph graph = new ControlFlowGraph("Test", b1, b14, null);
         graph.addBasicBlock(b2);
         graph.addBasicBlock(b3);
         graph.addBasicBlock(b4);
@@ -283,7 +283,7 @@ public class ControlFlowGraphTest {
         instructions.add(new InsnNode(Opcodes.ICONST_0));
         instructions.add(new InsnNode(Opcodes.ICONST_0));
         instructions.add(new InsnNode(Opcodes.ICONST_0));
-        return new ControlFlowGraph("", instructions.size());
+        return new ControlFlowGraph("", instructions.size(), null);
     }
 
     @Test
@@ -357,7 +357,7 @@ public class ControlFlowGraphTest {
         for (int i = 0; i < 21; i++) {
             instructions.add(new InsnNode(Opcodes.ICONST_0));
         }
-        ControlFlowGraph graph = new ControlFlowGraph("", instructions.size());
+        ControlFlowGraph graph = new ControlFlowGraph("", instructions.size(), null);
         BasicBlock entryBlock = graph.getEntryBlock();
 
         BasicBlock block0_20 = graph.getBasicBlock(0, 20);

@@ -23,8 +23,8 @@ package fr.jamgotchian.abcd.core.ir;
 public class DebugInfoVariableNameProviderFactory implements VariableNameProviderFactory {
 
     @Override
-    public VariableNameProvider create(ControlFlowGraph cfg) {
-        return new DebugInfoVariableNameProvider(cfg.getLocalVariableTable());
+    public VariableNameProvider create(LocalVariableTable table) {
+        return new DebugInfoVariableNameProvider(table);
     }
 
 }

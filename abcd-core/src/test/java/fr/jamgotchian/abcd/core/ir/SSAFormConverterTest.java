@@ -69,7 +69,7 @@ public class SSAFormConverterTest {
         BasicBlock bb6 = newBasicBlock(6, 1);
         BasicBlock bb7 = newBasicBlock(7, 8);
         BasicBlock bb8 = newBasicBlock(8, 9);
-        ControlFlowGraph graph = new ControlFlowGraph("test", bb0, bb8);
+        ControlFlowGraph graph = new ControlFlowGraph("test", bb0, bb8, null);
         graph.addBasicBlock(bb1);
         graph.addBasicBlock(bb2);
         graph.addBasicBlock(bb3);

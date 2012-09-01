@@ -23,7 +23,7 @@ package fr.jamgotchian.abcd.core.ir;
 public class SimpleVariableNameProviderFactory implements VariableNameProviderFactory {
 
     @Override
-    public VariableNameProvider create(ControlFlowGraph cfg) {
+    public VariableNameProvider create(LocalVariableTable table) {
         return new SimpleVariableNameProvider();
     }
 

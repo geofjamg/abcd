@@ -48,7 +48,9 @@ public class IntermediateRepresentationBuilder {
     private static final Logger LOGGER
             = LoggerFactory.getLogger(IntermediateRepresentationBuilder.class);
 
-    private final ControlFlowGraphBuilder cfgBuilder;
+    private final ControlFlowGraph cfg;
+
+    private final LocalVariableTable localVarTable;
 
     private final InstructionBuilder instBuilder;
 
@@ -68,9 +70,8 @@ public class IntermediateRepresentationBuilder {
 
     private final ClassLoader classLoader;
 
-    private ControlFlowGraph cfg;
-
-    public IntermediateRepresentationBuilder(ControlFlowGraphBuilder cfgBuilder,
+    public IntermediateRepresentationBuilder(ControlFlowGraph cfg,
+                                             LocalVariableTable localVarTable,
                                              InstructionBuilder instBuilder,
                                              ClassNameManager classNameManager,
                                              VariableFactory varFactory,
@@ -80,7 +81,8 @@ public class IntermediateRepresentationBuilder {
                                              ABCDWriter writer,
                                              ABCDPreferences preferences,
                                              ClassLoader classLoader) {
-        this.cfgBuilder = cfgBuilder;
+        this.cfg = cfg;
+        this.localVarTable = localVarTable;
         this.instBuilder = instBuilder;
         this.classNameManager = classNameManager;
         this.varFactory = varFactory;
@@ -196,7 +198,7 @@ public class IntermediateRepresentationBuilder {
     }
 
     private void assignNameToVariables() {
-        VariableNameProvider nameProvider = nameProviderFactory.create(cfg);
+        VariableNameProvider nameProvider = nameProviderFactory.create(localVarTable);
 
         Set<Variable> variables = new HashSet<Variable>();
 
@@ -256,15 +258,13 @@ public class IntermediateRepresentationBuilder {
         }
     }
 
-    public ControlFlowGraph build() {
-        // build control flow graph from bytecode
-        cfg = cfgBuilder.build();
+    public void build() {
 
         cfg.removeUnreachableBlocks();
         cfg.updateDominatorInfo();
         cfg.updateLoopInfo();
 
-        writer.writeRawCFG(cfg, cfgBuilder.getGraphizRenderer());
+        writer.writeRawCFG(cfg);
 
         try {
             // merge natural loops
@@ -331,7 +331,5 @@ public class IntermediateRepresentationBuilder {
         } finally {
             writer.writeCFG(cfg, true);
         }
-
-        return cfg;
     }
 }

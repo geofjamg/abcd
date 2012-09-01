@@ -66,11 +66,13 @@ public class ControlFlowGraph {
 
     private static final EdgeFactory<Edge> EDGE_FACTORY = new EdgeFactoryImpl();
 
-    private String name;
+    private final String name;
 
     private final BasicBlock entryBlock;
 
     private BasicBlock exitBlock;
+
+    private final GraphvizRenderer<BasicBlock> bytecodeRenderer;
 
     private final MutableDirectedGraph<BasicBlock, Edge> graph;
 
@@ -86,17 +88,15 @@ public class ControlFlowGraph {
 
     private PostDominatorInfo<BasicBlock, Edge> postDominatorInfo;
 
-    private LocalVariableTable localVariableTable;
-
-    private ExceptionTable exceptionTable;
-
-    public ControlFlowGraph(String name, BasicBlock entryBlock, BasicBlock exitBlock) {
+    public ControlFlowGraph(String name, BasicBlock entryBlock, BasicBlock exitBlock,
+                            GraphvizRenderer<BasicBlock> bytecodeRenderer) {
         if (name == null) {
             throw new IllegalArgumentException("name == null");
         }
         this.name = name;
         this.entryBlock = entryBlock;
         this.exitBlock = exitBlock;
+        this.bytecodeRenderer = bytecodeRenderer;
         graph = DirectedGraphs.newDirectedGraph();
         basicBlocks = new RangeMap<Range, BasicBlock>();
         naturalLoops = HashMultimap.create();
@@ -105,8 +105,8 @@ public class ControlFlowGraph {
         addBasicBlock(exitBlock);
     }
 
-    public ControlFlowGraph(String name, int instructionCount) {
-        this(name, BasicBlockImpl.createEntry(), BasicBlockImpl.createExit());
+    public ControlFlowGraph(String name, int instructionCount, GraphvizRenderer<BasicBlock> bytecodeRenderer) {
+        this(name, BasicBlockImpl.createEntry(), BasicBlockImpl.createExit(), bytecodeRenderer);
         if (instructionCount > 0 ) {
             BasicBlock instnBlock = BasicBlockImpl.createRange(0, instructionCount-1, null);
             addBasicBlock(instnBlock);
@@ -117,7 +117,7 @@ public class ControlFlowGraph {
     }
 
     public ControlFlowGraph(ControlFlowGraph other) {
-        this(other.getName(), other.entryBlock, other.exitBlock);
+        this(other.getName(), other.entryBlock, other.exitBlock, other.bytecodeRenderer);
         for (BasicBlock bb : other.getBasicBlocks()) {
             if (!bb.equals(entryBlock) && !bb.equals(exitBlock)) {
                 addBasicBlock(bb);
@@ -126,8 +126,6 @@ public class ControlFlowGraph {
         for (Edge e : other.getEdges()) {
             addEdge(other.getEdgeSource(e), other.getEdgeTarget(e), e);
         }
-        exceptionTable = other.exceptionTable;
-        localVariableTable = other.localVariableTable;
     }
 
     public String getName() {
@@ -144,6 +142,10 @@ public class ControlFlowGraph {
 
     public BasicBlock getExitBlock() {
         return exitBlock;
+    }
+
+    public GraphvizRenderer<BasicBlock> getBytecodeRenderer() {
+        return bytecodeRenderer;
     }
 
     public void setExitBlock(BasicBlock exitBlock) {
@@ -874,24 +876,14 @@ public class ControlFlowGraph {
     }
 
     public void exportInst(Writer writer) throws IOException {
-        graph.export(writer, name, IR_GRAPHVIZ_RENDERER,
-                     EDGE_GRAPHVIZ_RENDERER);
+        graph.export(writer, name, IR_GRAPHVIZ_RENDERER, EDGE_GRAPHVIZ_RENDERER);
     }
 
-    public LocalVariableTable getLocalVariableTable() {
-        return localVariableTable;
-    }
-
-    public void setLocalVariableTable(LocalVariableTable localVariableTable) {
-        this.localVariableTable = localVariableTable;
-    }
-
-    public ExceptionTable getExceptionTable() {
-        return exceptionTable;
-    }
-
-    public void setExceptionTable(ExceptionTable exceptionTable) {
-        this.exceptionTable = exceptionTable;
+    public void exportBytecode(Writer writer) throws IOException {
+        if (bytecodeRenderer == null) {
+            throw new ABCDException("No bytecode renderer defined");
+        }
+        graph.export(writer, name, bytecodeRenderer, EDGE_GRAPHVIZ_RENDERER);
     }
 
     public String toString(Collection<Edge> edges) {
