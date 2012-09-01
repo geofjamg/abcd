@@ -51,7 +51,7 @@ public class NbABCDWriter implements ABCDWriter {
     }
 
     @Override
-    public void writeRawCFG(ControlFlowGraph cfg, GraphvizRenderer<BasicBlock> bytecodeRenderer) {
+    public void writeRawCFG(ControlFlowGraph cfg) {
     }
 
     @Override
