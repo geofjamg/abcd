@@ -64,6 +64,8 @@ public class ControlFlowGraph {
     private static final RangeGraphvizRenderer RANGE_GRAPHVIZ_RENDERER
             = new RangeGraphvizRenderer();
 
+    private static final EdgeFactory<Edge> EDGE_FACTORY = new EdgeFactoryImpl();
+
     private String name;
 
     private final BasicBlock entryBlock;
@@ -87,8 +89,6 @@ public class ControlFlowGraph {
     private LocalVariableTable localVariableTable;
 
     private ExceptionTable exceptionTable;
-
-    private static final EdgeFactory<Edge> EDGE_FACTORY = new EdgeFactoryImpl();
 
     public ControlFlowGraph(String name, BasicBlock entryBlock, BasicBlock exitBlock) {
         if (name == null) {
