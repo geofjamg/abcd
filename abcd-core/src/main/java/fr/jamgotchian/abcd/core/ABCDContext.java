@@ -143,9 +143,7 @@ public class ABCDContext {
 
             String methodSignature = method.getSignature();
 
-            ControlFlowGraph cfg = null;
             ExceptionTable exceptionTable = null;
-            LocalVariableTable localVarTable = null;
 
             try {
                 LOGGER.debug("");
@@ -162,9 +160,9 @@ public class ABCDContext {
 
                 // analyse bytecode
                 ControlFlowGraphBuilder.Result result = cfgBuilder.build();
-                cfg = result.getCfg();
+                ControlFlowGraph cfg = result.getCfg();
                 exceptionTable = result.getExceptionTable();
-                localVarTable = result.getLocalVarTable();
+                LocalVariableTable localVarTable = result.getLocalVarTable();
 
                 IRInstFactory instFactory = new IRInstFactory();
 
