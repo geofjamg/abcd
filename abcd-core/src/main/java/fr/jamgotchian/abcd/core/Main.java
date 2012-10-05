@@ -21,7 +21,7 @@ import fr.jamgotchian.abcd.core.bytecode.dalvik.DexFileDataSource;
 import fr.jamgotchian.abcd.core.bytecode.java.ClassFileDataSource;
 import fr.jamgotchian.abcd.core.bytecode.java.JarFileDataSource;
 import fr.jamgotchian.abcd.core.common.ABCDPreferences;
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
+import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -146,13 +146,13 @@ public class Main {
                     prefs.setAnalyseLocalVariableType(true);
                 }
 
-                ABCDWriter writer = null;
+                DecompilationObserver writer = null;
                 if (line.hasOption("debug")) {
                     File debugDir = new File(line.getOptionValue("debug"));
                     checkDir(debugDir);
-                    writer = new DebugABCDWriter(outDir, prefs, debugDir);
+                    writer = new DebugDecompilationObserver(outDir, prefs, debugDir);
                 } else {
-                    writer = new DefaultABCDWriter(outDir, prefs);
+                    writer = new DefaultDecompilationObserver(outDir, prefs);
                 }
 
                 ABCDDataSource dataSrc = null;

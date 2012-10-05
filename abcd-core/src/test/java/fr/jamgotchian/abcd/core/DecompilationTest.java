@@ -18,7 +18,7 @@ package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.bytecode.ABCDDataSource;
 import fr.jamgotchian.abcd.core.common.ABCDPreferences;
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
+import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -76,8 +76,8 @@ public class DecompilationTest {
         Writer writer = new StringWriter();
         try {
             ABCDPreferences prefs = new ABCDPreferencesImpl();
-            ABCDWriter abcdwriter = new WriterTest(writer, prefs);
-            new ABCDContext().decompile(dataSrc, abcdwriter, prefs, getClass().getClassLoader());
+            DecompilationObserver observer = new TestDecompilationObserver(writer, prefs);
+            new ABCDContext().decompile(dataSrc, observer, prefs, getClass().getClassLoader());
         } finally {
             writer.close();
         }

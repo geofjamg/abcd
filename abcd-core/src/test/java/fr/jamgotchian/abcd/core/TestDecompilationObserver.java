@@ -21,7 +21,7 @@ import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
 import fr.jamgotchian.abcd.core.code.TextCodeWriter;
 import fr.jamgotchian.abcd.core.common.ABCDPreferences;
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
+import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.RPSTLogger;
 import java.io.Writer;
@@ -30,31 +30,31 @@ import java.io.Writer;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class WriterTest implements ABCDWriter {
+public class TestDecompilationObserver implements DecompilationObserver {
 
     private final Writer writer;
     
     private final ABCDPreferences preferences;
 
-    public WriterTest(Writer writer, ABCDPreferences preferences) {
+    public TestDecompilationObserver(Writer writer, ABCDPreferences preferences) {
         this.writer = writer;
         this.preferences = preferences;
     }
     
     @Override
-    public void writeRawCFG(ControlFlowGraph cfg) {
+    public void doneRawCFG(ControlFlowGraph cfg) {
     }
 
     @Override
-    public void writeCFG(ControlFlowGraph cfg, boolean failure) {
+    public void doneCFG(ControlFlowGraph cfg, boolean failure) {
     }
 
     @Override
-    public void writeRPST(RPSTLogger logger) {
+    public void doneRPST(RPSTLogger logger) {
     }
 
     @Override
-    public void writeAST(CompilationUnit compilUnit) {
+    public void doneAST(CompilationUnit compilUnit) {
         CodeWriter codeWriter = new TextCodeWriter(writer, 4);
         compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, preferences), null);
     }

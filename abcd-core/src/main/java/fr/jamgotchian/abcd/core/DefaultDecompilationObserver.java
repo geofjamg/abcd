@@ -16,7 +16,7 @@
  */
 package fr.jamgotchian.abcd.core;
 
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
+import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
@@ -37,16 +37,16 @@ import org.slf4j.LoggerFactory;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DefaultABCDWriter implements ABCDWriter {
+public class DefaultDecompilationObserver implements DecompilationObserver {
 
     protected final static Logger LOGGER
-            = LoggerFactory.getLogger(DefaultABCDWriter.class);
+            = LoggerFactory.getLogger(DefaultDecompilationObserver.class);
 
     private final File outDir;
 
     private final ABCDPreferences preferences;
 
-    public DefaultABCDWriter(File outDir, ABCDPreferences preferences) {
+    public DefaultDecompilationObserver(File outDir, ABCDPreferences preferences) {
         this.outDir = outDir;
         this.preferences = preferences;
         if (!outDir.exists()) {
@@ -58,19 +58,19 @@ public class DefaultABCDWriter implements ABCDWriter {
     }
 
     @Override
-    public void writeRawCFG(ControlFlowGraph cfg) {
+    public void doneRawCFG(ControlFlowGraph cfg) {
     }
 
     @Override
-    public void writeCFG(ControlFlowGraph cfg, boolean failure) {
+    public void doneCFG(ControlFlowGraph cfg, boolean failure) {
     }
 
     @Override
-    public void writeRPST(RPSTLogger logger) {
+    public void doneRPST(RPSTLogger logger) {
     }
 
     @Override
-    public void writeAST(CompilationUnit compilUnit) {
+    public void doneAST(CompilationUnit compilUnit) {
         assert compilUnit != null;
         try {
             File javaFile = new File(outDir, compilUnit.getFilePath());

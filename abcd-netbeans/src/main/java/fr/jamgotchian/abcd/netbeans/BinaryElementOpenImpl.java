@@ -16,6 +16,7 @@
  */
 package fr.jamgotchian.abcd.netbeans;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;

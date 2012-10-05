@@ -32,7 +32,7 @@ import java.io.Writer;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DebugABCDWriter extends DefaultABCDWriter {
+public class DebugDecompilationObserver extends DefaultDecompilationObserver {
 
     private static final EdgeGraphvizRenderer EDGE_GRAPHVIZ_RENDERER
             = new EdgeGraphvizRenderer();
@@ -45,7 +45,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
 
     private final File debugDir;
 
-    public DebugABCDWriter(File outDir, ABCDPreferences preferences, File debugDir) {
+    public DebugDecompilationObserver(File outDir, ABCDPreferences preferences, File debugDir) {
         super(outDir, preferences);
         if (!debugDir.exists()) {
             throw new ABCDException(debugDir + " does not exist");
@@ -73,7 +73,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     }
 
     @Override
-    public void writeRawCFG(ControlFlowGraph cfg) {
+    public void doneRawCFG(ControlFlowGraph cfg) {
         assert cfg != null;
 
         String baseName = getBaseName(cfg.getName());
@@ -98,7 +98,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     }
 
     @Override
-    public void writeCFG(ControlFlowGraph cfg, boolean failure) {
+    public void doneCFG(ControlFlowGraph cfg, boolean failure) {
         assert cfg != null;
 
         String baseName = getBaseName(cfg.getName());
@@ -152,7 +152,7 @@ public class DebugABCDWriter extends DefaultABCDWriter {
     }
 
     @Override
-    public void writeRPST(RPSTLogger logger) {
+    public void doneRPST(RPSTLogger logger) {
         String baseName = getBaseName(logger.getName());
 
         try {

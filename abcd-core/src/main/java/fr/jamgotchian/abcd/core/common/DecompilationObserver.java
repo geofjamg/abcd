@@ -24,13 +24,13 @@ import fr.jamgotchian.abcd.core.ir.RPSTLogger;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface ABCDWriter {
+public interface DecompilationObserver {
 
-    void writeRawCFG(ControlFlowGraph cfg);
+    void doneRawCFG(ControlFlowGraph cfg);
 
-    void writeCFG(ControlFlowGraph cfg, boolean failure);
+    void doneCFG(ControlFlowGraph cfg, boolean failure);
 
-    void writeRPST(RPSTLogger logger);
+    void doneRPST(RPSTLogger logger);
 
-    void writeAST(CompilationUnit compilUnit);
+    void doneAST(CompilationUnit compilUnit);
 }

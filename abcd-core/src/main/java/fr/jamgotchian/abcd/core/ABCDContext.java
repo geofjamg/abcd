@@ -32,7 +32,7 @@ import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
 import fr.jamgotchian.abcd.core.bytecode.ABCDDataSource;
 import fr.jamgotchian.abcd.core.bytecode.ClassFactory;
 import fr.jamgotchian.abcd.core.common.ABCDPreferences;
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
+import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
@@ -72,7 +72,7 @@ public class ABCDContext {
     public ABCDContext() {
     }
 
-    public void decompile(ABCDDataSource dataSrc, ABCDWriter writer,
+    public void decompile(ABCDDataSource dataSrc, DecompilationObserver observer,
                           ABCDPreferences prefs, ClassLoader classLoader) throws IOException {
         VariableNameProviderFactory nameProviderFactory;
         if (prefs.isUseLocalVariableTable()) {
@@ -88,13 +88,13 @@ public class ABCDContext {
         for (ClassFactory classFactory : dataSrc.createClassFactories()) {
             ImportManager importManager = new ImportManager();
             Class _class = decompileClass(classFactory, importManager,
-                                          nameProviderFactory, writer, prefs,
+                                          nameProviderFactory, observer, prefs,
                                           classLoader, summary, error);
 
             CompilationUnit compilUnit = new CompilationUnit(_class.getPackage(), importManager);
             compilUnit.getClasses().add(_class);
 
-            writer.writeAST(compilUnit);
+            observer.doneAST(compilUnit);
 
             System.out.println(compilUnit.getFilePath() + (error[0] ? " ERROR" : ""));
         }
@@ -118,7 +118,7 @@ public class ABCDContext {
 
     private Class decompileClass(ClassFactory classFactory, ImportManager importManager,
                                  VariableNameProviderFactory nameProviderFactory,
-                                 ABCDWriter writer, ABCDPreferences prefs,
+                                 DecompilationObserver observer, ABCDPreferences prefs,
                                  ClassLoader classLoader, Summary summary,
                                  boolean[] error) throws IOException {
         Class _class = classFactory.createClass(importManager);
@@ -177,14 +177,14 @@ public class ABCDContext {
                                                       instFactory,
                                                       nameProviderFactory,
                                                       method,
-                                                      writer,
+                                                      observer,
                                                       prefs,
                                                       classLoader).build();
 
                 LOGGER.debug(ConsoleUtil.formatTitledSeparator("Analyse regions of {}", '='),
                         methodSignature);
 
-                RPST rpst = new RegionAnalysis(cfg, writer).analyse();
+                RPST rpst = new RegionAnalysis(cfg, observer).analyse();
 
                 StringBuilder builder = new StringBuilder();
                 rpst.print(builder);

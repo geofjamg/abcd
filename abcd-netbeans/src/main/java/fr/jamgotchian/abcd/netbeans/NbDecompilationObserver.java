@@ -21,11 +21,8 @@ import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
 import fr.jamgotchian.abcd.core.code.TextCodeWriter;
 import fr.jamgotchian.abcd.core.common.ABCDPreferences;
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
-import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
-import fr.jamgotchian.abcd.core.ir.BasicBlock;
+import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.ir.RPST;
 import fr.jamgotchian.abcd.core.ir.RPSTLogger;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -37,33 +34,33 @@ import org.slf4j.LoggerFactory;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class NbABCDWriter implements ABCDWriter {
+public class NbDecompilationObserver implements DecompilationObserver {
 
-    protected final static Logger LOGGER = LoggerFactory.getLogger(NbABCDWriter.class);
+    protected final static Logger LOGGER = LoggerFactory.getLogger(NbDecompilationObserver.class);
 
     private final OutputStream os;
 
     private final ABCDPreferences preferences;
 
-    public NbABCDWriter(OutputStream os, ABCDPreferences preferences) {
+    public NbDecompilationObserver(OutputStream os, ABCDPreferences preferences) {
         this.os = os;
         this.preferences = preferences;
     }
 
     @Override
-    public void writeRawCFG(ControlFlowGraph cfg) {
+    public void doneRawCFG(ControlFlowGraph cfg) {
     }
 
     @Override
-    public void writeCFG(ControlFlowGraph cfg, boolean failure) {
+    public void doneCFG(ControlFlowGraph cfg, boolean failure) {
     }
 
     @Override
-    public void writeRPST(RPSTLogger logger) {
+    public void doneRPST(RPSTLogger logger) {
     }
 
     @Override
-    public void writeAST(CompilationUnit compilUnit) {
+    public void doneAST(CompilationUnit compilUnit) {
         try {
             Writer writer = new OutputStreamWriter(os);
             try {
