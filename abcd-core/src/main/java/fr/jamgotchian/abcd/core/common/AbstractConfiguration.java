@@ -20,7 +20,7 @@ package fr.jamgotchian.abcd.core.common;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class ABCDAbstractPreferences implements ABCDPreferences {
+public abstract class AbstractConfiguration implements Configuration {
 
     @Override
     public String writeToString() {

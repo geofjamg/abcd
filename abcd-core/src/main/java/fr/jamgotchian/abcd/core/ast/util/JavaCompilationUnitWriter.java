@@ -23,7 +23,7 @@ import fr.jamgotchian.abcd.core.ast.CompilationUnitVisitor;
 import fr.jamgotchian.abcd.core.ast.Package;
 import fr.jamgotchian.abcd.core.ast.ImportManager;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
-import fr.jamgotchian.abcd.core.common.ABCDPreferences;
+import fr.jamgotchian.abcd.core.common.Configuration;
 import fr.jamgotchian.abcd.core.common.ABCDUtil;
 
 /**
@@ -34,13 +34,13 @@ public class JavaCompilationUnitWriter implements CompilationUnitVisitor<Void, V
 
     private final CodeWriter writer;
 
-    private final ABCDPreferences preferences;
+    private final Configuration config;
 
     private final JavaClassWriter classVisitor;
 
-    public JavaCompilationUnitWriter(CodeWriter writer, ABCDPreferences preferences) {
+    public JavaCompilationUnitWriter(CodeWriter writer, Configuration config) {
         this.writer = writer;
-        this.preferences = preferences;
+        this.config = config;
         classVisitor = new JavaClassWriter(writer);
     }
 
@@ -54,7 +54,7 @@ public class JavaCompilationUnitWriter implements CompilationUnitVisitor<Void, V
                 .writeSpace().write("*").writeSpace().write("ABCD home page : ")
                 .write(ABCDUtil.HOME_PAGE).newLine()
                 .writeSpace().write("*").writeSpace().write("Options : ")
-                .write(preferences.writeToString()).newLine()
+                .write(config.writeToString()).newLine()
                 .writeSpace().write("*/").newLine().newLine();
 
         if (compilUnit.getPackage() != null) {

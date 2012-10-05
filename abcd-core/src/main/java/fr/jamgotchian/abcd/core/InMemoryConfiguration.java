@@ -16,13 +16,13 @@
  */
 package fr.jamgotchian.abcd.core;
 
-import fr.jamgotchian.abcd.core.common.ABCDAbstractPreferences;
+import fr.jamgotchian.abcd.core.common.AbstractConfiguration;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-class ABCDPreferencesImpl extends ABCDAbstractPreferences {
+class InMemoryConfiguration extends AbstractConfiguration {
 
     private boolean useLocalVariableTable = false;
 

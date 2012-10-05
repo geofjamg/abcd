@@ -20,7 +20,7 @@ package fr.jamgotchian.abcd.core.common;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface ABCDPreferences {
+public interface Configuration {
 
     boolean isUseLocalVariableTable();
 

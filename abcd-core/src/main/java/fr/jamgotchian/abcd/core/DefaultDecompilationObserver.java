@@ -23,7 +23,7 @@ import fr.jamgotchian.abcd.core.code.CodeWriter;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.code.TextCodeWriter;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.common.ABCDPreferences;
+import fr.jamgotchian.abcd.core.common.Configuration;
 import fr.jamgotchian.abcd.core.ir.RPSTLogger;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -44,11 +44,11 @@ public class DefaultDecompilationObserver implements DecompilationObserver {
 
     private final File outDir;
 
-    private final ABCDPreferences preferences;
+    private final Configuration config;
 
-    public DefaultDecompilationObserver(File outDir, ABCDPreferences preferences) {
+    public DefaultDecompilationObserver(File outDir, Configuration config) {
         this.outDir = outDir;
-        this.preferences = preferences;
+        this.config = config;
         if (!outDir.exists()) {
             throw new ABCDException(outDir + " does not exist");
         }
@@ -84,7 +84,7 @@ public class DefaultDecompilationObserver implements DecompilationObserver {
             Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
             try {
                 CodeWriter codeWriter = new TextCodeWriter(writer, 4);
-                compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, preferences), null);
+                compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, config), null);
             } finally {
                 writer.close();
             }

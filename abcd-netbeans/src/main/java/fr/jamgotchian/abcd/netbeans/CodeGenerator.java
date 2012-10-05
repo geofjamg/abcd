@@ -18,7 +18,7 @@ package fr.jamgotchian.abcd.netbeans;
 
 import fr.jamgotchian.abcd.core.ABCDContext;
 import fr.jamgotchian.abcd.core.bytecode.ABCDDataSource;
-import fr.jamgotchian.abcd.core.common.ABCDPreferences;
+import fr.jamgotchian.abcd.core.common.Configuration;
 import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -160,9 +160,9 @@ public class CodeGenerator {
                 OutputStream resultOut = result[0].getOutputStream();
                 try {
                     ABCDDataSource dataSrc = new NbABCDDataSource(resource[0].getInputStream());
-                    ABCDPreferences prefs = Lookup.getDefault().lookup(ABCDPreferences.class);
-                    DecompilationObserver observer = new NbDecompilationObserver(resultOut, prefs);
-                    new ABCDContext().decompile(dataSrc, observer, prefs, cp.getClassLoader(true));
+                    Configuration config = Lookup.getDefault().lookup(Configuration.class);
+                    DecompilationObserver observer = new NbDecompilationObserver(resultOut, config);
+                    new ABCDContext().decompile(dataSrc, observer, config, cp.getClassLoader(true));
                 } finally {
                     resultOut.close();
                 }

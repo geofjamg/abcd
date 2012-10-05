@@ -31,7 +31,7 @@ import fr.jamgotchian.abcd.core.ast.util.ForLoopRefactorer;
 import fr.jamgotchian.abcd.core.bytecode.MethodFactory;
 import fr.jamgotchian.abcd.core.bytecode.ABCDDataSource;
 import fr.jamgotchian.abcd.core.bytecode.ClassFactory;
-import fr.jamgotchian.abcd.core.common.ABCDPreferences;
+import fr.jamgotchian.abcd.core.common.Configuration;
 import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import fr.jamgotchian.abcd.core.ir.IntermediateRepresentationBuilder;
 import fr.jamgotchian.abcd.core.ir.InstructionBuilder;
@@ -73,9 +73,9 @@ public class ABCDContext {
     }
 
     public void decompile(ABCDDataSource dataSrc, DecompilationObserver observer,
-                          ABCDPreferences prefs, ClassLoader classLoader) throws IOException {
+                          Configuration config, ClassLoader classLoader) throws IOException {
         VariableNameProviderFactory nameProviderFactory;
-        if (prefs.isUseLocalVariableTable()) {
+        if (config.isUseLocalVariableTable()) {
             nameProviderFactory = new DebugInfoVariableNameProviderFactory();
         } else {
             nameProviderFactory = new SimpleVariableNameProviderFactory();
@@ -88,7 +88,7 @@ public class ABCDContext {
         for (ClassFactory classFactory : dataSrc.createClassFactories()) {
             ImportManager importManager = new ImportManager();
             Class _class = decompileClass(classFactory, importManager,
-                                          nameProviderFactory, observer, prefs,
+                                          nameProviderFactory, observer, config,
                                           classLoader, summary, error);
 
             CompilationUnit compilUnit = new CompilationUnit(_class.getPackage(), importManager);
@@ -118,7 +118,7 @@ public class ABCDContext {
 
     private Class decompileClass(ClassFactory classFactory, ImportManager importManager,
                                  VariableNameProviderFactory nameProviderFactory,
-                                 DecompilationObserver observer, ABCDPreferences prefs,
+                                 DecompilationObserver observer, Configuration config,
                                  ClassLoader classLoader, Summary summary,
                                  boolean[] error) throws IOException {
         Class _class = classFactory.createClass(importManager);
@@ -178,7 +178,7 @@ public class ABCDContext {
                                                       nameProviderFactory,
                                                       method,
                                                       observer,
-                                                      prefs,
+                                                      config,
                                                       classLoader).build();
 
                 LOGGER.debug(ConsoleUtil.formatTitledSeparator("Analyse regions of {}", '='),

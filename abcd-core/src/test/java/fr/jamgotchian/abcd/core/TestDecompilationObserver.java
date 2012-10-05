@@ -20,7 +20,7 @@ import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
 import fr.jamgotchian.abcd.core.code.TextCodeWriter;
-import fr.jamgotchian.abcd.core.common.ABCDPreferences;
+import fr.jamgotchian.abcd.core.common.Configuration;
 import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.RPSTLogger;
@@ -34,11 +34,11 @@ public class TestDecompilationObserver implements DecompilationObserver {
 
     private final Writer writer;
     
-    private final ABCDPreferences preferences;
+    private final Configuration config;
 
-    public TestDecompilationObserver(Writer writer, ABCDPreferences preferences) {
+    public TestDecompilationObserver(Writer writer, Configuration config) {
         this.writer = writer;
-        this.preferences = preferences;
+        this.config = config;
     }
     
     @Override
@@ -56,7 +56,7 @@ public class TestDecompilationObserver implements DecompilationObserver {
     @Override
     public void doneAST(CompilationUnit compilUnit) {
         CodeWriter codeWriter = new TextCodeWriter(writer, 4);
-        compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, preferences), null);
+        compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, config), null);
     }
     
 }

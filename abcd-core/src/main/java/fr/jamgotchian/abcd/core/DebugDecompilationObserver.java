@@ -17,7 +17,7 @@
 package fr.jamgotchian.abcd.core;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.common.ABCDPreferences;
+import fr.jamgotchian.abcd.core.common.Configuration;
 import fr.jamgotchian.abcd.core.ir.RangeGraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.ir.EdgeGraphvizRenderer;
@@ -45,8 +45,8 @@ public class DebugDecompilationObserver extends DefaultDecompilationObserver {
 
     private final File debugDir;
 
-    public DebugDecompilationObserver(File outDir, ABCDPreferences preferences, File debugDir) {
-        super(outDir, preferences);
+    public DebugDecompilationObserver(File outDir, Configuration config, File debugDir) {
+        super(outDir, config);
         if (!debugDir.exists()) {
             throw new ABCDException(debugDir + " does not exist");
         }

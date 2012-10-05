@@ -20,7 +20,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.common.ABCDPreferences;
+import fr.jamgotchian.abcd.core.common.Configuration;
 import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
@@ -66,7 +66,7 @@ public class IntermediateRepresentationBuilder {
 
     private final DecompilationObserver observer;
 
-    private final ABCDPreferences preferences;
+    private final Configuration config;
 
     private final ClassLoader classLoader;
 
@@ -79,7 +79,7 @@ public class IntermediateRepresentationBuilder {
                                              VariableNameProviderFactory nameProviderFactory,
                                              MethodContext methodContext,
                                              DecompilationObserver observer,
-                                             ABCDPreferences preferences,
+                                             Configuration config,
                                              ClassLoader classLoader) {
         this.cfg = cfg;
         this.localVarTable = localVarTable;
@@ -90,7 +90,7 @@ public class IntermediateRepresentationBuilder {
         this.nameProviderFactory = nameProviderFactory;
         this.methodContext = methodContext;
         this.observer = observer;
-        this.preferences = preferences;
+        this.config = config;
         this.classLoader = classLoader;
     }
 
@@ -297,7 +297,7 @@ public class IntermediateRepresentationBuilder {
 //            // instruction with shortcut operators in the condition
 //            resolveChoiceInst();
 //
-//            if (preferences.isAnalyseLocalVariableType()) {
+//            if (config.isAnalyseLocalVariableType()) {
 //                // need to remove critical edges to convert to SSA
 //                if (cfg.removeCriticalEdges()) {
 //                    cfg.updateDominatorInfo();
