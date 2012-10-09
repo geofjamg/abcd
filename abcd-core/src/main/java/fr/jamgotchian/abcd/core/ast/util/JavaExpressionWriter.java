@@ -413,7 +413,7 @@ public class JavaExpressionWriter implements ExpressionVisitor<Void, Void> {
 
     @Override
     public Void visit(StringLiteralExpression expr, Void arg) {
-        writer.writeQuotedString(expr.getValue().toString());
+        writer.writeQuotedString(expr.getValue());
         return null;
     }
 

@@ -85,6 +85,6 @@ public class CaseValues implements Comparable<CaseValues> {
 
     @Override
     public String toString() {
-        return values.size() == 1 ? values.first().toString() : values.toString();
+        return values.size() == 1 ? values.first() : values.toString();
     }
 }

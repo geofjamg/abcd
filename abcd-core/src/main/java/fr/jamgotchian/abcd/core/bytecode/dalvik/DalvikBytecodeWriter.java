@@ -81,7 +81,7 @@ public class DalvikBytecodeWriter extends DalvikBytecodeVisitor {
     private void writeItem(Item<?> item) {
         String itemStr = null;
         if (item instanceof MethodIdItem) {
-            itemStr = ((MethodIdItem) item).getMethodString().toString();
+            itemStr = ((MethodIdItem) item).getMethodString();
         } else if (item instanceof TypeIdItem) {
             itemStr = ((TypeIdItem) item).getTypeDescriptor();
         } else if (item instanceof StringIdItem) {

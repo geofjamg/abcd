@@ -214,12 +214,10 @@ public class ABCDContext {
                         .append("\n")
                         .append(methodFactory.getBytecodeAsText())
                         .append("\n");
-                if (exceptionTable != null) {
-                    if (exceptionTable != null && exceptionTable.getEntries().size() > 0) {
-                        msg.append("\n");
-                        exceptionTable.print(msg);
-                        msg.append("\n");
-                    }
+                if (exceptionTable != null && exceptionTable.getEntries().size() > 0) {
+                    msg.append("\n");
+                    exceptionTable.print(msg);
+                    msg.append("\n");
                 }
 
                 method.getBody().add(new CommentStatement("\n" + msg.toString()));
