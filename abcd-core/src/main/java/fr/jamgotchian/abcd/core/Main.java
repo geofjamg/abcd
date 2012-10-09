@@ -20,8 +20,8 @@ import fr.jamgotchian.abcd.core.bytecode.ABCDDataSource;
 import fr.jamgotchian.abcd.core.bytecode.dalvik.DexFileDataSource;
 import fr.jamgotchian.abcd.core.bytecode.java.ClassFileDataSource;
 import fr.jamgotchian.abcd.core.bytecode.java.JarFileDataSource;
-import fr.jamgotchian.abcd.core.common.ABCDPreferences;
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
+import fr.jamgotchian.abcd.core.common.Configuration;
+import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -138,21 +138,21 @@ public class Main {
                 File outDir = new File(line.getOptionValue("d"));
                 checkDir(outDir);
 
-                ABCDPreferences prefs = new ABCDPreferencesImpl();
+                Configuration config = new InMemoryConfiguration();
                 if (line.hasOption("ulvt")) {
-                    prefs.setUseLocalVariableTable(true);
+                    config.setUseLocalVariableTable(true);
                 }
                 if (line.hasOption("alvt")) {
-                    prefs.setAnalyseLocalVariableType(true);
+                    config.setAnalyseLocalVariableType(true);
                 }
 
-                ABCDWriter writer = null;
+                DecompilationObserver observer = null;
                 if (line.hasOption("debug")) {
                     File debugDir = new File(line.getOptionValue("debug"));
                     checkDir(debugDir);
-                    writer = new DebugABCDWriter(outDir, prefs, debugDir);
+                    observer = new DebugDecompilationObserver(outDir, config, debugDir);
                 } else {
-                    writer = new DefaultABCDWriter(outDir, prefs);
+                    observer = new DefaultDecompilationObserver(outDir, config);
                 }
 
                 ABCDDataSource dataSrc = null;
@@ -179,7 +179,7 @@ public class Main {
                     classLoader = new URLClassLoader(new URL[] {dexFile.toURI().toURL()});
                 }
 
-                new ABCDContext().decompile(dataSrc, writer, prefs, classLoader);
+                new ABCDContext().decompile(dataSrc, observer, config, classLoader);
             }
             catch(ParseException e) {
                 printError(e.getMessage());

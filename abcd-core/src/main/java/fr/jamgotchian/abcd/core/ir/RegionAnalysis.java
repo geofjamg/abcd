@@ -18,7 +18,7 @@ package fr.jamgotchian.abcd.core.ir;
 
 import com.google.common.base.Objects;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
+import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import fr.jamgotchian.abcd.core.graph.Filter;
 import static fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName.*;
 import fr.jamgotchian.abcd.core.ir.RPSTLogger.Log;
@@ -36,13 +36,13 @@ public class RegionAnalysis {
 
     private final ControlFlowGraph cfg0;
 
-    private final ABCDWriter writer;
+    private final DecompilationObserver observer;
 
     private RPSTLogger rpstLogger;
 
-    public RegionAnalysis(ControlFlowGraph cfg0, ABCDWriter writer) {
+    public RegionAnalysis(ControlFlowGraph cfg0, DecompilationObserver observer) {
         this.cfg0 = cfg0;
-        this.writer = writer;
+        this.observer = observer;
     }
 
     private static ControlFlowGraph createSubCFG(RPST rpst, Region region) {
@@ -839,7 +839,7 @@ public class RegionAnalysis {
         try {
             rpst = checkGraph(cfg, "Main graph");
         } finally {
-            writer.writeRPST(rpstLogger);
+            observer.doneRPST(rpstLogger);
         }
 
         return rpst;

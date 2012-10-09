@@ -16,19 +16,21 @@
  */
 package fr.jamgotchian.abcd.core.common;
 
+import fr.jamgotchian.abcd.core.ast.CompilationUnit;
+import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
+import fr.jamgotchian.abcd.core.ir.RPSTLogger;
+
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface ABCDPreferences {
+public interface DecompilationObserver {
 
-    boolean isUseLocalVariableTable();
+    void doneRawCFG(ControlFlowGraph cfg);
 
-    void setUseLocalVariableTable(boolean useLocalVariableTable);
+    void doneCFG(ControlFlowGraph cfg, boolean failure);
 
-    boolean isAnalyseLocalVariableType();
+    void doneRPST(RPSTLogger logger);
 
-    void setAnalyseLocalVariableType(boolean analyseLocalVariableType);
-
-    String writeToString();
+    void doneAST(CompilationUnit compilUnit);
 }

@@ -16,14 +16,14 @@
  */
 package fr.jamgotchian.abcd.core;
 
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
+import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import fr.jamgotchian.abcd.core.ast.CompilationUnit;
 import fr.jamgotchian.abcd.core.ast.util.JavaCompilationUnitWriter;
 import fr.jamgotchian.abcd.core.code.CodeWriter;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
 import fr.jamgotchian.abcd.core.code.TextCodeWriter;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.common.ABCDPreferences;
+import fr.jamgotchian.abcd.core.common.Configuration;
 import fr.jamgotchian.abcd.core.ir.RPSTLogger;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -37,18 +37,18 @@ import org.slf4j.LoggerFactory;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public class DefaultABCDWriter implements ABCDWriter {
+public class DefaultDecompilationObserver implements DecompilationObserver {
 
     protected final static Logger LOGGER
-            = LoggerFactory.getLogger(DefaultABCDWriter.class);
+            = LoggerFactory.getLogger(DefaultDecompilationObserver.class);
 
     private final File outDir;
 
-    private final ABCDPreferences preferences;
+    private final Configuration config;
 
-    public DefaultABCDWriter(File outDir, ABCDPreferences preferences) {
+    public DefaultDecompilationObserver(File outDir, Configuration config) {
         this.outDir = outDir;
-        this.preferences = preferences;
+        this.config = config;
         if (!outDir.exists()) {
             throw new ABCDException(outDir + " does not exist");
         }
@@ -58,19 +58,19 @@ public class DefaultABCDWriter implements ABCDWriter {
     }
 
     @Override
-    public void writeRawCFG(ControlFlowGraph cfg) {
+    public void doneRawCFG(ControlFlowGraph cfg) {
     }
 
     @Override
-    public void writeCFG(ControlFlowGraph cfg, boolean failure) {
+    public void doneCFG(ControlFlowGraph cfg, boolean failure) {
     }
 
     @Override
-    public void writeRPST(RPSTLogger logger) {
+    public void doneRPST(RPSTLogger logger) {
     }
 
     @Override
-    public void writeAST(CompilationUnit compilUnit) {
+    public void doneAST(CompilationUnit compilUnit) {
         assert compilUnit != null;
         try {
             File javaFile = new File(outDir, compilUnit.getFilePath());
@@ -84,7 +84,7 @@ public class DefaultABCDWriter implements ABCDWriter {
             Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
             try {
                 CodeWriter codeWriter = new TextCodeWriter(writer, 4);
-                compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, preferences), null);
+                compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, config), null);
             } finally {
                 writer.close();
             }

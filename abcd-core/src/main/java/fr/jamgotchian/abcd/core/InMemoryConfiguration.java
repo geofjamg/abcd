@@ -14,19 +14,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.jamgotchian.abcd.core.common;
+package fr.jamgotchian.abcd.core;
+
+import fr.jamgotchian.abcd.core.common.AbstractConfiguration;
 
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public abstract class ABCDAbstractPreferences implements ABCDPreferences {
+class InMemoryConfiguration extends AbstractConfiguration {
+
+    private boolean useLocalVariableTable = false;
+
+    private boolean analyseLocalVariableType = false;
 
     @Override
-    public String writeToString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("useLocalVariableTable=").append(isUseLocalVariableTable());
-        builder.append(", analyseLocalVariableType=").append(isAnalyseLocalVariableType());
-        return builder.toString();
+    public boolean isUseLocalVariableTable() {
+        return useLocalVariableTable;
+    }
+
+    @Override
+    public void setUseLocalVariableTable(boolean useLocalVariableTable) {
+        this.useLocalVariableTable = useLocalVariableTable;
+    }
+
+    @Override
+    public boolean isAnalyseLocalVariableType() {
+        return analyseLocalVariableType;
+    }
+
+    @Override
+    public void setAnalyseLocalVariableType(boolean analyseLocalVariableType) {
+        this.analyseLocalVariableType = analyseLocalVariableType;
     }
 }

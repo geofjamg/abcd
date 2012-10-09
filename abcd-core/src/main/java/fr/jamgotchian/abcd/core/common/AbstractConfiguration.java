@@ -16,21 +16,17 @@
  */
 package fr.jamgotchian.abcd.core.common;
 
-import fr.jamgotchian.abcd.core.ast.CompilationUnit;
-import fr.jamgotchian.abcd.core.ir.ControlFlowGraph;
-import fr.jamgotchian.abcd.core.ir.RPSTLogger;
-
 /**
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface ABCDWriter {
+public abstract class AbstractConfiguration implements Configuration {
 
-    void writeRawCFG(ControlFlowGraph cfg);
-
-    void writeCFG(ControlFlowGraph cfg, boolean failure);
-
-    void writeRPST(RPSTLogger logger);
-
-    void writeAST(CompilationUnit compilUnit);
+    @Override
+    public String writeToString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("useLocalVariableTable=").append(isUseLocalVariableTable());
+        builder.append(", analyseLocalVariableType=").append(isAnalyseLocalVariableType());
+        return builder.toString();
+    }
 }

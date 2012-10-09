@@ -20,8 +20,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.common.ABCDPreferences;
-import fr.jamgotchian.abcd.core.common.ABCDWriter;
+import fr.jamgotchian.abcd.core.common.Configuration;
+import fr.jamgotchian.abcd.core.common.DecompilationObserver;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.graph.Tree;
@@ -64,9 +64,9 @@ public class IntermediateRepresentationBuilder {
 
     private final MethodContext methodContext;
 
-    private final ABCDWriter writer;
+    private final DecompilationObserver observer;
 
-    private final ABCDPreferences preferences;
+    private final Configuration config;
 
     private final ClassLoader classLoader;
 
@@ -78,8 +78,8 @@ public class IntermediateRepresentationBuilder {
                                              IRInstFactory instFactory,
                                              VariableNameProviderFactory nameProviderFactory,
                                              MethodContext methodContext,
-                                             ABCDWriter writer,
-                                             ABCDPreferences preferences,
+                                             DecompilationObserver observer,
+                                             Configuration config,
                                              ClassLoader classLoader) {
         this.cfg = cfg;
         this.localVarTable = localVarTable;
@@ -89,8 +89,8 @@ public class IntermediateRepresentationBuilder {
         this.instFactory = instFactory;
         this.nameProviderFactory = nameProviderFactory;
         this.methodContext = methodContext;
-        this.writer = writer;
-        this.preferences = preferences;
+        this.observer = observer;
+        this.config = config;
         this.classLoader = classLoader;
     }
 
@@ -264,7 +264,7 @@ public class IntermediateRepresentationBuilder {
         cfg.updateDominatorInfo();
         cfg.updateLoopInfo();
 
-        writer.writeRawCFG(cfg);
+        observer.doneRawCFG(cfg);
 
         try {
             // merge natural loops
@@ -297,7 +297,7 @@ public class IntermediateRepresentationBuilder {
 //            // instruction with shortcut operators in the condition
 //            resolveChoiceInst();
 //
-//            if (preferences.isAnalyseLocalVariableType()) {
+//            if (config.isAnalyseLocalVariableType()) {
 //                // need to remove critical edges to convert to SSA
 //                if (cfg.removeCriticalEdges()) {
 //                    cfg.updateDominatorInfo();
@@ -327,9 +327,9 @@ public class IntermediateRepresentationBuilder {
 //            // assign a name to each variable
 //            assignNameToVariables();
 
-            writer.writeCFG(cfg, false);
+            observer.doneCFG(cfg, false);
         } finally {
-            writer.writeCFG(cfg, true);
+            observer.doneCFG(cfg, true);
         }
     }
 }

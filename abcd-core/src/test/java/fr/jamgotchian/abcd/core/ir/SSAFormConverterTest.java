@@ -50,7 +50,7 @@ public class SSAFormConverterTest {
     }
 
     private BasicBlock newBasicBlock(int id, int... vars) {
-        BasicBlock bb = new BasicBlockTestImpl("BB" + id);
+        BasicBlock bb = new BasicBlockImpl(null, null, "BB" + id);
         for (int var : vars) {
             bb.setInstructions(new IRInstSeq());
             bb.getInstructions().add(instFactory.newAssignInt(varFactory.create(var, bb, -1), 0));

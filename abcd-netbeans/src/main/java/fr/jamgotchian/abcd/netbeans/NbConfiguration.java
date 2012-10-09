@@ -16,8 +16,8 @@
  */
 package fr.jamgotchian.abcd.netbeans;
 
-import fr.jamgotchian.abcd.core.common.ABCDAbstractPreferences;
-import fr.jamgotchian.abcd.core.common.ABCDPreferences;
+import fr.jamgotchian.abcd.core.common.AbstractConfiguration;
+import fr.jamgotchian.abcd.core.common.Configuration;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -25,8 +25,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-@ServiceProvider(service=ABCDPreferences.class)
-public class NbABCDPreferences extends ABCDAbstractPreferences {
+@ServiceProvider(service=Configuration.class)
+public class NbConfiguration extends AbstractConfiguration {
 
     private static final String USE_LOCAL_VARIABLE_TABLE = "USE_LOCAL_VARIABLE_TABLE";
 

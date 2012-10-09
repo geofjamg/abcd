@@ -16,7 +16,7 @@
  */
 package fr.jamgotchian.abcd.netbeans;
 
-import fr.jamgotchian.abcd.core.common.ABCDPreferences;
+import fr.jamgotchian.abcd.core.common.Configuration;
 import org.openide.util.Lookup;
 
 final class PreferencesPanel extends javax.swing.JPanel {
@@ -67,13 +67,13 @@ final class PreferencesPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     void load() {
-        ulvtCheckBox.setSelected(Lookup.getDefault().lookup(ABCDPreferences.class).isUseLocalVariableTable());
-        alvtCheckBox.setSelected(Lookup.getDefault().lookup(ABCDPreferences.class).isAnalyseLocalVariableType());
+        ulvtCheckBox.setSelected(Lookup.getDefault().lookup(Configuration.class).isUseLocalVariableTable());
+        alvtCheckBox.setSelected(Lookup.getDefault().lookup(Configuration.class).isAnalyseLocalVariableType());
     }
 
     void store() {
-        Lookup.getDefault().lookup(ABCDPreferences.class).setUseLocalVariableTable(ulvtCheckBox.isSelected());
-        Lookup.getDefault().lookup(ABCDPreferences.class).setAnalyseLocalVariableType(alvtCheckBox.isSelected());
+        Lookup.getDefault().lookup(Configuration.class).setUseLocalVariableTable(ulvtCheckBox.isSelected());
+        Lookup.getDefault().lookup(Configuration.class).setAnalyseLocalVariableType(alvtCheckBox.isSelected());
     }
 
     boolean valid() {
