@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011 Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
@@ -20,9 +20,9 @@ package fr.jamgotchian.abcd.core.graph;
  *
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
-public interface ListenableDirectedGraph<V, E> extends MutableDirectedGraph<V, E> {
-    
+public interface ListenableMutableDirectedGraph<V, E> extends MutableDirectedGraph<V, E> {
+
     void addListener(DirectedGraphListener l);
-    
+
     void removeListener(DirectedGraphListener l);
 }

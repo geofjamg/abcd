@@ -39,7 +39,7 @@ public class DirectedGraphs {
     private DirectedGraphs() {
     }
 
-    private static class ListenableDirectedGraphImpl<V ,E> implements ListenableDirectedGraph<V, E> {
+    private static class ListenableDirectedGraphImpl<V ,E> implements ListenableMutableDirectedGraph<V, E> {
 
         private final MutableDirectedGraph<V, E> delegate;
 
