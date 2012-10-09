@@ -477,24 +477,16 @@ public class DirectedGraphs {
         return new ListenableDirectedGraphImpl<V, E>(graph);
     }
 
-    public static <V, E> String toString(DirectedGraph<V, E> graph, V v) {
+    public static <V, E> String toString(DirectedGraph<V, E> graph, String name) {
         StringBuilder builder = new StringBuilder();
-        builder.append("Vertices :\n");
-        for (Iterator<V> it = graph.getReversePostOrderDFST(v, false).iterator(); it.hasNext();) {
-            builder.append("  ").append(it.next());
-            if (it.hasNext()) {
-                builder.append("\n");
-            }
+        builder.append("digraph ").append(name).append(" {\n");
+        for (V v : graph.getVertices()) {
+            builder.append("    ").append(v).append("\n");
         }
-        builder.append("\n");
-        builder.append("Edges :\n");
-        for (Iterator<E> it = graph.getEdges().iterator(); it.hasNext();) {
-            E e = it.next();
-            builder.append("  ").append(e).append(" : ").append(graph.toString(e));
-            if (it.hasNext()) {
-                builder.append("\n");
-            }
+        for (E e : graph.getEdges()) {
+            builder.append("    ").append(graph.toString(e)).append("\n");
         }
+        builder.append("}");
         return builder.toString();
     }
 
