@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.graph;
+package fr.jamgotchian.abcd.core.math;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class Matrix<T> {
             values.add(row);
         }
     }
-    
+
     public int getRowCount() {
         return values.size();
     }
@@ -47,11 +47,11 @@ public class Matrix<T> {
     public int getColumnCount() {
         return values.isEmpty() ? 0 : values.get(0).size();
     }
-    
+
     public T getValue(int row, int column) {
         return values.get(row).get(column);
     }
-    
+
     public void setValue(int row, int column, T value) {
         values.get(row).set(column, value);
     }
@@ -61,7 +61,7 @@ public class Matrix<T> {
         if (!(obj instanceof Matrix)) {
             return false;
         }
-        
+
         Matrix<T> other = (Matrix<T>) obj;
         if (getRowCount() != other.getRowCount()) {
             return false;
@@ -69,7 +69,7 @@ public class Matrix<T> {
         if (getColumnCount() != other.getColumnCount()) {
             return false;
         }
-        
+
         for (int r = 0; r < getRowCount(); r++) {
             for (int c = 0; c < getColumnCount(); c++) {
                 if (!getValue(r, c).equals(other.getValue(r, c))) {
@@ -77,7 +77,7 @@ public class Matrix<T> {
                 }
             }
         }
-        
+
         return true;
     }
 
@@ -85,7 +85,7 @@ public class Matrix<T> {
     public int hashCode() {
         return getRowCount() + getColumnCount(); // very bad hashcode ...
     }
-    
+
     public void print(PrintStream out) {
         for (int r = 0; r < getRowCount(); r++) {
             for (int c = 0; c < getColumnCount(); c++) {

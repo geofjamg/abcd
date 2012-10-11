@@ -27,10 +27,10 @@ import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.graph.DirectedGraph;
 import fr.jamgotchian.abcd.core.graph.DirectedGraphs;
 import fr.jamgotchian.abcd.core.graph.MutableDirectedGraph;
-import fr.jamgotchian.abcd.core.graph.Matrix;
 import fr.jamgotchian.abcd.core.graph.Tree;
 import fr.jamgotchian.abcd.core.graph.Trees;
 import fr.jamgotchian.abcd.core.graph.EdgeFactory;
+import fr.jamgotchian.abcd.core.math.Matrix;
 import fr.jamgotchian.abcd.core.util.Range;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
 import fr.jamgotchian.abcd.core.util.RangeMap;
@@ -278,7 +278,7 @@ public class ControlFlowGraph {
                 edge = addEdge(blockBefore, blockAfter);
             }
         } else {
-          edge = graph.getEdge(blockBefore, blockAfter);
+            edge = graph.getEdge(blockBefore, blockAfter);
         }
 
         return new BasicBlockSplit(blockBefore, blockAfter, edge);

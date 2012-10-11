@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import fr.jamgotchian.abcd.core.math.Matrix;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
