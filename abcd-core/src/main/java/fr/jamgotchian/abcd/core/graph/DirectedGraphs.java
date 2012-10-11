@@ -18,13 +18,13 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import com.google.common.base.Predicate;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -270,6 +270,57 @@ public class DirectedGraphs {
             delegate.addEdge(source, target, edge);
             notifyListeners();
         }
+
+        @Override
+        public Collection<E> getIncomingEdgesOf(V vertex, Predicate<E> filter) {
+            return delegate.getIncomingEdgesOf(vertex, filter);
+        }
+
+        @Override
+        public E getFirstIncomingEdgeOf(V vertex, Predicate<E> filter) {
+            return delegate.getFirstIncomingEdgeOf(vertex, filter);
+        }
+
+        @Override
+        public Collection<E> getOutgoingEdgesOf(V vertex, Predicate<E> filter) {
+            return delegate.getOutgoingEdgesOf(vertex, filter);
+        }
+
+        @Override
+        public E getFirstOutgoingEdgeOf(V vertex, Predicate<E> filter) {
+            return delegate.getFirstOutgoingEdgeOf(vertex, filter);
+        }
+
+        @Override
+        public Set<V> getPredecessorsOf(V vertex, Predicate<E> filter) {
+            return delegate.getPredecessorsOf(vertex, filter);
+        }
+
+        @Override
+        public V getFirstPredecessorOf(V vertex, Predicate<E> filter) {
+            return delegate.getFirstPredecessorOf(vertex, filter);
+        }
+
+        @Override
+        public int getPredecessorCountOf(V vertex, Predicate<E> filter) {
+            return delegate.getPredecessorCountOf(vertex, filter);
+        }
+
+        @Override
+        public Set<V> getSuccessorsOf(V vertex, Predicate<E> filter) {
+            return delegate.getSuccessorsOf(vertex, filter);
+        }
+
+        @Override
+        public V getFirstSuccessorOf(V vertex, Predicate<E> filter) {
+            return delegate.getFirstSuccessorOf(vertex, filter);
+        }
+
+        @Override
+        public int getSuccessorCountOf(V vertex, Predicate<E> filter) {
+            return delegate.getSuccessorCountOf(vertex, filter);
+        }
+
     }
 
     private static class UnmodifiableDirectedGraph<V ,E> implements DirectedGraph<V, E> {
@@ -442,6 +493,57 @@ public class DirectedGraphs {
                                GraphvizRenderer<V> vertexRenderer, GraphvizRenderer<E> edgeRenderer) throws IOException {
             delegate.exportPane(writer, title, paneId, indentLevel, vertexRenderer, edgeRenderer);
         }
+
+        @Override
+        public Collection<E> getIncomingEdgesOf(V vertex, Predicate<E> filter) {
+            return delegate.getIncomingEdgesOf(vertex, filter);
+        }
+
+        @Override
+        public E getFirstIncomingEdgeOf(V vertex, Predicate<E> filter) {
+            return delegate.getFirstIncomingEdgeOf(vertex, filter);
+        }
+
+        @Override
+        public Collection<E> getOutgoingEdgesOf(V vertex, Predicate<E> filter) {
+            return delegate.getOutgoingEdgesOf(vertex, filter);
+        }
+
+        @Override
+        public E getFirstOutgoingEdgeOf(V vertex, Predicate<E> filter) {
+            return delegate.getFirstOutgoingEdgeOf(vertex, filter);
+        }
+
+        @Override
+        public Set<V> getPredecessorsOf(V vertex, Predicate<E> filter) {
+            return delegate.getPredecessorsOf(vertex, filter);
+        }
+
+        @Override
+        public V getFirstPredecessorOf(V vertex, Predicate<E> filter) {
+            return delegate.getFirstPredecessorOf(vertex, filter);
+        }
+
+        @Override
+        public int getPredecessorCountOf(V vertex, Predicate<E> filter) {
+            return delegate.getPredecessorCountOf(vertex, filter);
+        }
+
+        @Override
+        public Set<V> getSuccessorsOf(V vertex, Predicate<E> filter) {
+            return delegate.getSuccessorsOf(vertex, filter);
+        }
+
+        @Override
+        public V getFirstSuccessorOf(V vertex, Predicate<E> filter) {
+            return delegate.getFirstSuccessorOf(vertex, filter);
+        }
+
+        @Override
+        public int getSuccessorCountOf(V vertex, Predicate<E> filter) {
+            return delegate.getSuccessorCountOf(vertex, filter);
+        }
+
     }
 
     public static <V, E> MutableDirectedGraph<V, E> newDirectedGraph() {

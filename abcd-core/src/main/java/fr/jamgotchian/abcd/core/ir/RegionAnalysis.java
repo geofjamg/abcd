@@ -17,9 +17,9 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.common.DecompilationObserver;
-import fr.jamgotchian.abcd.core.graph.Filter;
 import static fr.jamgotchian.abcd.core.ir.BasicBlockPropertyName.*;
 import fr.jamgotchian.abcd.core.ir.RPSTLogger.Log;
 import java.util.*;
@@ -398,9 +398,9 @@ public class RegionAnalysis {
         //
         // find finally region
         //
-        Set<Region> finallyRegions = rpst.getChildren(region, new Filter<Region>() {
+        Set<Region> finallyRegions = rpst.getChildren(region, new Predicate<Region>() {
             @Override
-            public boolean accept(Region r) {
+            public boolean apply(Region r) {
                 return r.getEntry().hasProperty(FINALLY_ENTRY)
                         && r.getExit() == region.getExit();
             }
@@ -414,9 +414,9 @@ public class RegionAnalysis {
         //
         // find try regions
         //
-        Set<Region> tryRegions = rpst.getChildren(region, new Filter<Region>() {
+        Set<Region> tryRegions = rpst.getChildren(region, new Predicate<Region>() {
             @Override
-            public boolean accept(Region r) {
+            public boolean apply(Region r) {
                 if (r == finallyRegion) {
                     return false;
                 }
@@ -478,9 +478,9 @@ public class RegionAnalysis {
         //
         // find inlined regions
         //
-        Set<Region> inlinedRegions = rpst.getSubTreeRegions(region, new Filter<Region>() {
+        Set<Region> inlinedRegions = rpst.getSubTreeRegions(region, new Predicate<Region>() {
             @Override
-            public boolean accept(Region r) {
+            public boolean apply(Region r) {
                 return tryExitBlocks.contains(r.getEntry())
                         && Regions.deepEquals(rpst, r, rpst, finallyRegion);
             }
@@ -498,9 +498,9 @@ public class RegionAnalysis {
         Region mainInlinedRegion = null;
         for (final Region inlinedRegion : inlinedRegions) {
             if (inlinedRegion.getExit() != region.getExit()) {
-                Set<Region> exitRegions = rpst.getSubTreeRegions(region, new Filter<Region>() {
+                Set<Region> exitRegions = rpst.getSubTreeRegions(region, new Predicate<Region>() {
                     @Override
-                    public boolean accept(Region r) {
+                    public boolean apply(Region r) {
                         return inlinedRegion.getExit() == r.getEntry()
                                 && r.getExit() == region.getExit();
                     }

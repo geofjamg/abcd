@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.io.IOException;
@@ -100,13 +101,18 @@ public class Trees {
         }
 
         @Override
+        public Set<N> getChildren(N node, Predicate<N> filter) {
+            return delegate.getChildren(node, filter);
+        }
+
+        @Override
         public Set<N> getChildren(N node) {
             return delegate.getChildren(node);
         }
 
         @Override
-        public Set<N> getChildren(N node, Filter<N> filter) {
-            return delegate.getChildren(node, filter);
+        public N getFirstChild(N node, Predicate<N> filter) {
+            return delegate.getFirstChild(node, filter);
         }
 
         @Override
@@ -115,8 +121,8 @@ public class Trees {
         }
 
         @Override
-        public N getFirstChild(N node, Filter<N> filter) {
-            return delegate.getFirstChild(node, filter);
+        public int getChildrenCount(N node, Predicate<N> filter) {
+            return delegate.getChildrenCount(node, filter);
         }
 
         @Override

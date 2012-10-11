@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import com.google.common.base.Predicate;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
@@ -32,13 +33,15 @@ public interface Tree<N, E> extends Iterable<N> {
 
     boolean containsNode(N node);
 
+    Set<N> getChildren(N node, Predicate<N> filter);
+
     Set<N> getChildren(N node);
 
-    Set<N> getChildren(N node, Filter<N> filter);
+    N getFirstChild(N node, Predicate<N> filter);
 
     N getFirstChild(N node);
 
-    N getFirstChild(N node, Filter<N> filter);
+    int getChildrenCount(N node, Predicate<N> filter);
 
     int getChildrenCount(N node);
 

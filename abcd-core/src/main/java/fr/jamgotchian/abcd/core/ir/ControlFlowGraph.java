@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
@@ -65,6 +66,22 @@ public class ControlFlowGraph {
             = new RangeGraphvizRenderer();
 
     private static final EdgeFactory<Edge> EDGE_FACTORY = new EdgeFactoryImpl();
+
+    private static final Predicate<Edge> NORMAL_EDGE_PREDICATE = new Predicate<Edge>() {
+
+        @Override
+        public boolean apply(Edge e) {
+            return !e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE);
+        }
+    };
+
+    private static final Predicate<Edge> EXCEPTIONAL_EDGE_PREDICATE = new Predicate<Edge>() {
+
+        @Override
+        public boolean apply(Edge e) {
+            return e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE);
+        }
+    };
 
     private final String name;
 
@@ -336,23 +353,11 @@ public class ControlFlowGraph {
     }
 
     public Collection<Edge> getNormalOutgoingEdgesOf(BasicBlock block) {
-        List<Edge> edges = new ArrayList<Edge>();
-        for (Edge e : getOutgoingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                edges.add(e);
-            }
-        }
-        return edges;
+        return graph.getOutgoingEdgesOf(block, NORMAL_EDGE_PREDICATE);
     }
 
     public Collection<Edge> getExceptionalOutgoingEdgesOf(BasicBlock block) {
-        List<Edge> edges = new ArrayList<Edge>();
-        for (Edge e : getOutgoingEdgesOf(block)) {
-            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                edges.add(e);
-            }
-        }
-        return edges;
+        return graph.getOutgoingEdgesOf(block, EXCEPTIONAL_EDGE_PREDICATE);
     }
 
     public Edge getFirstOutgoingEdgeOf(BasicBlock block) {
@@ -360,21 +365,11 @@ public class ControlFlowGraph {
     }
 
     public Edge getFirstNormalOutgoingEdgeOf(BasicBlock block) {
-        for (Edge e : getOutgoingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                return e;
-            }
-        }
-        return null;
+        return graph.getFirstOutgoingEdgeOf(block, NORMAL_EDGE_PREDICATE);
     }
 
     public Edge getFirstExceptionalOutgoingEdgeOf(BasicBlock block) {
-        for (Edge e : getOutgoingEdgesOf(block)) {
-            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                return e;
-            }
-        }
-        return null;
+        return graph.getFirstOutgoingEdgeOf(block, EXCEPTIONAL_EDGE_PREDICATE);
     }
 
     public Collection<Edge> getIncomingEdgesOf(BasicBlock block) {
@@ -386,21 +381,11 @@ public class ControlFlowGraph {
     }
 
     public Edge getFirstNormalIncomingEdgeOf(BasicBlock block) {
-        for (Edge e : getIncomingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                return e;
-            }
-        }
-        return null;
+        return graph.getFirstIncomingEdgeOf(block, NORMAL_EDGE_PREDICATE);
     }
 
     public Edge getFirstExceptionalIncomingEdgeOf(BasicBlock block) {
-        for (Edge e : getIncomingEdgesOf(block)) {
-            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                return e;
-            }
-        }
-        return null;
+        return graph.getFirstIncomingEdgeOf(block, EXCEPTIONAL_EDGE_PREDICATE);
     }
 
     public Collection<BasicBlock> getPredecessorsOf(BasicBlock block) {
@@ -408,23 +393,11 @@ public class ControlFlowGraph {
     }
 
     public Collection<BasicBlock> getNormalPredecessorsOf(BasicBlock block) {
-        List<BasicBlock> predecessors = new ArrayList<BasicBlock>();
-        for (Edge e : graph.getIncomingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                predecessors.add(graph.getEdgeSource(e));
-            }
-        }
-        return predecessors;
+        return graph.getPredecessorsOf(block, NORMAL_EDGE_PREDICATE);
     }
 
     public Collection<BasicBlock> getExceptionalPredecessorsOf(BasicBlock block) {
-        List<BasicBlock> predecessors = new ArrayList<BasicBlock>();
-        for (Edge e : graph.getIncomingEdgesOf(block)) {
-            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                predecessors.add(graph.getEdgeSource(e));
-            }
-        }
-        return predecessors;
+        return graph.getPredecessorsOf(block, EXCEPTIONAL_EDGE_PREDICATE);
     }
 
     public int getPredecessorCountOf(BasicBlock block) {
@@ -432,13 +405,7 @@ public class ControlFlowGraph {
     }
 
     public int getNormalPredecessorCountOf(BasicBlock block) {
-        int count = 0;
-        for (Edge e : getIncomingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                count++;
-            }
-        }
-        return count;
+        return graph.getPredecessorCountOf(block, NORMAL_EDGE_PREDICATE);
     }
 
     public BasicBlock getFirstPredecessorOf(BasicBlock block) {
@@ -450,42 +417,19 @@ public class ControlFlowGraph {
     }
 
     public Collection<BasicBlock> getNormalSuccessorsOf(BasicBlock block) {
-        List<BasicBlock> successors = new ArrayList<BasicBlock>();
-        for (Edge e : graph.getOutgoingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                successors.add(graph.getEdgeTarget(e));
-            }
-        }
-        return successors;
+        return graph.getSuccessorsOf(block, NORMAL_EDGE_PREDICATE);
     }
 
     public BasicBlock getFirstExceptionalSuccessorsOf(BasicBlock block) {
-        for (Edge e : graph.getOutgoingEdgesOf(block)) {
-            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                return graph.getEdgeTarget(e);
-            }
-        }
-        return null;
+        return graph.getFirstSuccessorOf(block, EXCEPTIONAL_EDGE_PREDICATE);
     }
 
     public Collection<BasicBlock> getExceptionalSuccessorsOf(BasicBlock block) {
-        List<BasicBlock> successors = new ArrayList<BasicBlock>();
-        for (Edge e : graph.getOutgoingEdgesOf(block)) {
-            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                successors.add(graph.getEdgeTarget(e));
-            }
-        }
-        return successors;
+        return graph.getSuccessorsOf(block, EXCEPTIONAL_EDGE_PREDICATE);
     }
 
     public int getExceptionalSuccessorCount(BasicBlock block) {
-        int count = 0;
-        for (Edge e : graph.getOutgoingEdgesOf(block)) {
-            if (e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                count++;
-            }
-        }
-        return count;
+        return graph.getSuccessorCountOf(block, EXCEPTIONAL_EDGE_PREDICATE);
     }
 
     public int getSuccessorCountOf(BasicBlock block) {
@@ -493,13 +437,7 @@ public class ControlFlowGraph {
     }
 
     public int getNormalSuccessorCountOf(BasicBlock block) {
-        int count = 0;
-        for (Edge e : getOutgoingEdgesOf(block)) {
-            if (!e.hasAttribute(EdgeAttribute.EXCEPTIONAL_EDGE)) {
-                count++;
-            }
-        }
-        return count;
+        return graph.getSuccessorCountOf(block, NORMAL_EDGE_PREDICATE);
     }
 
     public BasicBlock getFirstSuccessorOf(BasicBlock block) {

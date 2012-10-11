@@ -17,6 +17,8 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
 import java.io.FileWriter;
@@ -27,7 +29,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -264,51 +265,42 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     @Override
-    public Set<N> getChildren(N node) {
+    public Set<N> getChildren(N node, Predicate<N> filter) {
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
             throw new ABCDException("Node " + node + " not found");
         }
-        return neighbors.getChildren().keySet();
+        if (filter != null) {
+            return Sets.filter(neighbors.getChildren().keySet(), filter);
+        } else {
+            return neighbors.getChildren().keySet();
+        }
     }
 
     @Override
-    public Set<N> getChildren(N node, Filter<N> filter) {
-        Set<N> filteredChildren = new LinkedHashSet<N>();
-        for (N child : getChildren(node)) {
-            if (filter.accept(child)) {
-                filteredChildren.add(child);
-            }
-        }
-        return filteredChildren;
+    public Set<N> getChildren(N node) {
+        return getChildren(node, null);
+    }
+
+    @Override
+    public N getFirstChild(N node, Predicate<N> filter) {
+        Iterator<N> it = getChildren(node, filter).iterator();
+        return it.hasNext() ? it.next() : null;
     }
 
     @Override
     public N getFirstChild(N node) {
-        if (getChildrenCount(node) == 0) {
-            return null;
-        } else {
-            return getChildren(node).iterator().next();
-        }
+        return getFirstChild(node, null);
     }
 
     @Override
-    public N getFirstChild(N node, Filter<N> filter) {
-        for (N child : getChildren(node)) {
-            if (filter.accept(child)) {
-                return child;
-            }
-        }
-        return null;
+    public int getChildrenCount(N node, Predicate<N> filter) {
+        return getChildren(node, filter).size();
     }
 
     @Override
     public int getChildrenCount(N node) {
-        Neighbors<N,E> neighbors = nodes.get(node);
-        if (neighbors == null) {
-            throw new ABCDException("Node " + node + " not found");
-        }
-        return neighbors.getChildren().size();
+        return getChildrenCount(node, null);
     }
 
     @Override

@@ -17,6 +17,9 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Maps;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
 import java.io.FileWriter;
@@ -222,7 +225,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
     }
 
     @Override
-    public Collection<E> getOutgoingEdgesOf(V vertex) {
+    public Collection<E> getOutgoingEdgesOf(V vertex, Predicate<E> filter) {
         if (vertex == null) {
             throw new ABCDException("vertex == null");
         }
@@ -230,58 +233,105 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         if (neighbors == null) {
             throw new ABCDException("Vertex " + vertex + " not found");
         }
-        return neighbors.getSuccessors().values();
+        if (filter != null) {
+            return Collections2.filter(neighbors.getSuccessors().values(), filter);
+        } else {
+            return neighbors.getSuccessors().values();
+        }
+    }
+
+    @Override
+    public Collection<E> getOutgoingEdgesOf(V vertex) {
+        return getOutgoingEdgesOf(vertex, null);
+    }
+
+    @Override
+    public E getFirstOutgoingEdgeOf(V vertex, Predicate<E> filter) {
+        Iterator<E> it = getOutgoingEdgesOf(vertex, filter).iterator();
+        return it.hasNext() ? it.next() : null;
     }
 
     @Override
     public E getFirstOutgoingEdgeOf(V vertex) {
-        Iterator<E> it = getOutgoingEdgesOf(vertex).iterator();
-        return it.hasNext() ? it.next() : null;
+        return getFirstOutgoingEdgeOf(vertex, null);
+    }
+
+    @Override
+    public Collection<E> getIncomingEdgesOf(V vertex, Predicate<E> filter) {
+        if (vertex == null) {
+            throw new ABCDException("vertex == null");
+        }
+        Neighbors<V, E> neighbors = vertices.get(vertex);
+        if (neighbors == null) {
+            throw new ABCDException("Vertex " + vertex + " not found");
+        }
+        if (filter != null) {
+            return Collections2.filter(neighbors.getPredecessors().values(), filter);
+        } else {
+            return neighbors.getPredecessors().values();
+        }
     }
 
     @Override
     public Collection<E> getIncomingEdgesOf(V vertex) {
-        if (vertex == null) {
-            throw new ABCDException("vertex == null");
-        }
-        Neighbors<V, E> neighbors = vertices.get(vertex);
-        if (neighbors == null) {
-            throw new ABCDException("Vertex " + vertex + " not found");
-        }
-        return neighbors.getPredecessors().values();
+        return getIncomingEdgesOf(vertex, null);
+    }
+
+    @Override
+    public E getFirstIncomingEdgeOf(V vertex, Predicate<E> filter) {
+        Iterator<E> it = getIncomingEdgesOf(vertex, filter).iterator();
+        return it.hasNext() ? it.next() : null;
     }
 
     @Override
     public E getFirstIncomingEdgeOf(V vertex) {
-        Iterator<E> it = getIncomingEdgesOf(vertex).iterator();
-        return it.hasNext() ? it.next() : null;
+        return getFirstIncomingEdgeOf(vertex, null);
+    }
+
+    @Override
+    public Set<V> getSuccessorsOf(V vertex, Predicate<E> filter) {
+        if (vertex == null) {
+            throw new ABCDException("vertex == null");
+        }
+        Neighbors<V, E> neighbors = vertices.get(vertex);
+        if (neighbors == null) {
+            throw new ABCDException("Vertex " + vertex + " not found");
+        }
+        if (filter != null) {
+            return Maps.filterValues(neighbors.getSuccessors(), filter).keySet();
+        } else {
+            return neighbors.getSuccessors().keySet();
+        }
     }
 
     @Override
     public Set<V> getSuccessorsOf(V vertex) {
-        if (vertex == null) {
-            throw new ABCDException("vertex == null");
-        }
-        Neighbors<V, E> neighbors = vertices.get(vertex);
-        if (neighbors == null) {
-            throw new ABCDException("Vertex " + vertex + " not found");
-        }
-        return neighbors.getSuccessors().keySet();
+        return getSuccessorsOf(vertex, null);
+    }
+
+    @Override
+    public V getFirstSuccessorOf(V vertex, Predicate<E> filter) {
+        Iterator<V> it = getSuccessorsOf(vertex, filter).iterator();
+        return it.hasNext() ? it.next() : null;
     }
 
     @Override
     public V getFirstSuccessorOf(V vertex) {
-        Iterator<V> it = getSuccessorsOf(vertex).iterator();
-        return it.hasNext() ? it.next() : null;
+        return getFirstSuccessorOf(vertex, null);
+    }
+
+    @Override
+    public int getSuccessorCountOf(V vertex, Predicate<E> filter) {
+        return getOutgoingEdgesOf(vertex, filter).size();
     }
 
     @Override
     public int getSuccessorCountOf(V vertex) {
-        return getOutgoingEdgesOf(vertex).size();
+        return getSuccessorCountOf(vertex, null);
     }
 
     @Override
-    public Set<V> getPredecessorsOf(V vertex) {
+    public Set<V> getPredecessorsOf(V vertex, Predicate<E> filter) {
         if (vertex == null) {
             throw new ABCDException("vertex == null");
         }
@@ -289,18 +339,37 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         if (neighbors == null) {
             throw new ABCDException("Vertex " + vertex + " not found");
         }
-        return neighbors.getPredecessors().keySet();
+        if (filter != null) {
+            return Maps.filterValues(neighbors.getPredecessors(), filter).keySet();
+        } else {
+            return neighbors.getPredecessors().keySet();
+        }
     }
 
     @Override
-    public V getFirstPredecessorOf(V vertex) {
-        Iterator<V> it = getPredecessorsOf(vertex).iterator();
+    public Set<V> getPredecessorsOf(V vertex) {
+        return getPredecessorsOf(vertex, null);
+    }
+
+    @Override
+    public V getFirstPredecessorOf(V vertex, Predicate<E> filter) {
+        Iterator<V> it = getPredecessorsOf(vertex, filter).iterator();
         return it.hasNext() ? it.next() : null;
     }
 
     @Override
+    public V getFirstPredecessorOf(V vertex) {
+        return getFirstPredecessorOf(vertex, null);
+    }
+
+    @Override
+    public int getPredecessorCountOf(V vertex, Predicate<E> filter) {
+        return getIncomingEdgesOf(vertex, filter).size();
+    }
+
+    @Override
     public int getPredecessorCountOf(V vertex) {
-        return getIncomingEdgesOf(vertex).size();
+        return getPredecessorCountOf(vertex, null);
     }
 
     @Override

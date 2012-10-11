@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
+import com.google.common.base.Predicate;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
@@ -43,31 +44,51 @@ public interface DirectedGraph<V, E> {
 
     int getEdgeCount();
 
+    Collection<E> getIncomingEdgesOf(V vertex, Predicate<E> filter);
+
     Collection<E> getIncomingEdgesOf(V vertex);
+
+    E getFirstIncomingEdgeOf(V vertex, Predicate<E> filter);
 
     E getFirstIncomingEdgeOf(V vertex);
 
+    Collection<E> getOutgoingEdgesOf(V vertex, Predicate<E> filter);
+
     Collection<E> getOutgoingEdgesOf(V vertex);
+
+    E getFirstOutgoingEdgeOf(V vertex, Predicate<E> filter);
 
     E getFirstOutgoingEdgeOf(V vertex);
 
+    Set<V> getPredecessorsOf(V vertex, Predicate<E> filter);
+
     Set<V> getPredecessorsOf(V vertex);
+
+    V getFirstPredecessorOf(V vertex, Predicate<E> filter);
 
     V getFirstPredecessorOf(V vertex);
 
+    int getPredecessorCountOf(V vertex, Predicate<E> filter);
+
+    int getPredecessorCountOf(V vertex);
+
+    Set<V> getSuccessorsOf(V vertex, Predicate<E> filter);
+
     Set<V> getSuccessorsOf(V vertex);
 
+    V getFirstSuccessorOf(V vertex, Predicate<E> filter);
+
     V getFirstSuccessorOf(V vertex);
+
+    int getSuccessorCountOf(V vertex, Predicate<E> filter);
+
+    int getSuccessorCountOf(V vertex);
 
     boolean containsVertex(V vertex);
 
     Set<V> getVertices();
 
     int getVertexCount();
-
-    int getPredecessorCountOf(V vertex);
-
-    int getSuccessorCountOf(V vertex);
 
     Set<V> getEntries();
 

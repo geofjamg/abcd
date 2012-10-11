@@ -16,7 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.graph.Filter;
+import com.google.common.base.Predicate;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.graph.MutableTree;
 import fr.jamgotchian.abcd.core.graph.Trees;
@@ -120,22 +120,22 @@ public class RPST {
     }
 
     public Region getChildWithEntry(Region region, final BasicBlock entry) {
-        return tree.getFirstChild(region, new Filter<Region>() {
+        return tree.getFirstChild(region, new Predicate<Region>() {
             @Override
-            public boolean accept(Region child) {
+            public boolean apply(Region child) {
                 return child.getEntry().equals(entry);
             }
         });
     }
 
-    public Set<Region> getChildren(Region region, Filter<Region> filter) {
+    public Set<Region> getChildren(Region region, Predicate<Region> filter) {
         return tree.getChildren(region, filter);
     }
 
     public Set<Region> getChildrenWithExit(Region region, final BasicBlock exit) {
-        return tree.getChildren(region, new Filter<Region>() {
+        return tree.getChildren(region, new Predicate<Region>() {
             @Override
-            public boolean accept(Region child) {
+            public boolean apply(Region child) {
                 return child.getExit().equals(exit);
             }
         });
@@ -146,18 +146,18 @@ public class RPST {
     }
 
     public Region getFirstChild(Region region, final ChildType childType) {
-        return tree.getFirstChild(region, new Filter<Region>() {
+        return tree.getFirstChild(region, new Predicate<Region>() {
             @Override
-            public boolean accept(Region child) {
+            public boolean apply(Region child) {
                 return child.getChildType() == childType;
             }
         });
     }
 
     public Collection<Region> getChildren(Region region, final ChildType childType) {
-        return tree.getChildren(region, new Filter<Region>() {
+        return tree.getChildren(region, new Predicate<Region>() {
             @Override
-            public boolean accept(Region child) {
+            public boolean apply(Region child) {
                 return child.getChildType() == childType;
             }
         });
@@ -185,10 +185,10 @@ public class RPST {
         return tree.getSubTree(subTreeRoot).getNodesPreOrder();
     }
 
-    public Set<Region> getSubTreeRegions(Region subTreeRoot, Filter<Region> filter) {
+    public Set<Region> getSubTreeRegions(Region subTreeRoot, Predicate<Region> filter) {
         Set<Region> regions = new HashSet<Region>();
         for (Region region : tree.getSubTree(subTreeRoot).getNodes()) {
-            if (filter.accept(region)) {
+            if (filter.apply(region)) {
                 regions.add(region);
             }
         }
