@@ -22,6 +22,7 @@ import fr.jamgotchian.abcd.core.code.ColoredString;
 import fr.jamgotchian.abcd.core.code.DOTHTMLLikeCodeWriterFactory;
 import fr.jamgotchian.abcd.core.code.HTMLCodeWriterFactory;
 import fr.jamgotchian.abcd.core.code.TextCodeWriterFactory;
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.util.Range;
 import java.awt.Color;
 import java.io.IOException;
@@ -43,17 +44,12 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(IRInstWriter.class);
 
     public static String toString(IRInst inst, CodeWriterFactory factory) {
-        Writer writer = new StringWriter();
-        try {
+        try (Writer writer = new StringWriter()) {
             inst.accept(new IRInstWriter(factory.create(writer)), null);
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException e) {
-                LOGGER.error(e.toString(), e);
-            }
+            return writer.toString();
+        } catch (IOException e) {
+            throw new ABCDException(e);
         }
-        return writer.toString();
     }
 
     public static String toText(IRInst inst) {
@@ -71,8 +67,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         VariableStack inputStack = bb.getInputStack();
         VariableStack outputStack = bb.getOutputStack();
         Map<BasicBlockPropertyName, Object> attributes = bb.getProperties();
-        Writer writer = new StringWriter();
-        try {
+        try (Writer writer = new StringWriter()) {
             CodeWriter codeWriter = factory.create(writer);
             List<ColoredString> infosBefore = new ArrayList<>(2);
             infosBefore.add(new ColoredString(range != null ? range.toString() : "", Color.LIGHT_GRAY));
@@ -92,14 +87,10 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
                                                  Color.ORANGE));
             }
             codeWriter.after(infosAfter);
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException e) {
-                LOGGER.error(e.toString(), e);
-            }
+            return writer.toString();
+        } catch (IOException e) {
+            throw new ABCDException(e);
         }
-        return writer.toString();
     }
 
     public static String toDOTHTMLLike(BasicBlock bb) {

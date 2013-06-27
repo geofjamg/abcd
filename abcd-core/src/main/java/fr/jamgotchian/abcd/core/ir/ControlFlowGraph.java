@@ -796,20 +796,10 @@ public class ControlFlowGraph {
     }
 
     public void export(String fileName) {
-        Writer writer = null;
-        try {
-            writer = new FileWriter(fileName);
+        try (Writer writer = new FileWriter(fileName)) {
             export(writer);
         } catch (IOException e) {
-            LOGGER.error(e.toString(), e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    LOGGER.error(e.toString(), e);
-                }
-            }
+            throw new ABCDException(e);
         }
     }
 

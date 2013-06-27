@@ -79,18 +79,12 @@ public class DebugDecompilationObserver extends DefaultDecompilationObserver {
         String baseName = getBaseName(cfg.getName());
 
         try {
-            Writer writer = new FileWriter(baseName + "_RAWCFG.dot");
-            try {
+            try (Writer writer = new FileWriter(baseName + "_RAWCFG.dot")) {
                 cfg.export(writer);
-            } finally {
-                writer.close();
             }
 
-            writer = new FileWriter(baseName + "_BC.dot");
-            try {
+            try (Writer writer = new FileWriter(baseName + "_BC.dot")) {
                 cfg.exportBytecode(writer);
-            } finally {
-                writer.close();
             }
         } catch (IOException e) {
             LOGGER.error(e.toString(), e);
@@ -104,47 +98,32 @@ public class DebugDecompilationObserver extends DefaultDecompilationObserver {
         String baseName = getBaseName(cfg.getName());
 
         try {
-            Writer writer = new FileWriter(baseName + "_DFST.dot");
-            try {
+            try (Writer writer = new FileWriter(baseName + "_DFST.dot")) {
                 cfg.getDFST().export(writer, "DFST", RANGE_GRAPHVIZ_RENDERER,
                                      EDGE_GRAPHVIZ_RENDERER);
-            } finally {
-                writer.close();
             }
 
-            writer = new FileWriter(baseName + "_CFG.dot");
-            try {
+            try (Writer writer = new FileWriter(baseName + "_CFG.dot")) {
                 cfg.export(writer);
-            } finally {
-                writer.close();
             }
 
-            writer = new FileWriter(baseName + "_DT.dot");
-            try {
+            try (Writer writer = new FileWriter(baseName + "_DT.dot")) {
                 cfg.getDominatorInfo().getDominatorsTree()
                         .export(writer, "DT", RANGE_GRAPHVIZ_RENDERER,
                                 EDGE_GRAPHVIZ_RENDERER_FALSE);
-            } finally {
-                writer.close();
             }
 
             if (cfg.getPostDominatorInfo() != null) {
-                writer = new FileWriter(baseName + "_PDT.dot");
-                try {
+                try (Writer writer = new FileWriter(baseName + "_PDT.dot")) {
                     cfg.getPostDominatorInfo().getPostDominatorsTree()
                             .export(writer, "PDT",
                                     RANGE_GRAPHVIZ_RENDERER,
                                     EDGE_GRAPHVIZ_RENDERER_FALSE);
-                } finally {
-                    writer.close();
                 }
             }
 
-            writer = new FileWriter(baseName + "_INST.dot");
-            try {
+            try (Writer writer = new FileWriter(baseName + "_INST.dot")) {
                 cfg.exportInst(writer);
-            } finally {
-                writer.close();
             }
         } catch (IOException e) {
             LOGGER.error(e.toString(), e);
@@ -155,10 +134,8 @@ public class DebugDecompilationObserver extends DefaultDecompilationObserver {
     public void doneRPST(RPSTLogger logger) {
         String baseName = getBaseName(logger.getName());
 
-        try {
-            try (Writer writer = new FileWriter(baseName + "_RPST.dot")) {
-                logger.export(writer);
-            }
+        try (Writer writer = new FileWriter(baseName + "_RPST.dot")) {
+            logger.export(writer);
         } catch (IOException e) {
             LOGGER.error(e.toString(), e);
         }

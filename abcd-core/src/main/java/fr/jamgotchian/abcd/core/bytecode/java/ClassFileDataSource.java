@@ -99,23 +99,13 @@ public class ClassFileDataSource implements ABCDDataSource {
             @Override
             public boolean accept(File pathname) {
                 if (pathname.getName().endsWith(".class")) {
-                    InputStream is = null;
-                    try {
-                        is = new FileInputStream(pathname);
+                    try (InputStream is = new FileInputStream(pathname)) {
                         ClassReader cr = new ClassReader(is);
                         InnerClassChecker checker = new InnerClassChecker(className);
                         cr.accept(checker, 0);
                         return checker.isInnerClass();
                     } catch (IOException e) {
-                        LOGGER.error(e.toString(), e);
-                    } finally {
-                        if (is != null) {
-                            try {
-                                is.close();
-                            } catch (IOException e) {
-                                LOGGER.error(e.toString(), e);
-                            }
-                        }
+                        throw new ABCDException(e);
                     }
                 }
                 return false;

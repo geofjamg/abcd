@@ -40,26 +40,26 @@ import org.junit.Test;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
  */
 public class DecompilationTest {
-        
+
     private static JavaCompiler compiler;
-    
+
     public DecompilationTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
         compiler = ToolProvider.getSystemJavaCompiler();
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
         compiler = null;
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -68,20 +68,17 @@ public class DecompilationTest {
         ClassFileManager fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null));
         JavaFileObject file = new CharSequenceJavaFileObject(className, source);
         compiler.getTask(null, fileManager, null, null, null, Collections.singleton(file)).call();
-        return fileManager.getClassBytes();        
+        return fileManager.getClassBytes();
     }
-    
+
     private String decompile(byte[] classFile) throws IOException {
         ABCDDataSource dataSrc = new ByteArrayDataSource(classFile);
-        Writer writer = new StringWriter();
-        try {
+        try (Writer writer = new StringWriter()) {
             Configuration config = new InMemoryConfiguration();
             DecompilationObserver observer = new TestDecompilationObserver(writer, config);
             new ABCDContext().decompile(dataSrc, observer, config, getClass().getClassLoader());
-        } finally {
-            writer.close();
+            return writer.toString();
         }
-        return writer.toString();
     }
 
     private boolean test(String className, String source) throws IOException {
@@ -90,11 +87,11 @@ public class DecompilationTest {
         System.out.println(decompiledSource);
         return source.equals(decompiledSource);
     }
-    
+
     @Test
     public void testIf() throws Exception {
         String className = "fr.jamgotchian.abcd.test.Test";
-        String source = 
+        String source =
                 "package fr.jamgotchian.abcd.test;\n" +
                 "\n" +
                 "public class Test {\n" +

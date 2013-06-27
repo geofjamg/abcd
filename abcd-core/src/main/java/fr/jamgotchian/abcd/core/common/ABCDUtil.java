@@ -50,22 +50,12 @@ public class ABCDUtil {
         String version = UNDEFINED;
         String homePage = UNDEFINED;
         if (url != null) {
-            InputStream is = null;
-            try {
-                is = url.openStream();
+            try (InputStream is = url.openStream()) {
                 props.load(is);
                 version = props.getProperty("abcd.version", UNDEFINED);
                 homePage = props.getProperty("abcd.homePage", UNDEFINED);
             } catch(IOException e) {
                 LOGGER.error(e.toString(), e);
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch(IOException e) {
-                        LOGGER.error(e.toString(), e);
-                    }
-                }
             }
         }
         VERSION = version;

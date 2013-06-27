@@ -588,20 +588,10 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public void export(String fileName, String title) {
-        Writer writer = null;
-        try {
-            writer = new FileWriter(fileName);
+        try (Writer writer = new FileWriter(fileName)) {
             export(writer, title);
         } catch (IOException e) {
-            LOGGER.error(e.toString(), e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    LOGGER.error(e.toString(), e);
-                }
-            }
+            throw new ABCDException(e);
         }
     }
 

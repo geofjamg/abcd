@@ -525,39 +525,19 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     public void export(String fileName, String title,
                        GraphvizRenderer<N> nodeRenderer,
                        GraphvizRenderer<E> edgeRenderer) {
-        Writer writer = null;
-        try {
-            writer = new FileWriter(fileName);
+        try (Writer writer = new FileWriter(fileName)) {
             export(writer, title, nodeRenderer, edgeRenderer);
         } catch (IOException e) {
-            LOGGER.error(e.toString(), e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    LOGGER.error(e.toString(), e);
-                }
-            }
+            throw new ABCDException(e);
         }
     }
 
     @Override
     public void export(String fileName, String title) {
-        Writer writer = null;
-        try {
-            writer = new FileWriter(fileName);
+        try (Writer writer = new FileWriter(fileName)) {
             export(writer, title);
         } catch (IOException e) {
-            LOGGER.error(e.toString(), e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    LOGGER.error(e.toString(), e);
-                }
-            }
+            throw new ABCDException(e);
         }
     }
 

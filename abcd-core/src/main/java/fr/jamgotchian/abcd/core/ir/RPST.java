@@ -17,6 +17,7 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import com.google.common.base.Predicate;
+import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.graph.MutableTree;
 import fr.jamgotchian.abcd.core.graph.Trees;
@@ -351,20 +352,10 @@ public class RPST {
     }
 
     public void export(String fileName, ExportType type) {
-        Writer writer = null;
-        try {
-            writer = new FileWriter(fileName);
+        try (Writer writer = new FileWriter(fileName)) {
             export(writer, type);
         } catch (IOException e) {
-            LOGGER.error(e.toString(), e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    LOGGER.error(e.toString(), e);
-                }
-            }
+            throw new ABCDException(e);
         }
     }
 }
