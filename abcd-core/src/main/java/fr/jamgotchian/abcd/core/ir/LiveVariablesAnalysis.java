@@ -18,9 +18,9 @@ package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.graph.BackwardDataFlowAnalysis;
 import com.google.common.collect.Sets;
-import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +87,6 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
 
     @Override
     protected boolean valuesEqual(Set<Variable> value1, Set<Variable> value2) {
-        return Collections3.equals(value1, value2);
+        return Objects.equals(value1, value2);
     }
 }

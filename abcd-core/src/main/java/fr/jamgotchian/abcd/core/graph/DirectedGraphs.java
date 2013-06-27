@@ -19,12 +19,9 @@
 package fr.jamgotchian.abcd.core.graph;
 
 import com.google.common.base.Predicate;
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,7 +64,7 @@ public class DirectedGraphs {
         }
 
         @Override
-        public void export(String fileName, String title) {
+        public void export(String fileName, String title) throws IOException {
             delegate.export(fileName, title);
         }
 
@@ -472,7 +469,7 @@ public class DirectedGraphs {
         }
 
         @Override
-        public void export(String fileName, String title) {
+        public void export(String fileName, String title) throws IOException {
             delegate.export(fileName, title);
         }
 
@@ -590,28 +587,6 @@ public class DirectedGraphs {
         }
         builder.append("}");
         return builder.toString();
-    }
-
-    public static <V, E> DirectedGraph<V, E> getSingleExitGraph(DirectedGraph<V, E> graph, V exit) {
-        Set<V> exits = graph.getExits();
-        if (exits.isEmpty()) {
-            throw new ABCDException("No exit");
-        }
-        if (exits.size() == 1) {
-            if (exits.iterator().next() != exit) {
-                throw new ABCDException("Wrong exit ");
-            }
-            return graph;
-        }
-        Set<V> visited = new HashSet<>();
-        graph.getReversePostOrderDFST(exit, visited, true);
-        MutableDirectedGraph<V, E> graph2 = newDirectedGraph(graph);
-        for (V v : new ArrayList<>(graph2.getVertices())) {
-            if (!visited.contains(v)) {
-                graph2.removeVertex(v);
-            }
-        }
-        return graph2;
     }
 
 }

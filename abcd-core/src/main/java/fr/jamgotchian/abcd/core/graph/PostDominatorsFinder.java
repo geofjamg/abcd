@@ -17,9 +17,9 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
-import fr.jamgotchian.abcd.core.util.Collections3;
-import fr.jamgotchian.abcd.core.util.Sets;
+import com.google.common.collect.Sets;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -60,6 +60,6 @@ class PostDominatorsFinder<N ,E> extends BackwardDataFlowAnalysis<N, E, Set<N>> 
 
     @Override
     public boolean valuesEqual(Set<N> value1, Set<N> value2) {
-        return Collections3.equals(value1, value2);
+        return Objects.equals(value1, value2);
     }
 }

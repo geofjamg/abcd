@@ -22,12 +22,12 @@ import choco.cp.solver.CPSolver;
 import choco.kernel.model.Model;
 import choco.kernel.model.variables.set.SetVariable;
 import choco.kernel.solver.Solver;
+import com.google.common.primitives.Ints;
 import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.type.ClassNameManager;
 import fr.jamgotchian.abcd.core.type.JavaType;
 import fr.jamgotchian.abcd.core.type.TypeHierarchyIndexer;
 import fr.jamgotchian.abcd.core.type.TypeKind;
-import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -507,11 +507,11 @@ public class LocalVariableTypeAnalyser {
             assert type.getKind() == TypeKind.PRIMITIVE;
             values.addAll(indexer.getParentIndexes(type));
         }
-        SetVariable cst = Choco.makeSetVar("c" + cstID++, Collections3.toIntArray(values));
+        SetVariable cst = Choco.makeSetVar("c" + cstID++, Ints.toArray(values));
         SetVariable set = variables.get(var.getID());
         if (set == null) {
             set = Choco.makeSetVar(var.getID().toString(),
-                                   Collections3.toIntArray(indexer.getPrimitiveTypeIndexes()));
+                                   Ints.toArray(indexer.getPrimitiveTypeIndexes()));
             variables.put(var.getID(), set);
         }
         model.addConstraints(Choco.eq(set, cst));
@@ -532,11 +532,11 @@ public class LocalVariableTypeAnalyser {
             default:
                 throw new InternalError();
         }
-        SetVariable cst = Choco.makeSetVar("c" + cstID++, Collections3.toIntArray(values));
+        SetVariable cst = Choco.makeSetVar("c" + cstID++, Ints.toArray(values));
         SetVariable set = variables.get(var.getID());
         if (set == null) {
             set = Choco.makeSetVar(var.getID().toString(),
-                                   Collections3.toIntArray(indexer.getReferenceTypeIndexes()));
+                                   Ints.toArray(indexer.getReferenceTypeIndexes()));
             variables.put(var.getID(), set);
         }
         model.addConstraints(Choco.eq(set, cst));

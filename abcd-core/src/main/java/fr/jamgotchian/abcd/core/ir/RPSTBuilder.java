@@ -16,9 +16,9 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
+import com.google.common.collect.Sets;
 import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
 import fr.jamgotchian.abcd.core.graph.DominatorInfo;
-import fr.jamgotchian.abcd.core.util.Sets;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,16 +92,14 @@ public class RPSTBuilder {
         if (!getDomInfo().dominates(entry, exit)) {
             // Exit has to be the only element in the dominance frontier of Entry.
             // In this case the only edges leaving the region end at Exit
-            if (!Sets.isSubset(getDomInfo().getDominanceFrontierOf2(entry),
-                               Collections.singleton(exit))) {
+            if (!Collections.singleton(exit).containsAll(getDomInfo().getDominanceFrontierOf2(entry))) {
                 return false;
             }
         } else {
             // Only basic blocks that are part of the dominance frontier of Exit
             // are allowed to be element of the dominance frontier of Entry
-            if (!Sets.isSubset(getDomInfo().getDominanceFrontierOf2(entry),
-                               com.google.common.collect.Sets.union(getDomInfo().getDominanceFrontierOf2(exit),
-                                          Collections.singleton(entry)))) {
+            if (!Sets.union(getDomInfo().getDominanceFrontierOf2(exit), Collections.singleton(entry))
+                    .containsAll(getDomInfo().getDominanceFrontierOf2(entry))) {
                 return false;
             }
             // Basic blocks of the dominance frontier of Entry can only be reached

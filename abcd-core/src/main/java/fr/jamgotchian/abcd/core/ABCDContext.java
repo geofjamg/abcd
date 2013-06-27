@@ -17,6 +17,7 @@
 
 package fr.jamgotchian.abcd.core;
 
+import com.google.common.base.Throwables;
 import fr.jamgotchian.abcd.core.Summary.ErrorInfo;
 import fr.jamgotchian.abcd.core.ast.AbstractSyntaxTreeBuilder;
 import fr.jamgotchian.abcd.core.ast.Class;
@@ -47,7 +48,6 @@ import fr.jamgotchian.abcd.core.ir.RegionAnalysis;
 import fr.jamgotchian.abcd.core.ir.SimpleVariableNameProviderFactory;
 import fr.jamgotchian.abcd.core.ir.VariableNameProviderFactory;
 import fr.jamgotchian.abcd.core.util.console.ConsoleUtil;
-import fr.jamgotchian.abcd.core.util.Exceptions;
 import fr.jamgotchian.abcd.core.util.console.TablePrinter;
 import java.io.IOException;
 import java.util.Arrays;
@@ -208,7 +208,7 @@ public class ABCDContext {
 
                 method.getBody().clear();
                 StringBuilder msg = new StringBuilder();
-                msg.append(Exceptions.printStackTrace(exc))
+                msg.append(Throwables.getStackTraceAsString(exc))
                         .append("\n")
                         .append(methodFactory.getBytecodeAsText())
                         .append("\n");

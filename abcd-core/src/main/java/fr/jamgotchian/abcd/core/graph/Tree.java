@@ -89,7 +89,7 @@ public interface Tree<N, E> extends Iterable<N> {
 
     void export(String fileName, String title,
                 GraphvizRenderer<N> nodeRenderer,
-                GraphvizRenderer<E> edgeRenderer);
+                GraphvizRenderer<E> edgeRenderer) throws IOException;
 
-    void export(String fileName, String title);
+    void export(String fileName, String title) throws IOException;
 }

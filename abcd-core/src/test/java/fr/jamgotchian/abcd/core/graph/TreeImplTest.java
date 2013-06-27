@@ -17,7 +17,6 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.Arrays;
 import java.util.Collections;
@@ -172,7 +171,7 @@ public class TreeImplTest {
         try {
             tree.getFirstCommonAncestor(Collections.<Vertex>emptyList());
             fail();
-        } catch (ABCDException e) {
+        } catch (GraphException e) {
         }
         assertTrue(tree.getFirstCommonAncestor(Arrays.asList(n2)).equals(n2));
         assertTrue(tree.getFirstCommonAncestor(Arrays.asList(n2, n3)).equals(n2));

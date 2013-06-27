@@ -16,7 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.type;
 
-import fr.jamgotchian.abcd.core.util.Collections3;
+import com.google.common.primitives.Ints;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +46,7 @@ public class TypeHierarchyIndexerTest {
     public void test1() {
         assertTrue(indexer.getFirstIndex() == 0);
         assertTrue(indexer.getLastIndex() == 7);
-        assertArrayEquals(Collections3.toIntArray(indexer.getPrimitiveTypeIndexes()),
+        assertArrayEquals(Ints.toArray(indexer.getPrimitiveTypeIndexes()),
                           new int[] {0, 1, 2, 3, 4, 5, 6, 7});
     }
 
@@ -56,9 +56,9 @@ public class TypeHierarchyIndexerTest {
         indexer.addIndex(javaLangStringType);
         assertTrue(indexer.getFirstIndex() == 0);
         assertTrue(indexer.getLastIndex() == 12);
-        assertArrayEquals(Collections3.toIntArray(indexer.getReferenceTypeIndexes()),
+        assertArrayEquals(Ints.toArray(indexer.getReferenceTypeIndexes()),
                           new int[] {8, 9, 10, 11, 12});
-        assertArrayEquals(Collections3.toIntArray(indexer.getParentIndexes(javaLangStringType)),
+        assertArrayEquals(Ints.toArray(indexer.getParentIndexes(javaLangStringType)),
                           new int[] {8, 9, 10, 11, 12});
     }
 }

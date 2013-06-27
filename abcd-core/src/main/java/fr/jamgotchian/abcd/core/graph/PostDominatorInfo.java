@@ -18,12 +18,11 @@
 package fr.jamgotchian.abcd.core.graph;
 
 import com.google.common.collect.Sets;
-import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,9 +108,9 @@ public class PostDominatorInfo<N, E> {
                 boolean found = false;
                 for (N p : pdn) {
                     if (!p.equals(n)
-                            && Collections3.equals(Sets.union(postDominators.get(p),
-                                                              Collections.singleton(n)),
-                                                   pdn)) {
+                            && Objects.equals(Sets.union(postDominators.get(p),
+                                                         Collections.singleton(n)),
+                                              pdn)) {
                         immediatePostDominator.put(n, p);
                         found = true;
                         break;
@@ -151,10 +150,10 @@ public class PostDominatorInfo<N, E> {
 
         Set<N> exits = graph.getExits();
         if (exits.size() != 1) {
-            throw new ABCDException("Graph should be single exit");
+            throw new GraphException("Graph should be single exit");
         } else {
             if (exits.iterator().next() != exitNode) {
-                throw new ABCDException("Exit node is inconsistent");
+                throw new GraphException("Exit node is inconsistent");
             }
         }
 

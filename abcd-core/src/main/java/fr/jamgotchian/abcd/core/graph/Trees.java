@@ -17,7 +17,6 @@
 
 package fr.jamgotchian.abcd.core.graph;
 
-import fr.jamgotchian.abcd.core.math.Matrix;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -187,12 +186,12 @@ public class Trees {
         @Override
         public void export(String fileName, String title,
                            GraphvizRenderer<N> nodeRenderer,
-                           GraphvizRenderer<E> edgeRenderer) {
+                           GraphvizRenderer<E> edgeRenderer) throws IOException {
             delegate.export(fileName, title, nodeRenderer, edgeRenderer);
         }
 
         @Override
-        public void export(String fileName, String title) {
+        public void export(String fileName, String title) throws IOException {
             delegate.export(fileName, title);
         }
     }

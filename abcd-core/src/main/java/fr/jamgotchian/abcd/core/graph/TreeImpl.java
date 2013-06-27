@@ -19,7 +19,6 @@ package fr.jamgotchian.abcd.core.graph;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,6 +30,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,15 +145,18 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public void addNode(N parent, N node, E edge) {
+        Objects.requireNonNull(parent, "parent must not be null");
+        Objects.requireNonNull(node, "node must not be null");
+        Objects.requireNonNull(edge, "edge must not be null");
         if (nodes.containsKey(node)) {
-            throw new ABCDException("Node " + node + " already present");
+            throw new GraphException("Node " + node + " already present");
         }
         if (edges.containsKey(edge)) {
-            throw new ABCDException("Edge " + edge + " already present");
+            throw new GraphException("Edge " + edge + " already present");
         }
         Neighbors<N,E> parentNeighbors = nodes.get(parent);
         if (parentNeighbors == null) {
-            throw new ABCDException("Parent node " + parent + " not found");
+            throw new GraphException("Parent node " + parent + " not found");
         }
         parentNeighbors.getChildren().put(node, edge);
         nodes.put(node, new Neighbors<>(parent, edge));
@@ -162,18 +165,21 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public void insertNode(N node, N child, E edge) {
+        Objects.requireNonNull(node, "node must not be null");
+        Objects.requireNonNull(child, "child must not be null");
+        Objects.requireNonNull(edge, "edge must not be null");
         if (child.equals(root)) {
-            throw new ABCDException("Can't insert node before root");
+            throw new GraphException("Can't insert node before root");
         }
         if (nodes.containsKey(node)) {
-            throw new ABCDException("Node " + node + " already present");
+            throw new GraphException("Node " + node + " already present");
         }
         if (edges.containsKey(edge)) {
-            throw new ABCDException("Edge " + edge + " already present");
+            throw new GraphException("Edge " + edge + " already present");
         }
         Neighbors<N,E> childNeighbors = nodes.get(child);
         if (childNeighbors == null) {
-            throw new ABCDException("Child " + child + " not found");
+            throw new GraphException("Child " + child + " not found");
         }
         N parent = childNeighbors.getParentNode();
         Neighbors<N,E> parentNeighbors = nodes.get(parent);
@@ -188,8 +194,11 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public void addTree(Tree<N, E> tree, N parent, E edge) {
+        Objects.requireNonNull(tree, "tree must not be null");
+        Objects.requireNonNull(parent, "parent must not be null");
+        Objects.requireNonNull(edge, "edge must not be null");
         if (!nodes.containsKey(parent)) {
-            throw new ABCDException("Parent node " + parent + " not found");
+            throw new GraphException("Parent node " + parent + " not found");
         }
         addNode(parent, tree.getRoot(), edge);
         for (N child : tree.getChildren(tree.getRoot())) {
@@ -198,6 +207,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     private void addTree2(Tree<N, E> tree, N node, N parent) {
+        Objects.requireNonNull(tree, "tree must not be null");
         addNode(parent, node, tree.getIncomingEdge(node));
         for (N child : tree.getChildren(node)) {
             addTree2(tree, child, node);
@@ -206,14 +216,16 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public boolean containsNode(N node) {
+        Objects.requireNonNull(node, "node must not be null");
         return nodes.containsKey(node);
     }
 
     @Override
     public N getParent(N node) {
+        Objects.requireNonNull(node, "node must not be null");
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
-            throw new ABCDException("Node " + node + " not found");
+            throw new GraphException("Node " + node + " not found");
         }
         return neighbors.getParentNode();
     }
@@ -228,6 +240,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public Collection<N> getAncestors(N node) {
+        Objects.requireNonNull(node, "node must not be null");
         List<N> ancestors = new ArrayList<>();
         getAncestors(node, ancestors);
         return ancestors;
@@ -235,25 +248,28 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public E getIncomingEdge(N node) {
+        Objects.requireNonNull(node, "node must not be null");
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
-            throw new ABCDException("Node " + node + " not found");
+            throw new GraphException("Node " + node + " not found");
         }
         return neighbors.getIncomingEdge();
     }
 
     @Override
     public void setNewParent(N node, N newParent) {
+        Objects.requireNonNull(node, "node must not be null");
+        Objects.requireNonNull(newParent, "newParent must not be null");
         if (node.equals(root)) {
-            throw new ABCDException("Can't change parent of root node");
+            throw new GraphException("Can't change parent of root node");
         }
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
-            throw new ABCDException("Node " + node + " not found");
+            throw new GraphException("Node " + node + " not found");
         }
         Neighbors<N,E> newParentNeighbors = nodes.get(newParent);
         if (newParentNeighbors == null) {
-            throw new ABCDException("New parent node " + newParent + " not found");
+            throw new GraphException("New parent node " + newParent + " not found");
         }
         E edge = neighbors.getIncomingEdge();
         N oldParent = getParent(node);
@@ -266,9 +282,10 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public Set<N> getChildren(N node, Predicate<N> filter) {
+        Objects.requireNonNull(node, "node must not be null");
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
-            throw new ABCDException("Node " + node + " not found");
+            throw new GraphException("Node " + node + " not found");
         }
         if (filter != null) {
             return Sets.filter(neighbors.getChildren().keySet(), filter);
@@ -316,33 +333,30 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public N getEdgeSource(E edge) {
-        if (edge == null) {
-            throw new ABCDException("edge == null");
-        }
+        Objects.requireNonNull(edge, "edge must not be null");
         Connection<N> connection = edges.get(edge);
         if (connection == null) {
-            throw new ABCDException("Edge " + edge + " not found");
+            throw new GraphException("Edge " + edge + " not found");
         }
         return connection.getSource();
     }
 
     @Override
     public N getEdgeTarget(E edge) {
-        if (edge == null) {
-            throw new ABCDException("edge == null");
-        }
+        Objects.requireNonNull(edge, "edge must not be null");
         Connection<N> connection = edges.get(edge);
         if (connection == null) {
-            throw new ABCDException("Edge " + edge + " not found");
+            throw new GraphException("Edge " + edge + " not found");
         }
         return connection.getTarget();
     }
 
     @Override
     public int getDepthFromRoot(N node) {
+        Objects.requireNonNull(node, "node must not be null");
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
-            throw new ABCDException("Node " + node + " not found");
+            throw new GraphException("Node " + node + " not found");
         }
         int depth = 0;
         for (N n = getParent(node); n != null; n = getParent(n)) {
@@ -353,6 +367,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public Tree<N, E> getSubTree(N node) {
+        Objects.requireNonNull(node, "node must not be null");
         MutableTree<N, E> subTree = new TreeImpl<>(node);
         buildSubTree(node, subTree);
         return subTree;
@@ -414,11 +429,9 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public N getFirstCommonAncestor(Collection<N> nodes) {
-        if (nodes == null) {
-            throw new ABCDException("nodes == null");
-        }
+        Objects.requireNonNull(nodes, "nodes must not be null");
         if (nodes.isEmpty()) {
-            throw new ABCDException("nodes.isEmpty()");
+            throw new GraphException("nodes.isEmpty()");
         }
         if (nodes.size() == 1) {
             return nodes.iterator().next();
@@ -433,19 +446,20 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             }
         }
         if (commonAncestors.isEmpty()) {
-            throw new ABCDException("Common ancestor not found");
+            throw new GraphException("Common ancestor not found");
         }
         return commonAncestors.get(0);
     }
 
     @Override
     public void removeNode(N node) {
+        Objects.requireNonNull(node, "node must not be null");
         if (node.equals(root)) {
-            throw new ABCDException("Can't remove root node");
+            throw new GraphException("Can't remove root node");
         }
         Neighbors<N,E> neighbors = nodes.get(node);
         if (neighbors == null) {
-            throw new ABCDException("Node " + node + " not found");
+            throw new GraphException("Node " + node + " not found");
         }
         E edge = neighbors.getIncomingEdge();
         N parent = neighbors.getParentNode();
@@ -524,20 +538,16 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     @Override
     public void export(String fileName, String title,
                        GraphvizRenderer<N> nodeRenderer,
-                       GraphvizRenderer<E> edgeRenderer) {
+                       GraphvizRenderer<E> edgeRenderer) throws IOException {
         try (Writer writer = new FileWriter(fileName)) {
             export(writer, title, nodeRenderer, edgeRenderer);
-        } catch (IOException e) {
-            throw new ABCDException(e);
         }
     }
 
     @Override
-    public void export(String fileName, String title) {
+    public void export(String fileName, String title) throws IOException {
         try (Writer writer = new FileWriter(fileName)) {
             export(writer, title);
-        } catch (IOException e) {
-            throw new ABCDException(e);
         }
     }
 

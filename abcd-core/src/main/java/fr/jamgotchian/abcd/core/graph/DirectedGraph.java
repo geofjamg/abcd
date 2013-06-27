@@ -111,7 +111,7 @@ public interface DirectedGraph<V, E> {
 
     void export(Writer writer, String title) throws IOException;
 
-    void export(String fileName, String title);
+    void export(String fileName, String title) throws IOException;
 
     String toString(Collection<E> edges);
 

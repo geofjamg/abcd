@@ -20,7 +20,6 @@ package fr.jamgotchian.abcd.core.graph;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
-import fr.jamgotchian.abcd.core.common.ABCDException;
 import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -33,6 +32,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,34 +112,26 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public void addVertex(V vertex) {
-        if (vertex == null) {
-            throw new ABCDException("vertex == null");
-        }
+        Objects.requireNonNull(vertex, "vertex must not be null");
         if (vertices.containsKey(vertex)) {
-            throw new ABCDException("Vertex " + vertex + " already present");
+            throw new GraphException("Vertex " + vertex + " already present");
         }
         vertices.put(vertex, new Neighbors<V, E>());
     }
 
     @Override
     public void addEdge(V source, V target, E edge) {
-        if (source == null) {
-            throw new ABCDException("source == null");
-        }
-        if (target == null) {
-            throw new ABCDException("target == null");
-        }
-        if (edge == null) {
-            throw new ABCDException("edge == null");
-        }
+        Objects.requireNonNull(source, "source must not be null");
+        Objects.requireNonNull(target, "target must not be null");
+        Objects.requireNonNull(edge, "edge must not be null");
         if (edges.containsKey(edge)) {
-            throw new ABCDException("Edge " + edge + " already present");
+            throw new GraphException("Edge " + edge + " already present");
         }
         if (!vertices.containsKey(source)) {
-            throw new ABCDException("Source vertex " + source + " not found");
+            throw new GraphException("Source vertex " + source + " not found");
         }
         if (!vertices.containsKey(target)) {
-            throw new ABCDException("Target vertex " + target + " not found");
+            throw new GraphException("Target vertex " + target + " not found");
         }
         edges.put(edge, new Connection<>(source, target));
         vertices.get(source).getSuccessors().put(target, edge);
@@ -173,12 +165,8 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public E getEdge(V source, V target) {
-        if (source == null) {
-            throw new ABCDException("source == null");
-        }
-        if (target == null) {
-            throw new ABCDException("target == null");
-        }
+        Objects.requireNonNull(source, "source must not be null");
+        Objects.requireNonNull(target, "target must not be null");
         Neighbors<V, E> neighbors = vertices.get(source);
         if (neighbors != null) {
             return neighbors.getSuccessors().get(target);
@@ -202,36 +190,30 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public V getEdgeSource(E edge) {
-        if (edge == null) {
-            throw new ABCDException("edge == null");
-        }
+        Objects.requireNonNull(edge, "edge must not be null");
         Connection<V> connection = edges.get(edge);
         if (connection == null) {
-            throw new ABCDException("Edge " + edge + " not found");
+            throw new GraphException("Edge " + edge + " not found");
         }
         return connection.getSource();
     }
 
     @Override
     public V getEdgeTarget(E edge) {
-        if (edge == null) {
-            throw new ABCDException("edge == null");
-        }
+        Objects.requireNonNull(edge, "edge must not be null");
         Connection<V> connection = edges.get(edge);
         if (connection == null) {
-            throw new ABCDException("Edge " + edge + " not found");
+            throw new GraphException("Edge " + edge + " not found");
         }
         return connection.getTarget();
     }
 
     @Override
     public Collection<E> getOutgoingEdgesOf(V vertex, Predicate<E> filter) {
-        if (vertex == null) {
-            throw new ABCDException("vertex == null");
-        }
+        Objects.requireNonNull(vertex, "vertex must not be null");
         Neighbors<V, E> neighbors = vertices.get(vertex);
         if (neighbors == null) {
-            throw new ABCDException("Vertex " + vertex + " not found");
+            throw new GraphException("Vertex " + vertex + " not found");
         }
         if (filter != null) {
             return Collections2.filter(neighbors.getSuccessors().values(), filter);
@@ -258,12 +240,10 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public Collection<E> getIncomingEdgesOf(V vertex, Predicate<E> filter) {
-        if (vertex == null) {
-            throw new ABCDException("vertex == null");
-        }
+        Objects.requireNonNull(vertex, "vertex must not be null");
         Neighbors<V, E> neighbors = vertices.get(vertex);
         if (neighbors == null) {
-            throw new ABCDException("Vertex " + vertex + " not found");
+            throw new GraphException("Vertex " + vertex + " not found");
         }
         if (filter != null) {
             return Collections2.filter(neighbors.getPredecessors().values(), filter);
@@ -290,12 +270,10 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public Set<V> getSuccessorsOf(V vertex, Predicate<E> filter) {
-        if (vertex == null) {
-            throw new ABCDException("vertex == null");
-        }
+        Objects.requireNonNull(vertex, "vertex must not be null");
         Neighbors<V, E> neighbors = vertices.get(vertex);
         if (neighbors == null) {
-            throw new ABCDException("Vertex " + vertex + " not found");
+            throw new GraphException("Vertex " + vertex + " not found");
         }
         if (filter != null) {
             return Maps.filterValues(neighbors.getSuccessors(), filter).keySet();
@@ -332,12 +310,10 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public Set<V> getPredecessorsOf(V vertex, Predicate<E> filter) {
-        if (vertex == null) {
-            throw new ABCDException("vertex == null");
-        }
+        Objects.requireNonNull(vertex, "vertex must not be null");
         Neighbors<V, E> neighbors = vertices.get(vertex);
         if (neighbors == null) {
-            throw new ABCDException("Vertex " + vertex + " not found");
+            throw new GraphException("Vertex " + vertex + " not found");
         }
         if (filter != null) {
             return Maps.filterValues(neighbors.getPredecessors(), filter).keySet();
@@ -374,12 +350,10 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public void removeEdge(E edge) {
-        if (edge == null) {
-            throw new ABCDException("edge == null");
-        }
+        Objects.requireNonNull(edge, "edge must not be null");
         Connection<V> connection = edges.get(edge);
         if (connection == null) {
-            throw new ABCDException("Edge " + edge + " not found");
+            throw new GraphException("Edge " + edge + " not found");
         }
         edges.remove(edge);
         V source = connection.getSource();
@@ -407,12 +381,10 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public void removeVertex(V vertex) {
-        if (vertex == null) {
-            throw new ABCDException("vertex == null");
-        }
+        Objects.requireNonNull(vertex, "vertex must not be null");
 
         if (!vertices.containsKey(vertex)) {
-            throw new ABCDException("Vertex " + vertex + " not found");
+            throw new GraphException("Vertex " + vertex + " not found");
         }
 
         Set<E> edgesToRemove = new HashSet<>();
@@ -436,18 +408,14 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public void splitVertex(V vertex, V newVertex) {
-        if (vertex == null) {
-            throw new ABCDException("vertex == null");
-        }
-        if (newVertex == null) {
-            throw new ABCDException("newVertex == null");
-        }
+        Objects.requireNonNull(vertex, "vertex must not be null");
+        Objects.requireNonNull(newVertex, "newVertex must not be null");
         if (vertices.containsKey(newVertex)) {
-            throw new ABCDException("New vertex " + newVertex + " already present");
+            throw new GraphException("New vertex " + newVertex + " already present");
         }
         Neighbors<V, E> neighbors = vertices.get(vertex);
         if (neighbors == null) {
-            throw new ABCDException("Vertex " + vertex + " not found");
+            throw new GraphException("Vertex " + vertex + " not found");
         }
         Neighbors<V, E> newNeighbors = new Neighbors<>();
         for (Map.Entry<V, E> entry : neighbors.getSuccessors().entrySet()) {
@@ -528,7 +496,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
     @Override
     public MutableDirectedGraph<V, E> getSubgraphContaining(V vertex) {
         if (!vertices.containsKey(vertex)) {
-            throw new ABCDException("Vertex " + vertex + " not found");
+            throw new GraphException("Vertex " + vertex + " not found");
         }
         DirectedGraphImpl<V, E> subgraph = new DirectedGraphImpl<>();
         Set<V> neighbors = new HashSet<>(1);
@@ -587,11 +555,9 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
     }
 
     @Override
-    public void export(String fileName, String title) {
+    public void export(String fileName, String title) throws IOException {
         try (Writer writer = new FileWriter(fileName)) {
             export(writer, title);
-        } catch (IOException e) {
-            throw new ABCDException(e);
         }
     }
 

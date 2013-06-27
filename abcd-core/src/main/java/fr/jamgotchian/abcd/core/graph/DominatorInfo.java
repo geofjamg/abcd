@@ -18,11 +18,11 @@
 package fr.jamgotchian.abcd.core.graph;
 
 import com.google.common.collect.Sets;
-import fr.jamgotchian.abcd.core.util.Collections3;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,9 +106,9 @@ public class DominatorInfo<N, E> {
                 boolean found = false;
                 for (N d : dominators) {
                     if (!d.equals(n)
-                            && Collections3.equals(Sets.union(dominatorsOf.get(d),
-                                                              Collections.singleton(n)),
-                                                   dominators)) {
+                            && Objects.equals(Sets.union(dominatorsOf.get(d),
+                                                         Collections.singleton(n)),
+                                              dominators)) {
                         immediateDominator.put(n, d);
                         found = true;
                         break;

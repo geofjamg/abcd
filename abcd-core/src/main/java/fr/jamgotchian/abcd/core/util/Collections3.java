@@ -41,12 +41,4 @@ public class Collections3 {
         return coll1.containsAll(coll2);
     }
 
-    public static <E extends Integer> int[] toIntArray(Collection<E> coll) {
-        int[] array = new int[coll.size()];
-        int i = 0;
-        for (E e : coll) {
-            array[i++] = e.intValue();
-        }
-        return array;
-    }
 }

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.jamgotchian.abcd.core.math;
+package fr.jamgotchian.abcd.core.graph;
 
 import java.io.PrintStream;
 import java.util.ArrayList;

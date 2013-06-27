@@ -3,7 +3,7 @@
 bin=`dirname $0`
 cd $bin
 
-if [ $JAVA_HOME = "" ]; then
+if [ -z $JAVA_HOME ]; then
   echo "Error: JAVA_HOME is not set."
   exit 1
 fi
