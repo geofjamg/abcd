@@ -35,11 +35,11 @@ class DominatorsFinder<N, E> extends ForwardDataFlowAnalysis<N, E, Set<N>>  {
     @Override
     public Set<N> getInitValue(N node, boolean isEntryNode) {
         if (isEntryNode) {
-            Set<N> initValue = new HashSet<N>(1);
+            Set<N> initValue = new HashSet<>(1);
             initValue.add(node);
             return initValue;
         } else {
-            return new HashSet<N>(getGraph().getVertices());
+            return new HashSet<>(getGraph().getVertices());
         }
     }
 
@@ -50,7 +50,7 @@ class DominatorsFinder<N, E> extends ForwardDataFlowAnalysis<N, E, Set<N>>  {
 
     @Override
     public Set<N> applyTranferFunction(N node, Set<N> inValue) {
-        Set<N> outValue = new HashSet<N>((inValue == null ? 0 : inValue.size()) + 1);
+        Set<N> outValue = new HashSet<>((inValue == null ? 0 : inValue.size()) + 1);
         outValue.add(node);
         if (inValue != null) {
             outValue.addAll(inValue);

@@ -70,7 +70,7 @@ public class ExceptionTable {
         }
     }
 
-    private final List<Entry> entries = new ArrayList<ExceptionTable.Entry>();
+    private final List<Entry> entries = new ArrayList<>();
 
     public void addEntry(int tryStart, int tryEnd, int catchStart, String exceptionClassName) {
         entries.add(new Entry(tryStart, tryEnd, catchStart, exceptionClassName));

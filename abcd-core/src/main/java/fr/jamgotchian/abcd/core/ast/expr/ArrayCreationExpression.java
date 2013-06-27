@@ -54,7 +54,7 @@ public class ArrayCreationExpression extends AbstractExpression {
 
     public void addInitValue(Expression value) {
         if (initValues == null) {
-            initValues = new ArrayList<Expression>();
+            initValues = new ArrayList<>();
         }
         initValues.add(value);
     }

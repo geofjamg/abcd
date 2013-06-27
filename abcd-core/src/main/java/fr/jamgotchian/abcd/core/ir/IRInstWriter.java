@@ -74,7 +74,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
         Writer writer = new StringWriter();
         try {
             CodeWriter codeWriter = factory.create(writer);
-            List<ColoredString> infosBefore = new ArrayList<ColoredString>(2);
+            List<ColoredString> infosBefore = new ArrayList<>(2);
             infosBefore.add(new ColoredString(range != null ? range.toString() : "", Color.LIGHT_GRAY));
             if (inputStack != null && inputStack.size() > 0) {
                 infosBefore.add(new ColoredString("Input stack : " + inputStack,
@@ -86,7 +86,7 @@ public class IRInstWriter implements IRInstVisitor<Void, Void> {
             }
             codeWriter.before(infosBefore);
             seq.accept(new IRInstWriter(codeWriter), null);
-            List<ColoredString> infosAfter = new ArrayList<ColoredString>(1);
+            List<ColoredString> infosAfter = new ArrayList<>(1);
             if (outputStack != null && outputStack.size() > 0) {
                 infosAfter.add(new ColoredString("Output stack : " + outputStack,
                                                  Color.ORANGE));

@@ -44,10 +44,10 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     private static final Logger LOGGER = LoggerFactory.getLogger(TreeImpl.class);
 
     private final GraphvizRenderer<N> NODE_GRAPHVIZ_RENDERER
-            = new DefaultGraphvizRenderer<N>();
+            = new DefaultGraphvizRenderer<>();
 
     private final GraphvizRenderer<E> EDGE_GRAPHVIZ_RENDERER
-            = new DefaultGraphvizRenderer<E>();
+            = new DefaultGraphvizRenderer<>();
 
     private static class Connection<N> {
 
@@ -114,9 +114,9 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     private final N root;
 
-    private final Map<E, Connection<N>> edges = new LinkedHashMap<E, Connection<N>>();
+    private final Map<E, Connection<N>> edges = new LinkedHashMap<>();
 
-    private final Map<N, Neighbors<N,E>> nodes = new LinkedHashMap<N, Neighbors<N,E>>();
+    private final Map<N, Neighbors<N,E>> nodes = new LinkedHashMap<>();
 
     TreeImpl(N root) {
         this.root = root;
@@ -156,8 +156,8 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
             throw new ABCDException("Parent node " + parent + " not found");
         }
         parentNeighbors.getChildren().put(node, edge);
-        nodes.put(node, new Neighbors<N, E>(parent, edge));
-        edges.put(edge, new Connection<N>(parent, node));
+        nodes.put(node, new Neighbors<>(parent, edge));
+        edges.put(edge, new Connection<>(parent, node));
     }
 
     @Override
@@ -179,11 +179,11 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         Neighbors<N,E> parentNeighbors = nodes.get(parent);
         parentNeighbors.getChildren().remove(child);
         parentNeighbors.getChildren().put(node, edge);
-        Neighbors<N, E> neighbors = new Neighbors<N, E>(parent, edge);
+        Neighbors<N, E> neighbors = new Neighbors<>(parent, edge);
         neighbors.getChildren().put(child, childNeighbors.getIncomingEdge());
         childNeighbors.setParentNode(node);
         nodes.put(node, neighbors);
-        edges.put(edge, new Connection<N>(parent, node));
+        edges.put(edge, new Connection<>(parent, node));
     }
 
     @Override
@@ -228,7 +228,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public Collection<N> getAncestors(N node) {
-        List<N> ancestors = new ArrayList<N>();
+        List<N> ancestors = new ArrayList<>();
         getAncestors(node, ancestors);
         return ancestors;
     }
@@ -261,7 +261,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         oldParentNeighbors.children.remove(node);
         newParentNeighbors.children.put(node, edge);
         neighbors.setParentNode(newParent);
-        edges.put(edge, new Connection<N>(newParent, node));
+        edges.put(edge, new Connection<>(newParent, node));
     }
 
     @Override
@@ -305,7 +305,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public Set<N> getLeaves() {
-        Set<N> leaves = new HashSet<N>(1);
+        Set<N> leaves = new HashSet<>(1);
         for (N node : getNodes()) {
             if (getChildrenCount(node) == 0) {
                 leaves.add(node);
@@ -353,7 +353,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public Tree<N, E> getSubTree(N node) {
-        MutableTree<N, E> subTree = new TreeImpl<N, E>(node);
+        MutableTree<N, E> subTree = new TreeImpl<>(node);
         buildSubTree(node, subTree);
         return subTree;
     }
@@ -379,7 +379,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public List<N> getNodesPostOrder() {
-        List<N> nodesPostOrder = new ArrayList<N>(nodes.size());
+        List<N> nodesPostOrder = new ArrayList<>(nodes.size());
         visitNodePostOrder(root, nodesPostOrder);
         return nodesPostOrder;
     }
@@ -393,7 +393,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
 
     @Override
     public List<N> getNodesPreOrder() {
-        List<N> nodesPreOrder = new ArrayList<N>(nodes.size());
+        List<N> nodesPreOrder = new ArrayList<>(nodes.size());
         visitNodePreOrder(root, nodesPreOrder);
         return nodesPreOrder;
     }
@@ -406,7 +406,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
     }
 
     private Collection<N> getNodePlusAncestors(N node) {
-        List<N> ancestors = new ArrayList<N>(1);
+        List<N> ancestors = new ArrayList<>(1);
         ancestors.add(node);
         getAncestors(node, ancestors);
         return ancestors;
@@ -427,7 +427,7 @@ class TreeImpl<N, E> implements MutableTree<N, E> {
         for (N node : nodes) {
             Collection<N> ancestors = getNodePlusAncestors(node);
             if (commonAncestors == null) {
-                commonAncestors = new ArrayList<N>(ancestors);
+                commonAncestors = new ArrayList<>(ancestors);
             } else {
                 commonAncestors.retainAll(ancestors);
             }

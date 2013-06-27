@@ -156,11 +156,8 @@ public class DebugDecompilationObserver extends DefaultDecompilationObserver {
         String baseName = getBaseName(logger.getName());
 
         try {
-            Writer writer = new FileWriter(baseName + "_RPST.dot");
-            try {
+            try (Writer writer = new FileWriter(baseName + "_RPST.dot")) {
                 logger.export(writer);
-            } finally {
-                writer.close();
             }
         } catch (IOException e) {
             LOGGER.error(e.toString(), e);

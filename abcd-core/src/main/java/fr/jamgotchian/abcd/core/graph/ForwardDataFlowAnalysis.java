@@ -49,7 +49,7 @@ public abstract class ForwardDataFlowAnalysis<N, E, V> {
     public Map<N, V> analyse() {
         LOGGER.trace("Begin forward dataflow analysis {}", name);
 
-        Map<N, V> values = new HashMap<N, V>();
+        Map<N, V> values = new HashMap<>();
 
         for (N node : graph.getVertices()) {
             V initValue = getInitValue(node, node.equals(entryNode));

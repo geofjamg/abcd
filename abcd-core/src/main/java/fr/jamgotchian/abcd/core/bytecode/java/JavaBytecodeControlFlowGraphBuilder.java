@@ -55,7 +55,7 @@ public class JavaBytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder
         super(methodName);
         this.mn = mn;
         this.labelManager = labelManager;
-        labelNodeIndex = new HashMap<LabelNode, Integer>();
+        labelNodeIndex = new HashMap<>();
         for (int i = 0; i < mn.instructions.size(); i++) {
             AbstractInsnNode node = mn.instructions.get(i);
             if (node.getType() == AbstractInsnNode.LABEL) {
@@ -163,13 +163,13 @@ public class JavaBytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder
                 case AbstractInsnNode.LOOKUPSWITCH_INSN: {
                     LookupSwitchInsnNode switchNode = (LookupSwitchInsnNode) node;
 
-                    List<Integer> caseInstnIdxs = new ArrayList<Integer>(switchNode.labels.size()+1);
+                    List<Integer> caseInstnIdxs = new ArrayList<>(switchNode.labels.size()+1);
                     for (Object label : switchNode.labels) {
                         caseInstnIdxs.add(labelNodeIndex.get(((LabelNode) label)));
                     }
                     caseInstnIdxs.add(labelNodeIndex.get(switchNode.dflt));
 
-                    List<CaseValues> values = new ArrayList<CaseValues>(switchNode.labels.size()+1);
+                    List<CaseValues> values = new ArrayList<>(switchNode.labels.size()+1);
                     for (Object key : switchNode.keys) {
                         values.add(CaseValues.newValue(key.toString()));
                     }
@@ -182,13 +182,13 @@ public class JavaBytecodeControlFlowGraphBuilder extends ControlFlowGraphBuilder
                 case AbstractInsnNode.TABLESWITCH_INSN: {
                     TableSwitchInsnNode switchNode = (TableSwitchInsnNode) node;
 
-                    List<Integer> caseInstnIdxs = new ArrayList<Integer>(switchNode.labels.size()+1);
+                    List<Integer> caseInstnIdxs = new ArrayList<>(switchNode.labels.size()+1);
                     for (Object label : switchNode.labels) {
                         caseInstnIdxs.add(labelNodeIndex.get(((LabelNode) label)));
                     }
                     caseInstnIdxs.add(labelNodeIndex.get(switchNode.dflt));
 
-                    List<CaseValues> values = new ArrayList<CaseValues>(switchNode.labels.size()+1);
+                    List<CaseValues> values = new ArrayList<>(switchNode.labels.size()+1);
                     for (int key = switchNode.min; key <= switchNode.max; key++) {
                         values.add(CaseValues.newValue(Integer.toString(key)));
                     }

@@ -27,7 +27,7 @@ public class VariableFactory {
 
     private int _thisIndex = -1;
 
-    private final Set<Integer> argIndexes = new TreeSet<Integer>();
+    private final Set<Integer> argIndexes = new TreeSet<>();
 
     private int count = -1;
 

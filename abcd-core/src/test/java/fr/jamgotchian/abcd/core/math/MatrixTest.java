@@ -31,7 +31,7 @@ public class MatrixTest {
 
     @Test
     public void test() {
-        Matrix<Integer> m = new Matrix<Integer>(2, 2, 0);
+        Matrix<Integer> m = new Matrix<>(2, 2, 0);
         assertTrue(m.getRowCount() == 2);
         assertTrue(m.getColumnCount() == 2);
         assertTrue(m.getValue(0, 0) == 0);

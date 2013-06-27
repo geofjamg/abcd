@@ -39,7 +39,7 @@ public class DalvikBytecodeGraphvizRenderer implements GraphvizRenderer<BasicBlo
 
     @Override
     public Map<String, String> getAttributes(BasicBlock bb) {
-        Map<String, String> attrs = new HashMap<String, String>(3);
+        Map<String, String> attrs = new HashMap<>(3);
         attrs.put("shape", "box");
         attrs.put("color", "black");
         attrs.put("label", "< " + DalvikBytecodeWriter.toDOTHTMLLike(instructions, bb, addressManager) + " >");

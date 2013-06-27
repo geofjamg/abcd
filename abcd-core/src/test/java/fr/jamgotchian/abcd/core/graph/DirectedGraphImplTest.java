@@ -38,7 +38,7 @@ public class DirectedGraphImplTest {
 
     @Before
     public void setUp() {
-        graph = new DirectedGraphImpl<Vertex, String>();
+        graph = new DirectedGraphImpl<>();
 
     }
 
@@ -69,7 +69,7 @@ public class DirectedGraphImplTest {
         graph.addVertex(v0);
         graph.addVertex(v1);
         graph.addEdge(v0, v1, e01);
-        assertArrayEquals(Arrays.asList(v0, v1).toArray(), new TreeSet<Vertex>(graph.getVertices()).toArray());
+        assertArrayEquals(Arrays.asList(v0, v1).toArray(), new TreeSet<>(graph.getVertices()).toArray());
         assertArrayEquals(Arrays.asList(e01).toArray(), graph.getEdges().toArray());
         assertTrue(graph.getEdge(v0, v1).equals(e01));
         assertArrayEquals(graph.getPredecessorsOf(v1).toArray(), Arrays.asList(v0).toArray());
@@ -116,8 +116,8 @@ public class DirectedGraphImplTest {
         graph.addVertex(v1);
         graph.addEdge(v0, v1, e01);
         graph.addEdge(v1, v0, e10);
-        assertArrayEquals(Arrays.asList(v0, v1).toArray(), new TreeSet<Vertex>(graph.getVertices()).toArray());
-        assertArrayEquals(Arrays.asList(e01, e10).toArray(), new TreeSet<String>(graph.getEdges()).toArray());
+        assertArrayEquals(Arrays.asList(v0, v1).toArray(), new TreeSet<>(graph.getVertices()).toArray());
+        assertArrayEquals(Arrays.asList(e01, e10).toArray(), new TreeSet<>(graph.getEdges()).toArray());
         assertArrayEquals(graph.getSuccessorsOf(v0).toArray(), Arrays.asList(v1).toArray());
         assertArrayEquals(graph.getPredecessorsOf(v1).toArray(), Arrays.asList(v0).toArray());
         assertArrayEquals(graph.getSuccessorsOf(v1).toArray(), Arrays.asList(v0).toArray());

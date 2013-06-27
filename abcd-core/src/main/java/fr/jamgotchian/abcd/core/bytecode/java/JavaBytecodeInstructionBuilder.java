@@ -975,8 +975,8 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
             // argument types
             Type[] argTypes = Type.getArgumentTypes(node.desc);
-            List<Variable> args = new ArrayList<Variable>(argTypes.length);
-            List<JavaType> argJavaTypes = new ArrayList<JavaType>(argTypes.length);
+            List<Variable> args = new ArrayList<>(argTypes.length);
+            List<JavaType> argJavaTypes = new ArrayList<>(argTypes.length);
             for (int i = 0; i < argTypes.length; i++) {
                 args.add(0, stack.pop());
                 argJavaTypes.add(0, JavaBytecodeUtil.newType(argTypes[i], classNameManager));
@@ -1018,7 +1018,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         public void visitMultiANewArrayInsn(BasicBlock bb, int position, MultiANewArrayInsnNode node) {
             Type type = Type.getType(node.desc).getElementType();
             JavaType javaType = JavaBytecodeUtil.newType(type, classNameManager);
-            List<Variable> dimensions = new ArrayList<Variable>(node.dims);
+            List<Variable> dimensions = new ArrayList<>(node.dims);
             for (int i = 0; i < node.dims; i++) {
                 dimensions.add(0, stack.pop());
             }
@@ -1127,8 +1127,8 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         this.classNameManager = classNameManager;
         this.varFactory = varFactory;
         this.instFactory = instFactory;
-        finallyTmpVars = new HashSet<Variable>();
-        catchTmpVars = new HashSet<Variable>();
+        finallyTmpVars = new HashSet<>();
+        catchTmpVars = new HashSet<>();
     }
 
     private void processBB(BasicBlock bb, List<VariableStack> inputStacks) {
@@ -1186,7 +1186,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
         if (stacks.size() <= 1) {
             throw new ABCDException("stacks.size() <= 1");
         }
-        List<Integer> sizes = new ArrayList<Integer>(stacks.size());
+        List<Integer> sizes = new ArrayList<>(stacks.size());
         for (int i = 0; i < stacks.size(); i++) {
             sizes.add(stacks.get(i).size());
         }
@@ -1199,12 +1199,12 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
 
         VariableStack stacksMerge = new VariableStack();
 
-        List<List<Variable>> toList = new ArrayList<List<Variable>>(stacks.size());
+        List<List<Variable>> toList = new ArrayList<>(stacks.size());
         for (int i = 0; i < stacks.size(); i++) {
             toList.add(stacks.get(i).toList());
         }
         for (int i = stacks.get(0).size()-1; i >= 0 ; i--) {
-            Set<Variable> vars = new HashSet<Variable>(stacks.size());
+            Set<Variable> vars = new HashSet<>(stacks.size());
             for (int j = 0; j < stacks.size(); j++) {
                 vars.add(toList.get(j).get(i));
             }
@@ -1222,7 +1222,7 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
     }
 
     private void cleanupExceptionHandlers() {
-        Set<Variable> finallyVars = new HashSet<Variable>();
+        Set<Variable> finallyVars = new HashSet<>();
 
         for (BasicBlock bb : cfg.getBasicBlocks()) {
             if (!bb.hasProperty(EXCEPTION_HANDLER_ENTRY)) {
@@ -1319,12 +1319,12 @@ public class JavaBytecodeInstructionBuilder implements InstructionBuilder {
             bb.setInstructions(new IRInstSeq());
         }
 
-        List<BasicBlock> blocksToProcess = new ArrayList<BasicBlock>(cfg.getDFST().getNodes());
+        List<BasicBlock> blocksToProcess = new ArrayList<>(cfg.getDFST().getNodes());
         while (blocksToProcess.size() > 0) {
             for (Iterator<BasicBlock> it = blocksToProcess.iterator(); it.hasNext();) {
                 BasicBlock bb = it.next();
 
-                List<VariableStack> inputStacks = new ArrayList<VariableStack>();
+                List<VariableStack> inputStacks = new ArrayList<>();
                 for (Edge incomingEdge : cfg.getIncomingEdgesOf(bb)) {
                     if (incomingEdge.hasAttribute(EdgeAttribute.LOOP_BACK_EDGE)) {
                         continue;

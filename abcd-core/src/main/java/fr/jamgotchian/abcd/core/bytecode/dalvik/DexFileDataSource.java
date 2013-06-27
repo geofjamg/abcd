@@ -45,7 +45,7 @@ public class DexFileDataSource implements ABCDDataSource {
         DexFile dexFile = new DexFile(file);
         Section<ClassDefItem> section =
                 dexFile.getSectionForType(ItemType.TYPE_CLASS_DEF_ITEM);
-        List<ClassFactory> factories = new ArrayList<ClassFactory>();
+        List<ClassFactory> factories = new ArrayList<>();
         for (ClassDefItem item : section.getItems()) {
             factories.add(new DalvikBytecodeClassFactory(item));
         }

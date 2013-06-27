@@ -30,9 +30,9 @@ public class Matrix<T> {
     private final List<List<T>> values;
 
     public Matrix(int rowCount, int columnCount, T intialValue) {
-        values = new ArrayList<List<T>>(rowCount);
+        values = new ArrayList<>(rowCount);
         for (int r = 0; r < rowCount; r++) {
-            List<T> row = new ArrayList<T>(columnCount);
+            List<T> row = new ArrayList<>(columnCount);
             for (int c = 0; c < columnCount; c++) {
                 row.add(intialValue);
             }

@@ -27,7 +27,7 @@ public class DefaultGraphvizRenderer<O> implements GraphvizRenderer<O> {
 
     @Override
     public Map<String, String> getAttributes(O object) {
-        Map<String, String> attrs = new HashMap<String, String>();
+        Map<String, String> attrs = new HashMap<>();
         attrs.put("color", "black");
         attrs.put("label", "\"" + (object == null ? "" : object.toString()) + "\"");
         return attrs;

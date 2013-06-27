@@ -32,7 +32,7 @@ import static org.objectweb.asm.tree.AbstractInsnNode.*;
  */
 public class LabelManager {
 
-    private final Map<LabelNode, Label> labels = new IdentityHashMap<LabelNode, Label>();
+    private final Map<LabelNode, Label> labels = new IdentityHashMap<>();
 
     public LabelManager() {
     }

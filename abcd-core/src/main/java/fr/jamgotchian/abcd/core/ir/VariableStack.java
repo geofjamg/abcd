@@ -31,11 +31,11 @@ public class VariableStack {
     private final ArrayDeque<Variable> stack;
 
     public VariableStack() {
-        stack = new ArrayDeque<Variable>();
+        stack = new ArrayDeque<>();
     }
 
     public VariableStack(VariableStack other) {
-        stack = new ArrayDeque<Variable>(other.stack.size());
+        stack = new ArrayDeque<>(other.stack.size());
         for (Variable v : other.stack) {
             stack.add(new Variable(v));
         }
@@ -59,7 +59,7 @@ public class VariableStack {
     }
 
     public List<Variable> toList() {
-        return new ArrayList<Variable>(stack);
+        return new ArrayList<>(stack);
     }
 
     @Override

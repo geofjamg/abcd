@@ -34,7 +34,7 @@ public class StatementModifierVisitor implements StatementVisitor<Collection<Sta
         boolean change = true;
         while (change) {
             change = false;
-            List<Statement> stmts = new ArrayList<Statement>();
+            List<Statement> stmts = new ArrayList<>();
             for (Statement stmt : block) {
                 Collection<Statement> newStmts = stmt.accept(this, arg);
                 if (newStmts != null) {

@@ -47,7 +47,7 @@ public class DirectedGraphs {
 
         private ListenableDirectedGraphImpl(MutableDirectedGraph<V, E> delegate) {
             this.delegate = delegate;
-            listeners = new CopyOnWriteArrayList<DirectedGraphListener>();
+            listeners = new CopyOnWriteArrayList<>();
         }
 
         @Override
@@ -547,7 +547,7 @@ public class DirectedGraphs {
     }
 
     public static <V, E> MutableDirectedGraph<V, E> newDirectedGraph() {
-        return new DirectedGraphImpl<V, E>();
+        return new DirectedGraphImpl<>();
     }
 
     public static <V, E> MutableDirectedGraph<V, E> newDirectedGraph(Map<V, Set<V>> sources, EdgeFactory<E> factory) {
@@ -568,15 +568,15 @@ public class DirectedGraphs {
     }
 
     public static <V, E> MutableDirectedGraph<V, E> newDirectedGraph(DirectedGraph<V, E> other) {
-        return new DirectedGraphImpl<V, E>(other);
+        return new DirectedGraphImpl<>(other);
     }
 
     public static <V, E> DirectedGraph<V, E> unmodifiableDirectedGraph(DirectedGraph<V, E> graph) {
-        return new UnmodifiableDirectedGraph<V, E>(graph);
+        return new UnmodifiableDirectedGraph<>(graph);
     }
 
     public static <V, E> MutableDirectedGraph<V, E> listenableDirectedGraph(MutableDirectedGraph<V, E> graph) {
-        return new ListenableDirectedGraphImpl<V, E>(graph);
+        return new ListenableDirectedGraphImpl<>(graph);
     }
 
     public static <V, E> String toString(DirectedGraph<V, E> graph, String name) {
@@ -603,10 +603,10 @@ public class DirectedGraphs {
             }
             return graph;
         }
-        Set<V> visited = new HashSet<V>();
+        Set<V> visited = new HashSet<>();
         graph.getReversePostOrderDFST(exit, visited, true);
         MutableDirectedGraph<V, E> graph2 = newDirectedGraph(graph);
-        for (V v : new ArrayList<V>(graph2.getVertices())) {
+        for (V v : new ArrayList<>(graph2.getVertices())) {
             if (!visited.contains(v)) {
                 graph2.removeVertex(v);
             }

@@ -29,7 +29,7 @@ public class VariableMapping {
 
     /* Variable ID mapping between temporary variables of the 2 sequences */
     private final Map<VariableID, VariableID> mapping
-            = new HashMap<VariableID, VariableID>();
+            = new HashMap<>();
 
     public boolean defEqual(Variable var1, Variable var2) {
         // TODO

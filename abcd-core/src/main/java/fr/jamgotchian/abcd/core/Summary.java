@@ -60,7 +60,7 @@ public class Summary {
         }
     }
 
-    private final List<ErrorInfo> errors = new ArrayList<ErrorInfo>();
+    private final List<ErrorInfo> errors = new ArrayList<>();
 
     public int getNumberOfSuccesses() {
         return numberOfSuccesses;

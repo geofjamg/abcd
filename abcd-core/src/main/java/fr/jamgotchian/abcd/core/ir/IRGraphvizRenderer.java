@@ -28,7 +28,7 @@ public class IRGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
 
     @Override
     public Map<String, String> getAttributes(BasicBlock bb) {
-        Map<String, String> attrs = new HashMap<String, String>(3);
+        Map<String, String> attrs = new HashMap<>(3);
         attrs.put("shape", "box");
         attrs.put("color", "black");
         StringBuilder builder = new StringBuilder();

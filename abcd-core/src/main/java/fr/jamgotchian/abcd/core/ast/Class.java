@@ -60,9 +60,9 @@ public class Class {
         this.interfaces = interfaces;
         this.kind = kind;
         this.modifiers = modifiers;
-        fields = new ArrayList<Field>();
-        innerClasses = new ArrayList<Class>();
-        methods = new ArrayList<Method>();
+        fields = new ArrayList<>();
+        innerClasses = new ArrayList<>();
+        methods = new ArrayList<>();
     }
 
     public Package getPackage() {

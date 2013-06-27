@@ -1251,7 +1251,7 @@ public class Test {
     }
 
     void testIterator() {
-        List<Integer> v = new ArrayList<Integer>(3);
+        List<Integer> v = new ArrayList<>(3);
         v.add(0);
         v.add(1);
         v.add(2);

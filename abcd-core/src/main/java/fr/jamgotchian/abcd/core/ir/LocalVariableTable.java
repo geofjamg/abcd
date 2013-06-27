@@ -70,7 +70,7 @@ public class LocalVariableTable {
         }
     }
 
-    private final List<Entry> entries = new ArrayList<Entry>();
+    private final List<Entry> entries = new ArrayList<>();
 
     public LocalVariableTable() {
     }

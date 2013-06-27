@@ -46,10 +46,10 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectedGraphImpl.class);
 
     private final GraphvizRenderer<V> VERTEX_GRAPHVIZ_RENDERER
-            = new DefaultGraphvizRenderer<V>();
+            = new DefaultGraphvizRenderer<>();
 
     private final GraphvizRenderer<E> EDGE_GRAPHVIZ_RENDERER
-            = new DefaultGraphvizRenderer<E>();
+            = new DefaultGraphvizRenderer<>();
 
     private static class Connection<V> {
 
@@ -78,8 +78,8 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         private final Map<V, E> successors;
 
         private Neighbors() {
-            predecessors = new LinkedHashMap<V, E>();
-            successors = new LinkedHashMap<V, E>();
+            predecessors = new LinkedHashMap<>();
+            successors = new LinkedHashMap<>();
         }
 
         public Map<V, E> getPredecessors() {
@@ -96,8 +96,8 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
     private final Map<V, Neighbors<V, E>> vertices;
 
     DirectedGraphImpl() {
-        edges = new HashMap<E, Connection<V>>();
-        vertices = new HashMap<V, Neighbors<V, E>>();
+        edges = new HashMap<>();
+        vertices = new HashMap<>();
     }
 
     DirectedGraphImpl(DirectedGraph<V, E> other) {
@@ -141,7 +141,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         if (!vertices.containsKey(target)) {
             throw new ABCDException("Target vertex " + target + " not found");
         }
-        edges.put(edge, new Connection<V>(source, target));
+        edges.put(edge, new Connection<>(source, target));
         vertices.get(source).getSuccessors().put(target, edge);
         vertices.get(target).getPredecessors().put(source, edge);
     }
@@ -415,7 +415,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
             throw new ABCDException("Vertex " + vertex + " not found");
         }
 
-        Set<E> edgesToRemove = new HashSet<E>();
+        Set<E> edgesToRemove = new HashSet<>();
 
         Iterator<Map.Entry<E, Connection<V>>> it = edges.entrySet().iterator();
         while (it.hasNext()) {
@@ -449,7 +449,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         if (neighbors == null) {
             throw new ABCDException("Vertex " + vertex + " not found");
         }
-        Neighbors<V, E> newNeighbors = new Neighbors<V, E>();
+        Neighbors<V, E> newNeighbors = new Neighbors<>();
         for (Map.Entry<V, E> entry : neighbors.getSuccessors().entrySet()) {
             V target = entry.getKey();
             E edge = entry.getValue();
@@ -459,7 +459,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
             targetNeighbors.getPredecessors().remove(vertex);
             targetNeighbors.getPredecessors().put(newVertex, edge);
 
-            edges.put(edge, new Connection<V>(newVertex, target));
+            edges.put(edge, new Connection<>(newVertex, target));
         }
         neighbors.getSuccessors().clear();
         vertices.put(newVertex, newNeighbors);
@@ -495,12 +495,12 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public Tree<V, E> getReversePostOrderDFST(V root, Set<V> visited, boolean invert) {
-        List<V> dfstBlocks = new ArrayList<V>();
-        List<E> dfstEdges = new ArrayList<E>();
+        List<V> dfstBlocks = new ArrayList<>();
+        List<E> dfstEdges = new ArrayList<>();
         reversePostOrderDFS(root, visited, dfstBlocks, dfstEdges, invert);
 
         // build depth first spanning Tree
-        MutableTree<V, E> dfst = new TreeImpl<V, E>(root);
+        MutableTree<V, E> dfst = new TreeImpl<>(root);
         for (int i = 0; i < dfstEdges.size(); i++) {
             E edge = dfstEdges.get(i);
             V parent = invert ? getEdgeTarget(edge) : getEdgeSource(edge);
@@ -530,8 +530,8 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
         if (!vertices.containsKey(vertex)) {
             throw new ABCDException("Vertex " + vertex + " not found");
         }
-        DirectedGraphImpl<V, E> subgraph = new DirectedGraphImpl<V, E>();
-        Set<V> neighbors = new HashSet<V>(1);
+        DirectedGraphImpl<V, E> subgraph = new DirectedGraphImpl<>();
+        Set<V> neighbors = new HashSet<>(1);
         visitNeighbors(vertex, neighbors);
         for (V neighbor : neighbors) {
             subgraph.addVertex(neighbor);
@@ -548,7 +548,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public Set<V> getEntries() {
-        Set<V> entries = new HashSet<V>();
+        Set<V> entries = new HashSet<>();
         for (V v : getVertices()) {
             if (getPredecessorCountOf(v) == 0) {
                 entries.add(v);
@@ -559,7 +559,7 @@ class DirectedGraphImpl<V, E> implements MutableDirectedGraph<V, E> {
 
     @Override
     public Set<V> getExits() {
-        Set<V> exits = new HashSet<V>();
+        Set<V> exits = new HashSet<>();
         for (V v : getVertices()) {
             if (getSuccessorCountOf(v) == 0) {
                 exits.add(v);

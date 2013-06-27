@@ -35,7 +35,7 @@ public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBl
     private static final Logger LOGGER
             = LoggerFactory.getLogger(ReachingDefinitionsAnalysis.class);
 
-    private final Map<Integer, VariableID> defs = new HashMap<Integer, VariableID>();
+    private final Map<Integer, VariableID> defs = new HashMap<>();
 
     public ReachingDefinitionsAnalysis(ControlFlowGraph cfg) {
         super("Reaching definitions", cfg.getGraph(), cfg.getEntryBlock());
@@ -62,7 +62,7 @@ public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBl
 
     private void getGensAndKills(BasicBlock block, Set<Integer> inValue,
                                  Set<Integer> gens, Set<Integer> kills) {
-        Map<VariableID, Integer> reachingDef = new HashMap<VariableID, Integer>();
+        Map<VariableID, Integer> reachingDef = new HashMap<>();
         for (Integer defID : inValue) {
             reachingDef.put(defs.get(defID), defID);
         }
@@ -82,7 +82,7 @@ public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBl
 
     @Override
     protected Set<Integer> getInitValue(BasicBlock node, boolean isEntryNode) {
-        return new HashSet<Integer>();
+        return new HashSet<>();
     }
 
     @Override
@@ -92,9 +92,9 @@ public class ReachingDefinitionsAnalysis extends ForwardDataFlowAnalysis<BasicBl
 
     @Override
     protected Set<Integer> applyTranferFunction(BasicBlock node, Set<Integer> inValue) {
-        Set<Integer> outValue = new HashSet<Integer>(inValue);
-        Set<Integer> gens = new HashSet<Integer>();
-        Set<Integer> kills = new HashSet<Integer>();
+        Set<Integer> outValue = new HashSet<>(inValue);
+        Set<Integer> gens = new HashSet<>();
+        Set<Integer> kills = new HashSet<>();
         getGensAndKills(node, inValue, gens, kills);
         outValue.removeAll(kills);
         outValue.addAll(gens);

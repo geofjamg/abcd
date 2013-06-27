@@ -36,7 +36,7 @@ public class CompilationUnit {
     public CompilationUnit(Package _package, ImportManager _import) {
         this._package = _package;
         this._import = _import;
-        classes = new ArrayList<Class>();
+        classes = new ArrayList<>();
     }
 
     public Package getPackage() {

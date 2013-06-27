@@ -51,7 +51,7 @@ public class DominatorInfo<N, E> {
 
     public static <N, E> DominatorInfo<N, E>
             create(DirectedGraph<N, E> graph, N entryNode, EdgeFactory<E> factory) {
-        DominatorInfo<N, E> domInfo = new DominatorInfo<N, E>(graph, entryNode, factory);
+        DominatorInfo<N, E> domInfo = new DominatorInfo<>(graph, entryNode, factory);
         domInfo.update();
         return domInfo;
     }
@@ -87,7 +87,7 @@ public class DominatorInfo<N, E> {
     }
 
     public Set<N> getDominanceFrontierOf2(N n) {
-        Set<N> frontier = new HashSet<N>();
+        Set<N> frontier = new HashSet<>();
         for (E e : dominanceFrontierOf.get(n)) {
             frontier.add(graph.getEdgeTarget(e));
         }
@@ -98,7 +98,7 @@ public class DominatorInfo<N, E> {
         // the immediate dominator of a node n is obtained by choosing the strict
         // dominator of n whose dominator set differs from that of n only by removal
         // of n.
-        immediateDominator = new HashMap<N, N>();
+        immediateDominator = new HashMap<>();
         for (Map.Entry<N, Set<N>> entry : dominatorsOf.entrySet()) {
             N n = entry.getKey();
             if (!n.equals(entryNode)) {
@@ -123,7 +123,7 @@ public class DominatorInfo<N, E> {
     }
 
     private void computeDominanceFrontier() {
-        dominanceFrontierOf = new HashMap<N, Set<E>>();
+        dominanceFrontierOf = new HashMap<>();
 
         // x dominate a predecessor of z (y) but do not strictly dominate z
         for (N x : graph.getVertices()) {
@@ -150,7 +150,7 @@ public class DominatorInfo<N, E> {
         LOGGER.debug("Update dominator info");
 
         // find dominators
-        dominatorsOf = new DominatorsFinder<N, E>(graph, entryNode).analyse();
+        dominatorsOf = new DominatorsFinder<>(graph, entryNode).analyse();
         for (Map.Entry<N, Set<N>> entry : dominatorsOf.entrySet()) {
             LOGGER.trace("Dominators of {} : {}",
                     entry.getKey(), entry.getValue());

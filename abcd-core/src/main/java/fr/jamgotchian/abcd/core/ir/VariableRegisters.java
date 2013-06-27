@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class VariableRegisters {
 
-    private final Map<Integer, Variable> variables = new HashMap<Integer, Variable>();
+    private final Map<Integer, Variable> variables = new HashMap<>();
 
     public VariableRegisters() {
     }

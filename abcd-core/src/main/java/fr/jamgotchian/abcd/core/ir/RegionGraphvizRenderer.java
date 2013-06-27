@@ -28,7 +28,7 @@ public class RegionGraphvizRenderer implements GraphvizRenderer<Region> {
 
     @Override
     public Map<String, String> getAttributes(Region region) {
-        Map<String, String> attrs = new HashMap<String, String>(4);
+        Map<String, String> attrs = new HashMap<>(4);
         attrs.put("shape", "box");
         attrs.put("color", "black");
         attrs.put("fontsize", "11");

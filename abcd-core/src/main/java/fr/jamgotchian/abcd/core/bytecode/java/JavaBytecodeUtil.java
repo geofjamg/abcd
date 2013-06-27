@@ -130,7 +130,7 @@ public class JavaBytecodeUtil implements Opcodes {
         TablePrinter printer = ConsoleUtil.newTablePrinter("Outer class", "Inner class");
         for (Map.Entry<String, Collection<String>> entry : innerClasses.asMap().entrySet()) {
             String outerClass = entry.getKey();
-            List<String> innerClasses2 = new ArrayList<String>(entry.getValue());
+            List<String> innerClasses2 = new ArrayList<>(entry.getValue());
             printer.addRow(outerClass, innerClasses2.get(0));
             for (int i = 1; i < innerClasses2.size(); i++) {
                 printer.addRow("", innerClasses2.get(i));

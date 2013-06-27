@@ -123,7 +123,7 @@ public class ClassFileDataSource implements ABCDDataSource {
         });
 
         List<ClassFactory> factories
-                = new ArrayList<ClassFactory>(innerClassFiles.length+1);
+                = new ArrayList<>(innerClassFiles.length+1);
         factories.add(new JavaBytecodeClassFactory(new FileInputStream(classFile)));
         for (File innerClassFile : innerClassFiles) {
             factories.add(new JavaBytecodeClassFactory(new FileInputStream(innerClassFile)));

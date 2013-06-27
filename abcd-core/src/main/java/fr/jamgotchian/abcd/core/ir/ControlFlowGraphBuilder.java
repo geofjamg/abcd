@@ -246,7 +246,7 @@ public abstract class ControlFlowGraphBuilder {
 
         // first split and then link to allow parallel edges (several value to
         // the same case basic block)
-        Map<BasicBlock, CaseValues> caseBlocks = new LinkedHashMap<BasicBlock, CaseValues>();
+        Map<BasicBlock, CaseValues> caseBlocks = new LinkedHashMap<>();
         for (int i = 0; i < caseInstnIdxs.size(); i++) {
             int caseInstnIdx = caseInstnIdxs.get(i);
             CaseValues value = values.get(i);

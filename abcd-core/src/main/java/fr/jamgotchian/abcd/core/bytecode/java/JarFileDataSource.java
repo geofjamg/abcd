@@ -40,7 +40,7 @@ public class JarFileDataSource implements ABCDDataSource {
 
     @Override
     public Collection<ClassFactory> createClassFactories() throws IOException {
-        List<ClassFactory> factories = new ArrayList<ClassFactory>();
+        List<ClassFactory> factories = new ArrayList<>();
         for (JarEntry entry : Collections.list(jarFile.entries())) {
             if (entry.getName().endsWith(".class")) {
                 factories.add(new JavaBytecodeClassFactory(jarFile.getInputStream(entry)));

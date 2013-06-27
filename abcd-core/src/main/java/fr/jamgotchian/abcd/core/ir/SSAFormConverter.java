@@ -78,7 +78,7 @@ public class SSAFormConverter {
         Multimap<Integer, BasicBlock> phi = HashMultimap.create();
         for (int defIndex : defBlocks.keySet()) {
             if (globals.contains(defIndex)) {
-                Set<BasicBlock> w = new HashSet<BasicBlock>(defBlocks.get(defIndex));
+                Set<BasicBlock> w = new HashSet<>(defBlocks.get(defIndex));
                 while (w.size() > 0) {
                     BasicBlock n = w.iterator().next();
                     w.remove(n);
@@ -87,7 +87,7 @@ public class SSAFormConverter {
                         BasicBlock y = graph.getEdgeTarget(e);
                         if (!phi.get(defIndex).contains(y)) {
                             boolean contains = containsDef(y, defIndex);
-                            List<Variable> args = new ArrayList<Variable>();
+                            List<Variable> args = new ArrayList<>();
                             for (int i = 0; i < graph.getPredecessorCountOf(y); i++) {
                                 args.add(varFactory.create(defIndex, y, -1));
                             }
@@ -112,7 +112,7 @@ public class SSAFormConverter {
         for (int defIndex : defBlocks.keySet()) {
             if (globals.contains(defIndex)) {
                 Counter versionCount = new Counter(0);
-                Deque<Integer> versionStack = new ArrayDeque<Integer>();
+                Deque<Integer> versionStack = new ArrayDeque<>();
                 versionStack.push(0);
                 renameVariables(defIndex, graph.getEntryBlock(), versionStack, versionCount);
             }
@@ -124,7 +124,7 @@ public class SSAFormConverter {
         LOGGER.trace("  Rename variables {} of {}", varIndex, n);
 
         // generated version in current block
-        Set<Integer> generatedVersion = new HashSet<Integer>();
+        Set<Integer> generatedVersion = new HashSet<>();
 
         for (IRInst inst : n.getInstructions()) {
             // for each use of the variable rename with the current version
@@ -155,7 +155,7 @@ public class SSAFormConverter {
         for (BasicBlock y : graph.getSuccessorsOf(n)) {
             for (IRInst inst : y.getInstructions()) {
                 if (inst instanceof PhiInst) {
-                    int j = new ArrayList<BasicBlock>(graph.getPredecessorsOf(y)).indexOf(n);
+                    int j = new ArrayList<>(graph.getPredecessorsOf(y)).indexOf(n);
                     int version = versionStack.peek();
                     Variable phi = ((PhiInst) inst).getArgs().get(j);
                     if (phi.getIndex() == varIndex) {
@@ -194,7 +194,7 @@ public class SSAFormConverter {
     private void removePhiFunctions() {
         for (BasicBlock bb : graph.getBasicBlocks()) {
             List<BasicBlock> predecessors
-                    = new ArrayList<BasicBlock>(graph.getPredecessorsOf(bb));
+                    = new ArrayList<>(graph.getPredecessorsOf(bb));
             IRInstSeq insts = bb.getInstructions();
             for (Iterator<IRInst> it = insts.iterator(); it.hasNext();) {
                 IRInst inst = it.next();
@@ -243,9 +243,9 @@ public class SSAFormConverter {
         }
 
         // local liveness : ie, used before defined in any basic block
-        globals = new HashSet<Integer>();
+        globals = new HashSet<>();
         for (BasicBlock bb : graph.getBasicBlocks()) {
-            Set<Integer> defined = new HashSet<Integer>();
+            Set<Integer> defined = new HashSet<>();
             for (IRInst inst : bb.getInstructions()) {
                 for (Variable use : inst.getUses()) {
                     if (!use.isTemporary() && !defined.contains(use.getIndex())) {

@@ -50,7 +50,7 @@ public class CaseValues implements Comparable<CaseValues> {
         if (value == null) {
             throw new IllegalArgumentException("value == null");
         }
-        values = new TreeSet<String>();
+        values = new TreeSet<>();
         values.add(value);
     }
 

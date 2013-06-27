@@ -79,7 +79,7 @@ public class BasicBlockImpl implements BasicBlock {
         this.type = type;
         this.label = label;
         order = -1;
-        properties = new EnumMap<BasicBlockPropertyName, Object>(BasicBlockPropertyName.class);
+        properties = new EnumMap<>(BasicBlockPropertyName.class);
         childType = ChildType.UNDEFINED;
     }
 

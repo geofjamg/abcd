@@ -62,12 +62,9 @@ public class NbDecompilationObserver implements DecompilationObserver {
     @Override
     public void doneAST(CompilationUnit compilUnit) {
         try {
-            Writer writer = new OutputStreamWriter(os);
-            try {
+            try (Writer writer = new OutputStreamWriter(os)) {
                 CodeWriter codeWriter = new TextCodeWriter(writer, 4);
                 compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, config), null);
-            } finally {
-                writer.close();
             }
         } catch (Exception e) {
             LOGGER.error(e.toString(), e);

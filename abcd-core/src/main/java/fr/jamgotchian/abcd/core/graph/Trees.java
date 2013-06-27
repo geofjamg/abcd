@@ -198,7 +198,7 @@ public class Trees {
     }
 
     public static <N, E> MutableTree<N, E> newTree(N root) {
-        return new TreeImpl<N, E>(root);
+        return new TreeImpl<>(root);
     }
 
     private static <N, E> void buildTree(N parent, MutableTree<N, E> tree,
@@ -220,7 +220,7 @@ public class Trees {
     }
 
     public static <N, E> Tree<N, E> unmodifiableTree(Tree<N, E> tree) {
-        return new UnmodifiableTree<N, E>(tree);
+        return new UnmodifiableTree<>(tree);
     }
 
     public static <N, E> String toString(Tree<N, E> tree) {
@@ -242,7 +242,7 @@ public class Trees {
 
     public static <N extends Orderable, E> Matrix<Boolean> calculateAncestorsMatrix(Tree<N, E> tree) {
         int nodeCount = tree.getNodes().size();
-        Matrix<Boolean> ancestorsMatrix = new Matrix<Boolean>(nodeCount, nodeCount, Boolean.FALSE);
+        Matrix<Boolean> ancestorsMatrix = new Matrix<>(nodeCount, nodeCount, Boolean.FALSE);
 
         for (E edge : tree.getEdges()) {
             N source = tree.getEdgeSource(edge);

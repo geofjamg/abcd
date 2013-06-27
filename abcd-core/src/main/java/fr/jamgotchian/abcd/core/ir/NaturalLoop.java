@@ -35,7 +35,7 @@ public class NaturalLoop {
 
     private NaturalLoop parent;
 
-    private final List<NaturalLoop> children = new ArrayList<NaturalLoop>();
+    private final List<NaturalLoop> children = new ArrayList<>();
 
     public NaturalLoop(ControlFlowGraph cfg, Edge backEdge, List<BasicBlock> body) {
         this.cfg = cfg;
@@ -76,7 +76,7 @@ public class NaturalLoop {
     }
 
     public Collection<Edge> getExitEdges() {
-        List<Edge> exitEdges = new ArrayList<Edge>(1);
+        List<Edge> exitEdges = new ArrayList<>(1);
         for (BasicBlock bb : body) {
             for (Edge e : cfg.getOutgoingEdgesOf(bb)) {
                 BasicBlock t = cfg.getEdgeTarget(e);

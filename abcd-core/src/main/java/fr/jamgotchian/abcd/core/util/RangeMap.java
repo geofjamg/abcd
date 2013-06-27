@@ -36,7 +36,7 @@ import java.util.TreeSet;
  */
 public class RangeMap<K extends Range, V> implements Map<K, V> {
 
-    private final NavigableMap<Integer, Map.Entry<K, V>> map = new TreeMap<Integer, Map.Entry<K, V>>();
+    private final NavigableMap<Integer, Map.Entry<K, V>> map = new TreeMap<>();
 
     public RangeMap() {
     }
@@ -97,12 +97,12 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
         K k = key;
         V previousValue = findBeginningAt(k.getFirst());
         if (previousValue != null) {
-            map.put(key.getFirst(), new SimpleImmutableEntry<K, V>(key, value));
+            map.put(key.getFirst(), new SimpleImmutableEntry<>(key, value));
         } else {
             if (findContaining(k.getFirst()) != null) {
                 throw new IllegalArgumentException("Range overlapping");
             } else {
-                map.put(key.getFirst(), new SimpleImmutableEntry<K, V>(key, value));
+                map.put(key.getFirst(), new SimpleImmutableEntry<>(key, value));
             }
         }
         return previousValue;
@@ -137,7 +137,7 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
 
     @Override
     public Set<K> keySet() {
-        Set<K> keys = new TreeSet<K>();
+        Set<K> keys = new TreeSet<>();
         for (Map.Entry<K, V> entry : map.values()) {
             keys.add(entry.getKey());
         }
@@ -146,7 +146,7 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
 
     @Override
     public Collection<V> values() {
-        List<V> values = new ArrayList<V>(map.size());
+        List<V> values = new ArrayList<>(map.size());
         for (Map.Entry<K, V> entry : map.values()) {
             values.add(entry.getValue());
         }
@@ -155,7 +155,7 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        return new LinkedHashSet<Entry<K, V>>(map.values());
+        return new LinkedHashSet<>(map.values());
     }
 
     public V findBeginningAt(int index) {
@@ -182,7 +182,7 @@ public class RangeMap<K extends Range, V> implements Map<K, V> {
     }
 
     public Collection<V> values(Range range) {
-        List<V> values = new ArrayList<V>();
+        List<V> values = new ArrayList<>();
         for (Map.Entry<K, V> entry : map.values()) {
             if (range.contains(entry.getKey())) {
                 values.add(entry.getValue());

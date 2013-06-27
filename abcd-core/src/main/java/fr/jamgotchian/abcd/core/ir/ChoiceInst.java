@@ -38,7 +38,7 @@ public class ChoiceInst extends DefInst {
 
     @Override
     public Set<Variable> getUses() {
-        Set<Variable> uses = new HashSet<Variable>(choices.size());
+        Set<Variable> uses = new HashSet<>(choices.size());
         uses.addAll(choices);
         return uses;
     }

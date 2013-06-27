@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public class ImportManager implements ClassNameManager, ImportStrategy {
 
-    private final List<ClassName> classNames = new ArrayList<ClassName>();
+    private final List<ClassName> classNames = new ArrayList<>();
 
     public ImportManager() {
     }

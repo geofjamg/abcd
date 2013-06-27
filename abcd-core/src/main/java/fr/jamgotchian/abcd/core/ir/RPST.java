@@ -61,7 +61,7 @@ public class RPST {
         @Override
         public Map<String, String> getAttributes(Object object) {
             Region child = tree.getEdgeTarget(object);
-            Map<String, String> attrs = new HashMap<String, String>(2);
+            Map<String, String> attrs = new HashMap<>(2);
             attrs.put("fontsize", "11");
             attrs.put("label", "\"" + child.getChildType() + "\"");
             return attrs;
@@ -176,7 +176,7 @@ public class RPST {
     }
 
     public void removeChildren(Region region) {
-        for (Region child : new ArrayList<Region>(tree.getChildren(region))) {
+        for (Region child : new ArrayList<>(tree.getChildren(region))) {
             tree.removeSubtree(child);
         }
     }
@@ -186,7 +186,7 @@ public class RPST {
     }
 
     public Set<Region> getSubTreeRegions(Region subTreeRoot, Predicate<Region> filter) {
-        Set<Region> regions = new HashSet<Region>();
+        Set<Region> regions = new HashSet<>();
         for (Region region : tree.getSubTree(subTreeRoot).getNodes()) {
             if (filter.apply(region)) {
                 regions.add(region);
@@ -204,7 +204,7 @@ public class RPST {
     }
 
     public Set<BasicBlock> getBasicBlocks(Region region) {
-        Set<BasicBlock> bbs = new LinkedHashSet<BasicBlock>();
+        Set<BasicBlock> bbs = new LinkedHashSet<>();
         addBasicBlocks(region, bbs);
         return bbs;
     }

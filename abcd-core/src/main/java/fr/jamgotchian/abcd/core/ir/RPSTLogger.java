@@ -89,7 +89,7 @@ public class RPSTLogger {
 
     private final String name;
 
-    private final List<Log> logs = new ArrayList<Log>();
+    private final List<Log> logs = new ArrayList<>();
 
     public RPSTLogger(String name) {
         this.name = name;

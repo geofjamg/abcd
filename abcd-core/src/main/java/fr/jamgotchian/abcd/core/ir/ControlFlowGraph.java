@@ -115,9 +115,9 @@ public class ControlFlowGraph {
         this.exitBlock = exitBlock;
         this.bytecodeRenderer = bytecodeRenderer;
         graph = DirectedGraphs.newDirectedGraph();
-        basicBlocks = new RangeMap<Range, BasicBlock>();
+        basicBlocks = new RangeMap<>();
         naturalLoops = HashMultimap.create();
-        outermostLoops = new ArrayList<NaturalLoop>();
+        outermostLoops = new ArrayList<>();
         addBasicBlock(entryBlock);
         addBasicBlock(exitBlock);
     }
@@ -450,7 +450,7 @@ public class ControlFlowGraph {
      */
     public boolean removeUnreachableBlocks() {
         boolean removed = false;
-        for (BasicBlock block : new HashSet<BasicBlock>(graph.getVertices())) {
+        for (BasicBlock block : new HashSet<>(graph.getVertices())) {
             if (!block.equals(entryBlock) && !block.equals(exitBlock)
                     && graph.getPredecessorCountOf(block) == 0
                     && graph.getSuccessorCountOf(block) == 0) {
@@ -467,7 +467,7 @@ public class ControlFlowGraph {
      * Remove unnecessary basic blocks.
      */
     public boolean removeUnnecessaryBlock() {
-        Set<BasicBlock> toRemove = new HashSet<BasicBlock>();
+        Set<BasicBlock> toRemove = new HashSet<>();
         for (BasicBlock bb : graph.getVertices()) {
             if (getNormalSuccessorCountOf(bb) == 1) {
                 if ((getPredecessorCountOf(bb) > 1
@@ -494,7 +494,7 @@ public class ControlFlowGraph {
             Edge outgoingEdge = getFirstNormalOutgoingEdgeOf(bb);
             BasicBlock successor = graph.getEdgeTarget(outgoingEdge);
             Collection<Edge> incomingEdges = graph.getIncomingEdgesOf(bb);
-            for (Edge incomingEdge : new ArrayList<Edge>(incomingEdges)) {
+            for (Edge incomingEdge : new ArrayList<>(incomingEdges)) {
                 BasicBlock predecessor = graph.getEdgeSource(incomingEdge);
                 graph.removeEdge(incomingEdge);
                 graph.addEdge(predecessor, successor, incomingEdge);
@@ -520,7 +520,7 @@ public class ControlFlowGraph {
      * any other edges.
      */
     public boolean removeCriticalEdges() {
-        List<Edge> criticalEdges = new ArrayList<Edge>();
+        List<Edge> criticalEdges = new ArrayList<>();
 
         // find critical edges
         for (Edge e : graph.getEdges()) {
@@ -608,9 +608,9 @@ public class ControlFlowGraph {
                 case BACK: {
                     BasicBlock head = graph.getEdgeTarget(e);
                     BasicBlock v = graph.getEdgeSource(e);
-                    Set<BasicBlock> visited = new HashSet<BasicBlock>();
+                    Set<BasicBlock> visited = new HashSet<>();
                     visited.add(head);
-                    List<BasicBlock> body = new ArrayList<BasicBlock>();
+                    List<BasicBlock> body = new ArrayList<>();
                     body.add(head);
                     graph.reversePostOrderDFS(v, visited, body, null, true);
                     // order blocks by dominance
@@ -661,7 +661,7 @@ public class ControlFlowGraph {
                 } else {
                     child.setParent(parent);
                 }
-                buildLoopTree(child, new ArrayList<BasicBlock>(child.getBody()));
+                buildLoopTree(child, new ArrayList<>(child.getBody()));
                 loopBody.removeAll(child.getBody());
             }
         }
@@ -694,7 +694,7 @@ public class ControlFlowGraph {
         // build loop tree
         outermostLoops.clear();
         Tree<BasicBlock, Edge> domTree = dominatorInfo.getDominatorsTree();
-        List<BasicBlock> loopBody = new ArrayList<BasicBlock>(domTree.getNodesPreOrder());
+        List<BasicBlock> loopBody = new ArrayList<>(domTree.getNodesPreOrder());
         buildLoopTree(null, loopBody);
 
         if (outermostLoops.size() > 0) {

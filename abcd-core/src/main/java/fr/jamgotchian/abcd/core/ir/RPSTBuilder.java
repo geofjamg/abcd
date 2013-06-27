@@ -47,7 +47,7 @@ public class RPSTBuilder {
 
         private RPSTRegion parent;
 
-        private final Set<RPSTRegion> children = new LinkedHashSet<RPSTRegion>();
+        private final Set<RPSTRegion> children = new LinkedHashSet<>();
 
         private RPSTRegion(BasicBlock entry, BasicBlock exit) {
             this.entry = entry;
@@ -62,7 +62,7 @@ public class RPSTBuilder {
 
     private final ControlFlowGraph cfg;
 
-    private final Map<BasicBlock, RPSTRegion> bb2region = new HashMap<BasicBlock, RPSTRegion>();
+    private final Map<BasicBlock, RPSTRegion> bb2region = new HashMap<>();
 
     public RPSTBuilder(ControlFlowGraph cfg) {
         this.cfg = cfg;
@@ -206,7 +206,7 @@ public class RPSTBuilder {
     }
 
     private void detectRegions() {
-        Map<BasicBlock, BasicBlock> shortCut = new HashMap<BasicBlock, BasicBlock>();
+        Map<BasicBlock, BasicBlock> shortCut = new HashMap<>();
         for (BasicBlock bb : getDomInfo().getDominatorsTree().getNodesPostOrder()) {
             detectRegionsWithEntry(bb, shortCut);
         }
@@ -249,7 +249,7 @@ public class RPSTBuilder {
             return false;
         }
         // basic blocks of merged region
-        Set<BasicBlock> basicBlocks = new HashSet<BasicBlock>();
+        Set<BasicBlock> basicBlocks = new HashSet<>();
         basicBlocks.addAll(rpst.getBasicBlocks(region1));
         basicBlocks.addAll(rpst.getBasicBlocks(region2));
         basicBlocks.add(region2.getExit());
@@ -263,14 +263,14 @@ public class RPSTBuilder {
     }
 
     private void findNonCanonicalRegions(RPST rpst, Region region) {
-        Set<Region> childrenBefore = new HashSet<Region>(rpst.getChildren(region));
+        Set<Region> childrenBefore = new HashSet<>(rpst.getChildren(region));
         if (rpst.getChildCount(region) > 1) {
             boolean found = true;
             while (found) {
                 found = false;
 
                 // children ordered by dominance
-                List<Region> children = new ArrayList<Region>(rpst.getChildren(region));
+                List<Region> children = new ArrayList<>(rpst.getChildren(region));
                 Collections.sort(children, new Comparator<Region>() {
                     @Override
                     public int compare(Region region1, Region region2) {
@@ -344,7 +344,7 @@ public class RPSTBuilder {
         }
 
         RPST rpst = new RPST(cfg, new RegionImpl(cfg.getEntryBlock(), null, ParentType.ROOT));
-        Map<RPSTRegion, Region> mapR = new HashMap<RPSTRegion, Region>();
+        Map<RPSTRegion, Region> mapR = new HashMap<>();
         a(root, rpst.getRootRegion(), rpst, mapR);
         for (Map.Entry<BasicBlock, RPSTRegion> entry : bb2region.entrySet()) {
             BasicBlock bb = entry.getKey();

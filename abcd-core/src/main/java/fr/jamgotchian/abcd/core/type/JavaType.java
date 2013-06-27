@@ -51,7 +51,7 @@ public class JavaType {
     public static final Map<JavaType, List<JavaType>> WIDENING_PRIMITIVE_CONVERSION;
 
     static {
-        Map<JavaType, List<JavaType>> conversion = new HashMap<JavaType, List<JavaType>>();
+        Map<JavaType, List<JavaType>> conversion = new HashMap<>();
         conversion.put(JavaType.BYTE,
                 Collections.unmodifiableList(Arrays.asList(JavaType.BYTE, JavaType.SHORT,
                                                            JavaType.INT, JavaType.LONG,

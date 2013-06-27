@@ -28,6 +28,7 @@ import fr.jamgotchian.abcd.core.ir.RPSTLogger;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import org.slf4j.Logger;
@@ -81,14 +82,11 @@ public class DefaultDecompilationObserver implements DecompilationObserver {
                 }
             }
             FileOutputStream os = new FileOutputStream(javaFile);
-            Writer writer = new OutputStreamWriter(new BufferedOutputStream(os));
-            try {
+            try (Writer writer = new OutputStreamWriter(new BufferedOutputStream(os))) {
                 CodeWriter codeWriter = new TextCodeWriter(writer, 4);
                 compilUnit.accept(new JavaCompilationUnitWriter(codeWriter, config), null);
-            } finally {
-                writer.close();
             }
-        } catch (Exception e) {
+        } catch (ABCDException | IOException e) {
             LOGGER.error(e.toString(), e);
         }
     }

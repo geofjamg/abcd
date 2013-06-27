@@ -77,7 +77,7 @@ public class JavaBytecodeClassFactory implements ClassFactory {
         modifiers.remove(Modifier.SYNCHRONIZED); // ???
 
         // implemented interfaces
-        List<ClassName> interfaceNames = new ArrayList<ClassName>();
+        List<ClassName> interfaceNames = new ArrayList<>();
         for (String _interface : (List<String>) cn.interfaces) {
             interfaceNames.add(importManager.newClassName(_interface.replace('/', '.')));
         }
@@ -114,7 +114,7 @@ public class JavaBytecodeClassFactory implements ClassFactory {
 
     @Override
     public Collection<MethodFactory> createMethodFactories() {
-        List<MethodFactory> factories = new ArrayList<MethodFactory>();
+        List<MethodFactory> factories = new ArrayList<>();
         for (MethodNode mn : (List<MethodNode>) cn.methods) {
             factories.add(new JavaBytecodeMethodFactory(cn, mn));
         }

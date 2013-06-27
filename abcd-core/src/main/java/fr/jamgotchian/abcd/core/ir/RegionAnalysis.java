@@ -164,7 +164,7 @@ public class RegionAnalysis {
         //   - replace the exit block by the tail block
         //   - remove the back edge
         ControlFlowGraph subCfg = createSubCFG(rpst, region);
-        for (Edge exitEdge : new ArrayList<Edge>(subCfg.getIncomingEdgesOf(subCfg.getExitBlock()))) {
+        for (Edge exitEdge : new ArrayList<>(subCfg.getIncomingEdgesOf(subCfg.getExitBlock()))) {
             BasicBlock source = subCfg.getEdgeSource(exitEdge);
             BasicBlock _break = BasicBlockImpl.createBreak();
             subCfg.addBasicBlock(_break);
@@ -338,7 +338,7 @@ public class RegionAnalysis {
             return false;
         }
         Region switchRegion = null;
-        List<Region> caseRegions = new ArrayList<Region>();
+        List<Region> caseRegions = new ArrayList<>();
         for (Region child : rpst.getChildren(region)) {
             if (child.getEntry().equals(region.getEntry())
                     && child.getExit().getType() == BasicBlockType.SWITCH) {
@@ -436,7 +436,7 @@ public class RegionAnalysis {
         //
         // find try blocks
         //
-        Set<BasicBlock> tryBlocks = new HashSet<BasicBlock>();
+        Set<BasicBlock> tryBlocks = new HashSet<>();
         for (Region tryRegion : tryRegions) {
             tryBlocks.addAll(rpst.getBasicBlocks(tryRegion));
         }
@@ -446,8 +446,8 @@ public class RegionAnalysis {
         //
         // find try exit blocks
         //
-        final Set<BasicBlock> tryExitBlocks = new HashSet<BasicBlock>();
-        final Set<Edge> tryExitEdges = new HashSet<Edge>();
+        final Set<BasicBlock> tryExitBlocks = new HashSet<>();
+        final Set<Edge> tryExitEdges = new HashSet<>();
         for (BasicBlock tryBlock : tryBlocks) {
             for (Edge e : cfg.getNormalOutgoingEdgesOf(tryBlock)) {
                 if (!e.hasAttribute(EdgeAttribute.THROW_FAKE_EDGE)) {
@@ -493,7 +493,7 @@ public class RegionAnalysis {
         //
         // find main exit region and break regions
         //
-        Set<Region> breakExitRegions = new HashSet<Region>();
+        Set<Region> breakExitRegions = new HashSet<>();
         Region mainExitRegion = null;
         Region mainInlinedRegion = null;
         for (final Region inlinedRegion : inlinedRegions) {
@@ -539,7 +539,7 @@ public class RegionAnalysis {
         }
 
         // remove finally basic blocks
-        List<Region> toRemove = new ArrayList<Region>();
+        List<Region> toRemove = new ArrayList<>();
         toRemove.add(finallyRegion); // remove finally region
         toRemove.addAll(inlinedRegions); // remove inlined regions
         toRemove.addAll(breakExitRegions); // remove break exit regions
@@ -605,10 +605,10 @@ public class RegionAnalysis {
     private boolean checkTryCatchFinallyRegion(RPST rpst, Region region) {
         LOGGER.trace("Check try catch finally region {}", region);
         Set<Region> exitRegions = rpst.getChildrenWithExit(region, region.getExit());
-        Set<Region> handlerRegions = new HashSet<Region>();
-        Set<BasicBlock> handlerEntries = new HashSet<BasicBlock>();
-        Set<Region> finallyRegions = new HashSet<Region>();
-        Set<Region> normalExitRegions = new HashSet<Region>(exitRegions);
+        Set<Region> handlerRegions = new HashSet<>();
+        Set<BasicBlock> handlerEntries = new HashSet<>();
+        Set<Region> finallyRegions = new HashSet<>();
+        Set<Region> normalExitRegions = new HashSet<>(exitRegions);
         for (Region exitRegion : exitRegions) {
             // the child region is an exception handler whether its exit is connected
             // to parent region exit and its entry basic block has attribute
@@ -642,7 +642,7 @@ public class RegionAnalysis {
         }
 
         // search inlined finally region
-        Set<Region> inlinedFinallyRegions = new HashSet<Region>();
+        Set<Region> inlinedFinallyRegions = new HashSet<>();
         if (finallyRegion != null) {
             for (Region exitRegion : normalExitRegions) {
                 if (Regions.deepEquals(rpst, exitRegion, rpst, finallyRegion)) {
@@ -660,7 +660,7 @@ public class RegionAnalysis {
             }
         }
         // every other child region should be connected to handlers
-        Set<Region> otherChildren = new HashSet<Region>(rpst.getChildren(region));
+        Set<Region> otherChildren = new HashSet<>(rpst.getChildren(region));
         otherChildren.removeAll(handlerRegions);
         otherChildren.removeAll(inlinedFinallyRegions);
         for (Region otherChild : otherChildren) {
@@ -687,7 +687,7 @@ public class RegionAnalysis {
         LOGGER.debug("Found try catch finally region {}", region);
 
         region.setParentType(ParentType.TRY_CATCH_FINALLY);
-        for (Region child : new ArrayList<Region>(rpst.getChildren(region))) {
+        for (Region child : new ArrayList<>(rpst.getChildren(region))) {
             if (!handlerRegions.contains(child)) {
                 rpst.removeSubtree(child);
             }
@@ -723,7 +723,7 @@ public class RegionAnalysis {
     private boolean checkBreakLabelRegion(RPST rpst, Region region) {
         LOGGER.trace("Check break label region {}", region);
         Collection<Region> exitChildren = rpst.getChildrenWithExit(region, region.getExit());
-        Set<Region> joinRegions = new HashSet<Region>();
+        Set<Region> joinRegions = new HashSet<>();
         for (Region exitChild : exitChildren) {
             if (rpst.getCfg().getNormalPredecessorCountOf(exitChild.getEntry()) > 1) {
                 joinRegions.add(exitChild);
@@ -737,7 +737,7 @@ public class RegionAnalysis {
         ControlFlowGraph subCfg = createSubCFG(rpst, region);
         BasicBlock newExit = BasicBlockImpl.createExit();
         subCfg.addBasicBlock(newExit);
-        for (Edge joinEdge : new ArrayList<Edge>(subCfg.getIncomingEdgesOf(joinBlock))) {
+        for (Edge joinEdge : new ArrayList<>(subCfg.getIncomingEdgesOf(joinBlock))) {
             BasicBlock source = subCfg.getEdgeSource(joinEdge);
             subCfg.removeEdge(joinEdge);
             subCfg.addEdge(source, newExit, joinEdge);
@@ -745,7 +745,7 @@ public class RegionAnalysis {
         for (BasicBlock bb : rpst.getBasicBlocks(joinRegion)) {
             subCfg.removeBasicBlock(bb);
         }
-        for (Edge exitEdge : new ArrayList<Edge>(subCfg.getIncomingEdgesOf(subCfg.getExitBlock()))) {
+        for (Edge exitEdge : new ArrayList<>(subCfg.getIncomingEdgesOf(subCfg.getExitBlock()))) {
             BasicBlock source = subCfg.getEdgeSource(exitEdge);
             subCfg.removeEdge(exitEdge);
             subCfg.addEdge(source, newExit, exitEdge);
@@ -763,7 +763,7 @@ public class RegionAnalysis {
         Region forkRegion = subRpst.getEntryChild(rootRegion);
         forkRegion.setChildType(ChildType.FIRST);
         joinRegion.setChildType(ChildType.SECOND);
-        for (Region child : new ArrayList<Region>(rpst.getChildren(region))) {
+        for (Region child : new ArrayList<>(rpst.getChildren(region))) {
             if (!child.equals(joinRegion)) {
                 rpst.removeSubtree(child);
             }

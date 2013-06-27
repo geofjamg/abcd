@@ -42,7 +42,7 @@ public class Sets {
             return Collections.emptySet();
         } else {
             Iterator<Set<E>> it = sets.iterator();
-            Set<E> intersect = new HashSet<E>(it.next());
+            Set<E> intersect = new HashSet<>(it.next());
             while (it.hasNext()) {
                 intersect.retainAll(it.next());
             }

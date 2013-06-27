@@ -25,11 +25,11 @@ import java.util.List;
  */
 public class TablePrinter {
 
-    private final List<List<String>> columns = new ArrayList<List<String>>();
+    private final List<List<String>> columns = new ArrayList<>();
 
     TablePrinter(String... columnNames) {
         for (String columnName : columnNames) {
-            List<String> column = new ArrayList<String>(1);
+            List<String> column = new ArrayList<>(1);
             column.add(columnName);
             columns.add(column);
         }
@@ -46,7 +46,7 @@ public class TablePrinter {
     }
 
     public void print(StringBuilder out) {
-        List<Integer> columnWidths = new ArrayList<Integer>(columns.size());
+        List<Integer> columnWidths = new ArrayList<>(columns.size());
         for (List<String> column : columns) {
             columnWidths.add(getColumnWidth(column));
         }

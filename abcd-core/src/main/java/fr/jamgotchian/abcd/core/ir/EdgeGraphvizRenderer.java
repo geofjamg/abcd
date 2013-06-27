@@ -38,7 +38,7 @@ public class EdgeGraphvizRenderer implements GraphvizRenderer<Edge> {
 
     @Override
     public Map<String, String> getAttributes(Edge edge) {
-        Map<String, String> attrs = new HashMap<String, String>(3);
+        Map<String, String> attrs = new HashMap<>(3);
         if (edge.hasAttribute(EdgeAttribute.THROW_FAKE_EDGE)) {
             attrs.put("color", "pink");
             attrs.put("penwidth", "2");

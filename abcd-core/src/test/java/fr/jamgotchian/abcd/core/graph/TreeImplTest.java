@@ -36,7 +36,7 @@ public class TreeImplTest {
     @Test
     public void testInit() {
         Vertex n1 = new Vertex("n", 1);
-        Tree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        Tree<Vertex, String> tree = new TreeImpl<>(n1);
         assertTrue(Collections3.equals(Arrays.asList(n1), tree.getNodes()));
     }
 
@@ -49,7 +49,7 @@ public class TreeImplTest {
         String e12 = "e12";
         String e23 = "e23";
         String e24 = "e24";
-        MutableTree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        MutableTree<Vertex, String> tree = new TreeImpl<>(n1);
         tree.addNode(n1, n2, e12);
         tree.addNode(n2, n3, e23);
         tree.addNode(n2, n4, e24);
@@ -77,7 +77,7 @@ public class TreeImplTest {
         String e24 = "e24";
         String e45 = "e45";
         String e46 = "e46";
-        MutableTree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        MutableTree<Vertex, String> tree = new TreeImpl<>(n1);
         tree.addNode(n1, n2, e12);
         tree.addNode(n2, n3, e23);
         tree.addNode(n2, n4, e24);
@@ -117,7 +117,7 @@ public class TreeImplTest {
         String e45 = "e45";
         String e46 = "e46";
         String e37 = "e37";
-        MutableTree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        MutableTree<Vertex, String> tree = new TreeImpl<>(n1);
         tree.addNode(n1, n2, e12);
         tree.addNode(n2, n3, e23);
         tree.addNode(n2, n4, e24);
@@ -144,7 +144,7 @@ public class TreeImplTest {
         String e23 = "e23";
         String e24 = "e24";
         String e45 = "e45";
-        MutableTree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        MutableTree<Vertex, String> tree = new TreeImpl<>(n1);
         tree.addNode(n1, n2, e12);
         tree.addNode(n2, n3, e23);
         tree.addNode(n2, n4, e24);
@@ -165,7 +165,7 @@ public class TreeImplTest {
         String e12 = "e12";
         String e23 = "e23";
         String e14 = "e14";
-        MutableTree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        MutableTree<Vertex, String> tree = new TreeImpl<>(n1);
         tree.addNode(n1, n2, e12);
         tree.addNode(n2, n3, e23);
         tree.addNode(n1, n4, e14);
@@ -204,7 +204,7 @@ public class TreeImplTest {
         String e45 = "e45";
         String e46 = "e46";
         String e37 = "e37";
-        MutableTree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        MutableTree<Vertex, String> tree = new TreeImpl<>(n1);
         tree.addNode(n1, n2, e12);
         tree.addNode(n2, n3, e23);
         tree.addNode(n2, n4, e24);
@@ -245,7 +245,7 @@ public class TreeImplTest {
         String e45 = "e45";
         String e46 = "e46";
         String e37 = "e37";
-        MutableTree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        MutableTree<Vertex, String> tree = new TreeImpl<>(n1);
         tree.addNode(n1, n2, e12);
         tree.addNode(n2, n3, e23);
         tree.addNode(n2, n4, e24);
@@ -286,7 +286,7 @@ public class TreeImplTest {
         String e46 = "e46";
         String e37 = "e37";
         String eNew = "eNew";
-        MutableTree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        MutableTree<Vertex, String> tree = new TreeImpl<>(n1);
         tree.addNode(n1, n2, e12);
         tree.addNode(n2, n3, e23);
         tree.addNode(n2, n4, e24);
@@ -319,7 +319,7 @@ public class TreeImplTest {
         Vertex n1 = new Vertex("n", 1);
         Vertex n2 = new Vertex("n", 2);
         String e12 = "e12";
-        MutableTree<Vertex, String> tree = new TreeImpl<Vertex, String>(n1);
+        MutableTree<Vertex, String> tree = new TreeImpl<>(n1);
         tree.addNode(n1, n2, e12);
 
         Vertex n3 = new Vertex("n", 3);
@@ -327,7 +327,7 @@ public class TreeImplTest {
         Vertex n5 = new Vertex("n", 5);
         String e34 = "e34";
         String e35 = "e35";
-        MutableTree<Vertex, String> tree2 = new TreeImpl<Vertex, String>(n3);
+        MutableTree<Vertex, String> tree2 = new TreeImpl<>(n3);
         tree2.addNode(n3, n4, e34);
         tree2.addNode(n3, n5, e35);
 

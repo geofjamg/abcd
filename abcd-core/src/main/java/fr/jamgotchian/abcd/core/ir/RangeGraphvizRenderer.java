@@ -28,7 +28,7 @@ public class RangeGraphvizRenderer implements GraphvizRenderer<BasicBlock> {
 
     @Override
     public Map<String, String> getAttributes(BasicBlock bb) {
-        Map<String, String> attrs = new HashMap<String, String>(4);
+        Map<String, String> attrs = new HashMap<>(4);
         attrs.put("shape", "box");
         attrs.put("color", "black");
         if (bb.getType() != null) {

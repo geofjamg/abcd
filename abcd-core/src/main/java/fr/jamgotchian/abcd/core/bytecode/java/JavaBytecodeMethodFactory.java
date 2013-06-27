@@ -78,7 +78,7 @@ public class JavaBytecodeMethodFactory implements MethodFactory {
         boolean constructor = "<init>".equals(mn.name);
 
         // throwable exceptions
-        List<ClassName> exceptions = new ArrayList<ClassName>();
+        List<ClassName> exceptions = new ArrayList<>();
         if (mn.exceptions != null) {
             for (String exception : (List<String>) mn.exceptions) {
                 exceptions.add(importManager.newClassName(exception.replace('/', '.')));
@@ -94,7 +94,7 @@ public class JavaBytecodeMethodFactory implements MethodFactory {
             varFactory.setThisIndex(0);
         }
         Type[] argTypes = Type.getArgumentTypes(mn.desc);
-        List<Variable> arguments = new ArrayList<Variable>(argTypes.length);
+        List<Variable> arguments = new ArrayList<>(argTypes.length);
         for(int i = 0; i < argTypes.length; i++) {
             Type argType = argTypes[i];
             // index 0 of local variable table contains this for non static method

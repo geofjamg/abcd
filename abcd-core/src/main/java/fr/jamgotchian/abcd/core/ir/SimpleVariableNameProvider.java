@@ -29,7 +29,7 @@ public class SimpleVariableNameProvider implements VariableNameProvider {
 
     private int counter;
 
-    private final Map<VariableID, String> names = new HashMap<VariableID, String>();
+    private final Map<VariableID, String> names = new HashMap<>();
 
     public SimpleVariableNameProvider(int counter) {
         this.counter = counter;

@@ -60,7 +60,7 @@ public class Statements {
             }
         }
 
-        List<Statement> stmts = new ArrayList<Statement>();
+        List<Statement> stmts = new ArrayList<>();
         Statement stmt;
         for (stmt = startStmt; stmt != null && stmt != endStmt; stmt = stmt.getNext()) {
             stmts.add(stmt);

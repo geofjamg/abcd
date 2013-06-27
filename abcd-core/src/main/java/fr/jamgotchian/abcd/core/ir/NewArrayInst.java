@@ -51,7 +51,7 @@ public class NewArrayInst extends DefInst {
 
     @Override
     public Set<Variable> getUses() {
-        return new HashSet<Variable>(dimensions);
+        return new HashSet<>(dimensions);
     }
 
     @Override

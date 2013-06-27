@@ -39,7 +39,7 @@ public class PhiInst extends DefInst {
 
     @Override
     public Set<Variable> getUses() {
-        Set<Variable> uses = new HashSet<Variable>(args.size());
+        Set<Variable> uses = new HashSet<>(args.size());
         uses.addAll(args);
         return uses;
     }

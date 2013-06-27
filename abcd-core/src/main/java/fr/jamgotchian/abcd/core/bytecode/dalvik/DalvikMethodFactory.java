@@ -70,7 +70,7 @@ public class DalvikMethodFactory implements MethodFactory {
         JavaType returnType = DalvikBytecodeUtil.newType(prototype.getReturnType(), importManager);
 
         // parameters
-        List<Variable> arguments = new ArrayList<Variable>();
+        List<Variable> arguments = new ArrayList<>();
         if (prototype.getParameters() != null) {
             int argRegister = encodedMethod.codeItem.getRegisterCount()
                     - prototype.getParameterRegisterCount();
@@ -88,7 +88,7 @@ public class DalvikMethodFactory implements MethodFactory {
             }
         }
 
-        List<ClassName> exceptions = new ArrayList<ClassName>();
+        List<ClassName> exceptions = new ArrayList<>();
 
         return new Method(methodName, modifiers, returnType, arguments,
                           exceptions, constructor);

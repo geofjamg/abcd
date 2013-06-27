@@ -468,7 +468,7 @@ public class LocalVariableTypeAnalyser {
 
     private int cstID = 0;
 
-    private final Map<VariableID, SetVariable> variables = new HashMap<VariableID, SetVariable>();
+    private final Map<VariableID, SetVariable> variables = new HashMap<>();
 
     private final TypeHierarchyIndexer indexer;
 
@@ -501,7 +501,7 @@ public class LocalVariableTypeAnalyser {
     }
 
     private void addPrimConstraint(Variable var, JavaType... types) {
-        Set<Integer> values = new TreeSet<Integer>();
+        Set<Integer> values = new TreeSet<>();
         for (int i = 0; i < types.length; i++) {
             JavaType type = types[i];
             assert type.getKind() == TypeKind.PRIMITIVE;
@@ -591,7 +591,7 @@ public class LocalVariableTypeAnalyser {
         }
 
         LOGGER.trace("Solution :");
-        Map<VariableID, JavaType> types = new HashMap<VariableID, JavaType>();
+        Map<VariableID, JavaType> types = new HashMap<>();
         for (Map.Entry<VariableID, SetVariable> entry : variables.entrySet()) {
             VariableID ID = entry.getKey();
             SetVariable var = entry.getValue();

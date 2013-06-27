@@ -57,7 +57,7 @@ public class NewObjectInst extends DefInst {
 
     @Override
     public Set<Variable> getUses() {
-        return new HashSet<Variable>(arguments);
+        return new HashSet<>(arguments);
     }
 
     @Override

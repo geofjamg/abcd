@@ -125,7 +125,7 @@ public class AbstractSyntaxTreeBuilder {
 
     private final Map<VariableID, Expression> expressions;
 
-    private final Set<VariableID> declared = new HashSet<VariableID>();
+    private final Set<VariableID> declared = new HashSet<>();
 
     private class RegionIRInstVisitor extends EmptyIRInstVisitor<Void, BlockStatement> {
 
@@ -285,7 +285,7 @@ public class AbstractSyntaxTreeBuilder {
             BasicBlock bb = resultVar.getBasicBlock();
             Variable objVar = inst.getObject();
             Expression objExpr = getVarExpr(objVar);
-            List<Expression> argsExpr = new ArrayList<Expression>(inst.getArgumentCount());
+            List<Expression> argsExpr = new ArrayList<>(inst.getArgumentCount());
             for (Variable argVar : inst.getArguments()) {
                 argsExpr.add(getVarExpr(argVar));
             }
@@ -313,7 +313,7 @@ public class AbstractSyntaxTreeBuilder {
         public Void visit(CallStaticMethodInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
             BasicBlock bb = resultVar.getBasicBlock();
-            List<Expression> argsExpr = new ArrayList<Expression>(inst.getArgumentCount());
+            List<Expression> argsExpr = new ArrayList<>(inst.getArgumentCount());
             for (Variable argVar : inst.getArguments()) {
                 argsExpr.add(getVarExpr(argVar));
             }
@@ -448,7 +448,7 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(NewArrayInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
-            List<Expression> dimExprs = new ArrayList<Expression>(inst.getDimensionCount());
+            List<Expression> dimExprs = new ArrayList<>(inst.getDimensionCount());
             for (Variable dimVar : inst.getDimensions()) {
                 dimExprs.add(getVarExpr(dimVar));
             }
@@ -460,7 +460,7 @@ public class AbstractSyntaxTreeBuilder {
         @Override
         public Void visit(NewObjectInst inst, BlockStatement blockStmt) {
             Variable resultVar = inst.getResult();
-            List<Expression> argExprs = new ArrayList<Expression>(inst.getArgumentCount());
+            List<Expression> argExprs = new ArrayList<>(inst.getArgumentCount());
             for (Variable argVar : inst.getArguments()) {
                 argExprs.add(getVarExpr(argVar));
             }
@@ -565,7 +565,7 @@ public class AbstractSyntaxTreeBuilder {
         this.cfg = cfg;
         this.rpst = rpst;
         this.methodBody = methodBody;
-        expressions = new HashMap<VariableID, Expression>();
+        expressions = new HashMap<>();
         for (Variable argVar : argVars) {
             declared.add(argVar.getID());
         }
@@ -668,7 +668,7 @@ public class AbstractSyntaxTreeBuilder {
                 SwitchCaseStatement switchStmt
                         = (SwitchCaseStatement) blockStmt.getLast();
 
-                Map<CaseValues, Region> caseRegions = new TreeMap<CaseValues, Region>();
+                Map<CaseValues, Region> caseRegions = new TreeMap<>();
                 for (Region caseRegion : rpst.getChildren(region, ChildType.CASE)) {
                     CaseValues values = (CaseValues) caseRegion.getData();
                     caseRegions.put(values, caseRegion);
@@ -678,7 +678,7 @@ public class AbstractSyntaxTreeBuilder {
                     CaseValues values = entry.getKey();
                     Region caseRegion = entry.getValue();
 
-                    List<Statement> caseStmts = new ArrayList<Statement>();
+                    List<Statement> caseStmts = new ArrayList<>();
 
                     BlockStatement caseCompoundStmt = new BlockStatement();
                     buildAST(caseRegion, caseCompoundStmt);
@@ -706,7 +706,7 @@ public class AbstractSyntaxTreeBuilder {
                 BlockStatement tryBlockStmt = new BlockStatement();
                 buildAST(rpst.getFirstChild(region, ChildType.TRY), tryBlockStmt);
 
-                List<CatchClause> catchClauses = new ArrayList<CatchClause>();
+                List<CatchClause> catchClauses = new ArrayList<>();
                 BlockStatement finallyBlockStmt = null;
 
                 for (Region catchRegion : rpst.getChildren(region, ChildType.CATCH)) {

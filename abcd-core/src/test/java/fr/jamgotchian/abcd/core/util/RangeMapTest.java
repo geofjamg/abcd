@@ -36,7 +36,7 @@ public class RangeMapTest {
 
     @Before
     public void setUp() {
-        map = new RangeMap<Range, String>();
+        map = new RangeMap<>();
     }
 
     @After

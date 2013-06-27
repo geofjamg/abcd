@@ -111,7 +111,7 @@ public class IntermediateRepresentationBuilder {
                 }
                 ChoiceInst choiceInst = (ChoiceInst) inst;
 
-                List<IRInst> condInsts = new ArrayList<IRInst>();
+                List<IRInst> condInsts = new ArrayList<>();
 
                 boolean change = true;
                 while (change) {
@@ -200,7 +200,7 @@ public class IntermediateRepresentationBuilder {
     private void assignNameToVariables() {
         VariableNameProvider nameProvider = nameProviderFactory.create(localVarTable);
 
-        Set<Variable> variables = new HashSet<Variable>();
+        Set<Variable> variables = new HashSet<>();
 
         for (Variable arg : methodContext.getArguments()) {
             arg.setName(nameProvider.getName(arg));

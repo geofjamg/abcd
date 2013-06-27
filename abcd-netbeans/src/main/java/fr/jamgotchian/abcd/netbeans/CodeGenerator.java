@@ -69,12 +69,9 @@ public class CodeGenerator {
 
         try {
             FileObject testFile = FileUtil.createMemoryFileSystem().getRoot().createData("test.java");  //NOI18N
-            OutputStream testOut = testFile.getOutputStream();
 
-            try {
+            try (OutputStream testOut = testFile.getOutputStream()) {
                 FileUtil.copy(new ByteArrayInputStream("".getBytes("UTF-8")), testOut); //NOI18N
-            } finally {
-                testOut.close();
             }
 
             JavaSource js = JavaSource.create(cpInfo, testFile);
@@ -157,14 +154,11 @@ public class CodeGenerator {
                 if (resultFile != null && !resultFile.canWrite()) {
                     resultFile.setWritable(true);
                 }
-                OutputStream resultOut = result[0].getOutputStream();
-                try {
+                try (OutputStream resultOut = result[0].getOutputStream()) {
                     ABCDDataSource dataSrc = new NbABCDDataSource(resource[0].getInputStream());
                     Configuration config = Lookup.getDefault().lookup(Configuration.class);
                     DecompilationObserver observer = new NbDecompilationObserver(resultOut, config);
                     new ABCDContext().decompile(dataSrc, observer, config, cp.getClassLoader(true));
-                } finally {
-                    resultOut.close();
                 }
                 if (resultFile != null) {
                     resultFile.setReadOnly();

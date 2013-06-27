@@ -69,7 +69,7 @@ public class DalvikBytecodeClassFactory implements ClassFactory {
         AccessFlags[] accessFlags = AccessFlags.getAccessFlagsForClass(item.getAccessFlags());
         ClassKind kind = DalvikBytecodeUtil.getKind(accessFlags);
         Set<Modifier> modifiers = DalvikBytecodeUtil.getModifiers(accessFlags);
-        List<ClassName> interfaceNames = new ArrayList<ClassName>();
+        List<ClassName> interfaceNames = new ArrayList<>();
         if (item.getInterfaces() != null) {
             for (TypeIdItem interfaceType : item.getInterfaces().getTypes()) {
                 ClassName interfaceName
@@ -92,7 +92,7 @@ public class DalvikBytecodeClassFactory implements ClassFactory {
 
     @Override
     public Collection<MethodFactory> createMethodFactories() {
-        List<MethodFactory> factories = new ArrayList<MethodFactory>();
+        List<MethodFactory> factories = new ArrayList<>();
         for (EncodedMethod encodedMethod  : item.getClassData().getDirectMethods()) {
             factories.add(new DalvikMethodFactory(encodedMethod));
         }

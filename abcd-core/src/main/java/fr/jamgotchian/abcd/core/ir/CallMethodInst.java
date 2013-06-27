@@ -60,7 +60,7 @@ public class CallMethodInst extends CallableInst {
 
     @Override
     public Set<Variable> getUses() {
-        Set<Variable> uses = new HashSet<Variable>(arguments.size()+1);
+        Set<Variable> uses = new HashSet<>(arguments.size()+1);
         uses.add(object);
         uses.addAll(arguments);
         return uses;

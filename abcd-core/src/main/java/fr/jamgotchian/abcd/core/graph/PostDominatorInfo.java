@@ -53,7 +53,7 @@ public class PostDominatorInfo<N, E> {
     public static <N, E> PostDominatorInfo<N, E>
             create(DirectedGraph<N, E> graph, N exitNode, EdgeFactory<E> edgeFactory) {
         PostDominatorInfo<N, E> domInfo
-                = new PostDominatorInfo<N, E>(graph, exitNode, edgeFactory);
+                = new PostDominatorInfo<>(graph, exitNode, edgeFactory);
         domInfo.update();
         return domInfo;
     }
@@ -78,7 +78,7 @@ public class PostDominatorInfo<N, E> {
     }
 
     public Set<N> getPostDominanceFrontierOf2(N n) {
-        Set<N> frontier = new HashSet<N>();
+        Set<N> frontier = new HashSet<>();
         for (E e : postDominanceFrontierOf.get(n)) {
             frontier.add(graph.getEdgeSource(e));
         }
@@ -101,7 +101,7 @@ public class PostDominatorInfo<N, E> {
         // the immediate post dominator of a node n is obtained by choosing the
         // strict post dominator of n whose post dominator set differs from that
         // of n only by removal of n.
-        Map<N, N> immediatePostDominator = new HashMap<N, N>();
+        Map<N, N> immediatePostDominator = new HashMap<>();
         for (Map.Entry<N, Set<N>> entry : postDominators.entrySet()) {
             N n = entry.getKey();
             Set<N> pdn = entry.getValue(); // post dominators of n
@@ -126,7 +126,7 @@ public class PostDominatorInfo<N, E> {
     }
 
     private void computePostDominanceFrontier() {
-        postDominanceFrontierOf = new HashMap<N, Set<E>>();
+        postDominanceFrontierOf = new HashMap<>();
 
         for (N x : postDominatorsTree.getNodes()) {
             postDominanceFrontierOf.put(x, new HashSet<E>());
@@ -159,7 +159,7 @@ public class PostDominatorInfo<N, E> {
         }
 
         // find post-dominators
-        postDominators = new PostDominatorsFinder<N, E>(graph, exitNode).analyse();
+        postDominators = new PostDominatorsFinder<>(graph, exitNode).analyse();
         for (Map.Entry<N, Set<N>> entry : postDominators.entrySet()) {
             LOGGER.trace("Post-dominators of {} : {}", entry.getKey(), entry.getValue());
         }

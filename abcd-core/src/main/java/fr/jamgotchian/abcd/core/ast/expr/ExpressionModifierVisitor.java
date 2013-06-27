@@ -139,7 +139,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
         if (expr.getScope() != null) {
             newScope = expr.getScope().accept(this, arg);
         }
-        List<Expression> newArguments = new ArrayList<Expression>(expr.getArguments());
+        List<Expression> newArguments = new ArrayList<>(expr.getArguments());
         boolean argumentsModified = false;
         for (int i = 0; i < newArguments.size(); i++) {
             Expression newArgument = newArguments.get(i).accept(this, arg);
@@ -173,7 +173,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
 
     @Override
     public Expression visit(ObjectCreationExpression expr, Void arg) {
-        List<Expression> newArguments = new ArrayList<Expression>(expr.getArguments());
+        List<Expression> newArguments = new ArrayList<>(expr.getArguments());
         boolean argumentsModified = false;
         for (int i = 0; i < newArguments.size(); i++) {
             Expression newArgument = newArguments.get(i).accept(this, arg);
@@ -191,7 +191,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
 
     @Override
     public Expression visit(ArrayCreationExpression expr, Void arg) {
-        List<Expression> newArrayLengthExprs = new ArrayList<Expression>(expr.getArrayLengthExprs());
+        List<Expression> newArrayLengthExprs = new ArrayList<>(expr.getArrayLengthExprs());
         boolean lengthModified = false;
         for (int i = 0; i < newArrayLengthExprs.size(); i++) {
             Expression newArrayLengthExpr = newArrayLengthExprs.get(i).accept(this, arg);
@@ -241,7 +241,7 @@ public class ExpressionModifierVisitor implements ExpressionVisitor<Expression, 
 
     @Override
     public Expression visit(ChoiceExpression choiceExpr, Void arg) {
-        Set<Expression> newChoices = new HashSet<Expression>();
+        Set<Expression> newChoices = new HashSet<>();
         boolean modified = false;
         for (Expression expr : choiceExpr.getChoices()) {
             Expression newExpr = expr.accept(this, arg);

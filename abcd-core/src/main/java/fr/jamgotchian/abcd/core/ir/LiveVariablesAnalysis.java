@@ -39,7 +39,7 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
     }
 
     private static Set<Variable> getDefs(BasicBlock block) {
-        Set<Variable> defs = new HashSet<Variable>();
+        Set<Variable> defs = new HashSet<>();
         for (IRInst inst : block.getInstructions()) {
             if (inst instanceof DefInst) {
                 defs.add(((DefInst) inst).getResult());
@@ -49,7 +49,7 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
     }
 
     private static Set<Variable> getUses(BasicBlock block) {
-        Set<Variable> uses = new HashSet<Variable>();
+        Set<Variable> uses = new HashSet<>();
         for (IRInst inst : block.getInstructions()) {
             uses.addAll(inst.getUses());
         }
@@ -68,7 +68,7 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
 
     @Override
     protected Set<Variable> getInitValue(BasicBlock node, boolean isExitNode) {
-        return new HashSet<Variable>();
+        return new HashSet<>();
     }
 
     @Override
@@ -79,7 +79,7 @@ public class LiveVariablesAnalysis extends BackwardDataFlowAnalysis<BasicBlock, 
     @Override
     protected Set<Variable> applyTranferFunction(BasicBlock node,
                                                  Set<Variable> outValue) {
-        Set<Variable> inValue = new HashSet<Variable>(outValue);
+        Set<Variable> inValue = new HashSet<>(outValue);
         inValue.removeAll(getDefs(node));
         inValue.addAll(getUses(node));
         return inValue;

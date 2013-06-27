@@ -35,11 +35,11 @@ class PostDominatorsFinder<N ,E> extends BackwardDataFlowAnalysis<N, E, Set<N>> 
     @Override
     public Set<N> getInitValue(N node, boolean isExitNode) {
         if (isExitNode) {
-            Set<N> initValue = new HashSet<N>(1);
+            Set<N> initValue = new HashSet<>(1);
             initValue.add(node);
             return initValue;
         } else {
-            return new HashSet<N>(getGraph().getVertices());
+            return new HashSet<>(getGraph().getVertices());
         }
     }
 
@@ -50,7 +50,7 @@ class PostDominatorsFinder<N ,E> extends BackwardDataFlowAnalysis<N, E, Set<N>> 
 
     @Override
     public Set<N> applyTranferFunction(N node, Set<N> outValue) {
-        Set<N> inValue = new HashSet<N>((outValue == null ? 0 : outValue.size()) + 1);
+        Set<N> inValue = new HashSet<>((outValue == null ? 0 : outValue.size()) + 1);
         inValue.add(node);
         if (outValue != null) {
             inValue.addAll(outValue);

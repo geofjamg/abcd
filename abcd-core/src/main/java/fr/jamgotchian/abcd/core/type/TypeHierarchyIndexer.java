@@ -115,9 +115,9 @@ public class TypeHierarchyIndexer {
 
     private static class TypeNode {
 
-        private final Set<TypeNode> parents = new LinkedHashSet<TypeNode>();
+        private final Set<TypeNode> parents = new LinkedHashSet<>();
 
-        private final Set<TypeNode> children = new LinkedHashSet<TypeNode>();
+        private final Set<TypeNode> children = new LinkedHashSet<>();
 
         private final Type type;
 
@@ -158,13 +158,13 @@ public class TypeHierarchyIndexer {
 
     private int nextIndex = 0;
 
-    private final Set<Integer> primitiveTypeIndexes = new TreeSet<Integer>();
+    private final Set<Integer> primitiveTypeIndexes = new TreeSet<>();
 
-    private final Set<Integer> referenceTypeIndexes = new TreeSet<Integer>();
+    private final Set<Integer> referenceTypeIndexes = new TreeSet<>();
 
-    private final Map<Type, TypeNode> type2Node = new HashMap<Type, TypeNode>();
+    private final Map<Type, TypeNode> type2Node = new HashMap<>();
 
-    private final Map<Integer, TypeNode> index2node = new TreeMap<Integer, TypeNode>();
+    private final Map<Integer, TypeNode> index2node = new TreeMap<>();
 
     public TypeHierarchyIndexer(ClassLoader classLoader) {
         this.classLoader = classLoader;
@@ -329,7 +329,7 @@ public class TypeHierarchyIndexer {
     }
 
     private Set<Integer> getParentIndexes(TypeNode node) {
-        Set<Integer> indexes = new HashSet<Integer>();
+        Set<Integer> indexes = new HashSet<>();
         getParentIndexes(node, indexes);
         return indexes;
     }
@@ -347,7 +347,7 @@ public class TypeHierarchyIndexer {
     }
 
     private Set<Integer> getChildIndexes(TypeNode node) {
-        Set<Integer> indexes = new HashSet<Integer>();
+        Set<Integer> indexes = new HashSet<>();
         getChildIndexes(node, indexes);
         return indexes;
     }
@@ -361,11 +361,11 @@ public class TypeHierarchyIndexer {
         if (indexes.length == 0) {
             throw new IllegalArgumentException("Empty index array");
         }
-        Set<Integer> sortedIndexes = new TreeSet<Integer>();
+        Set<Integer> sortedIndexes = new TreeSet<>();
         for (int index: indexes) {
             sortedIndexes.add(index);
         }
-        List<JavaType> types = new ArrayList<JavaType>(indexes.length);
+        List<JavaType> types = new ArrayList<>(indexes.length);
         int primitiveTypeCount = 0;
         int referenceTypeCount = 0;
         for (int index : sortedIndexes) {
