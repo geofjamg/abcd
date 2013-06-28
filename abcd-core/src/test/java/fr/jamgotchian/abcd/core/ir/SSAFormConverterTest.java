@@ -16,9 +16,8 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.graph.DominatorInfo;
-import fr.jamgotchian.abcd.core.util.Collections3;
-import java.util.Arrays;
+import com.google.common.collect.ImmutableSet;
+import fr.jamgotchian.abcd.graph.DominatorInfo;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -106,18 +105,12 @@ public class SSAFormConverterTest {
          */
         Assert.assertTrue(info.getDominanceFrontierOf(bb0).isEmpty());
         Assert.assertTrue(info.getDominanceFrontierOf(bb1).isEmpty());
-        Assert.assertTrue(Collections3.equals(info.getDominanceFrontierOf2(bb2),
-                                              Arrays.asList(bb7)));
-        Assert.assertTrue(Collections3.equals(info.getDominanceFrontierOf2(bb3),
-                                              Arrays.asList(bb7)));
-        Assert.assertTrue(Collections3.equals(info.getDominanceFrontierOf2(bb4),
-                                              Arrays.asList(bb6)));
-        Assert.assertTrue(Collections3.equals(info.getDominanceFrontierOf2(bb5),
-                                              Arrays.asList(bb6)));
-        Assert.assertTrue(Collections3.equals(info.getDominanceFrontierOf2(bb6),
-                                              Arrays.asList(bb7)));
-        Assert.assertTrue(Collections3.equals(info.getDominanceFrontierOf2(bb7),
-                                              Arrays.asList(bb1)));
+        Assert.assertTrue(ImmutableSet.of(bb7).equals(info.getDominanceFrontierOf2(bb2)));
+        Assert.assertTrue(ImmutableSet.of(bb7).equals(info.getDominanceFrontierOf2(bb3)));
+        Assert.assertTrue(ImmutableSet.of(bb6).equals(info.getDominanceFrontierOf2(bb4)));
+        Assert.assertTrue(ImmutableSet.of(bb6).equals(info.getDominanceFrontierOf2(bb5)));
+        Assert.assertTrue(ImmutableSet.of(bb7).equals(info.getDominanceFrontierOf2(bb6)));
+        Assert.assertTrue(ImmutableSet.of(bb1).equals(info.getDominanceFrontierOf2(bb7)));
 
         new SSAFormConverter(graph, instFactory, varFactory).convert();
     }

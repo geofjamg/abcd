@@ -17,7 +17,7 @@
 package fr.jamgotchian.abcd.core.bytecode.java;
 
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
+import fr.jamgotchian.abcd.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.CaseValues;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;

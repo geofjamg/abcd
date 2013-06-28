@@ -18,6 +18,7 @@
     <modules>
         <module>abcd-core</module>
         <module>abcd-netbeans</module>
+        <module>abcd-graph</module>
     </modules>
 
     <build>

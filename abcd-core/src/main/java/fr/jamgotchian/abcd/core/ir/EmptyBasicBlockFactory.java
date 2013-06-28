@@ -16,7 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.graph.VertexFactory;
+import fr.jamgotchian.abcd.graph.VertexFactory;
 
 /**
  *

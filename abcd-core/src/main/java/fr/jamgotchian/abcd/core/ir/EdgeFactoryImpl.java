@@ -16,7 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.graph.EdgeFactory;
+import fr.jamgotchian.abcd.graph.EdgeFactory;
 
 /**
  *

@@ -17,8 +17,8 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import com.google.common.collect.Sets;
-import fr.jamgotchian.abcd.core.graph.PostDominatorInfo;
-import fr.jamgotchian.abcd.core.graph.DominatorInfo;
+import fr.jamgotchian.abcd.graph.PostDominatorInfo;
+import fr.jamgotchian.abcd.graph.DominatorInfo;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -17,7 +17,7 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import com.google.common.collect.Sets;
-import fr.jamgotchian.abcd.core.graph.ForwardDataFlowAnalysis;
+import fr.jamgotchian.abcd.graph.ForwardDataFlowAnalysis;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

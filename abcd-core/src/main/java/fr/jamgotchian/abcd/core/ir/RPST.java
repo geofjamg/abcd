@@ -18,10 +18,10 @@ package fr.jamgotchian.abcd.core.ir;
 
 import com.google.common.base.Predicate;
 import fr.jamgotchian.abcd.core.common.ABCDException;
-import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
-import fr.jamgotchian.abcd.core.graph.MutableTree;
-import fr.jamgotchian.abcd.core.graph.Trees;
-import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
+import fr.jamgotchian.abcd.graph.GraphvizRenderer;
+import fr.jamgotchian.abcd.graph.MutableTree;
+import fr.jamgotchian.abcd.graph.Trees;
+import static fr.jamgotchian.abcd.graph.GraphvizUtil.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;

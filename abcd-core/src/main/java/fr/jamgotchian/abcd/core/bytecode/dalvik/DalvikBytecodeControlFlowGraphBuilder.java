@@ -16,7 +16,7 @@
  */
 package fr.jamgotchian.abcd.core.bytecode.dalvik;
 
-import fr.jamgotchian.abcd.core.graph.GraphvizRenderer;
+import fr.jamgotchian.abcd.graph.GraphvizRenderer;
 import fr.jamgotchian.abcd.core.ir.BasicBlock;
 import fr.jamgotchian.abcd.core.ir.ControlFlowGraphBuilder;
 import fr.jamgotchian.abcd.core.ir.ExceptionTable;

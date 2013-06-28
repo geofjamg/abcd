@@ -17,12 +17,11 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.util.Collections3;
+import com.google.common.collect.ImmutableSet;
 import fr.jamgotchian.abcd.core.util.RangeImpl;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
-import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -137,8 +136,8 @@ public class ControlFlowGraphTest {
 
         BasicBlock block0_20 = graph.getBasicBlock(0, 20);
         assertTrue(block0_20 != null);
-        assertTrue(Collections3.equals(graph.getSuccessorsOf(entryBlock), Arrays.asList(block0_20)));
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block0_20), Arrays.asList(entryBlock)));
+        assertTrue(ImmutableSet.of(block0_20).equals(ImmutableSet.copyOf(graph.getSuccessorsOf(entryBlock))));
+        assertTrue(ImmutableSet.of(entryBlock).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block0_20))));
 
         block0_20 = null;
         BasicBlockSplit split8 = graph.splitBasicBlockAt(8);
@@ -146,12 +145,9 @@ public class ControlFlowGraphTest {
         BasicBlock block8_20 = split8.getBlockAfter();
         assertTrue(block0_7 != null);
         assertTrue(block8_20 != null);
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block0_7),
-                                               Arrays.asList(entryBlock)));
-        assertTrue(Collections3.equals(graph.getSuccessorsOf(block0_7),
-                                               Arrays.asList(block8_20)));
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block8_20),
-                                               Arrays.asList(block0_7)));
+        assertTrue(ImmutableSet.of(entryBlock).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block0_7))));
+        assertTrue(ImmutableSet.of(block8_20).equals(ImmutableSet.copyOf(graph.getSuccessorsOf(block0_7))));
+        assertTrue(ImmutableSet.of(block0_7).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block8_20))));
         assertTrue(graph.getSuccessorsOf(block8_20).isEmpty());
         assertTrue(graph.containsEdge(block0_7, block8_20));
 
@@ -161,31 +157,21 @@ public class ControlFlowGraphTest {
         BasicBlock block17_20 = split17.getBlockAfter();
         assertTrue(block8_16 != null);
         assertTrue(block17_20 != null);
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block0_7),
-                                               Arrays.asList(entryBlock)));
-        assertTrue(Collections3.equals(graph.getSuccessorsOf(block0_7),
-                                               Arrays.asList(block8_16)));
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block8_16),
-                                               Arrays.asList(block0_7)));
-        assertTrue(Collections3.equals(graph.getSuccessorsOf(block8_16),
-                                               Arrays.asList(block17_20)));
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block17_20),
-                                               Arrays.asList(block8_16)));
+        assertTrue(ImmutableSet.of(entryBlock).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block0_7))));
+        assertTrue(ImmutableSet.of(block8_16).equals(ImmutableSet.copyOf(graph.getSuccessorsOf(block0_7))));
+        assertTrue(ImmutableSet.of(block0_7).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block8_16))));
+        assertTrue(ImmutableSet.of(block17_20).equals(ImmutableSet.copyOf(graph.getSuccessorsOf(block8_16))));
+        assertTrue(ImmutableSet.of(block8_16).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block17_20))));
         assertTrue(graph.getSuccessorsOf(block17_20).isEmpty());
 
 
         graph.addEdge(block0_7, block8_16);
         graph.addEdge(block0_7, block17_20);
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block0_7),
-                                               Arrays.asList(entryBlock)));
-        assertTrue(Collections3.equals(graph.getSuccessorsOf(block0_7),
-                                               Arrays.asList(block8_16, block17_20)));
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block8_16),
-                                               Arrays.asList(block0_7)));
-        assertTrue(Collections3.equals(graph.getSuccessorsOf(block8_16),
-                                               Arrays.asList(block17_20)));
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block17_20),
-                                               Arrays.asList(block8_16, block0_7)));
+        assertTrue(ImmutableSet.of(entryBlock).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block0_7))));
+        assertTrue(ImmutableSet.of(block8_16, block17_20).equals(ImmutableSet.copyOf(graph.getSuccessorsOf(block0_7))));
+        assertTrue(ImmutableSet.of(block0_7).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block8_16))));
+        assertTrue(ImmutableSet.of(block17_20).equals(ImmutableSet.copyOf(graph.getSuccessorsOf(block8_16))));
+        assertTrue(ImmutableSet.of(block8_16, block0_7).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block17_20))));
         assertTrue(graph.getSuccessorsOf(block17_20).isEmpty());
 
 
@@ -195,20 +181,13 @@ public class ControlFlowGraphTest {
         BasicBlock block4_7 = split4.getBlockAfter();
         assertTrue(block0_3 != null);
         assertTrue(block4_7 != null);
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block0_3),
-                                               Arrays.asList(entryBlock)));
-        assertTrue(Collections3.equals(graph.getSuccessorsOf(block0_3),
-                                               Arrays.asList(block4_7)));
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block4_7),
-                                               Arrays.asList(block0_3)));
-        assertTrue(Collections3.equals(graph.getSuccessorsOf(block4_7),
-                                               Arrays.asList(block8_16, block17_20)));
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block8_16),
-                                               Arrays.asList(block4_7)));
-        assertTrue(Collections3.equals(graph.getSuccessorsOf(block8_16),
-                                               Arrays.asList(block17_20)));
-        assertTrue(Collections3.equals(graph.getPredecessorsOf(block17_20),
-                                               Arrays.asList(block8_16, block4_7)));
+        assertTrue(ImmutableSet.of(entryBlock).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block0_3))));
+        assertTrue(ImmutableSet.of(block4_7).equals(ImmutableSet.copyOf(graph.getSuccessorsOf(block0_3))));
+        assertTrue(ImmutableSet.of(block0_3).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block4_7))));
+        assertTrue(ImmutableSet.of(block8_16, block17_20).equals(ImmutableSet.copyOf(graph.getSuccessorsOf(block4_7))));
+        assertTrue(ImmutableSet.of(block4_7).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block8_16))));
+        assertTrue(ImmutableSet.of(block17_20).equals(ImmutableSet.copyOf(graph.getSuccessorsOf(block8_16))));
+        assertTrue(ImmutableSet.of(block8_16, block4_7).equals(ImmutableSet.copyOf(graph.getPredecessorsOf(block17_20))));
         assertTrue(graph.getSuccessorsOf(block17_20).isEmpty());
     }
 

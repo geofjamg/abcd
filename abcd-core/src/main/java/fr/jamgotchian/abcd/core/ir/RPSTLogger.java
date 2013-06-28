@@ -17,7 +17,7 @@
 package fr.jamgotchian.abcd.core.ir;
 
 import fr.jamgotchian.abcd.core.util.Counter;
-import static fr.jamgotchian.abcd.core.graph.GraphvizUtil.*;
+import static fr.jamgotchian.abcd.graph.GraphvizUtil.*;
 import fr.jamgotchian.abcd.core.ir.RPST.ExportType;
 import java.io.IOException;
 import java.io.Writer;

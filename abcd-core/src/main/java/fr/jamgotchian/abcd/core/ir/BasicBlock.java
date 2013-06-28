@@ -17,7 +17,7 @@
 
 package fr.jamgotchian.abcd.core.ir;
 
-import fr.jamgotchian.abcd.core.graph.Orderable;
+import fr.jamgotchian.abcd.graph.Orderable;
 import fr.jamgotchian.abcd.core.util.Range;
 import java.util.Map;
 
